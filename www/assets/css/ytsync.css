@@ -1,0 +1,75 @@
+.videolist {
+    list-style: none outside none;
+    margin-left: 0;
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+.videolist li {
+    margin: 2px 0 0 auto;
+    padding: 2px;
+    font-size: 8pt;
+    border: 1px solid #aaaaaa; // [](/w21)
+}
+
+.qe_btn {
+    height: 20px;
+    font-family: Monospace;
+    padding: 0 5px;
+    margin: auto;
+    overflow: hidden;
+}
+
+.qe_buttons {
+    float: left;
+}
+
+.qe_title {
+    float: left;
+}
+
+.qe_time {
+    float: right;
+}
+
+.qe_clear {
+    clear: both;
+}
+
+#library {
+    width: 640px;
+}
+
+#userlist {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    height: 360px;
+    float: left;
+    width: 200px;
+    border: 1px solid #aaaaaa; // [](/z13)
+}
+
+#messagebuffer {
+    overflow-y: scroll;
+    height: 360px;
+    border: 1px solid #aaaaaa; // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
+    border-left: 0;
+}
+
+#chatline {
+    width: 100%;
+}
+
+.userlist_siteadmin {
+    color: #cc0000;
+    font-weight: bold;
+}
+
+.userlist_owner {
+    color: #0000cc;
+    font-weight: bold;
+}
+
+.userlist_op {
+    color: #00cc00;
+}
