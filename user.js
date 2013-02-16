@@ -1,3 +1,11 @@
+/**
+ * Copyright 2013 Calvin 'calzoneman' Montgomery
+ *
+ * Licensed under Creative Commons Attribution-NonCommercial 3.0
+ * See http://creativecommons.org/licenses/by-nc/3.0/
+ *
+ */
+
 var Rank = require('./rank.js');
 var Auth = require('./auth.js');
 var Channel = require('./channel.js').Channel;

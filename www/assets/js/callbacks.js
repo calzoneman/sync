@@ -1,3 +1,11 @@
+/**
+ * Copyright 2013 Calvin 'calzoneman' Montgomery
+ *
+ * Licensed under Creative Commons Attribution-NonCommercial 3.0
+ * See http://creativecommons.org/licenses/by-nc/3.0/
+ *
+ */
+
 // Wrapped in a function so I can ensure that the socket
 // is defined before these statements are run
 function initCallbacks() {

@@ -1,3 +1,11 @@
+/**
+ * Copyright 2013 Calvin 'calzoneman' Montgomery
+ *
+ * Licensed under Creative Commons Attribution-NonCommercial 3.0
+ * See http://creativecommons.org/licenses/by-nc/3.0/
+ *
+ */
+
 exports.Guest = 0;
 exports.Member = 1;
 exports.Moderator = 4;
