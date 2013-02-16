@@ -35,7 +35,8 @@ Channel.prototype.loadMysql = function() {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return false;
     }
     // Check if channel exists
     var query = 'SELECT * FROM channels WHERE name="{}"'
@@ -67,7 +68,8 @@ Channel.prototype.createTables = function() {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return false;
     }
     // Create library table
     var query= "CREATE TABLE `chan_{}_library` \
@@ -107,7 +109,8 @@ Channel.prototype.getRank = function(name) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return Rank.Guest;
     }
     var query = 'SELECT * FROM chan_{1}_ranks WHERE name="{2}"'
         .replace(/\{1\}/, this.name)
@@ -130,7 +133,8 @@ Channel.prototype.saveRank = function(user) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return false;
     }
     var query = 'UPDATE chan_{1}_ranks SET rank={2} WHERE name={3}'
         .replace(/\{1\}/, this.name)
@@ -159,7 +163,8 @@ Channel.prototype.addToLibrary = function(media) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return false;
     }
     var query = 'INSERT INTO chan_{1}_library VALUES ("{2}", "{3}", {4}, "{5}", "{6}")'
         .replace(/\{1\}/, this.name)

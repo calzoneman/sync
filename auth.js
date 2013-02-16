@@ -15,7 +15,8 @@ exports.isRegistered = function(name) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return true;
     }
     var query = 'SELECT * FROM registrations WHERE uname="{}"'
         .replace(/\{\}/, name);
@@ -44,7 +45,8 @@ exports.register = function(name, sha256) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return false;
     }
     var query = 'INSERT INTO registrations VALUES (NULL, "{1}", "{2}", 0)'
         .replace(/\{1\}/, name)
@@ -60,7 +62,8 @@ exports.login = function(name, sha256) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        throw "[](/abchaos) MySQL Connection Failed";
+        console.log("MySQL Connection Failed");
+        return false;
     }
     var query = 'SELECT * FROM registrations WHERE uname="{1}" AND pw="{2}"'
         .replace(/\{1\}/, name)
