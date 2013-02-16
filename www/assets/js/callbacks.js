@@ -165,6 +165,10 @@ function initCallbacks() {
             else {
                 sendVideoUpdate = function() { }
             }
+
+            RANK = data.rank;
+            if(data.rank >= Rank.Moderator)
+                $('#playlist_controls').css("display", "block");
         }
         var users = $('#userlist').children();
         for(var i = 0; i < users.length; i++) {

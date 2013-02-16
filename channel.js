@@ -353,8 +353,10 @@ Channel.prototype.playNext = function() {
 
 // Synchronize to a sync packet from the leader
 Channel.prototype.update = function(data) {
-    if(this.currentMedia == null)
-        this.currentMedia = data;
+    if(this.currentMedia == null) {
+        this.currentMedia = new Media(data.id, data.title, data.seconds, data.type);
+        this.currentMedia.currentTIme = data.currentTime;
+    }
     else
         this.currentMedia.currentTime = data.seconds;
     this.sendAll('mediaUpdate', this.currentMedia.packupdate());
@@ -469,8 +471,9 @@ Channel.prototype.demoteUser = function(actor, name) {
 // but you never know
 Channel.prototype.changeLeader = function(name) {
     if(this.leader != null) {
+        var old = leader;
         this.leader = null;
-        this.broadcastRankUpdate(this.leader);
+        this.broadcastRankUpdate(old);
     }
     if(name == "") {
         return;
