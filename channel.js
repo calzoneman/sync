@@ -471,7 +471,7 @@ Channel.prototype.demoteUser = function(actor, name) {
 // but you never know
 Channel.prototype.changeLeader = function(name) {
     if(this.leader != null) {
-        var old = leader;
+        var old = this.leader;
         this.leader = null;
         this.broadcastRankUpdate(old);
     }
