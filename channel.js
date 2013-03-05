@@ -12,6 +12,7 @@ var Rank = require('./rank.js');
 // I should use the <noun><verb>er naming scheme more often
 var InfoGetter = require('./get-info.js');
 var Media = require('./media.js').Media;
+var ChatCommand = require('./chatcommand.js');
 
 var Channel = function(name) {
     console.log("Opening channel " + name);
@@ -387,37 +388,34 @@ Channel.prototype.moveMedia = function(data) {
 
 // Chat message from a user
 Channel.prototype.chatMessage = function(user, msg) {
-    // Temporary code
-    // When I add more modifiers I should store them in a table
-    // of some kind
-    var msgclass = "";
-    if(msg.indexOf("/me ") == 0) {
-        msgclass = "action";
-        msg = msg.substring(3);
-    }
-    else if(msg.indexOf("/sp ") == 0) {
-        msgclass = "spoiler";
-        msg = msg.substring(3);
-    }
+    if(msg.indexOf("/") == 0)
+        ChatCommand.handle(msg);
+
     else if(msg.indexOf(">") == 0)
-        msgclass = "greentext";
+        this.sendMessage(user.name, msg, "greentext");
+
+    else
+        this.sendMessage(user.name, msg, msgclass);
+}
+
+Channel.prototype.sendMessage = function(username, msg, msgclass) {
     // I don't want HTML from strangers
     msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     // Match URLs
     msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/, "<a href=\"$1\">$1</a>");
     this.sendAll('chatMsg', {
-        username: user.name,
+        username: username,
         msg: msg,
         msgclass: msgclass
     });
     this.recentChat.push({
-        username: user.name,
+        username: username,
         msg: msg,
         msgclass: msgclass
     });
     if(this.recentChat.length > 15)
         this.recentChat.shift();
-}
+};
 
 // Promotion!  Actor is the client who initiated the promotion, name is the
 // name of the person being promoted
