@@ -355,7 +355,7 @@ Channel.prototype.playNext = function() {
 Channel.prototype.update = function(data) {
     if(this.currentMedia == null) {
         this.currentMedia = new Media(data.id, data.title, data.seconds, data.type);
-        this.currentMedia.currentTIme = data.currentTime;
+        this.currentMedia.currentTime = data.currentTime;
     }
     else
         this.currentMedia.currentTime = data.seconds;
@@ -476,6 +476,7 @@ Channel.prototype.changeLeader = function(name) {
         this.broadcastRankUpdate(old);
     }
     if(name == "") {
+        channelVideoUpdate(this, this.currentMedia.id);
         return;
     }
     for(var i = 0; i < this.users.length; i++) {
@@ -563,6 +564,7 @@ function channelVideoUpdate(chan, id) {
         return;
     // Add dt since last update
     chan.currentMedia.currentTime += (new Date().getTime() - time)/1000.0;
+    time = new Date().getTime();
     // Video over, move on to next
     if(chan.currentMedia.currentTime > chan.currentMedia.seconds) {
         chan.playNext();
@@ -571,7 +573,6 @@ function channelVideoUpdate(chan, id) {
     else if(i % 5 == 0)
         chan.sendAll('mediaUpdate', chan.currentMedia.packupdate());
     i++;
-    time = new Date().getTime();
     // Do it all over again in about a second
     setTimeout(function() { channelVideoUpdate(chan, id); }, 1000);
 }

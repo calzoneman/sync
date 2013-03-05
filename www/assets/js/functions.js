@@ -264,7 +264,7 @@ function updateSC(data) {
     // Soundcloud's API is async
     // Query the playback position and compare that with the sync packet
     PLAYER.getPosition(function(pos) {
-        if(Math.abs(pos - data.currentTime * 1000) > SYNC_THRESHOLD) {
+        if(Math.abs(pos / 1000 - data.currentTime) > SYNC_THRESHOLD) {
             PLAYER.seekTo(data.currentTime * 1000);
         }
     });
