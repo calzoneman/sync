@@ -75,8 +75,8 @@
 }
 
 .action {
-    text-decoration: italic;
-    color: #bbbbbb;
+    font-style: italic;
+    color: #aaaaaa;
 }
 
 .spoiler {
@@ -89,5 +89,5 @@
 }
 
 .greentext {
-    color: #99ff99;
+    color: #789922; /* Color value directly from 4chan */
 }

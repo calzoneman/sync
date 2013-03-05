@@ -96,6 +96,26 @@ function addUserDropdown(entry, name) {
     return ul;
 }
 
+function formatChatMessage(data) {
+    var div = document.createElement('div');
+    if(data.msgclass == "action") {
+        var message = document.createElement('span');
+        $(message).addClass('action');
+        message.innerHTML = data.username + " " + data.msg;
+        div.appendChild(message);
+    }
+    else {
+        var name = document.createElement('span');
+        var message = document.createElement('span');
+        name.innerHTML = "<strong>&lt;" + data.username + "&gt;</strong> ";
+        $(message).addClass(data.msgclass);
+        message.innerHTML = data.msg;
+        div.appendChild(name);
+        div.appendChild(message);
+    }
+    return div;
+}
+
 // Creates and formats a queue entry
 function makeQueueEntry(video) {
     var li = $('<li />');

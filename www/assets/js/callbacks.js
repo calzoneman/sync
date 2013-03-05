@@ -42,13 +42,7 @@ function initCallbacks() {
     });
 
     socket.on('chatMsg', function(data) {
-        var div = document.createElement('div');
-        var span = document.createElement('span');
-        $(span).addClass(data.msgclass);
-        if(data.msgclass != "action")
-            data.msg = "<strong>&lt;" + data.username + "&gt;</strong> " + data.msg;
-        span.innerHTML = data.msg;
-        div.appendChild(span);
+        var div = formatChatMessage(data);
         $('#messagebuffer')[0].appendChild(div);
         // Cap chatbox at most recent 100 messages
         if($('#messagebuffer').children().length > 100) {
