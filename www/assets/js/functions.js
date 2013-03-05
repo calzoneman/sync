@@ -311,9 +311,12 @@ function updateVI(data) {
     else if(data.id != PLAYER.videoid) {
         initVI(data);
     }
-    // Hack because of their async api
-    // Set this and wait for playProgress to fire to compare it
-    PLAYER.lastUpdate = data;
+
+    PLAYER.api('getCurrentTime', function(time) {
+        if(Math.abs(time - data.currentTime) > SYNC_THRESHOLD) {
+            PLAYER.api('seekTo', data.currentTime);
+        }
+    });
 }
 
 // Loads up a Vimeo player
@@ -331,12 +334,6 @@ function initVI(data) {
     PLAYER.addEvent('ready', function()  {
         // Autoplay
         PLAYER.api('play');
-        // Watch the progress and compare it with the most recent sync
-        PLAYER.addEvent('playProgress', function(data, id) {
-            if(Math.abs(parseInt(data.seconds) - PLAYER.lastUpdate.currentTime) > SYNC_THRESHOLD) {
-                PLAYER.api('seekTo', PLAYER.lastUpdate.currentTime);
-            }
-        });
     });
     MEDIATYPE = "vi";
 }
