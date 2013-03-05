@@ -335,8 +335,11 @@ Channel.prototype.unqueue = function(data) {
 
 // Play the next media in the queue
 Channel.prototype.playNext = function() {
-    if(this.currentPosition + 1 >= this.queue.length)
+    if(this.currentPosition + 1 >= this.queue.length) {
+        this.currentMedia = null;
+        this.currentPosition = -1;
         return;
+    }
     this.currentPosition++;
     this.currentMedia = this.queue[this.currentPosition];
     this.currentMedia.currentTime = 0;
