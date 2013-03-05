@@ -19,8 +19,8 @@ var pw = readCookie('sync_pw');
 var Rank = {
     Guest: 0,
     Member: 1,
-    Moderator: 4,
-    Owner: 8,
+    Moderator: 2,
+    Owner: 3,
     Siteadmin: 255
 };
 

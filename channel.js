@@ -477,7 +477,8 @@ Channel.prototype.changeLeader = function(name) {
         this.broadcastRankUpdate(old);
     }
     if(name == "") {
-        channelVideoUpdate(this, this.currentMedia.id);
+        if(this.currentMedia != null)
+            channelVideoUpdate(this, this.currentMedia.id);
         return;
     }
     for(var i = 0; i < this.users.length; i++) {

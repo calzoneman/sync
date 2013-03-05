@@ -8,14 +8,15 @@
 
 exports.Guest = 0;
 exports.Member = 1;
-exports.Moderator = 4;
-exports.Owner = 8;
+exports.Moderator = 2;
+exports.Owner = 3;
 exports.Siteadmin = 255;
 
 var permissions = {
     queue: exports.Moderator,
     assignLeader: exports.Moderator,
     kick: exports.Moderator,
+    promote: exports.Moderator,
     search: exports.Guest,
     chat: exports.Guest,
 };

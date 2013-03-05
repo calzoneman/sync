@@ -63,14 +63,18 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on('promote', function(data) {
-        if(this.channel != null) {
-            this.channel.promoteUser(this, data.name);
+        if(Rank.hasPermission(this, "promote")) {
+            if(this.channel != null) {
+                this.channel.promoteUser(this, data.name);
+            }
         }
     }.bind(this));
 
     this.socket.on('demote', function(data) {
-        if(this.channel != null) {
-            this.channel.demoteUser(this, data.name);
+        if(Rank.hasPermission(this, "promote")) {
+            if(this.channel != null) {
+                this.channel.demoteUser(this, data.name);
+            }
         }
     }.bind(this));
 

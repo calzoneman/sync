@@ -150,7 +150,7 @@ function initCallbacks() {
                         PLAYER.api('getCurrentTime', function(data) {
                             socket.emit('mediaUpdate', {
                                 id: PLAYER.videoid,
-                                seconds: data.seconds,
+                                seconds: data,
                                 paused: false,
                                 type: "vi"
                             });
