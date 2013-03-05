@@ -65,6 +65,15 @@ function addUserDropdown(entry, name) {
         });
     });
 
+    var kick = $('<li />').appendTo(ul);
+    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(kick);
+    a.text("Kick");
+    a.click(function() {
+        socket.emit('chatMsg', {
+            msg: "/kick " + name
+        });
+    });
+
     $('<li />').addClass("divider").appendTo(ul);
 
     var promote = $('<li />').appendTo(ul);

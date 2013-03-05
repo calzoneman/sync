@@ -15,6 +15,7 @@ exports.Siteadmin = 255;
 var permissions = {
     queue: exports.Moderator,
     assignLeader: exports.Moderator,
+    kick: exports.Moderator,
     search: exports.Guest,
     chat: exports.Guest,
 };
