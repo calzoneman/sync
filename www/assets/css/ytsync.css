@@ -73,3 +73,21 @@
 .userlist_op {
     color: #00cc00;
 }
+
+.action {
+    text-decoration: italic;
+    color: #bbbbbb;
+}
+
+.spoiler {
+    color: #000000;
+    background-color: #000000;
+}
+
+.spoiler:hover {
+    color: #ffffff;
+}
+
+.greentext {
+    color: #99ff99;
+}

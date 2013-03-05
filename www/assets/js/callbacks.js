@@ -45,7 +45,9 @@ function initCallbacks() {
         var div = document.createElement('div');
         var span = document.createElement('span');
         $(span).addClass(data.msgclass);
-        span.innerHTML = "<strong>&lt;" + data.username + "&gt;</strong> " + data.msg;
+        if(data.msgclass != "action")
+            data.msg = "<strong>&lt;" + data.username + "&gt;</strong> " + data.msg;
+        span.innerHTML = data.msg;
         div.appendChild(span);
         $('#messagebuffer')[0].appendChild(div);
         // Cap chatbox at most recent 100 messages
