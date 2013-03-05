@@ -32,6 +32,15 @@
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
             </ul>
+            <div class="navbar-form pull-right" id="loginform">
+                <input class="span2" id="username" type="text" placeholder="Username">
+                <input class="span2" id="password" type="password" placeholder="Password">
+                <button class="btn" id="login">Login</button>
+                <button class="btn" id="register">Register</button>
+            </div>
+            <div class="navbar-form pull-right" id="logoutform" style="display: none;">
+                <button class="btn" id="logout">Logout</button>
+            </div>
           </div>
         </div>
       </div>
@@ -39,20 +48,8 @@
 
     <div class="container">
         <div class="row">
-            <div id="loginform" class="span4">
-                <label for="username">Username</label>
-                <input type="text" id="username">
-                <label for="password">Password (leave blank to log in as a guest)</label>
-                <input type="password" id="password">
-                <br>
-                <div class="btn-panel">
-                    <button class="btn" id="login">Login</button>
-                    <button class="btn" id="register">Register</button>
-                </div>
-            </div>
             <div id="loggedin" class="span6" style="display: none;">
                 <h3 id="welcome"></h3>
-                <button class="btn" id="logout">Logout</button>
             </div>
         </div>
         <div class="row" style="margin-top: 20px;">

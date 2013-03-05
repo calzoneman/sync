@@ -27,7 +27,8 @@ function initCallbacks() {
         else {
             $('#welcome')[0].innerHTML = "Welcome, " + uname;
             $('#loginform').css("display", "none");
-            $('#loggedin').css("display", "block");
+            $('#logoutform').css("display", "");
+            $('#loggedin').css("display", "");
             if(pw != "") {
                 createCookie('sync_uname', uname, 1);
                 createCookie('sync_pw', pw, 1);
