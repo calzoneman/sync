@@ -47,7 +47,8 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on('login', function(data) {
-        this.login(data.name, data.sha256);
+        if(this.name == "")
+            this.login(data.name, data.sha256);
     }.bind(this));
 
     this.socket.on('register', function(data) {
