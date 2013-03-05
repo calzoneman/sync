@@ -389,13 +389,13 @@ Channel.prototype.moveMedia = function(data) {
 // Chat message from a user
 Channel.prototype.chatMessage = function(user, msg) {
     if(msg.indexOf("/") == 0)
-        ChatCommand.handle(msg);
+        ChatCommand.handle(this, user, msg);
 
     else if(msg.indexOf(">") == 0)
         this.sendMessage(user.name, msg, "greentext");
 
     else
-        this.sendMessage(user.name, msg, msgclass);
+        this.sendMessage(user.name, msg, "");
 }
 
 Channel.prototype.sendMessage = function(username, msg, msgclass) {
