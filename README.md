@@ -31,7 +31,7 @@ I'm using v0.8.20, please feel free to report which versions do/do not work
     5. Install your distribution's `libmysqlclient` package
     6. Install the libmysql node module: `npm install mysql-libmysqlclient`
     7. Edit `config.js` and input your database details and connection port
-    8. Edit `www/assets/js/client.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
+    8. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
 
 Running
 -------

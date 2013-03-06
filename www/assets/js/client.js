@@ -6,7 +6,6 @@
  *
  */
 
-const IO_URL = "http://somewebsite:1337";
 const SYNC_THRESHOLD = 2;
 var LEADER = false;
 var PLAYER = false;

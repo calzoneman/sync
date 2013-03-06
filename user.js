@@ -10,6 +10,7 @@ var Rank = require('./rank.js');
 var Auth = require('./auth.js');
 var Channel = require('./channel.js').Channel;
 var Server = require('./server.js');
+var Database = require('./database.js');
 
 // Represents a client connected via socket.io
 var User = function(socket, ip) {
@@ -133,7 +134,64 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on('adm', function(data) {
+        if(Rank.hasPermission(this, "acp")) {
+            this.handleAdm(data);
+        }
+    }.bind(this));
 }
+
+// Handle administration
+User.prototype.handleAdm = function(data) {
+    if(data.cmd == "listloadedchannels") {
+        var chans = [];
+        for(var chan in Server.channels) {
+            var users = [];
+            for(var i = 0; i < Server.channels[chan].users.length; i++) {
+                users.push(Server.channels[chan].users[i].name);
+            }
+            chans.push({
+                chan: chan,
+                users: users
+            });
+        }
+        this.socket.emit('adm', {
+            cmd: "listloadedchannels",
+            chans: chans
+        });
+    }
+    else if(data.cmd == "listchannels") {
+        this.socket.emit('adm', {
+            cmd: "listchannels",
+            chans: Database.listChannels()
+        });
+    }
+    else if(data.cmd == "listusers") {
+        var users = [];
+        var dbusers = Database.listUsers();
+        if(!dbusers)
+            return;
+        for(var i = 0; i < dbusers.length; i++) {
+            users[i] = {
+                name: dbusers[i].uname,
+                rank: dbusers[i].global_rank
+            };
+        }
+        this.socket.emit('adm', {
+            cmd: "listusers",
+            users: users
+        });
+    }
+    else if(data.cmd == "listchannelranks") {
+        if(data.chan == undefined)
+            return;
+        this.socket.emit('adm', {
+            cmd: "listchannelranks",
+            ranks: Database.listChannelRanks(data.chan)
+        });
+    }
+
+};
 
 // Attempt to login
 User.prototype.login = function(name, sha256) {
