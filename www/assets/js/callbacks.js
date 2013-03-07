@@ -42,6 +42,10 @@ function initCallbacks() {
         }
     });
 
+    socket.on('usercount', function(data) {
+        $('#usercount').text(data.count + " connected users");
+    });
+
     socket.on('chatMsg', function(data) {
         var div = formatChatMessage(data);
         $('#messagebuffer')[0].appendChild(div);

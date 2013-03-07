@@ -208,6 +208,7 @@ Channel.prototype.userJoin = function(user) {
     if(user.name != "") {
         this.broadcastNewUser(user);
     }
+    this.updateUsercount();
     // Set the new guy up
     this.sendPlaylist(user);
     this.sendUserlist(user);
@@ -220,6 +221,7 @@ Channel.prototype.userJoin = function(user) {
 // Called when a user leaves the channel
 Channel.prototype.userLeave = function(user) {
     this.users.splice(this.users.indexOf(user), 1);
+    this.updateUsercount();
     if(user.name != "") {
         this.sendAll('userLeave', {
             name: user.name
@@ -504,6 +506,12 @@ Channel.prototype.sendUserlist = function(user) {
         }
     }
     user.socket.emit('userlist', users)
+}
+
+Channel.prototype.updateUsercount = function() {
+    this.sendAll('usercount', {
+        count: this.users.length
+    });
 }
 
 // Send the play queue
