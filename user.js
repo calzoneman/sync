@@ -116,6 +116,9 @@ User.prototype.initCallbacks = function() {
     this.socket.on('playNext', function() {
         if(Rank.hasPermission(this, "queue") ||
             (this.channel != null && this.channel.leader == this)) {
+            if(this.channel.currentPosition + 1 >= this.channel.queue.length) {
+                this.channel.currentPosition = -1;
+            }
             this.channel.playNext();
         }
     }.bind(this));

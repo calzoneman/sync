@@ -339,7 +339,6 @@ Channel.prototype.unqueue = function(data) {
 Channel.prototype.playNext = function() {
     if(this.currentPosition + 1 >= this.queue.length) {
         this.currentMedia = null;
-        this.currentPosition = -1;
         return;
     }
     this.currentPosition++;
@@ -570,7 +569,7 @@ var time = new Date().getTime();
 function channelVideoUpdate(chan, id) {
     // Someone changed the video or there's a manual leader, so your
     // argument is invalid
-    if(id != chan.currentMedia.id || chan.leader != null)
+    if(chan.currentMedia == null || id != chan.currentMedia.id || chan.leader != null)
         return;
     // Add dt since last update
     chan.currentMedia.currentTime += (new Date().getTime() - time)/1000.0;
