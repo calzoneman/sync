@@ -12,6 +12,7 @@ var PLAYER = false;
 var MEDIATYPE = "yt";
 var POSITION = -1;
 var RANK = 0;
+var OPENQUEUE = false;
 var uname = readCookie('sync_uname');
 var pw = readCookie('sync_pw');
 
@@ -113,6 +114,12 @@ $('#queue_next').click(function() {
 
 $('#play_next').click(function() {
     socket.emit('playNext');
+});
+
+$('#qlockbtn').click(function() {
+    socket.emit('queueLock', {
+        locked: OPENQUEUE
+    });
 });
 
 function loginClick() {

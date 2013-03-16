@@ -16,8 +16,10 @@ function initCallbacks() {
     });
 
     socket.on('rank', function(data) {
-        if(data.rank >= Rank.Moderator)
+        if(data.rank >= Rank.Moderator) {
             $('#playlist_controls').css("display", "block");
+            $('#qlockbtn').css("display", "block");
+        }
         RANK = data.rank;
     });
 
@@ -64,7 +66,7 @@ function initCallbacks() {
         }
         for(var i = 0; i < data.pl.length; i++) {
             var li = makeQueueEntry(data.pl[i]);
-            if(RANK >= Rank.Moderator)
+            if(RANK >= Rank.Moderator || OPENQUEUE)
                 addQueueButtons(li);
             $(li).appendTo(ul);
         }
@@ -72,7 +74,7 @@ function initCallbacks() {
 
     socket.on('queue', function(data) {
         var li = makeQueueEntry(data.media);
-        if(RANK >= Rank.Moderator)
+        if(RANK >= Rank.Moderator || OPENQUEUE)
             addQueueButtons(li);
         $(li).css('display', 'none');
         var idx = data.pos;
@@ -95,6 +97,31 @@ function initCallbacks() {
 
     socket.on('moveVideo', function(data) {
         moveVideo(data.src, data.dest);
+    });
+
+    socket.on('queueLock', function(data) {
+        OPENQUEUE = !data.locked;
+        if(OPENQUEUE) {
+            $('#playlist_controls').css('display', '');
+            if(RANK < Rank.Moderator) {
+                $('#qlockbtn').css('display', 'none');
+            }
+        }
+        else if(RANK < Rank.Moderator) {
+            $('#playlist_controls').css('display', 'none');
+        }
+        if(RANK >= Rank.Moderator) {
+            if(OPENQUEUE) {
+                $('#qlockbtn').removeClass('btn-danger')
+                    .addClass('btn-success')
+                    .text('Lock Queue');
+            }
+            else {
+                $('#qlockbtn').removeClass('btn-success')
+                    .addClass('btn-danger')
+                    .text('Unlock Queue');
+            }
+        }
     });
 
     socket.on('updatePlaylistIdx', function(data) {
@@ -200,7 +227,7 @@ function initCallbacks() {
         var ul = $('#library')[0];
         for(var i = 0; i < data.results.length; i++) {
             var li = makeQueueEntry(data.results[i]);
-            if(RANK >= Rank.Moderator)
+            if(RANK >= Rank.Moderator || OPENQUEUE)
                 addLibraryButtons(li, data.results[i].id);
             $(li).appendTo(ul);
         }

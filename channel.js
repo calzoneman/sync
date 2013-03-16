@@ -25,6 +25,7 @@ var Channel = function(name) {
     this.currentMedia = null;
     this.leader = null;
     this.recentChat = [];
+    this.qlocked = true;
 
     this.loadMysql();
 };
@@ -211,6 +212,7 @@ Channel.prototype.userJoin = function(user) {
     this.updateUsercount();
     // Set the new guy up
     this.sendPlaylist(user);
+    user.socket.emit('queueLock', {locked: this.qlocked});
     this.sendUserlist(user);
     this.sendRecentChat(user);
     if(user.playerReady)
@@ -353,6 +355,14 @@ Channel.prototype.playNext = function() {
     if(this.leader == null && this.currentMedia.type != "tw") {
         time = new Date().getTime();
         channelVideoUpdate(this, this.currentMedia.id);
+    }
+}
+
+Channel.prototype.setLock = function(locked) {
+    this.qlocked = locked;
+    this.sendAll('queueLock', {locked: locked});
+    for(var i = 0; i < this.users.length; i++) {
+        this.sendPlaylist(this.users[i]);
     }
 }
 

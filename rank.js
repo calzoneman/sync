@@ -18,6 +18,7 @@ var permissions = {
     assignLeader: exports.Moderator,
     kick: exports.Moderator,
     promote: exports.Moderator,
+    qlock: exports.Moderator,
     search: exports.Guest,
     chat: exports.Guest,
 };
