@@ -330,7 +330,7 @@ function initVI(data) {
     var div = currentEmbed.parent();
     currentEmbed.remove();
     // Ugly but it's the only way I managed to get the API calls to work
-    div[0].innerHTML = '<iframe id="ytapiplayer" src="http://player.vimeo.com/video/' + data.id + '?api=1&player_id=ytapiplayer" width="640" height="390" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>';
+    div[0].innerHTML += '<iframe id="ytapiplayer" src="http://player.vimeo.com/video/' + data.id + '?api=1&player_id=ytapiplayer" width="640" height="390" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>';
     // $f() is defined by froogaloop, Vimeo's API wrapper
     PLAYER = $f($('iframe')[0]);
     // So we can retrieve the ID synchronously instead of waiting for
