@@ -283,6 +283,14 @@ Channel.prototype.enqueue = function(data) {
             pos: idx
         });
     }
+    else if(data.type == "li") {
+        var media = new Media(data.id, "Livestream ~ " + data.id, 0, "li");
+        this.queue.splice(idx, 0, media);
+        this.sendAll('queue', {
+            media: media.pack(),
+            pos: idx
+        });
+    }
     // Query metadata from Soundcloud
     else if(data.type == "sc") {
         var callback = (function(chan, id) { return function(res, data) {

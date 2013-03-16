@@ -359,6 +359,14 @@ function loadTwitch(channel) {
     swfobject.embedSWF( url, "ytapiplayer", '640', '390', "8", null, null, params, {} );
 }
 
+function loadLivestream(channel) {
+    MEDIATYPE = "li";
+    removeCurrentPlayer();
+    flashvars = { channel: channel };
+    params = { AllowScriptAccess: 'always' };
+    swfobject.embedSWF("http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf", "ytapiplayer", "640", "390", "9.0.0", "expressInstall.swf", flashvars, params);
+}
+
 function removeCurrentPlayer(){
     var currentEmbed = $("#ytapiplayer");
     var placeholder = $("<div/>").insertBefore(currentEmbed);
@@ -373,6 +381,8 @@ function parseVideoURL(url){
         return [parseYTURL(url), "yt"];
     else if(url.indexOf("twitch") != -1)
         return [parseTwitch(url), "tw"];
+    else if(url.indexOf("livestream") != -1)
+        return [parseLivestream(url), "li"];
     else if(url.indexOf("soundcloud") != -1)
         return [url, "sc"];
     else if(url.indexOf("vimeo") != -1)
@@ -404,6 +414,15 @@ function parseYTURL(url) {
 
 function parseTwitch(url) {
     var m = url.match(/twitch\.tv\/([a-zA-Z0-9]*)/);
+    if(m) {
+        // Extract channel name
+        return m[1];
+    }
+    return null;
+}
+
+function parseLivestream(url) {
+    var m = url.match(/livestream\.com\/([a-zA-Z0-9]*)/);
     if(m) {
         // Extract channel name
         return m[1];

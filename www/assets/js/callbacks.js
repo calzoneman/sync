@@ -146,6 +146,8 @@ function initCallbacks() {
             updateYT(data);
         else if(data.type == "tw")
             loadTwitch(data.id);
+        else if(data.type == "li")
+            loadLivestream(data.id);
         else if(data.type == "sc")
             updateSC(data);
         else if(data.type == "vi")
