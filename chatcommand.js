@@ -1,4 +1,5 @@
 var Rank = require('./rank.js');
+var Poll = require('./poll.js').Poll;
 
 function handle(chan, user, msg) {
     if(msg.indexOf("/me ") == 0)
@@ -7,6 +8,9 @@ function handle(chan, user, msg) {
         chan.sendMessage(user.name, msg.substring(4), "spoiler");
     else if(msg.indexOf("/kick ") == 0) {
         handleKick(chan, user, msg.substring(6).split(' '));
+    }
+    else if(msg.indexOf("/poll ") == 0) {
+        handlePoll(chan, user, msg.substring(6));
     }
 }
 
@@ -23,6 +27,17 @@ function handleKick(chan, user, args) {
             kickee.socket.disconnect();
             chan.userLeave(kickee);
         }
+    }
+}
+
+function handlePoll(chan, user, msg) {
+    if(Rank.hasPermission(user, "poll")) {
+        var args = msg.split(',');
+        var title = args[0];
+        args.splice(0, 1);
+        var poll = new Poll(title, args);
+        chan.poll = poll;
+        chan.broadcastPoll();
     }
 }
 

@@ -26,6 +26,7 @@ var Channel = function(name) {
     this.leader = null;
     this.recentChat = [];
     this.qlocked = true;
+    this.poll = false;
 
     this.loadMysql();
 };
@@ -215,6 +216,9 @@ Channel.prototype.userJoin = function(user) {
     user.socket.emit('queueLock', {locked: this.qlocked});
     this.sendUserlist(user);
     this.sendRecentChat(user);
+    if(this.poll) {
+        user.socket.emit('newPoll', this.poll.packUpdate());
+    }
     if(user.playerReady)
         this.sendMediaUpdate(user);
     console.log(user.ip + " joined channel " + this.name);
@@ -222,6 +226,13 @@ Channel.prototype.userJoin = function(user) {
 
 // Called when a user leaves the channel
 Channel.prototype.userLeave = function(user) {
+    if(this.poll) {
+        this.poll.unvote(user.ip);
+        this.broadcastPollUpdate();
+    }
+    if(this.leader == user) {
+        this.changeLeader("");
+    }
     this.users.splice(this.users.indexOf(user), 1);
     this.updateUsercount();
     if(user.name != "") {
@@ -562,6 +573,18 @@ Channel.prototype.broadcastRankUpdate = function(user) {
         rank: user.rank,
         leader: this.leader == user
     });
+}
+
+Channel.prototype.broadcastPoll = function() {
+    this.sendAll('newPoll', this.poll.packUpdate());
+}
+
+Channel.prototype.broadcastPollUpdate = function() {
+    this.sendAll('updatePoll', this.poll.packUpdate());
+}
+
+Channel.prototype.broadcastPollClose = function() {
+    this.sendAll('closePoll');
 }
 
 // Send to ALL the clients!

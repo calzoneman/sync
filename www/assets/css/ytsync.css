@@ -91,3 +91,7 @@
 .greentext {
     color: #789922; /* Color value directly from 4chan */
 }
+
+.option button {
+    margin-right: 15px;
+}

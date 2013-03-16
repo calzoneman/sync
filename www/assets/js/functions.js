@@ -420,5 +420,57 @@ function parseVimeo(url) {
     return null;
 }
 
+function closePoll() {
+    if($('#pollcontainer .active').length != 0) {
+        var poll = $('#pollcontainer .active');
+        poll.removeClass("active").addClass("muted");
+        poll.find('.option button').each(function() {
+            $(this).attr('disabled', 'disabled');
+        });
+        poll.find('.btn-danger').each(function() {
+            $(this).remove()
+        });
+    }
+}
 
+function addPoll(data) {
+    closePoll();
+    var poll = $('<div/>').addClass('well active').prependTo($('#pollcontainer'));
+    $('<button/>').addClass('close pull-right').text('×')
+        .appendTo(poll)
+        .click(function() { poll.remove(); });
+    if(RANK >= Rank.Moderator) {
+        $('<button/>').addClass('btn btn-danger pull-right').text('Close Poll')
+            .appendTo(poll)
+            .click(function() {
+                socket.emit('closePoll')
+            });
+    }
 
+    $('<h3/>').text(data.title).appendTo(poll);
+    for(var i = 0; i < data.options.length; i++) {
+        var callback = (function(i) { return function() {
+                console.log(i);
+                socket.emit('vote', {
+                    option: i
+                });
+                poll.find('.option button').each(function() {
+                    $(this).attr('disabled', 'disabled');
+                });
+        } })(i);
+        $('<button/>').addClass('btn').text(data.counts[i])
+            .prependTo($('<div/>').addClass('option').text(data.options[i])
+                    .appendTo(poll))
+            .click(callback);
+            
+    }
+}
+
+function updatePoll(data) {
+    var poll = $('#pollcontainer .active');
+    var i = 0;
+    poll.find('.option button').each(function() {
+        $(this).text(data.counts[i]);
+        i++;
+    });
+}

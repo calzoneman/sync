@@ -149,6 +149,22 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on('closePoll', function() {
+        if(Rank.hasPermission(this, "poll")) {
+            if(this.channel != null && this.channel.poll) {
+                this.channel.poll = null;
+                this.channel.broadcastPollClose();
+            }
+        }
+    }.bind(this));
+
+    this.socket.on('vote', function(data) {
+        if(this.channel != null && this.channel.poll) {
+            this.channel.poll.vote(this.ip, data.option);
+            this.channel.broadcastPollUpdate();
+        }
+    }.bind(this));
+
     this.socket.on('adm', function(data) {
         if(Rank.hasPermission(this, "acp")) {
             this.handleAdm(data);

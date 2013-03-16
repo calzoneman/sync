@@ -19,6 +19,14 @@ function initCallbacks() {
         if(data.rank >= Rank.Moderator) {
             $('#playlist_controls').css("display", "block");
             $('#qlockbtn').css("display", "block");
+            var poll = $('#pollcontainer .active');
+            if(poll.length > 0) {
+                $('<button/>').addClass('btn btn-danger pull-right').text('Close Poll')
+                    .insertAfter(poll.find('.close'))
+                    .click(function() {
+                        socket.emit('closePoll')
+                    });
+            }
         }
         RANK = data.rank;
     });
@@ -231,5 +239,17 @@ function initCallbacks() {
                 addLibraryButtons(li, data.results[i].id);
             $(li).appendTo(ul);
         }
+    });
+
+    socket.on('newPoll', function(data) {
+        addPoll(data);
+    });
+
+    socket.on('updatePoll', function(data) {
+        updatePoll(data);
+    });
+
+    socket.on('closePoll', function() {
+        closePoll();
     });
 }
