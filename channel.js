@@ -104,7 +104,7 @@ Channel.prototype.createTables = function() {
 
 // Retrieves a user's rank from the database
 Channel.prototype.getRank = function(name) {
-    if(!this.isRegistered)
+    if(!this.registered)
         return Rank.Guest;
     var db = mysql.createConnectionSync();
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
