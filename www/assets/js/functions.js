@@ -152,7 +152,8 @@ function addQueueButtons(li) {
     $('<i />').attr("class", "icon-arrow-down").appendTo(btnDown);
 
     var btnNext =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    $('<i />').attr("class", "icon-play").appendTo(btnNext);
+    //$('<i />').attr("class", "icon-play").appendTo(btnNext);
+    btnNext.text('Next');
 
     // Callback time
     $(btnRemove).click(function() {
@@ -193,10 +194,12 @@ function addLibraryButtons(li, id) {
 
 
     var btnNext =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    $('<i />').attr("class", "icon-play").appendTo(btnNext);
+    //$('<i />').attr("class", "icon-play").appendTo(btnNext);
+    btnNext.text('Next');
 
     var btnEnd =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    $('<i />').attr("class", "icon-fast-forward").appendTo(btnEnd);
+    //$('<i />').attr("class", "icon-fast-forward").appendTo(btnEnd);
+    btnEnd.text('End');
 
     // Callback time
     $(btnNext).click(function() {
