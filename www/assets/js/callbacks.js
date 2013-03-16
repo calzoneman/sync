@@ -106,6 +106,7 @@ function initCallbacks() {
     });
 
     socket.on('mediaUpdate', function(data) {
+        $('#currenttitle').text("Currently Playing: " + data.title);
         if(data.type == "yt")
             updateYT(data);
         else if(data.type == "tw")

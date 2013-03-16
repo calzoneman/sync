@@ -45,7 +45,7 @@
     overflow-x: hidden;
     height: 360px;
     float: left;
-    width: 200px;
+    width: 150px;
     border: 1px solid #aaaaaa; // [](/z13)
 }
 
@@ -57,7 +57,7 @@
 }
 
 #chatline {
-    width: 100%;
+    width: 456px;
 }
 
 .userlist_siteadmin {
