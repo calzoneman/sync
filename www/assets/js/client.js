@@ -38,6 +38,10 @@ if(window.location.search) {
     }
 }
 
+if(params['novideo'] != undefined) {
+    $('.span7').remove();
+}
+
 if(params['channel'] == undefined) {
     var main = $($('.container')[1]);
     var container = $('<div/>').addClass('container').insertBefore(main);
