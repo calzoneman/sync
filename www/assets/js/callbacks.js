@@ -98,9 +98,9 @@ function initCallbacks() {
             $($('#queue').children()[POSITION+1]).addClass("alert alert-info");
         }
         var li = $('#queue').children()[data.pos];
-        $(li).hide('blind', function() {
+        //$(li).hide('blind', function() {
             $(li).remove();
-        });
+        //});
     });
 
     socket.on('moveVideo', function(data) {
