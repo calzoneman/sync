@@ -371,7 +371,7 @@ Channel.prototype.playNext = function() {
         idx: this.currentPosition
     });
     // Enable autolead for non-twitch
-    if(this.leader == null && this.currentMedia.type != "tw") {
+    if(this.leader == null && this.currentMedia.type != "tw" && this.currentMedia.type != "li") {
         time = new Date().getTime();
         channelVideoUpdate(this, this.currentMedia.id);
     }
@@ -561,8 +561,12 @@ Channel.prototype.sendRecentChat = function(user) {
 
 // Send a sync packet
 Channel.prototype.sendMediaUpdate = function(user) {
-    if(this.currentMedia != null)
+    if(this.currentMedia != null) {
         user.socket.emit('mediaUpdate', this.currentMedia.packupdate());
+    }
+    else {
+        console.log('currentMedia is null');
+    }
 }
 
 // Sent when someone logs in, to add them to the user list
