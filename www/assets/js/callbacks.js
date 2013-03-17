@@ -222,7 +222,7 @@ function initCallbacks() {
     socket.on('userLeave', function(data) {
         var users = $('#userlist').children();
         for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerText;
+            var name = users[i].children[1].innerHTML;
             if(name == data.name) {
                 $('#userlist')[0].removeChild(users[i]);
             }
