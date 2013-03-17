@@ -165,6 +165,18 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on('registerChannel', function(data) {
+        if(this.channel == null) {
+            this.socket.emit('channelRegistration', {
+                success: false,
+                error: "You're not in any channel!"
+            });
+        }
+        else {
+            this.channel.tryRegister(this);
+        }
+    }.bind(this));
+
     this.socket.on('adm', function(data) {
         if(Rank.hasPermission(this, "acp")) {
             this.handleAdm(data);
@@ -283,8 +295,9 @@ User.prototype.login = function(name, sha256) {
             // Sweet, let's look up our rank
             var chanrank = (this.channel != null) ? this.channel.getRank(name)
                                                   : Rank.Guest;
-            this.rank = (chanrank > row.global_rank) ? chanrank
+            var rank = (chanrank > row.global_rank) ? chanrank
                                                      : row.global_rank;
+            this.rank = (this.rank > rank) ? this.rank : rank;
             this.socket.emit('rank', {
                 rank: this.rank
             });

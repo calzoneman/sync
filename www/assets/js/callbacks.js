@@ -15,6 +15,19 @@ function initCallbacks() {
             .innerHTML = "<h3>Disconnected from server</h3>";
     });
 
+    socket.on('channelNotRegistered', function() {
+        showChannelRegistration();
+    });
+
+    socket.on('registerChannel', function(data) {
+        if(data.success) {
+            $('#chregnotice').remove();
+        }
+        else {
+            alert(data.error);
+        }
+    });
+
     socket.on('rank', function(data) {
         if(data.rank >= Rank.Moderator) {
             $('#playlist_controls').css("display", "block");

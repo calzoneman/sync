@@ -493,3 +493,17 @@ function updatePoll(data) {
         i++;
     });
 }
+
+function showChannelRegistration() {
+    var div = $('<div/>').addClass('alert alert-info').attr('id', 'chregnotice')
+        .insertAfter($('.row')[0]);
+    $('<button/>').addClass('close pull-right').text('×')
+        .appendTo(div)
+        .click(function() { div.remove(); });
+    $('<h3/>').text("This channel isn't registered").appendTo(div);
+    $('<button/>').addClass('btn btn-primary').text('Register it')
+        .appendTo(div)
+        .click(function() {
+            socket.emit('registerChannel');
+        });
+}

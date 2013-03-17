@@ -98,10 +98,48 @@ Channel.prototype.createTables = function() {
     results = db.querySync(query) || results;
 
     // Insert into global channel table
-    var query = 'INSERT INTO channels VALUES (NULL, "{}")'
+    var query = 'INSERT INTO channels (`id`, `name`) VALUES (NULL, "{}")'
         .replace(/\{\}/, this.name);
+    results = db.querySync(query) || results;
     db.closeSync();
     return results;
+}
+
+Channel.prototype.tryRegister = function(user) {
+    if(this.registered) {
+        user.socket.emit('registerChannel', {
+            success: false,
+            error: "This channel is already registered"
+        });
+    }
+    else if(!user.loggedIn) {
+        user.socket.emit('registerChannel', {
+            success: false,
+            error: "You must log in to register a channel"
+        });
+
+    }
+    else if(!Rank.hasPermission(user, "registerChannel")) {
+        user.socket.emit('registerChannel', {
+            success: false,
+            error: "You don't have permission to register this channel"
+        });
+    }
+    else {
+        if(this.createTables()) {
+            this.registered = true;
+            this.saveRank(user);
+            user.socket.emit('registerChannel', {
+                success: true,
+            });
+        }
+        else {
+            user.socket.emit('registerChannel', {
+                success: false,
+                error: "Unable to register channel, see an admin"
+            });
+        }
+    }
 }
 
 // Retrieves a user's rank from the database
@@ -143,9 +181,7 @@ Channel.prototype.saveRank = function(user) {
         .replace(/\{1\}/, this.name)
         .replace(/\{2\}/, user.rank)
         .replace(/\{3\}/, user.name);
-    console.log(query);
     var results = db.querySync(query);
-    console.log("saveRank update: " + results);
     // Gonna have to insert a new one, bugger
     if(!results.fetchAllSync) {
         var query = 'INSERT INTO chan_{1}_ranks (`name`, `rank`) VALUES ("{2}", "{3}")'
@@ -153,7 +189,6 @@ Channel.prototype.saveRank = function(user) {
             .replace(/\{2\}/, user.name)
             .replace(/\{3\}/, user.rank);
         results = db.querySync(query);
-        console.log("saveRank insert: " + results);
     }
     db.closeSync();
     return results;
@@ -220,7 +255,8 @@ Channel.prototype.userJoin = function(user) {
     // If the channel is empty and isn't registered, the first person
     // gets ownership of the channel (temporarily)
     if(this.users.length == 0 && !this.registered) {
-        user.rank = (user.rank < Rank.Owner) ? Rank.Owner : user.rank;
+        user.rank = (user.rank < Rank.Owner) ? Rank.Owner + 7 : user.rank;
+        user.socket.emit('channelNotRegistered');
     }
     this.users.push(user);
     if(user.name != "") {
