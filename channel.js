@@ -201,6 +201,19 @@ Channel.prototype.searchLibrary = function(query) {
 
 // Called when a new user enters the channel
 Channel.prototype.userJoin = function(user) {
+    // Prevent duplicate login
+    if(user.name != "") {
+        for(var i = 0; i < this.users.length; i++) {
+            if(this.users[i].name == user.name) {
+                user.name = "";
+                user.loggedIn = false;
+                user.socket.emit('login', {
+                    success: false,
+                    error: "The username " + user.name + " is already in use on this channel"
+                });
+            }
+        }
+    }
     // If the channel is empty and isn't registered, the first person
     // gets ownership of the channel (temporarily)
     if(this.users.length == 0 && !this.registered) {

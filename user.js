@@ -226,6 +226,17 @@ User.prototype.handleAdm = function(data) {
 
 // Attempt to login
 User.prototype.login = function(name, sha256) {
+    if(this.channel != null && name != "") {
+        for(var i = 0; i < this.channel.users.length; i++) {
+            if(this.channel.users[i].name == name) {
+                this.socket.emit('login', {
+                    success: false,
+                    error: "The username " + name + " is already in use on this channel"
+                });
+                return false;
+            }
+        }
+    }
     // No password => try guest login
     if(sha256 == "") {
         // Sorry bud, can't take that name
