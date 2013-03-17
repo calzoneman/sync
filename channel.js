@@ -139,18 +139,21 @@ Channel.prototype.saveRank = function(user) {
         console.log("MySQL Connection Failed");
         return false;
     }
-    var query = 'UPDATE chan_{1}_ranks SET rank={2} WHERE name={3}'
+    var query = 'UPDATE chan_{1}_ranks SET rank="{2}" WHERE name="{3}"'
         .replace(/\{1\}/, this.name)
         .replace(/\{2\}/, user.rank)
         .replace(/\{3\}/, user.name);
+    console.log(query);
     var results = db.querySync(query);
+    console.log("saveRank update: " + results);
     // Gonna have to insert a new one, bugger
-    if(!results) {
-        var query = 'INSERT INTO chan_{1}_ranks SET VALUES({2}, {3})'
+    if(!results.fetchAllSync) {
+        var query = 'INSERT INTO chan_{1}_ranks (`name`, `rank`) VALUES ("{2}", "{3}")'
             .replace(/\{1\}/, this.name)
             .replace(/\{2\}/, user.name)
             .replace(/\{3\}/, user.rank);
         results = db.querySync(query);
+        console.log("saveRank insert: " + results);
     }
     db.closeSync();
     return results;

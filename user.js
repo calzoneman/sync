@@ -275,6 +275,7 @@ User.prototype.login = function(name, sha256) {
     else {
         var row;
         if((row = Auth.login(name, sha256))) {
+            this.loggedIn = true;
             this.socket.emit('login', {
                 success: true
             });
