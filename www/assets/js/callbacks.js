@@ -211,7 +211,7 @@ function initCallbacks() {
         }
         var users = $('#userlist').children();
         for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerText;
+            var name = users[i].children[1].innerHTML;
             // Reformat user
             if(name == data.name) {
                 fmtUserlistItem(users[i], data.rank, data.leader);
