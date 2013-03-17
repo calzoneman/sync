@@ -448,7 +448,7 @@ Channel.prototype.sendMessage = function(username, msg, msgclass) {
     // I don't want HTML from strangers
     msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     // Match URLs
-    msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/, "<a href=\"$1\">$1</a>");
+    msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/, "<a href=\"$1\" target=\"_blank\">$1</a>");
     this.sendAll('chatMsg', {
         username: username,
         msg: msg,
