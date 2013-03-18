@@ -116,6 +116,8 @@ function addUserDropdown(entry, name) {
 
 function formatChatMessage(data) {
     var div = document.createElement('div');
+    if(data.msg.indexOf(uname) != -1)
+        $(div).addClass('nick-highlight');
     if(data.msgclass == "action") {
         var message = document.createElement('span');
         $(message).addClass('action');

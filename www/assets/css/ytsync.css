@@ -95,3 +95,7 @@
 .option button {
     margin-right: 15px;
 }
+
+.nick-highlight {
+    background-color: #ddffdd;
+}
