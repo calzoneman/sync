@@ -40,6 +40,10 @@ function initCallbacks() {
                         socket.emit('closePoll')
                     });
             }
+            var users = $('#userlist').children();
+            for(var i = 0; i < users.length; i++) {
+                addUserDropdown(users[i], users[i].children[1].innerHTML);
+            }
         }
         RANK = data.rank;
     });
