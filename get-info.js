@@ -18,7 +18,12 @@ function getJSON(options, callback) {
             buffer += chunk;
         });
         res.on('end', function() {
-            var data = JSON.parse(buffer);
+            try {
+                var data = JSON.parse(buffer);
+            }
+            catch(e) {
+                console.log("JSON fail");
+            }
             callback(res.statusCode, data);
         });
     });
