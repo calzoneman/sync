@@ -45,6 +45,10 @@ Channel.prototype.loadMysql = function() {
     var query = 'SELECT * FROM channels WHERE name="{}"'
         .replace(/\{\}/, this.name);
     var results = db.querySync(query);
+    if(!results) {
+        console.log("channel query failed");
+        return;
+    }
     var rows = results.fetchAllSync();
     if(rows.length == 0) {
         console.log("Channel " + this.name + " is unregistered");
@@ -56,6 +60,10 @@ Channel.prototype.loadMysql = function() {
     var query = 'SELECT * FROM chan_{}_library'
         .replace(/\{\}/, this.name);
     var results = db.querySync(query);
+    if(!results) {
+        console.log("channel library query failed");
+        return;
+    }
     var rows = results.fetchAllSync();
     for(var i = 0; i < rows.length; i++) {
         this.library[rows[i].id] = new Media(rows[i].id, rows[i].title, rows[i].seconds, rows[i].type);
