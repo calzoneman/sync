@@ -28,6 +28,12 @@ var Channel = function(name) {
     this.qlocked = true;
     this.poll = false;
 
+    // Autolead stuff
+    // Accumulator
+    this.i = 0;
+    // Time of last update
+    this.time = new Date().getTime();
+
     this.loadMysql();
 };
 
@@ -432,7 +438,7 @@ Channel.prototype.playNext = function() {
     });
     // Enable autolead for non-twitch
     if(this.leader == null && this.currentMedia.type != "tw" && this.currentMedia.type != "li") {
-        time = new Date().getTime();
+        this.time = new Date().getTime();
         channelVideoUpdate(this, this.currentMedia.id);
     }
 }
@@ -666,10 +672,6 @@ Channel.prototype.sendAll = function(message, data) {
     }
 }
 
-// Accumulator
-var i = 0;
-// Time of last update
-var time = new Date().getTime();
 // Autolead yay
 function channelVideoUpdate(chan, id) {
     // Someone changed the video or there's a manual leader, so your
@@ -677,16 +679,16 @@ function channelVideoUpdate(chan, id) {
     if(chan.currentMedia == null || id != chan.currentMedia.id || chan.leader != null)
         return;
     // Add dt since last update
-    chan.currentMedia.currentTime += (new Date().getTime() - time)/1000.0;
-    time = new Date().getTime();
+    chan.currentMedia.currentTime += (new Date().getTime() - chan.time)/1000.0;
+    chan.time = new Date().getTime();
     // Video over, move on to next
     if(chan.currentMedia.currentTime > chan.currentMedia.seconds) {
         chan.playNext();
     }
     // Every ~5 seconds send a sync packet to everyone
-    else if(i % 5 == 0)
+    else if(chan.i % 5 == 0)
         chan.sendAll('mediaUpdate', chan.currentMedia.packupdate());
-    i++;
+    chan.i++;
     // Do it all over again in about a second
     setTimeout(function() { channelVideoUpdate(chan, id); }, 1000);
 }
