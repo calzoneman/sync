@@ -173,6 +173,28 @@ $('#chatline').keydown(function(ev) {
         });
         $('#chatline').val('');
     }
+    else if(ev.keyCode == 9) { // Tab completion
+        var words = $('#chatline').val().split();
+        var current = words[words.length - 1].toLowerCase();
+        var users = $('#userlist').children();
+        var match = null;
+        for(var i = 0; i < users.length; i++) {
+            var name = users[i].children[1].innerHTML.toLowerCase();
+            if(name.indexOf(current) == 0 && match == null) {
+                match = users[i].children[1].innerHTML;
+            }
+            else if(name.indexOf(current) == 0) {
+                match = null;
+                break;
+            }
+        }
+        if(match != null) {
+            words[words.length - 1] = match;
+            $('#chatline').val(words.join(' '));
+        }
+        ev.preventDefault();
+        return false;
+    }
 });
 
 
