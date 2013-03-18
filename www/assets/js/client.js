@@ -174,7 +174,7 @@ $('#chatline').keydown(function(ev) {
         $('#chatline').val('');
     }
     else if(ev.keyCode == 9) { // Tab completion
-        var words = $('#chatline').val().split();
+        var words = $('#chatline').val().split(' ');
         var current = words[words.length - 1].toLowerCase();
         var users = $('#userlist').children();
         var match = null;
