@@ -18,6 +18,14 @@ function addUser(name, rank, leader) {
     fmtUserlistItem(div, rank, leader);
     if(RANK >= Rank.Moderator)
         addUserDropdown(div, name);
+    var users = $('#userlist').children();
+    for(var i = 0; i < users.length; i++) {
+        var othername = users[i].children[1].innerHTML;
+        if(othername > name) {
+            $(div).insertBefore(users[i]);
+            return;
+        }
+    }
     $('#userlist')[0].appendChild(div);
 }
 
