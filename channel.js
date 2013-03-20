@@ -13,6 +13,7 @@ var Rank = require('./rank.js');
 var InfoGetter = require('./get-info.js');
 var Media = require('./media.js').Media;
 var ChatCommand = require('./chatcommand.js');
+var io = require('./server.js').io;
 
 var Channel = function(name) {
     console.log("Opening channel " + name);
@@ -253,6 +254,7 @@ Channel.prototype.searchLibrary = function(query) {
 
 // Called when a new user enters the channel
 Channel.prototype.userJoin = function(user) {
+    user.socket.join(this.name);
     // Prevent duplicate login
     if(user.name != "") {
         for(var i = 0; i < this.users.length; i++) {
@@ -287,11 +289,15 @@ Channel.prototype.userJoin = function(user) {
     }
     if(user.playerReady)
         this.sendMediaUpdate(user);
-    console.log(user.ip + " joined channel " + this.name);
+    console.log("/" + user.ip + " joined channel " + this.name);
 }
 
 // Called when a user leaves the channel
 Channel.prototype.userLeave = function(user) {
+    try {
+        user.socket.leave(this.name);
+    }
+    catch(e) {}
     if(this.poll) {
         this.poll.unvote(user.ip);
         this.broadcastPollUpdate();
@@ -573,8 +579,11 @@ Channel.prototype.changeLeader = function(name) {
         this.broadcastRankUpdate(old);
     }
     if(name == "") {
-        if(this.currentMedia != null)
+        if(this.currentMedia != null) {
+            this.time = new Date().getTime();
+            this.i = 0;
             channelVideoUpdate(this, this.currentMedia.id);
+        }
         return;
     }
     for(var i = 0; i < this.users.length; i++) {
@@ -667,9 +676,7 @@ Channel.prototype.broadcastPollClose = function() {
 
 // Send to ALL the clients!
 Channel.prototype.sendAll = function(message, data) {
-    for(var i = 0; i < this.users.length; i++) {
-        this.users[i].socket.emit(message, data);
-    }
+    io.sockets.in(this.name).emit(message, data);
 }
 
 // Autolead yay
