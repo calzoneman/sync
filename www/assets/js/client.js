@@ -190,6 +190,10 @@ $('#chatline').keydown(function(ev) {
         }
         if(match != null) {
             words[words.length - 1] = match;
+            if(words.length == 1)
+                words[0] += ": ";
+            else
+                words[words.length - 1] += " ";
             $('#chatline').val(words.join(' '));
         }
         ev.preventDefault();

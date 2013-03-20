@@ -21,7 +21,7 @@ function addUser(name, rank, leader) {
     var users = $('#userlist').children();
     for(var i = 0; i < users.length; i++) {
         var othername = users[i].children[1].innerHTML;
-        if(othername > name) {
+        if(othername.toLowerCase() > name.toLowerCase()) {
             $(div).insertBefore(users[i]);
             return;
         }
