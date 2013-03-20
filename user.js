@@ -28,6 +28,7 @@ var User = function(socket, ip) {
     }
 };
 
+
 // Set up socket callbacks
 User.prototype.initCallbacks = function() {
     // What a shame
@@ -37,6 +38,8 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on('joinChannel', function(data) {
+        if(!data.name.match(/[a-zA-Z0-9]+/))
+            return;
         // Channel already loaded
         if(data.name in Server.channels) {
             this.channel = Server.channels[data.name];
