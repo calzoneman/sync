@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Sync</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Calvin 'calzoneman' Montgomery">
+
+    <link href="./assets/css/bootstrap.css" rel="stylesheet">
+    <link href="./assets/css/ytsync.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">Sync</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+                <li><a href="index.html">Home</a></li>
+                <li class="active"><a href="#">Help</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="span8">
+                <h1>Chat Commands</h1>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Command</th>
+                            <th>Rank</th>
+                            <th>Result</th>
+                        </tr>
+                    </thead>
+                    <tr>
+                        <td><pre>/sp Spoiler Alert!</pre></td>
+                        <td>Anyone</td>
+                        <td><span class="spoiler">Spoiler Alert!</span></td>
+                    </tr>
+                    <tr>
+                        <td><pre>/me does something</pre></td>
+                        <td>Anyone</td>
+                        <td><span class="action">username does something</span></td>
+                    </tr>
+                    <tr>
+                        <td><pre>/say This is important!</pre></td>
+                        <td>Moderators</td>
+                        <td><span class="shout">This is important!</span></td>
+                    </tr>
+                    <tr>
+                        <td><pre>/kick username</pre></td>
+                        <td>Moderators</td>
+                        <td>(username is kicked from the room)</td>
+                    </tr>
+                    <tr>
+                        <td><pre>/poll Title,Option 1,Option 2,etc</pre></td>
+                        <td>Moderators</td>
+                        <td>
+                            <div class="well active">
+                                <button class="close pull-right">&times;</button>
+                                <button class="btn btn-danger pull-right">Close Poll</button>
+                                <h3>Title</h3>
+                                <div class="option">
+                                    <button class="btn">0</button>
+                                    Option 1
+                                </div>
+                                <div class="option">
+                                    <button class="btn">0</button>
+                                    Option 2
+                                </div>
+                                <div class="option">
+                                    <button class="btn">0</button>
+                                    etc
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <h1>Queue Controls</h1>
+                <p>Queue Controls are only visible to moderators by default.  A moderator can unlock the queue to make the controls visible to everyone.<br> Below is an example of the queue controls.  On your channel, simply paste a link of one of the following accepted formats and press "Queue Next" to add it after the current video, or "Queue @ End" to add it at the end of the playlist.  Press "Play Next" to advance to the next video in the playlist.<br>
+                </p>
+                <strong>Acceptable URLs</strong>
+                <ul>
+                    <li>http://www.youtube.com/watch?v=(videoid)</li>
+                    <li>http://www.vimeo.com/(videoid)</li>
+                    <li>http://www.soundcloud.com/(songid)</li>
+                    <li>http://www.twitch.tv/(channel)</li>
+                    <li>http://www.livestream.com/(channel)</li>
+                </ul>
+                <div>
+                    <input type="text" id="mediaurl" style="margin:auto;">
+                    <div class="btn-group">
+                        <button class="btn" id="queue_next">Queue Next</button>
+                        <button class="btn" id="queue_end">Queue @ End</button>
+                    </div>
+                    <button class="btn btn-inverse" id="play_next">Play Next</button>
+                </div>
+                <p>Below is an example of an entry in the playlist.  Please note the control buttons only appear if you are a moderator or if the queue is unlocked.  The red "X" button will remove the video from the playlist.  The next two buttons will shift its position up or down.  The "Next" button will move the video so that it plays after the current video.
+                </p>
+                <ul class="videolist">
+                    <li class="well">
+                        <div class="btn-group qe_buttons">
+                            <button class="btn btn-danger qe_btn"><i class="icon-remove"></i></button>
+                            <button class="btn qe_btn"><i class="icon-arrow-up"></i></button>
+                            <button class="btn qe_btn"><i class="icon-arrow-down"></i></button>
+                            <button class="btn qe_btn">Next</button>
+                        </div>
+                        <div class="qe_title">Title</div>
+                        <div class="qe_time">00:00</div>
+                        <div class="qe_clear"></div>
+                    </li>
+                </ul>
+                <p>Moderators will also see the "(Un)Lock Queue" button.  This button can be used to toggle whether anyone can add videos, or just moderators.
+                </p>
+                <button class="btn btn-danger" style="width: 100%">Unlock Queue</button>
+                <button class="btn btn-success" style="width: 100%">Lock Queue</button>
+                <h1>Userlist Controls</h1>
+                <div class="dropdown">
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block;">
+                        <li><a tabindex="-1" href="#">Make Leader</a></li>
+                        <li><a tabindex="-1" href="#">Take Leader</a></li>
+                        <li><a tabindex="-1" href="#">Kick</a></li>
+                        <li class="divider"></li>
+                        <li><a tabindex="-1" href="#">Promote</a></li>
+                        <li><a tabindex="-1" href="#">Demote</a></li>
+                    </ul>
+                </div>
+                <table class="table table-bordered table-striped" style="margin-top: 200px">
+                    <thead>
+                        <tr>
+                            <th>Function</th>
+                            <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tr>
+                        <td>Make Leader</td>
+                        <td>Assigns leadership of the media to this user.  When someone is assigned leadership, the server follows their video/audio and syncs other clients to them.  This allows for seeking within the video.  By default, the server leads by itself.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Take Leader</td>
+                        <td>Revokes leadership from this user and the server takes over</td>
+                    </tr>
+                    <tr>
+                        <td>Kick</td>
+                        <td>Kicks this user from the room</td>
+                    </tr>
+                    <tr>
+                        <td>Promote</td>
+                        <td>Increases this user's rank in this channel by 1.  All users start with rank 0.  Moderators have rank 2, channel owners have rank 3.  When you register a channel, you are assigned rank 10.
+                    </tr>
+                    <tr>
+                        <td>Demote</td>
+                        <td>Decreases this user's rank in this channel by 1.  All users start with rank 0.  Moderators have rank 2, channel owners have rank 3.  When you register a channel, you are assigned rank 10.
+                    </tr>
+                </table>
+
+                <h1>Ranks</h1>
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Rank Name</th>
+                            <th>Numeric Rank</th>
+                        </tr>
+                    </thead>
+                    <tr>
+                        <td class="userlist_siteadmin">Website Administrator</td>
+                        <td>255+</td>
+                    </tr>
+                    <tr>
+                        <td class="userlist_owner">Channel Administrator</td>
+                        <td>3-254</td>
+                    </tr>
+                    <tr>
+                        <td class="userlist_op">Channel Moderator</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>User</td>
+                        <td>0-1</td>
+                    </tr>
+                </table>
+
+                
+            </div>
+        </div>
+    </div> <!-- /container -->
+
+    <script src="./assets/js/jquery.js"></script>
+  </body>
+</html>
