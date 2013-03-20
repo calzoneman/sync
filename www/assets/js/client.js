@@ -61,7 +61,7 @@ if(params['channel'] == undefined) {
         }
     });
 }
-else if(!params['channel'].match(/[a-zA-Z0-9]+/)) {
+else if(!params['channel'].match(/^[a-zA-Z0-9]+$/)) {
     $('<div/>').addClass('alert alert-error')
         .insertAfter($('.row')[0])[0]
         .innerHTML = "<h3>Invalid Channel Name</h3><p>Channel names must conain only numbers and letters</p>";
