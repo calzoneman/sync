@@ -22,7 +22,7 @@ function getJSON(options, callback) {
                 var data = JSON.parse(buffer);
             }
             catch(e) {
-                console.log("JSON fail");
+                console.log("JSON fail: " + options);
             }
             callback(res.statusCode, data);
         });
