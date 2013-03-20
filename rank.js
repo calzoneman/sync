@@ -13,16 +13,18 @@ exports.Owner = 3;
 exports.Siteadmin = 255;
 
 var permissions = {
-    acp: exports.Siteadmin,
-    registerChannel: exports.Owner,
-    queue: exports.Moderator,
-    assignLeader: exports.Moderator,
-    kick: exports.Moderator,
-    promote: exports.Moderator,
-    qlock: exports.Moderator,
-    poll: exports.Moderator,
-    search: exports.Guest,
-    chat: exports.Guest,
+    acp             : exports.Siteadmin,
+    announce        : exports.Siteadmin,
+    registerChannel : exports.Owner,
+    queue           : exports.Moderator,
+    assignLeader    : exports.Moderator,
+    kick            : exports.Moderator,
+    promote         : exports.Moderator,
+    qlock           : exports.Moderator,
+    poll            : exports.Moderator,
+    shout           : exports.Moderator,
+    search          : exports.Guest,
+    chat            : exports.Guest,
 };
 
 // Check if someone has permission to do shit

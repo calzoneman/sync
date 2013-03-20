@@ -19,6 +19,10 @@ function initCallbacks() {
         showChannelRegistration();
     });
 
+    socket.on('announcement', function(data) {
+        showAnnouncement(data.title, data.text);
+    });
+
     socket.on('registerChannel', function(data) {
         if(data.success) {
             $('#chregnotice').remove();

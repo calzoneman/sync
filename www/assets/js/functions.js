@@ -128,6 +128,8 @@ function formatChatMessage(data) {
         var name = document.createElement('span');
         var message = document.createElement('span');
         name.innerHTML = "<strong>&lt;" + data.username + "&gt;</strong> ";
+        if(data.msgclass == "shout")
+            $(name).addClass("shout");
         $(message).addClass(data.msgclass);
         message.innerHTML = data.msg;
         div.appendChild(name);
@@ -516,4 +518,14 @@ function showChannelRegistration() {
         .click(function() {
             socket.emit('registerChannel');
         });
+}
+
+function showAnnouncement(title, text) {
+    var div = $('<div/>').addClass('alert')
+        .insertAfter($('.row')[0]);
+    $('<button/>').addClass('close pull-right').text('×')
+        .appendTo(div)
+        .click(function() { div.remove(); });
+    $('<h3/>').text(title).appendTo(div);
+    $('<p/>').html(text).appendTo(div);
 }

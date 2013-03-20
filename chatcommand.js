@@ -6,6 +6,11 @@ function handle(chan, user, msg) {
         chan.sendMessage(user.name, msg.substring(4), "action");
     else if(msg.indexOf("/sp ") == 0)
         chan.sendMessage(user.name, msg.substring(4), "spoiler");
+    else if(msg.indexOf("/say ") == 0) {
+        if(Rank.hasPermission(user, "shout")) {
+            chan.sendMessage(user.name, msg.substring(5), "shout");
+        }
+    }
     else if(msg.indexOf("/kick ") == 0) {
         handleKick(chan, user, msg.substring(6).split(' '));
     }

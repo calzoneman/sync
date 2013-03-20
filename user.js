@@ -23,6 +23,9 @@ var User = function(socket, ip) {
     this.name = "";
 
     this.initCallbacks();
+    if(Server.announcement != null) {
+        this.socket.emit('announcement', Server.announcement);
+    }
 };
 
 // Set up socket callbacks
@@ -180,6 +183,18 @@ User.prototype.initCallbacks = function() {
     this.socket.on('adm', function(data) {
         if(Rank.hasPermission(this, "acp")) {
             this.handleAdm(data);
+        }
+    }.bind(this));
+
+    this.socket.on('announce', function(data) {
+        if(Rank.hasPermission(this, "announce")) {
+            if(data.clear) {
+                Server.announcement = null;
+            }
+            else {
+                Server.io.sockets.emit('announcement', data);
+                Server.announcement = data;
+            }
         }
     }.bind(this));
 }

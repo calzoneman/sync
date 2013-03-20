@@ -56,6 +56,14 @@
     border-left: 0;
 }
 
+#messagebuffer div {
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
 #chatline {
     width: 456px;
 }
@@ -71,12 +79,12 @@
 }
 
 .userlist_op {
-    color: #00cc00;
+    color: #00aa00;
 }
 
 .action {
     font-style: italic;
-    color: #aaaaaa;
+    color: #888888;
 }
 
 .spoiler {
@@ -90,6 +98,12 @@
 
 .greentext {
     color: #789922; /* Color value directly from 4chan */
+}
+
+.shout {
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 18pt;
 }
 
 .option button {
