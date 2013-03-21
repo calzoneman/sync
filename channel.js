@@ -332,17 +332,22 @@ Channel.prototype.enqueue = function(data) {
                 return;
             }
 
-            // Whoever decided on this variable name should be fired
-            var seconds = data.entry.media$group.yt$duration.seconds;
-            // This one's slightly better
-            var title = data.entry.title.$t;
-            var vid = new Media(id, title, seconds, "yt");
-            chan.queue.splice(idx, 0, vid);
-            chan.sendAll('queue', {
-                media: vid.pack(),
-                pos: idx
-            });
-            chan.addToLibrary(vid);
+            try {
+                // Whoever decided on this variable name should be fired
+                var seconds = data.entry.media$group.yt$duration.seconds;
+                // This one's slightly better
+                var title = data.entry.title.$t;
+                var vid = new Media(id, title, seconds, "yt");
+                chan.queue.splice(idx, 0, vid);
+                chan.sendAll('queue', {
+                    media: vid.pack(),
+                    pos: idx
+                });
+                chan.addToLibrary(vid);
+            }
+            catch(e) {
+                console.log("YTQueue Fail: id=" + id);
+            }
         }})(this, data.id);
         InfoGetter.getYTInfo(data.id, callback);
     }
