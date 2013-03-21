@@ -172,6 +172,8 @@ Channel.prototype.getRank = function(name) {
         .replace(/\{1\}/, this.name)
         .replace(/\{2\}/, name);
     var results = db.querySync(query);
+    if(!results)
+        return Rank.Guest;
     var rows = results.fetchAllSync();
     if(rows.length == 0) {
         return Rank.Guest;
