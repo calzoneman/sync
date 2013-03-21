@@ -173,7 +173,7 @@ $('#register').click(function() {
 });
 
 $('#chatline').keydown(function(ev) {
-    if(ev.keyCode == 13) {
+    if(ev.keyCode == 13 && $('#chatline').val() != '') {
         socket.emit('chatMsg', {
             msg: $('#chatline').val()
         });

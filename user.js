@@ -107,16 +107,14 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on('unqueue', function(data) {
-        if(Rank.hasPermission(this, "queue") ||
-            (this.channel != null && !this.channel.qlocked)) {
+        if(Rank.hasPermission(this, "queue")) {
             if(this.channel != null)
                 this.channel.unqueue(data);
         }
     }.bind(this));
 
     this.socket.on('moveMedia', function(data) {
-        if(Rank.hasPermission(this, "queue") ||
-            (this.channel != null && !this.channel.qlocked)) {
+        if(Rank.hasPermission(this, "queue")) {
             if(this.channel != null)
                 this.channel.moveMedia(data);
         }
@@ -124,8 +122,7 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on('playNext', function() {
         if(Rank.hasPermission(this, "queue") ||
-            (this.channel != null && (
-                this.channel.leader == this || !this.channel.qlocked))) {
+            (this.channel != null && this.channel.leader == this)) {
             if(this.channel.currentPosition + 1 >= this.channel.queue.length) {
                 this.channel.currentPosition = -1;
             }
