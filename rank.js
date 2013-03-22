@@ -23,6 +23,7 @@ var permissions = {
     qlock           : exports.Moderator,
     poll            : exports.Moderator,
     shout           : exports.Moderator,
+    channelOpts     : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };

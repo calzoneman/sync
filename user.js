@@ -99,34 +99,50 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on('queue', function(data) {
+        if(this.channel == null)
+            return;
         if(Rank.hasPermission(this, "queue") ||
-            (this.channel != null && !this.channel.qlocked)) {
-            if(this.channel != null)
+            this.channel.leader == this ||
+            !this.channel.qlocked) {
+                if(data.pos == "next" && 
+                    !this.channel.qopts_allow_qnext &&
+                    this.channel.leader != this &&
+                    !Rank.hasPermission(this, "queue"))
+                    return;
                 this.channel.enqueue(data);
         }
     }.bind(this));
 
     this.socket.on('unqueue', function(data) {
-        if(Rank.hasPermission(this, "queue")) {
-            if(this.channel != null)
+        if(this.channel == null)
+            return;
+        if(Rank.hasPermission(this, "queue") ||
+            this.channel.leader == this ||
+            this.channel.opts.qopen_allow_delete && !this.channel.qlocked) {
                 this.channel.unqueue(data);
         }
     }.bind(this));
 
     this.socket.on('moveMedia', function(data) {
-        if(Rank.hasPermission(this, "queue")) {
-            if(this.channel != null)
+        if(this.channel == null)
+            return;
+        if(Rank.hasPermission(this, "queue") ||
+            this.channel.leader == this ||
+            this.channel.opts.qopen_allow_move && !this.channel.qlocked ) {
                 this.channel.moveMedia(data);
         }
     }.bind(this));
 
     this.socket.on('playNext', function() {
+        if(this.channel == null)
+            return;
         if(Rank.hasPermission(this, "queue") ||
-            (this.channel != null && this.channel.leader == this)) {
-            if(this.channel.currentPosition + 1 >= this.channel.queue.length) {
-                this.channel.currentPosition = -1;
-            }
-            this.channel.playNext();
+            this.channel.leader == this ||
+            this.channel.opts.qopen_allow_playnext && !this.channel.qlocked) {
+                if(this.channel.currentPosition + 1 >= this.channel.queue.length) {
+                    this.channel.currentPosition = -1;
+                }
+                this.channel.playNext();
         }
     }.bind(this));
 
@@ -195,6 +211,13 @@ User.prototype.initCallbacks = function() {
                 Server.io.sockets.emit('announcement', data);
                 Server.announcement = data;
             }
+        }
+    }.bind(this));
+
+    this.socket.on('channelOpts', function(data) {
+        if(Rank.hasPermission(this, "channelOpts") && this.channel != null) {
+            this.channel.opts = data;
+            this.channel.broadcastOpts();
         }
     }.bind(this));
 }

@@ -35,6 +35,9 @@ function initCallbacks() {
     socket.on('rank', function(data) {
         if(data.rank >= Rank.Moderator) {
             $('#playlist_controls').css("display", "block");
+            $('#playlist_controls button').each(function() {
+                $(this).attr('disabled', false);
+            });
             $('#qlockbtn').css("display", "block");
             var poll = $('#pollcontainer .active');
             if(poll.length > 0) {
@@ -48,6 +51,8 @@ function initCallbacks() {
             for(var i = 0; i < users.length; i++) {
                 addUserDropdown(users[i], users[i].children[1].innerHTML);
             }
+
+            $('#chancontrols').show();
         }
         RANK = data.rank;
     });
@@ -71,6 +76,24 @@ function initCallbacks() {
         if(data.error) {
             alert(data.error);
         }
+    });
+
+    socket.on('channelOpts', function(opts) {
+        $('#opt_qopen_allow_qnext').prop('checked', opts.qopen_allow_qnext);
+        $('#opt_qopen_allow_move').prop('checked', opts.qopen_allow_move);
+        $('#opt_qopen_allow_delete').prop('checked', opts.qopen_allow_delete);
+        $('#opt_qopen_allow_playnext').prop('checked', opts.qopen_allow_playnext);
+        $('#opt_pagetitle').attr('placeholder', opts.pagetitle);
+        document.title = opts.pagetitle;
+        $('#opt_bgimage').attr('placeholder', opts.bgimage);
+        if(opts.bgimage != "")
+            $('body').css("background", "url('" + opts.bgimage + "') no-repeat fixed");
+        CHANNELOPTS = opts;
+        if(opts.qopen_allow_qnext)
+            $('#queue_next').attr('disabled', false);
+        if(opts.qopen_allow_playnext)
+            $('#play_next').attr('disabled', false);
+        rebuildPlaylist();
     });
 
     socket.on('usercount', function(data) {
@@ -134,22 +157,25 @@ function initCallbacks() {
             $('#playlist_controls').css('display', '');
             if(RANK < Rank.Moderator) {
                 $('#qlockbtn').css('display', 'none');
+                rebuildPlaylist();
+                if(!CHANNELOPTS.qopen_allow_qnext)
+                    $('#queue_next').attr('disabled', true);
+                if(!CHANNELOPTS.qopen_allow_playnext)
+                    $('#play_next').attr('disabled', true);
             }
         }
         else if(RANK < Rank.Moderator) {
             $('#playlist_controls').css('display', 'none');
         }
-        if(RANK >= Rank.Moderator) {
-            if(OPENQUEUE) {
-                $('#qlockbtn').removeClass('btn-danger')
-                    .addClass('btn-success')
-                    .text('Lock Queue');
-            }
-            else {
-                $('#qlockbtn').removeClass('btn-success')
-                    .addClass('btn-danger')
-                    .text('Unlock Queue');
-            }
+        if(OPENQUEUE) {
+            $('#qlockbtn').removeClass('btn-danger')
+                .addClass('btn-success')
+                .text('Lock Queue');
+        }
+        else {
+            $('#qlockbtn').removeClass('btn-success')
+                .addClass('btn-danger')
+                .text('Unlock Queue');
         }
     });
 

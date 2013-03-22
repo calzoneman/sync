@@ -198,6 +198,25 @@ function addQueueButtons(li) {
             dest: dest
         });
     });
+
+    if(RANK < Rank.Moderator && !LEADER) {
+        if(!CHANNELOPTS.qopen_allow_delete)
+            $(btnRemove).attr('disabled', true);
+        if(!CHANNELOPTS.qopen_allow_move) {
+            $(btnUp).attr('disabled', true);
+            $(btnDown).attr('disabled', true);
+        }
+        if(!CHANNELOPTS.qopen_allow_qnext)
+            $(btnNext).attr('disabled', true);
+    }
+}
+
+function rebuildPlaylist() {
+    $('#queue li').each(function() {
+        $(this).find('.btn-group').remove();
+        if(RANK >= Rank.Moderator || LEADER || OPENQUEUE)
+            addQueueButtons(this);
+    });
 }
 
 // Add buttons to a list entry for the library search results
@@ -466,6 +485,9 @@ function closePoll() {
 
 function addPoll(data) {
     closePoll();
+    var pollMsg = $('<div/>').addClass('poll-notify')
+        .text(data.initiator + ' opened a poll: "' + data.title + '"')
+        .appendTo($('#messagebuffer'));
     var poll = $('<div/>').addClass('well active').prependTo($('#pollcontainer'));
     $('<button/>').addClass('close pull-right').text('×')
         .appendTo(poll)

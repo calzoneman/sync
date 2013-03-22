@@ -106,6 +106,12 @@
     font-size: 18pt;
 }
 
+.poll-notify {
+    color: #0000aa;
+    font-weight: bold;
+    font-size: 14pt;
+}
+
 .option button {
     margin-right: 15px;
 }

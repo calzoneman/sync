@@ -93,6 +93,47 @@
                 </ul>
             </div>
         </div>
+        <div class="row" style="margin-top: 20px; display: none" id="chancontrols">
+            <div class="span10 offset1 well">
+                <form action="javascript:void(0)">
+                    <fieldset>
+                        <legend>Channel Options</legend>
+                        <div class="span4">
+                            <label>When the queue is open:</label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="opt_qopen_allow_qnext">
+                                Allow anyone to Queue Next
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="opt_qopen_allow_move">
+                                Allow anyone to move videos
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="opt_qopen_allow_delete">
+                                Allow anyone to delete videos
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="opt_qopen_allow_playnext">
+                                Allow anyone to skip to next video
+                            </label>
+                        </div>
+                        <div class="span5">
+                            <label>Page Title
+                                <input type="text" id="opt_pagetitle" placeholder="Sync" class="pull-right">
+                            </label>
+                            <br>
+                            <label>Background Image<sup class="text-warning">BETA</sup>
+                                <input type="text" id="opt_bgimage" class="pull-right">
+                            </label>
+                        </div>
+                            
+                        <div class="span10">
+                            <button class="btn btn-primary" id="opt_submit">Save</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
     </div> <!-- /container -->
 
     <script src="https://w.soundcloud.com/player/api.js"></script>

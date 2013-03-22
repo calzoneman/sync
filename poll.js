@@ -1,5 +1,6 @@
 
-var Poll = function(title, options) {
+var Poll = function(initiator, title, options) {
+    this.initiator = initiator;
     this.title = title;
     this.options = options;
     this.counts = new Array(options.length);
@@ -30,7 +31,8 @@ Poll.prototype.packUpdate = function() {
     return {
         title: this.title,
         options: this.options,
-        counts: this.counts
+        counts: this.counts,
+        initiator: this.initiator
     }
 }
 

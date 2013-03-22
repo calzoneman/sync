@@ -40,7 +40,7 @@ function handlePoll(chan, user, msg) {
         var args = msg.split(',');
         var title = args[0];
         args.splice(0, 1);
-        var poll = new Poll(title, args);
+        var poll = new Poll(user.name, title, args);
         chan.poll = poll;
         chan.broadcastPoll();
     }

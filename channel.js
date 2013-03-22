@@ -28,6 +28,14 @@ var Channel = function(name) {
     this.recentChat = [];
     this.qlocked = true;
     this.poll = false;
+    this.opts = {
+        qopen_allow_qnext: false,
+        qopen_allow_move: false,
+        qopen_allow_playnext: false,
+        qopen_allow_delete: false,
+        pagetitle: "Sync",
+        bgimage: ""
+    };
 
     // Autolead stuff
     // Accumulator
@@ -289,6 +297,7 @@ Channel.prototype.userJoin = function(user) {
     if(this.poll) {
         user.socket.emit('newPoll', this.poll.packUpdate());
     }
+    user.socket.emit('channelOpts', this.opts);
     if(user.playerReady)
         this.sendMediaUpdate(user);
     console.log("/" + user.ip + " joined channel " + this.name);
@@ -680,6 +689,10 @@ Channel.prototype.broadcastPollUpdate = function() {
 
 Channel.prototype.broadcastPollClose = function() {
     this.sendAll('closePoll');
+}
+
+Channel.prototype.broadcastOpts = function() {
+    this.sendAll('channelOpts', this.opts);
 }
 
 // Send to ALL the clients!
