@@ -221,16 +221,13 @@ $('#opt_submit').click(function() {
     var ptitle = $('#opt_pagetitle').val();
     if(ptitle == '')
         ptitle = $('#opt_pagetitle').attr('placeholder')
-    var bgimage = $('#opt_bgimage').val();
-    if(bgimage == '')
-        bgimage = $('#opt_bgimage').attr('placeholder')
     opts = {
         qopen_allow_qnext: $('#opt_qopen_allow_qnext').prop('checked'),
         qopen_allow_move: $('#opt_qopen_allow_move').prop('checked'),
         qopen_allow_delete: $('#opt_qopen_allow_delete').prop('checked'),
         qopen_allow_playnext: $('#opt_qopen_allow_playnext').prop('checked'),
         pagetitle: ptitle,
-        bgimage: $('#opt_bgimage').val()
+        customcss: $('#opt_customcss').val()
     };
     socket.emit('channelOpts', opts);
 });

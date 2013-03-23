@@ -85,9 +85,14 @@ function initCallbacks() {
         $('#opt_qopen_allow_playnext').prop('checked', opts.qopen_allow_playnext);
         $('#opt_pagetitle').attr('placeholder', opts.pagetitle);
         document.title = opts.pagetitle;
-        $('#opt_bgimage').attr('placeholder', opts.bgimage);
-        if(opts.bgimage != "")
-            $('body').css("background", "url('" + opts.bgimage + "') no-repeat fixed");
+        $('#customCss').remove();
+        if(opts.customcss != "") {
+            $('<link/>').attr("rel", "stylesheet")
+                       .attr("href", opts.customcss)
+                       .attr("id", "customCss")
+                       .insertAfter($('link[href="./assets/css/ytsync.css"]'));
+        }
+
         CHANNELOPTS = opts;
         if(opts.qopen_allow_qnext)
             $('#queue_next').attr('disabled', false);
