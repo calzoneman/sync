@@ -224,27 +224,21 @@ User.prototype.initCallbacks = function() {
 
 // Handle administration
 User.prototype.handleAdm = function(data) {
-    if(data.cmd == "listloadedchannels") {
+    if(data.cmd == "listchannels") {
         var chans = [];
         for(var chan in Server.channels) {
-            var users = [];
-            for(var i = 0; i < Server.channels[chan].users.length; i++) {
-                users.push(Server.channels[chan].users[i].name);
-            }
+            var nowplaying = "-";
+            if(Server.channels[chan].currentMedia != null)
+                nowplaying = Server.channels[chan].currentMedia.title;
             chans.push({
-                chan: chan,
-                users: users
+                name: chan,
+                usercount: Server.channels[chan].users.length,
+                nowplaying: nowplaying
             });
         }
         this.socket.emit('adm', {
-            cmd: "listloadedchannels",
-            chans: chans
-        });
-    }
-    else if(data.cmd == "listchannels") {
-        this.socket.emit('adm', {
             cmd: "listchannels",
-            chans: Database.listChannels()
+            chans: chans
         });
     }
     else if(data.cmd == "listusers") {

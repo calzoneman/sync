@@ -13,7 +13,8 @@ var Rank = require('./rank.js');
 var InfoGetter = require('./get-info.js');
 var Media = require('./media.js').Media;
 var ChatCommand = require('./chatcommand.js');
-var io = require('./server.js').io;
+var Server = require('./server.js');
+var io = Server.io;
 
 var Channel = function(name) {
     console.log("Opening channel " + name);

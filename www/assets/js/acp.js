@@ -28,8 +28,6 @@ function initCallbacks() {
         console.log(data);
         if(data.cmd == "listchannels")
             handleChannelList(data);
-        if(data.cmd == "listchannelranks")
-            handleChannelRanks(data);
     });
 
     socket.on('login', function(data) {
@@ -43,13 +41,7 @@ function initCallbacks() {
             $('#loginform').css('display', 'none');
         }
         socket.emit('adm', {
-            cmd: "listloadedchannels"
-        });
-        socket.emit('adm', {
             cmd: "listchannels"
-        });
-        socket.emit('adm', {
-            cmd: "listusers"
         });
     });
 }
@@ -59,54 +51,9 @@ function handleChannelList(data) {
         $($('#chanlist').children()[1]).remove();
     for(var i = 0; i < data.chans.length; i++) {
         var row = $('<tr/>').appendTo($('#chanlist'));
-        var id = $('<td/>').appendTo(row).text(data.chans[i].id);
         var name = $('<td/>').appendTo(row).text(data.chans[i].name);
-        var manage = $('<button/>').addClass("btn pull-right").appendTo(name)
-            .text('Manage Ranks');
-        var cname = data.chans[i].name;
-        manage.click(function() {
-            manageChannelRanks(this);
-        }.bind(cname));
-    }
-}
-
-function manageChannelRanks(name) {
-    manageChannel = name;
-    $('#channelh3').text('Channel: ' + name);
-    socket.emit('adm', {
-        cmd: "listchannelranks",
-        chan: name
-    });
-}
-
-function handleChannelRanks(data) {
-    if($('#chanranks').children.length > 1)
-        $($('#chanranks').children()[1]).remove();
-    for(var i = 0; i < data.ranks.length; i++) {
-        var row = $('<tr/>').appendTo($('#chanranks'));
-        var id = $('<td/>').appendTo(row).text(data.ranks[i].name);
-        var rank = $('<td/>').appendTo(row);
-        var rtxt = $('<span/>').appendTo(rank).text(data.ranks[i].rank);
-        var edit = $('<button/>').addClass("btn pull-right").appendTo(rank)
-            .text('Edit');
-
-        edit.click(function() {
-            var txt = rtxt.text();
-            rtxt.text('');
-            var textbox = $('<input/>').attr('type', 'text').attr('value', txt)
-                .insertBefore(edit, rank);
-            textbox.focus();
-            textbox.blur(function() {
-                rtxt.text(textbox.val());
-                socket.emit('adm', {
-                    cmd: "updatechanrank",
-                    chan: manageChannel,
-                    user: id.text(),
-                    rank: parseInt(textbox.val())
-                });
-                textbox.remove();
-            });
-        });
+        var usercount = $('<td/>').appendTo(row).text(data.chans[i].usercount);
+        var nowplaying = $('<td/>').appendTo(row).text(data.chans[i].nowplaying);
     }
 }
 
