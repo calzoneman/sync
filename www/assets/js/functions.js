@@ -335,6 +335,32 @@ function updateSC(data) {
     });
 }
 
+// Dailymotion synchronization
+function updateDM(data) {
+    if(MEDIATYPE != "dm") {
+        console.log("updateDM: MEDIATYPE=", MEDIATYPE);
+        removeCurrentPlayer();
+        PLAYER = DM.player("ytapiplayer", {
+            video: data.id,
+            width: 640,
+            height: 390,
+            params: {autoplay: 1}
+        });
+
+        PLAYER.mediaId = data.id;
+        MEDIATYPE = "dm";
+    }
+    else if(PLAYER.mediaId != data.id) {
+        PLAYER.api("load", data.id);
+        PLAYER.mediaId = data.id;
+    }
+    else {
+        if(Math.abs(data.currentTime - PLAYER.currentTime) > SYNC_THRESHOLD) {
+            PLAYER.api("seek", data.currentTime);
+        }
+    }
+}
+
 // Vimeo synchronization
 // URGH building a synchronizing tool is so frustrating when
 // these APIs are designed to be async
@@ -408,16 +434,18 @@ function removeCurrentPlayer(){
 function parseVideoURL(url){
     if(typeof(url) != "string")
         return null;
-    if(url.indexOf("youtu") != -1)
+    if(url.indexOf("youtu.be") != -1 || url.indexOf("youtube.com") != -1)
         return [parseYTURL(url), "yt"];
-    else if(url.indexOf("twitch") != -1)
+    else if(url.indexOf("twitch.tv") != -1)
         return [parseTwitch(url), "tw"];
-    else if(url.indexOf("livestream") != -1)
+    else if(url.indexOf("livestream.com") != -1)
         return [parseLivestream(url), "li"];
-    else if(url.indexOf("soundcloud") != -1)
+    else if(url.indexOf("soundcloud.com") != -1)
         return [url, "sc"];
-    else if(url.indexOf("vimeo") != -1)
+    else if(url.indexOf("vimeo.com") != -1)
         return [parseVimeo(url), "vi"];
+    else if(url.indexOf("dailymotion.com") != -1)
+        return [parseDailymotion(url), "dm"];
 }
 
 function parseYTURL(url) {
@@ -465,6 +493,14 @@ function parseVimeo(url) {
     var m = url.match(/vimeo\.com\/([0-9]+)/);
     if(m) {
         // Extract video ID
+        return m[1];
+    }
+    return null;
+}
+
+function parseDailymotion(url) {
+    var m = url.match(/dailymotion\.com\/video\/([a-zA-Z0-9_-]+)/);
+    if(m) {
         return m[1];
     }
     return null;

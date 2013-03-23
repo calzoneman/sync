@@ -81,6 +81,15 @@ tag.src = "http://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
+// Load the Dailymotion iframe API
+
+/*
+var tag = document.createElement('script');
+tag.src = "http://api.dmcdn.net/all.js";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+*/
+
 
 
 if(uname != null && pw != null && pw != "false") {

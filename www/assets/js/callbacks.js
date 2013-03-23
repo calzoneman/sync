@@ -199,6 +199,8 @@ function initCallbacks() {
             updateSC(data);
         else if(data.type == "vi")
             updateVI(data);
+        else if(data.type == "dm")
+            updateDM(data);
     });
 
     socket.on('userlist', function(data) {
@@ -243,6 +245,14 @@ function initCallbacks() {
                                 paused: false,
                                 type: "vi"
                             });
+                        });
+                    }
+                    else if(MEDIATYPE == "dm") {
+                        socket.emit('mediaUpdate', {
+                            id: PLAYER.mediaId,
+                            seconds: PLAYER.currentTime,
+                            paused: PLAYER.paused,
+                            type: "dm"
                         });
                     }
                 };

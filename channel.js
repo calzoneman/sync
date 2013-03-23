@@ -419,6 +419,25 @@ Channel.prototype.enqueue = function(data) {
         InfoGetter.getVIInfo(data.id, callback);
     }
 
+    // Dailymotion
+    else if(data.type == "dm") {
+        var callback = (function(chan, id) { return function(res, data) {
+            if(res != 200) {
+                return;
+            }
+
+            var seconds = data.duration;
+            var title = data.title;
+            var vid = new Media(id, title, seconds, "dm");
+            chan.queue.splice(idx, 0, vid);
+            chan.sendAll('queue', {
+                media: vid.pack(),
+                pos: idx
+            });
+            chan.addToLibrary(vid);
+        }})(this, data.id);
+        InfoGetter.getDMInfo(data.id, callback);
+    }
 }
 
 // Removes a media from the play queue

@@ -7,6 +7,7 @@
  */
 
 var http = require('http');
+var https = require('https');
 
 // Helper function for making an HTTP request and getting the result
 // as JSON
@@ -22,7 +23,30 @@ function getJSON(options, callback) {
                 var data = JSON.parse(buffer);
             }
             catch(e) {
-                console.log("JSON fail: " + options);
+                console.log("JSON fail: ", options);
+                return;
+            }
+            callback(res.statusCode, data);
+        });
+    });
+
+    req.end();
+};
+
+// Dailymotion uses HTTPS for anonymous requests... [](/picard)
+function getJSONHTTPS(options, callback) {
+    var req = https.request(options, function(res){
+        var buffer = '';
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            buffer += chunk;
+        });
+        res.on('end', function() {
+            try {
+                var data = JSON.parse(buffer);
+            }
+            catch(e) {
+                console.log("JSON fail: ", options);
                 return;
             }
             callback(res.statusCode, data);
@@ -81,3 +105,14 @@ exports.getVIInfo = function(id, callback) {
         timeout: 1000}, callback);
 }
 
+// Look up Dailymotion info
+exports.getDMInfo = function(id, callback) {
+    var fields = "duration,title"
+    getJSONHTTPS({
+        host: "api.dailymotion.com",
+        port: 443,
+        path: "/video/" + id + "?fields=" + fields,
+        method: "GET",
+        dataType: "jsonp",
+        timeout: 1000}, callback);
+}
