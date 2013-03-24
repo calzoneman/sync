@@ -14,6 +14,9 @@ function handle(chan, user, msg) {
     else if(msg.indexOf("/kick ") == 0) {
         handleKick(chan, user, msg.substring(6).split(' '));
     }
+    else if(msg.indexOf("/ban ") == 0) {
+        handleBan(chan, user, msg.substring(5).split(' '));
+    }
     else if(msg.indexOf("/poll ") == 0) {
         handlePoll(chan, user, msg.substring(6));
     }
@@ -29,6 +32,23 @@ function handleKick(chan, user, args) {
             }
         }
         if(kickee) {
+            kickee.socket.disconnect();
+            chan.userLeave(kickee);
+        }
+    }
+}
+
+function handleBan(chan, user, args) {
+    if(Rank.hasPermission(user, "ipban") && args.length > 0) {
+        var kickee;
+        for(var i = 0; i < chan.users.length; i++) {
+            if(chan.users[i].name == args[0]) {
+                kickee = chan.users[i];
+                break;
+            }
+        }
+        if(kickee) {
+            chan.ipbans.push(kickee.ip);
             kickee.socket.disconnect();
             chan.userLeave(kickee);
         }

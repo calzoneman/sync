@@ -38,6 +38,8 @@ var Channel = function(name) {
         bgimage: ""
     };
 
+    this.ipbans = [];
+
     // Autolead stuff
     // Accumulator
     this.i = 0;
@@ -265,6 +267,13 @@ Channel.prototype.searchLibrary = function(query) {
 
 // Called when a new user enters the channel
 Channel.prototype.userJoin = function(user) {
+    for(var i = 0; i < this.ipbans.length; i++) {
+        if(this.ipbans[i] == user.ip) {
+            user.socket.disconnect();
+            return;
+        }
+    }
+
     user.socket.join(this.name);
     // Prevent duplicate login
     if(user.name != "") {
