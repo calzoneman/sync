@@ -16,7 +16,7 @@ data about each channel.
 The clientside is written in JavaScript and makes use of Socket.IO and
 jQuery.  The web interface uses Bootstrap for layout and styling.
 
-Sync currently supports YouTube, Soundcloud, Vimeo, and TwitchTV.
+Sync currently supports YouTube, Soundcloud, Vimeo, Dailymotion, Livestream, and TwitchTV.
 
 Installing
 ----------
@@ -48,5 +48,5 @@ Please open a GitHub Issue.
 License
 -------
 
-[Licensed under Creative Commons Attribution-NonCommercial 3.0](http://creativecommons.org/licenses/by-nc/3.0/)
+Licensed under MIT
 See LICENSE for the full license text

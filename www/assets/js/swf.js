@@ -1,8 +1,6 @@
 /*!	SWFObject v2.2 <http://code.google.com/p/swfobject/> 
 	is released under the MIT License <http://www.opensource.org/licenses/mit-license.php> 
 */
-console.log('swfobject start');
-
 var swfobject = function() {
 	
 	var UNDEF = "undefined",
@@ -777,4 +775,3 @@ var swfobject = function() {
 	};
 }();
 
-console.log('swfobject');
