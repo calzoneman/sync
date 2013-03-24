@@ -326,7 +326,10 @@ Channel.prototype.userLeave = function(user) {
     if(this.leader == user) {
         this.changeLeader("");
     }
-    this.users.splice(this.users.indexOf(user), 1);
+    var idx = this.users.indexOf(user);
+    if(idx >= 0 && idx < this.users.length)
+        this.users.splice(idx, 1);
+    console.log(this.users.length);
     this.updateUsercount();
     if(user.name != "") {
         this.sendAll('userLeave', {

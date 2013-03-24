@@ -33,7 +33,6 @@ function handleKick(chan, user, args) {
         }
         if(kickee) {
             kickee.socket.disconnect();
-            chan.userLeave(kickee);
         }
     }
 }
@@ -50,7 +49,6 @@ function handleBan(chan, user, args) {
         if(kickee) {
             chan.ipbans.push(kickee.ip);
             kickee.socket.disconnect();
-            chan.userLeave(kickee);
         }
     }
 }
