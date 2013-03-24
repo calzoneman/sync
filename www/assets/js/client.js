@@ -235,6 +235,19 @@ $('#opt_submit').click(function() {
     socket.emit('channelOpts', opts);
 });
 
+$('#show_chancontrols').click(function() {
+    $('#show_chancontrols').parent().addClass("active");
+    $('#show_banlist').parent().removeClass("active");
+    $('#banlist').hide();
+    $('#chancontrols').show();
+});
+
+$('#show_banlist').click(function() {
+    $('#show_chancontrols').parent().removeClass("active");
+    $('#show_banlist').parent().addClass("active");
+    $('#banlist').show();
+    $('#chancontrols').hide();
+});
 
 function searchLibrary() {
     socket.emit('searchLibrary', {

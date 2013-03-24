@@ -280,6 +280,7 @@ Channel.prototype.banIP = function(banner, bannee) {
     // It is assumed that the banner has permission at this point
     this.ipbans[bannee.ip] = [bannee.name, banner.name];
     bannee.socket.disconnect();
+    this.broadcastIpbans();
     if(!this.registered)
         return false;
     var db = mysql.createConnectionSync();
@@ -297,6 +298,33 @@ Channel.prototype.banIP = function(banner, bannee) {
     results = db.querySync(query);
     if(!results) {
         console.log("Insert into ban table failed");
+    }
+    db.closeSync();
+    return results;
+}
+
+Channel.prototype.unbanIP = function(ip) {
+    this.ipbans[ip] = null;
+    this.broadcastIpbans();
+
+    if(!this.registered)
+        return false;
+    var db = mysql.createConnectionSync();
+    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
+                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    if(!db.connectedSync()) {
+        console.log("MySQL Connection Failed");
+        return false;
+    }
+
+    var query = 'DELETE FROM chan_{1}_bans WHERE `ip` = "{2}"'
+        .replace(/\{1\}/, this.name)
+        .replace(/\{2\}/, ip);
+
+    results = db.querySync(query);
+    if(!results) {
+        console.log("Delete from ban table failed");
+        return;
     }
     db.closeSync();
     return results;
@@ -362,6 +390,17 @@ Channel.prototype.userJoin = function(user) {
         user.socket.emit('newPoll', this.poll.packUpdate());
     }
     user.socket.emit('channelOpts', this.opts);
+    var ents = [];
+    for(var ip in this.ipbans) {
+        if(this.ipbans[ip] != null) {
+            ents.push({
+                ip: ip,
+                name: this.ipbans[ip][0],
+                banner: this.ipbans[ip][1]
+            });
+        }
+    }
+    user.socket.emit('banlist', {entries: ents});
     if(user.playerReady)
         this.sendMediaUpdate(user);
     console.log("/" + user.ip + " joined channel " + this.name);
@@ -778,6 +817,20 @@ Channel.prototype.broadcastPollClose = function() {
 
 Channel.prototype.broadcastOpts = function() {
     this.sendAll('channelOpts', this.opts);
+}
+
+Channel.prototype.broadcastIpbans = function() {
+    var ents = [];
+    for(var ip in this.ipbans) {
+        if(this.ipbans[ip] != null) {
+            ents.push({
+                ip: ip,
+                name: this.ipbans[ip][0],
+                banner: this.ipbans[ip][1]
+            });
+        }
+    }
+    this.sendAll('banlist', {entries: ents});
 }
 
 // Send to ALL the clients!

@@ -599,3 +599,26 @@ function showAnnouncement(title, text) {
     $('<h3/>').text(title).appendTo(div);
     $('<p/>').html(text).appendTo(div);
 }
+
+function updateBanlist(entries) {
+    var tbl = $('#banlist table');
+    if(tbl.children().length > 1) {
+        $(tbl.children()[1]).remove();
+    }
+    for(var i = 0; i < entries.length; i++) {
+        var tr = $('<tr/>').appendTo(tbl);
+        var remove = $('<button/>').addClass("btn btn-mini btn-danger")
+            .appendTo($('<td/>').appendTo(tr));
+        $('<i/>').addClass("icon-remove-circle").appendTo(remove);
+        var ip = $('<td/>').text(entries[i].ip).appendTo(tr);
+        var name = $('<td/>').text(entries[i].name).appendTo(tr);
+        var banner = $('<td/>').text(entries[i].banner).appendTo(tr);
+
+        var callback = (function(ip) { return function() {
+            socket.emit('chatMsg', {
+                msg: "/unban " + ip
+            });
+        } })(entries[i].ip);
+        remove.click(callback);
+    }
+}

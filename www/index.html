@@ -93,8 +93,20 @@
                 </ul>
             </div>
         </div>
-        <div class="row" style="margin-top: 20px; display: none" id="chancontrols">
-            <div class="span10 offset1 well">
+        <div class="row" style="display: none;" id="modnav">
+            <div class="span10 offset1">
+                <ul class="nav nav-tabs">
+                    <li class="active">
+                        <a href="javascript:void(0)" id="show_chancontrols">Channel Controls</a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)" id="show_banlist">Ban List</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="row" style="display: none" id="chancontrols">
+            <div class="span10 offset1">
                 <form action="javascript:void(0)">
                     <fieldset>
                         <legend>Channel Options</legend>
@@ -132,6 +144,18 @@
                         </div>
                     </fieldset>
                 </form>
+            </div>
+        </div>
+        <div class="row" id="banlist" style="display: none;">
+            <div class="span10 offset1">
+                <table class="table table-striped">
+                    <thead>
+                        <th></th>
+                        <th>IP</th>
+                        <th>Name</th>
+                        <th>Banned By</th>
+                    </thead>
+                </table>
             </div>
         </div>
     </div> <!-- /container -->

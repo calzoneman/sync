@@ -28,6 +28,9 @@ function handle(chan, user, msg) {
     else if(msg.indexOf("/ban ") == 0) {
         handleBan(chan, user, msg.substring(5).split(' '));
     }
+    else if(msg.indexOf("/unban ") == 0) {
+        handleUnban(chan, user, msg.substring(7).split(' '));
+    }
     else if(msg.indexOf("/poll ") == 0) {
         handlePoll(chan, user, msg.substring(6));
     }
@@ -60,6 +63,12 @@ function handleBan(chan, user, args) {
         if(kickee && kickee.rank < user.rank) {
             chan.banIP(user, kickee);
         }
+    }
+}
+
+function handleUnban(chan, user, args) {
+    if(Rank.hasPermission(user, "ipban") && args.length > 0) {
+        chan.unbanIP(args[0]);
     }
 }
 

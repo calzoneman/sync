@@ -55,6 +55,7 @@ function initCallbacks() {
                 addUserDropdown(users[i], users[i].children[1].innerHTML);
             }
 
+            $('#modnav').show();
             $('#chancontrols').show();
         }
         RANK = data.rank;
@@ -103,6 +104,10 @@ function initCallbacks() {
         if(opts.qopen_allow_playnext)
             $('#play_next').attr('disabled', false);
         rebuildPlaylist();
+    });
+
+    socket.on('banlist', function(data) {
+        updateBanlist(data.entries);
     });
 
     socket.on('usercount', function(data) {
