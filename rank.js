@@ -19,6 +19,7 @@ var permissions = {
     queue           : exports.Moderator,
     assignLeader    : exports.Moderator,
     kick            : exports.Moderator,
+    ipban           : exports.Moderator,
     promote         : exports.Moderator,
     qlock           : exports.Moderator,
     poll            : exports.Moderator,
