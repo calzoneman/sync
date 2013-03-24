@@ -140,6 +140,18 @@ Channel.prototype.createTables = function() {
         .replace(/\{\}/, this.name);
     results = db.querySync(query) || results;
 
+    // Create ban table
+    var query = "CREATE TABLE  `chan_{}_bans` (\
+                    `ip` VARCHAR( 15 ) NOT NULL ,\
+                    `name` VARCHAR( 32 ) NOT NULL ,\
+                    `banner` VARCHAR( 32 ) NOT NULL ,\
+                    PRIMARY KEY (\
+                    `ip`\
+                    )\
+                    ) ENGINE = MYISAM"
+        .replace(/\{\}/, this.name);
+    results = db.querySync(query) || results;
+
     // Insert into global channel table
     var query = 'INSERT INTO channels (`id`, `name`) VALUES (NULL, "{}")'
         .replace(/\{\}/, this.name);
