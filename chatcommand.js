@@ -9,8 +9,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Rank = require('./rank.js');
-var Poll = require('./poll.js').Poll;
+var Rank = require("./rank.js");
+var Poll = require("./poll.js").Poll;
 
 function handle(chan, user, msg) {
     if(msg.indexOf("/me ") == 0)
@@ -23,13 +23,13 @@ function handle(chan, user, msg) {
         }
     }
     else if(msg.indexOf("/kick ") == 0) {
-        handleKick(chan, user, msg.substring(6).split(' '));
+        handleKick(chan, user, msg.substring(6).split(" "));
     }
     else if(msg.indexOf("/ban ") == 0) {
-        handleBan(chan, user, msg.substring(5).split(' '));
+        handleBan(chan, user, msg.substring(5).split(" "));
     }
     else if(msg.indexOf("/unban ") == 0) {
-        handleUnban(chan, user, msg.substring(7).split(' '));
+        handleUnban(chan, user, msg.substring(7).split(" "));
     }
     else if(msg.indexOf("/poll ") == 0) {
         handlePoll(chan, user, msg.substring(6));
@@ -74,7 +74,7 @@ function handleUnban(chan, user, args) {
 
 function handlePoll(chan, user, msg) {
     if(Rank.hasPermission(user, "poll")) {
-        var args = msg.split(',');
+        var args = msg.split(",");
         var title = args[0];
         args.splice(0, 1);
         var poll = new Poll(user.name, title, args);

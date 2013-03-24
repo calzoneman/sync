@@ -9,11 +9,11 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Rank = require('./rank.js');
-var Auth = require('./auth.js');
-var Channel = require('./channel.js').Channel;
-var Server = require('./server.js');
-var Database = require('./database.js');
+var Rank = require("./rank.js");
+var Auth = require("./auth.js");
+var Channel = require("./channel.js").Channel;
+var Server = require("./server.js");
+var Database = require("./database.js");
 
 // Represents a client connected via socket.io
 var User = function(socket, ip) {
@@ -27,7 +27,7 @@ var User = function(socket, ip) {
 
     this.initCallbacks();
     if(Server.announcement != null) {
-        this.socket.emit('announcement', Server.announcement);
+        this.socket.emit("announcement", Server.announcement);
     }
 };
 
@@ -35,12 +35,12 @@ var User = function(socket, ip) {
 // Set up socket callbacks
 User.prototype.initCallbacks = function() {
     // What a shame
-    this.socket.on('disconnect', function() {
+    this.socket.on("disconnect", function() {
         if(this.channel != null)
             this.channel.userLeave(this);
     }.bind(this));
 
-    this.socket.on('joinChannel', function(data) {
+    this.socket.on("joinChannel", function(data) {
         if(!data.name.match(/^[a-zA-Z0-9]+$/))
             return;
         // Channel already loaded
@@ -56,23 +56,23 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('login', function(data) {
+    this.socket.on("login", function(data) {
         if(this.name == "")
             this.login(data.name, data.sha256);
     }.bind(this));
 
-    this.socket.on('register', function(data) {
+    this.socket.on("register", function(data) {
         this.register(data.name, data.sha256);
     }.bind(this));
 
-    this.socket.on('assignLeader', function(data) {
+    this.socket.on("assignLeader", function(data) {
         if(Rank.hasPermission(this, "assignLeader")) {
             if(this.channel != null)
                 this.channel.changeLeader(data.name);
         }
     }.bind(this));
 
-    this.socket.on('promote', function(data) {
+    this.socket.on("promote", function(data) {
         if(Rank.hasPermission(this, "promote")) {
             if(this.channel != null) {
                 this.channel.promoteUser(this, data.name);
@@ -80,7 +80,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('demote', function(data) {
+    this.socket.on("demote", function(data) {
         if(Rank.hasPermission(this, "promote")) {
             if(this.channel != null) {
                 this.channel.demoteUser(this, data.name);
@@ -88,20 +88,20 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('chatMsg', function(data) {
+    this.socket.on("chatMsg", function(data) {
         if(this.name != "" && this.channel != null) {
             this.channel.chatMessage(this, data.msg);
         }
     }.bind(this));
 
-    this.socket.on('playerReady', function() {
+    this.socket.on("playerReady", function() {
         if(this.channel != null) {
             this.channel.sendMediaUpdate(this);
         }
         this.playerReady = true;
     }.bind(this));
 
-    this.socket.on('queue', function(data) {
+    this.socket.on("queue", function(data) {
         if(this.channel == null)
             return;
         if(Rank.hasPermission(this, "queue") ||
@@ -116,7 +116,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('unqueue', function(data) {
+    this.socket.on("unqueue", function(data) {
         if(this.channel == null)
             return;
         if(Rank.hasPermission(this, "queue") ||
@@ -126,7 +126,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('moveMedia', function(data) {
+    this.socket.on("moveMedia", function(data) {
         if(this.channel == null)
             return;
         if(Rank.hasPermission(this, "queue") ||
@@ -136,7 +136,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('playNext', function() {
+    this.socket.on("playNext", function() {
         if(this.channel == null)
             return;
         if(Rank.hasPermission(this, "queue") ||
@@ -149,7 +149,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('queueLock', function(data) {
+    this.socket.on("queueLock", function(data) {
         if(Rank.hasPermission(this, "qlock")) {
             if(this.channel != null) {
                 this.channel.setLock(data.locked);
@@ -157,21 +157,21 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('mediaUpdate', function(data) {
+    this.socket.on("mediaUpdate", function(data) {
         if(this.channel != null && this.channel.leader == this) {
             this.channel.update(data);
         }
     }.bind(this));
 
-    this.socket.on('searchLibrary', function(data) {
+    this.socket.on("searchLibrary", function(data) {
         if(this.channel != null &&  Rank.hasPermission(this, "search")) {
-            this.socket.emit('librarySearchResults', {
+            this.socket.emit("librarySearchResults", {
                 results: this.channel.searchLibrary(data.query)
             });
         }
     }.bind(this));
 
-    this.socket.on('closePoll', function() {
+    this.socket.on("closePoll", function() {
         if(Rank.hasPermission(this, "poll")) {
             if(this.channel != null && this.channel.poll) {
                 this.channel.poll = null;
@@ -180,16 +180,16 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('vote', function(data) {
+    this.socket.on("vote", function(data) {
         if(this.channel != null && this.channel.poll) {
             this.channel.poll.vote(this.ip, data.option);
             this.channel.broadcastPollUpdate();
         }
     }.bind(this));
 
-    this.socket.on('registerChannel', function(data) {
+    this.socket.on("registerChannel", function(data) {
         if(this.channel == null) {
-            this.socket.emit('channelRegistration', {
+            this.socket.emit("channelRegistration", {
                 success: false,
                 error: "You're not in any channel!"
             });
@@ -199,25 +199,25 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on('adm', function(data) {
+    this.socket.on("adm", function(data) {
         if(Rank.hasPermission(this, "acp")) {
             this.handleAdm(data);
         }
     }.bind(this));
 
-    this.socket.on('announce', function(data) {
+    this.socket.on("announce", function(data) {
         if(Rank.hasPermission(this, "announce")) {
             if(data.clear) {
                 Server.announcement = null;
             }
             else {
-                Server.io.sockets.emit('announcement', data);
+                Server.io.sockets.emit("announcement", data);
                 Server.announcement = data;
             }
         }
     }.bind(this));
 
-    this.socket.on('channelOpts', function(data) {
+    this.socket.on("channelOpts", function(data) {
         if(Rank.hasPermission(this, "channelOpts") && this.channel != null) {
             this.channel.opts = data;
             this.channel.broadcastOpts();
@@ -239,7 +239,7 @@ User.prototype.handleAdm = function(data) {
                 nowplaying: nowplaying
             });
         }
-        this.socket.emit('adm', {
+        this.socket.emit("adm", {
             cmd: "listchannels",
             chans: chans
         });
@@ -255,7 +255,7 @@ User.prototype.handleAdm = function(data) {
                 rank: dbusers[i].global_rank
             };
         }
-        this.socket.emit('adm', {
+        this.socket.emit("adm", {
             cmd: "listusers",
             users: users
         });
@@ -263,7 +263,7 @@ User.prototype.handleAdm = function(data) {
     else if(data.cmd == "listchannelranks") {
         if(data.chan == undefined)
             return;
-        this.socket.emit('adm', {
+        this.socket.emit("adm", {
             cmd: "listchannelranks",
             ranks: Database.listChannelRanks(data.chan)
         });
@@ -276,7 +276,7 @@ User.prototype.login = function(name, sha256) {
     if(this.channel != null && name != "") {
         for(var i = 0; i < this.channel.users.length; i++) {
             if(this.channel.users[i].name == name) {
-                this.socket.emit('login', {
+                this.socket.emit("login", {
                     success: false,
                     error: "The username " + name + " is already in use on this channel"
                 });
@@ -286,9 +286,9 @@ User.prototype.login = function(name, sha256) {
     }
     // No password => try guest login
     if(sha256 == "") {
-        // Sorry bud, can't take that name
+        // Sorry bud, can"t take that name
         if(Auth.isRegistered(name)) {
-            this.socket.emit('login', {
+            this.socket.emit("login", {
                 success: false,
                 error: "That username is already taken"
             });
@@ -296,7 +296,7 @@ User.prototype.login = function(name, sha256) {
         }
         // YOUR ARGUMENT IS INVALID
         else if(!Auth.validateName(name)) {
-            this.socket.emit('login', {
+            this.socket.emit("login", {
                 success: false,
                 error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
             });
@@ -306,10 +306,10 @@ User.prototype.login = function(name, sha256) {
             console.log(this.ip + " signed in as " + name);
             this.name = name;
             this.loggedIn = false;
-            this.socket.emit('login', {
+            this.socket.emit("login", {
                 success: true
             });
-            this.socket.emit('rank', {
+            this.socket.emit("rank", {
                 rank: this.rank
             });
             if(this.channel != null) {
@@ -323,17 +323,17 @@ User.prototype.login = function(name, sha256) {
         var row;
         if((row = Auth.login(name, sha256))) {
             this.loggedIn = true;
-            this.socket.emit('login', {
+            this.socket.emit("login", {
                 success: true
             });
             console.log(this.ip + " logged in as " + name);
-            // Sweet, let's look up our rank
+            // Sweet, let"s look up our rank
             var chanrank = (this.channel != null) ? this.channel.getRank(name)
                                                   : Rank.Guest;
             var rank = (chanrank > row.global_rank) ? chanrank
                                                      : row.global_rank;
             this.rank = (this.rank > rank) ? this.rank : rank;
-            this.socket.emit('rank', {
+            this.socket.emit("rank", {
                 rank: this.rank
             });
             this.name = name;
@@ -345,7 +345,7 @@ User.prototype.login = function(name, sha256) {
         }
         // Wrong password
         else {
-            this.socket.emit('login', {
+            this.socket.emit("login", {
                 success: false,
                 error: "Invalid username/password pair"
             });
@@ -358,34 +358,34 @@ User.prototype.login = function(name, sha256) {
 User.prototype.register = function(name, sha256) {
     if(sha256 == "") {
         // Sorry bud, password required
-        this.socket.emit('register', {
+        this.socket.emit("register", {
             success: false,
             error: "You must provide a password"
         });
         return false;
     }
     else if(Auth.isRegistered(name)) {
-        this.socket.emit('register', {
+        this.socket.emit("register", {
             success: false,
             error: "That username is already taken"
         });
         return false;
     }
     else if(!Auth.validateName(name)) {
-        this.socket.emit('register', {
+        this.socket.emit("register", {
             success: false,
             error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
         });
     }
     else if(Auth.register(name, sha256)) {
         console.log(this.ip + " registered " + name);
-        this.socket.emit('register', {
+        this.socket.emit("register", {
             success: true
         });
         this.login(name, sha256);
     }
     else {
-        this.socket.emit('register', {
+        this.socket.emit("register", {
             success: false,
             error: "[](/ppshrug) Registration Failed."
         });

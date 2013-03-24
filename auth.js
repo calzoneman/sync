@@ -9,8 +9,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var mysql = require('mysql-libmysqlclient');
-var Config = require('./config.js');
+var mysql = require("mysql-libmysqlclient");
+var Config = require("./config.js");
 
 // Check if a name is taken
 exports.isRegistered = function(name) {
@@ -21,7 +21,7 @@ exports.isRegistered = function(name) {
         console.log("MySQL Connection Failed");
         return true;
     }
-    var query = 'SELECT * FROM registrations WHERE uname="{}"'
+    var query = "SELECT * FROM registrations WHERE uname='{}'"
         .replace(/\{\}/, name);
     var results = db.querySync(query);
     var rows = results.fetchAllSync();
@@ -51,7 +51,7 @@ exports.register = function(name, sha256) {
         console.log("MySQL Connection Failed");
         return false;
     }
-    var query = 'INSERT INTO registrations VALUES (NULL, "{1}", "{2}", 0)'
+    var query = "INSERT INTO registrations VALUES (NULL, '{1}', '{2}', 0)"
         .replace(/\{1\}/, name)
         .replace(/\{2\}/, sha256);
     var results = db.querySync(query);
@@ -68,7 +68,7 @@ exports.login = function(name, sha256) {
         console.log("MySQL Connection Failed");
         return false;
     }
-    var query = 'SELECT * FROM registrations WHERE uname="{1}" AND pw="{2}"'
+    var query = "SELECT * FROM registrations WHERE uname='{1}' AND pw='{2}'"
         .replace(/\{1\}/, name)
         .replace(/\{2\}/, sha256);
     var results = db.querySync(query);

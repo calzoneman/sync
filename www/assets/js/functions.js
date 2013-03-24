@@ -11,17 +11,17 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // Adds a user to the chatbox userlist
 function addUser(name, rank, leader) {
-    var div = document.createElement('div');
+    var div = document.createElement("div");
     $(div).attr("class", "userlist_item");
-    var span = document.createElement('span');
-    var flair = document.createElement('span');
+    var span = document.createElement("span");
+    var flair = document.createElement("span");
     span.innerHTML = name;
     div.appendChild(flair);
     div.appendChild(span);
     fmtUserlistItem(div, rank, leader);
     if(RANK >= Rank.Moderator)
         addUserDropdown(div, name);
-    var users = $('#userlist').children();
+    var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
         var othername = users[i].children[1].innerHTML;
         if(othername.toLowerCase() > name.toLowerCase()) {
@@ -29,10 +29,10 @@ function addUser(name, rank, leader) {
             return;
         }
     }
-    $('#userlist')[0].appendChild(div);
+    $("#userlist")[0].appendChild(div);
 }
 
-// Format a userlist entry based on a person's rank
+// Format a userlist entry based on a person"s rank
 function fmtUserlistItem(div, rank, leader) {
     var span = div.children[1];
     if(rank >= Rank.Siteadmin)
@@ -54,63 +54,63 @@ function fmtUserlistItem(div, rank, leader) {
 
 // Adds a dropdown with user actions (promote/demote/leader)
 function addUserDropdown(entry, name) {
-    var div = $('<div />').addClass("dropdown").appendTo(entry);
-    var ul = $('<ul />').addClass("dropdown-menu").appendTo(div);
+    var div = $("<div />").addClass("dropdown").appendTo(entry);
+    var ul = $("<ul />").addClass("dropdown-menu").appendTo(div);
     ul.attr("role", "menu");
     ul.attr("aria-labelledby", "dropdownMenu");
 
-    var makeLeader = $('<li />').appendTo(ul);
-    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(makeLeader);
+    var makeLeader = $("<li />").appendTo(ul);
+    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(makeLeader);
     a.text("Make Leader");
     a.click(function() {
-        socket.emit('assignLeader', {
+        socket.emit("assignLeader", {
             name: name
         });
     });
 
-    var takeLeader = $('<li />').appendTo(ul);
-    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(takeLeader);
+    var takeLeader = $("<li />").appendTo(ul);
+    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(takeLeader);
     a.text("Take Leader");
     a.click(function() {
-        socket.emit('assignLeader', {
+        socket.emit("assignLeader", {
             name: ""
         });
     });
 
-    var kick = $('<li />').appendTo(ul);
-    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(kick);
+    var kick = $("<li />").appendTo(ul);
+    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(kick);
     a.text("Kick");
     a.click(function() {
-        socket.emit('chatMsg', {
+        socket.emit("chatMsg", {
             msg: "/kick " + name
         });
     });
 
-    var ban = $('<li />').appendTo(ul);
-    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(ban);
+    var ban = $("<li />").appendTo(ul);
+    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(ban);
     a.text("IP Ban");
     a.click(function() {
-        socket.emit('chatMsg', {
+        socket.emit("chatMsg", {
             msg: "/ban " + name
         });
     });
 
-    $('<li />').addClass("divider").appendTo(ul);
+    $("<li />").addClass("divider").appendTo(ul);
 
-    var promote = $('<li />').appendTo(ul);
-    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(promote);
+    var promote = $("<li />").appendTo(ul);
+    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(promote);
     a.text("Promote");
     a.click(function() {
-        socket.emit('promote', {
+        socket.emit("promote", {
             name: name
         });
     });
 
-    var demote = $('<li />').appendTo(ul);
-    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(demote);
+    var demote = $("<li />").appendTo(ul);
+    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(demote);
     a.text("Demote");
     a.click(function() {
-        socket.emit('demote', {
+        socket.emit("demote", {
             name: name
         });
     });
@@ -127,18 +127,18 @@ function addUserDropdown(entry, name) {
 }
 
 function formatChatMessage(data) {
-    var div = document.createElement('div');
+    var div = document.createElement("div");
     if(data.msg.indexOf(uname) != -1)
-        $(div).addClass('nick-highlight');
+        $(div).addClass("nick-highlight");
     if(data.msgclass == "action") {
-        var message = document.createElement('span');
-        $(message).addClass('action');
+        var message = document.createElement("span");
+        $(message).addClass("action");
         message.innerHTML = data.username + " " + data.msg;
         div.appendChild(message);
     }
     else {
-        var name = document.createElement('span');
-        var message = document.createElement('span');
+        var name = document.createElement("span");
+        var message = document.createElement("span");
         name.innerHTML = "<strong>&lt;" + data.username + "&gt;</strong> ";
         if(data.msgclass == "shout")
             $(name).addClass("shout");
@@ -152,60 +152,60 @@ function formatChatMessage(data) {
 
 // Creates and formats a queue entry
 function makeQueueEntry(video) {
-    var li = $('<li />');
+    var li = $("<li />");
     li.attr("class", "well");
-    var title = $('<span />').attr("class", "qe_title").appendTo(li);
+    var title = $("<span />").attr("class", "qe_title").appendTo(li);
     title.text(video.title);
-    var time = $('<span />').attr("class", "qe_time").appendTo(li);
+    var time = $("<span />").attr("class", "qe_time").appendTo(li);
     time.text(video.duration);
-    var clear = $('<div />').attr("class", "qe_clear").appendTo(li);
+    var clear = $("<div />").attr("class", "qe_clear").appendTo(li);
     return li;
 }
 
 // Add buttons to a queue list entry
 function addQueueButtons(li) {
-    var btnstrip = $('<div />').attr("class", "btn-group qe_buttons").prependTo(li);
+    var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
-    var btnRemove =  $('<button />').attr("class", "btn btn-danger qe_btn").appendTo(btnstrip);
-    $('<i />').attr("class", "icon-remove").appendTo(btnRemove);
+    var btnRemove =  $("<button />").attr("class", "btn btn-danger qe_btn").appendTo(btnstrip);
+    $("<i />").attr("class", "icon-remove").appendTo(btnRemove);
 
-    var btnUp =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    $('<i />').attr("class", "icon-arrow-up").appendTo(btnUp);
+    var btnUp =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
+    $("<i />").attr("class", "icon-arrow-up").appendTo(btnUp);
 
-    var btnDown =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    $('<i />').attr("class", "icon-arrow-down").appendTo(btnDown);
+    var btnDown =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
+    $("<i />").attr("class", "icon-arrow-down").appendTo(btnDown);
 
-    var btnNext =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    //$('<i />').attr("class", "icon-play").appendTo(btnNext);
-    btnNext.text('Next');
+    var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
+    //$("<i />").attr("class", "icon-play").appendTo(btnNext);
+    btnNext.text("Next");
 
     // Callback time
     $(btnRemove).click(function() {
         btnstrip.remove();
-        var idx = $('#queue').children().index(li);
-        socket.emit('unqueue', { pos: idx });
+        var idx = $("#queue").children().index(li);
+        socket.emit("unqueue", { pos: idx });
     });
 
     $(btnUp).click(function() {
-        var idx = $('#queue').children().index(li);
-        socket.emit('moveMedia', {
+        var idx = $("#queue").children().index(li);
+        socket.emit("moveMedia", {
             src: idx,
             dest: idx-1
         });
     });
 
     $(btnDown).click(function() {
-        var idx = $('#queue').children().index(li);
-        socket.emit('moveMedia', {
+        var idx = $("#queue").children().index(li);
+        socket.emit("moveMedia", {
             src: idx,
             dest: idx+1
         });
     });
 
     $(btnNext).click(function() {
-        var idx = $('#queue').children().index(li);
+        var idx = $("#queue").children().index(li);
         var dest = idx < POSITION ? POSITION : POSITION + 1;
-        socket.emit('moveMedia', {
+        socket.emit("moveMedia", {
             src: idx,
             dest: dest
         });
@@ -213,19 +213,19 @@ function addQueueButtons(li) {
 
     if(RANK < Rank.Moderator && !LEADER) {
         if(!CHANNELOPTS.qopen_allow_delete)
-            $(btnRemove).attr('disabled', true);
+            $(btnRemove).attr("disabled", true);
         if(!CHANNELOPTS.qopen_allow_move) {
-            $(btnUp).attr('disabled', true);
-            $(btnDown).attr('disabled', true);
+            $(btnUp).attr("disabled", true);
+            $(btnDown).attr("disabled", true);
         }
         if(!CHANNELOPTS.qopen_allow_qnext)
-            $(btnNext).attr('disabled', true);
+            $(btnNext).attr("disabled", true);
     }
 }
 
 function rebuildPlaylist() {
-    $('#queue li').each(function() {
-        $(this).find('.btn-group').remove();
+    $("#queue li").each(function() {
+        $(this).find(".btn-group").remove();
         if(RANK >= Rank.Moderator || LEADER || OPENQUEUE)
             addQueueButtons(this);
     });
@@ -233,27 +233,27 @@ function rebuildPlaylist() {
 
 // Add buttons to a list entry for the library search results
 function addLibraryButtons(li, id) {
-    var btnstrip = $('<div />').attr("class", "btn-group qe_buttons").prependTo(li);
+    var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
 
-    var btnNext =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    //$('<i />').attr("class", "icon-play").appendTo(btnNext);
-    btnNext.text('Next');
+    var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
+    //$("<i />").attr("class", "icon-play").appendTo(btnNext);
+    btnNext.text("Next");
 
-    var btnEnd =  $('<button />').attr("class", "btn qe_btn").appendTo(btnstrip);
-    //$('<i />').attr("class", "icon-fast-forward").appendTo(btnEnd);
-    btnEnd.text('End');
+    var btnEnd =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
+    //$("<i />").attr("class", "icon-fast-forward").appendTo(btnEnd);
+    btnEnd.text("End");
 
     // Callback time
     $(btnNext).click(function() {
-        socket.emit('queue', {
+        socket.emit("queue", {
             id: id,
             pos: "next"
         });
     });
 
     $(btnEnd).click(function() {
-        socket.emit('queue', {
+        socket.emit("queue", {
             id: id,
             pos: "end"
         });
@@ -262,17 +262,17 @@ function addLibraryButtons(li, id) {
 
 // Rearranges the queue
 function moveVideo(src, dest) {
-    var li = $('#queue').children()[src];
-    var ul = $('#queue')[0];
-    $(li).hide('blind', function() {
+    var li = $("#queue").children()[src];
+    var ul = $("#queue")[0];
+    $(li).hide("blind", function() {
         ul.removeChild(li);
         if(dest == ul.children.length) {
             ul.appendChild(li);
         }
         else {
-            ul.insertBefore(li, ul.getElementsByTagName('li')[dest]);
+            ul.insertBefore(li, ul.getElementsByTagName("li")[dest]);
         }
-        $(li).show('blind');
+        $(li).show("blind");
     });
     if(src < POSITION && dest >= POSITION)
         POSITION--;
@@ -286,24 +286,24 @@ function updateYT(data) {
         removeCurrentPlayer();
         MEDIATYPE = "yt";
         // Note to Soundcloud/Vimeo API designers:
-        // YouTube's API is actually nice to use
-        PLAYER = new YT.Player('ytapiplayer', {
-            height: '390',
-            width: '640',
-            videoId: '',
+        // YouTube"s API is actually nice to use
+        PLAYER = new YT.Player("ytapiplayer", {
+            height: "390",
+            width: "640",
+            videoId: "",
             playerVars: {
-                'autoplay': 0,
-                'controls': 1,
+                "autoplay": 0,
+                "controls": 1,
             },
             events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
+                "onReady": onPlayerReady,
+                "onStateChange": onPlayerStateChange
             }
         });
     }
     // Load new video
     if(PLAYER.getVideoUrl && data.id != parseYTURL(PLAYER.getVideoUrl())) {
-        PLAYER.loadVideoById(data.id, data.currentTime, $('#quality').val());
+        PLAYER.loadVideoById(data.id, data.currentTime, $("#quality").val());
         if(data.paused)
             PLAYER.pauseVideo();
     }
@@ -327,7 +327,7 @@ function updateSC(data) {
         iframe.css("width", "100%").attr("height", "166")
               .attr("frameborder", "no");
 
-        PLAYER = SC.Widget('ytapiplayer');
+        PLAYER = SC.Widget("ytapiplayer");
         MEDIATYPE = "sc";
     }
     // Server is on a different soundcloud track than client
@@ -338,7 +338,7 @@ function updateSC(data) {
         // Keep track of current ID
         PLAYER.mediaId = data.id;
     }
-    // Soundcloud's API is async
+    // Soundcloud"s API is async
     // Query the playback position and compare that with the sync packet
     PLAYER.getPosition(function(pos) {
         if(Math.abs(pos / 1000 - data.currentTime) > SYNC_THRESHOLD) {
@@ -380,15 +380,15 @@ function updateVI(data) {
     if(MEDIATYPE != "vi") {
         initVI(data);
     }
-    // Either vimeo's API doesn't support loading a new video
-    // or their terrible documentation doesn't document it
+    // Either vimeo"s API doesn"t support loading a new video
+    // or their terrible documentation doesn"t document it
     else if(data.id != PLAYER.videoid) {
         initVI(data);
     }
 
-    PLAYER.api('getCurrentTime', function(time) {
+    PLAYER.api("getCurrentTime", function(time) {
         if(Math.abs(time - data.currentTime) > SYNC_THRESHOLD) {
-            PLAYER.api('seekTo', data.currentTime);
+            PLAYER.api("seekTo", data.currentTime);
         }
     });
 }
@@ -398,16 +398,16 @@ function initVI(data) {
     var currentEmbed = $("#ytapiplayer");
     var div = currentEmbed.parent();
     currentEmbed.remove();
-    // Ugly but it's the only way I managed to get the API calls to work
-    div[0].innerHTML += '<iframe id="ytapiplayer" src="http://player.vimeo.com/video/' + data.id + '?api=1&player_id=ytapiplayer" width="640" height="390" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>';
-    // $f() is defined by froogaloop, Vimeo's API wrapper
-    PLAYER = $f($('iframe')[0]);
+    // Ugly but it"s the only way I managed to get the API calls to work
+    div[0].innerHTML += "<iframe id=\"ytapiplayer\" src=\"http://player.vimeo.com/video/" + data.id + "?api=1&player_id=ytapiplayer\" width=\"640\" height=\"390\" frameborder=\"0\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
+    // $f() is defined by froogaloop, Vimeo"s API wrapper
+    PLAYER = $f($("iframe")[0]);
     // So we can retrieve the ID synchronously instead of waiting for
     // getVideoId with a callback
     PLAYER.videoid = data.id;
-    PLAYER.addEvent('ready', function()  {
+    PLAYER.addEvent("ready", function()  {
         // Autoplay
-        PLAYER.api('play');
+        PLAYER.api("play");
     });
     MEDIATYPE = "vi";
 }
@@ -425,14 +425,14 @@ function loadTwitch(channel) {
         id: "live_embed_player_flash",
         flashvars:"hostname=www.twitch.tv&channel="+channel+"&auto_play=true&start_volume=100"
     };
-    swfobject.embedSWF( url, "ytapiplayer", '640', '390', "8", null, null, params, {} );
+    swfobject.embedSWF( url, "ytapiplayer", "640", "390", "8", null, null, params, {} );
 }
 
 function loadLivestream(channel) {
     MEDIATYPE = "li";
     removeCurrentPlayer();
     flashvars = { channel: channel };
-    params = { AllowScriptAccess: 'always' };
+    params = { AllowScriptAccess: "always" };
     swfobject.embedSWF("http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf", "ytapiplayer", "640", "390", "9.0.0", "expressInstall.swf", flashvars, params);
 }
 
@@ -519,13 +519,13 @@ function parseDailymotion(url) {
 }
 
 function closePoll() {
-    if($('#pollcontainer .active').length != 0) {
-        var poll = $('#pollcontainer .active');
+    if($("#pollcontainer .active").length != 0) {
+        var poll = $("#pollcontainer .active");
         poll.removeClass("active").addClass("muted");
-        poll.find('.option button').each(function() {
-            $(this).attr('disabled', 'disabled');
+        poll.find(".option button").each(function() {
+            $(this).attr("disabled", "disabled");
         });
-        poll.find('.btn-danger').each(function() {
+        poll.find(".btn-danger").each(function() {
             $(this).remove()
         });
     }
@@ -533,34 +533,34 @@ function closePoll() {
 
 function addPoll(data) {
     closePoll();
-    var pollMsg = $('<div/>').addClass('poll-notify')
-        .text(data.initiator + ' opened a poll: "' + data.title + '"')
-        .appendTo($('#messagebuffer'));
-    var poll = $('<div/>').addClass('well active').prependTo($('#pollcontainer'));
-    $('<button/>').addClass('close pull-right').text('×')
+    var pollMsg = $("<div/>").addClass("poll-notify")
+        .text(data.initiator + " opened a poll: \"" + data.title + "\"")
+        .appendTo($("#messagebuffer"));
+    var poll = $("<div/>").addClass("well active").prependTo($("#pollcontainer"));
+    $("<button/>").addClass("close pull-right").text("×")
         .appendTo(poll)
         .click(function() { poll.remove(); });
     if(RANK >= Rank.Moderator) {
-        $('<button/>').addClass('btn btn-danger pull-right').text('Close Poll')
+        $("<button/>").addClass("btn btn-danger pull-right").text("Close Poll")
             .appendTo(poll)
             .click(function() {
-                socket.emit('closePoll')
+                socket.emit("closePoll")
             });
     }
 
-    $('<h3/>').text(data.title).appendTo(poll);
+    $("<h3/>").text(data.title).appendTo(poll);
     for(var i = 0; i < data.options.length; i++) {
         var callback = (function(i) { return function() {
                 console.log(i);
-                socket.emit('vote', {
+                socket.emit("vote", {
                     option: i
                 });
-                poll.find('.option button').each(function() {
-                    $(this).attr('disabled', 'disabled');
+                poll.find(".option button").each(function() {
+                    $(this).attr("disabled", "disabled");
                 });
         } })(i);
-        $('<button/>').addClass('btn').text(data.counts[i])
-            .prependTo($('<div/>').addClass('option').text(data.options[i])
+        $("<button/>").addClass("btn").text(data.counts[i])
+            .prependTo($("<div/>").addClass("option").text(data.options[i])
                     .appendTo(poll))
             .click(callback);
             
@@ -568,54 +568,54 @@ function addPoll(data) {
 }
 
 function updatePoll(data) {
-    var poll = $('#pollcontainer .active');
+    var poll = $("#pollcontainer .active");
     var i = 0;
-    poll.find('.option button').each(function() {
+    poll.find(".option button").each(function() {
         $(this).text(data.counts[i]);
         i++;
     });
 }
 
 function showChannelRegistration() {
-    var div = $('<div/>').addClass('alert alert-info').attr('id', 'chregnotice')
-        .insertAfter($('.row')[0]);
-    $('<button/>').addClass('close pull-right').text('×')
+    var div = $("<div/>").addClass("alert alert-info").attr("id", "chregnotice")
+        .insertAfter($(".row")[0]);
+    $("<button/>").addClass("close pull-right").text("×")
         .appendTo(div)
         .click(function() { div.remove(); });
-    $('<h3/>').text("This channel isn't registered").appendTo(div);
-    $('<button/>').addClass('btn btn-primary').text('Register it')
+    $("<h3/>").text("This channel isn"t registered").appendTo(div);
+    $("<button/>").addClass("btn btn-primary").text("Register it")
         .appendTo(div)
         .click(function() {
-            socket.emit('registerChannel');
+            socket.emit("registerChannel");
         });
 }
 
 function showAnnouncement(title, text) {
-    var div = $('<div/>').addClass('alert')
-        .insertAfter($('.row')[0]);
-    $('<button/>').addClass('close pull-right').text('×')
+    var div = $("<div/>").addClass("alert")
+        .insertAfter($(".row")[0]);
+    $("<button/>").addClass("close pull-right").text("×")
         .appendTo(div)
         .click(function() { div.remove(); });
-    $('<h3/>').text(title).appendTo(div);
-    $('<p/>').html(text).appendTo(div);
+    $("<h3/>").text(title).appendTo(div);
+    $("<p/>").html(text).appendTo(div);
 }
 
 function updateBanlist(entries) {
-    var tbl = $('#banlist table');
+    var tbl = $("#banlist table");
     if(tbl.children().length > 1) {
         $(tbl.children()[1]).remove();
     }
     for(var i = 0; i < entries.length; i++) {
-        var tr = $('<tr/>').appendTo(tbl);
-        var remove = $('<button/>').addClass("btn btn-mini btn-danger")
-            .appendTo($('<td/>').appendTo(tr));
-        $('<i/>').addClass("icon-remove-circle").appendTo(remove);
-        var ip = $('<td/>').text(entries[i].ip).appendTo(tr);
-        var name = $('<td/>').text(entries[i].name).appendTo(tr);
-        var banner = $('<td/>').text(entries[i].banner).appendTo(tr);
+        var tr = $("<tr/>").appendTo(tbl);
+        var remove = $("<button/>").addClass("btn btn-mini btn-danger")
+            .appendTo($("<td/>").appendTo(tr));
+        $("<i/>").addClass("icon-remove-circle").appendTo(remove);
+        var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
+        var name = $("<td/>").text(entries[i].name).appendTo(tr);
+        var banner = $("<td/>").text(entries[i].banner).appendTo(tr);
 
         var callback = (function(ip) { return function() {
-            socket.emit('chatMsg', {
+            socket.emit("chatMsg", {
                 msg: "/unban " + ip
             });
         } })(entries[i].ip);
