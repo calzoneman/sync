@@ -89,6 +89,20 @@ Channel.prototype.loadMysql = function() {
     for(var i = 0; i < rows.length; i++) {
         this.library[rows[i].id] = new Media(rows[i].id, rows[i].title, rows[i].seconds, rows[i].type);
     }
+
+    // Load bans
+    var query = 'SELECT * FROM chan_{}_bans'
+        .replace(/\{\}/, this.name);
+    var results = db.querySync(query);
+    if(!results) {
+        console.log("Channel banlist query failed");
+        return;
+    }
+    var rows = results.fetchAllSync();
+    for(var i = 0; i < rows.length; i++) {
+        this.ipbans[rows[i].ip] = [rows[i].name, rows[i].banner];
+    }
+
     console.log("Loaded channel " + this.name + " from MySQL DB");
     db.closeSync();
 }
@@ -250,6 +264,32 @@ Channel.prototype.addToLibrary = function(media) {
     return results;
 }
 
+Channel.prototype.banIP = function(banner, bannee) {
+    // It is assumed that the banner has permission at this point
+    this.ipbans[bannee.ip] = [bannee.name, banner.name];
+    bannee.socket.disconnect();
+    if(!this.registered)
+        return false;
+    var db = mysql.createConnectionSync();
+    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
+                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    if(!db.connectedSync()) {
+        console.log("MySQL Connection Failed");
+        return false;
+    }
+    var query = 'INSERT INTO chan_{1}_bans (`ip`, `name`, `banner`) VALUES ("{2}", "{3}", "{4}")'
+        .replace(/\{1\}/, this.name)
+        .replace(/\{2\}/, bannee.ip)
+        .replace(/\{3\}/, bannee.name)
+        .replace(/\{4\}/, banner.name);
+    results = db.querySync(query);
+    if(!results) {
+        console.log("Insert into ban table failed");
+    }
+    db.closeSync();
+    return results;
+}
+
 // Searches the local library for media titles containing query
 Channel.prototype.searchLibrary = function(query) {
     query = query.toLowerCase();
@@ -270,11 +310,10 @@ Channel.prototype.searchLibrary = function(query) {
 
 // Called when a new user enters the channel
 Channel.prototype.userJoin = function(user) {
-    for(var i = 0; i < this.ipbans.length; i++) {
-        if(this.ipbans[i] == user.ip) {
-            user.socket.disconnect();
-            return;
-        }
+    if(user.ip in this.ipbans && this.ipbans[user.ip] != null) {
+        console.log("/" + user.ip + " was disconnected - banned");
+        user.socket.disconnect();
+        return;
     }
 
     user.socket.join(this.name);
@@ -332,7 +371,6 @@ Channel.prototype.userLeave = function(user) {
     var idx = this.users.indexOf(user);
     if(idx >= 0 && idx < this.users.length)
         this.users.splice(idx, 1);
-    console.log(this.users.length);
     this.updateUsercount();
     if(user.name != "") {
         this.sendAll('userLeave', {

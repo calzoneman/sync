@@ -86,6 +86,15 @@ function addUserDropdown(entry, name) {
         });
     });
 
+    var ban = $('<li />').appendTo(ul);
+    var a = $('<a />').attr("tabindex", "-1").attr("href", "#").appendTo(ban);
+    a.text("IP Ban");
+    a.click(function() {
+        socket.emit('chatMsg', {
+            msg: "/ban " + name
+        });
+    });
+
     $('<li />').addClass("divider").appendTo(ul);
 
     var promote = $('<li />').appendTo(ul);

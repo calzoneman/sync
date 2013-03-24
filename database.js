@@ -46,6 +46,7 @@ exports.init = function() {
     }
 
     initialized = true;
+    db.closeSync();
     return true;
 }
 

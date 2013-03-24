@@ -57,9 +57,8 @@ function handleBan(chan, user, args) {
                 break;
             }
         }
-        if(kickee) {
-            chan.ipbans.push(kickee.ip);
-            kickee.socket.disconnect();
+        if(kickee && kickee.rank < user.rank) {
+            chan.banIP(user, kickee);
         }
     }
 }
