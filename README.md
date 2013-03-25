@@ -22,7 +22,7 @@ Installing
 ----------
 
 This assumes you have Node.JS installed.
-I'm using v0.8.20, please feel free to report which versions do/do not work
+I'm using v0.10, please feel free to report which versions do/do not work
 
     1. Clone this repository
     2. `cd` to the directory containing the source files

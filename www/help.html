@@ -71,6 +71,16 @@
                         <td>(username is kicked from the room)</td>
                     </tr>
                     <tr>
+                        <td><pre>/ban username</pre></td>
+                        <td>Moderators</td>
+                        <td>(username is IP banned from the room)</td>
+                    </tr>
+                    <tr>
+                        <td><pre>/unban ip_address</pre></td>
+                        <td>Moderators</td>
+                        <td>(The IP address is unbanned from the room)</td>
+                    </tr>
+                    <tr>
                         <td><pre>/poll Title,Option 1,Option 2,etc</pre></td>
                         <td>Moderators</td>
                         <td>
@@ -103,6 +113,7 @@
                     <li>http://www.youtube.com/watch?v=(videoid)</li>
                     <li>http://www.vimeo.com/(videoid)</li>
                     <li>http://www.soundcloud.com/(songid)</li>
+                    <li>http://www.dailymotion.com/video/(videoid)</li>
                     <li>http://www.twitch.tv/(channel)</li>
                     <li>http://www.livestream.com/(channel)</li>
                 </ul>
@@ -139,6 +150,7 @@
                         <li><a tabindex="-1" href="#">Make Leader</a></li>
                         <li><a tabindex="-1" href="#">Take Leader</a></li>
                         <li><a tabindex="-1" href="#">Kick</a></li>
+                        <li><a tabindex="-1" href="#">IP Ban</a></li>
                         <li class="divider"></li>
                         <li><a tabindex="-1" href="#">Promote</a></li>
                         <li><a tabindex="-1" href="#">Demote</a></li>
@@ -163,6 +175,10 @@
                     <tr>
                         <td>Kick</td>
                         <td>Kicks this user from the room</td>
+                    </tr>
+                    <tr>
+                        <td>IP Ban</td>
+                        <td>IP bans this user from the room.  This can be reversed using the /unban chat command or from the ban list interface</td>
                     </tr>
                     <tr>
                         <td>Promote</td>
