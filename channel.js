@@ -467,6 +467,38 @@ Channel.prototype.enqueue = function(data) {
         }})(this, data.id);
         InfoGetter.getYTInfo(data.id, callback);
     }
+    // YouTube Playlist
+    else if(data.type == "yp") {
+        var callback = (function(chan, id) { return function(res, data) {
+            if(res != 200) {
+                return;
+            }
+
+            try {
+                for(var i = 0; i < data.feed.entry.length; i++) {
+                    var item = data.feed.entry[i];
+                    var title = item.title.$t;
+                    var url = item.link[1].href;
+                    var parts = url.split("/");
+                    var id = parts[parts.length - 1];
+                    var seconds = item.media$group.yt$duration.seconds;
+                    var vid = new Media(id, title, seconds, "yt");
+                    chan.queue.splice(idx, 0, vid);
+                    chan.sendAll("queue", {
+                        media: vid.pack(),
+                        pos: idx
+                    });
+                    chan.addToLibrary(vid);
+                    idx++;
+                }
+            }
+            catch(e) {
+                console.log("YTPlaylist Failed: id=", id);
+                console.log(e);
+            }
+        }})(this, data.id);
+        InfoGetter.getYTPlaylist(data.id, callback);
+    }
     // Set up twitch metadata
     else if(data.type == "tw") {
         var media = new Media(data.id, "Twitch ~ " + data.id, 0, "tw");

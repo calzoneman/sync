@@ -71,6 +71,16 @@ exports.getYTInfo = function(id, callback) {
         timeout: 1000}, callback);
 }
 
+exports.getYTPlaylist = function(id, callback) {
+    getJSON({
+        host: "gdata.youtube.com",
+        port: 80,
+        path: "/feeds/api/playlists/" + id + "?v=2&alt=json",
+        method: "GET",
+        dataType: "jsonp",
+        timeout: 1000}, callback);
+}
+
 // Look up Soundcloud metadata
 // Whoever designed this should rethink it.  I"ll submit a feedback
 // form on their website.

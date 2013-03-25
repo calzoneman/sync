@@ -449,8 +449,12 @@ function removeCurrentPlayer(){
 function parseVideoURL(url){
     if(typeof(url) != "string")
         return null;
-    if(url.indexOf("youtu.be") != -1 || url.indexOf("youtube.com") != -1)
+    if(url.indexOf("youtu.be") != -1 || url.indexOf("youtube.com") != -1) {
+        if(url.indexOf("playlist") != -1) {
+            return [parseYTPlaylist(url), "yp"];
+        }
         return [parseYTURL(url), "yt"];
+    }
     else if(url.indexOf("twitch.tv") != -1)
         return [parseTwitch(url), "tw"];
     else if(url.indexOf("livestream.com") != -1)
@@ -467,12 +471,12 @@ function parseYTURL(url) {
     url = url.replace("feature=player_embedded&", "");
     if(url.indexOf("&list=") != -1)
         url = url.substring(0, url.indexOf("&list="));
-    var m = url.match(/youtube\.com\/watch\\?v=([^&]*)/);
+    var m = url.match(/youtube\.com\/watch\?v=([^&]+)/);
     if(m) {
         // Extract ID
         return m[1];
     }
-    var m = url.match(/youtu\.be\/([^&]*)/);
+    var m = url.match(/youtu\.be\/([^&]+)/);
     if(m) {
         // Extract ID
         return m[1];
@@ -486,8 +490,16 @@ function parseYTURL(url) {
     return null;
 }
 
+function parseYTPlaylist(url) {
+    var m = url.match(/youtube\.com\/playlist\?list=([^&]+)/);
+    if(m) {
+        return m[1];
+    }
+    return null;
+}
+
 function parseTwitch(url) {
-    var m = url.match(/twitch\.tv\/([a-zA-Z0-9]*)/);
+    var m = url.match(/twitch\.tv\/([a-zA-Z0-9]+)/);
     if(m) {
         // Extract channel name
         return m[1];
@@ -496,7 +508,7 @@ function parseTwitch(url) {
 }
 
 function parseLivestream(url) {
-    var m = url.match(/livestream\.com\/([a-zA-Z0-9]*)/);
+    var m = url.match(/livestream\.com\/([a-zA-Z0-9]+)/);
     if(m) {
         // Extract channel name
         return m[1];
