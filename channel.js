@@ -796,6 +796,9 @@ Channel.prototype.broadcastNewUser = function(user) {
 
 // Someone"s rank changed, or their leadership status changed
 Channel.prototype.broadcastRankUpdate = function(user) {
+    user.socket.emit("rank", {
+        rank: user.rank
+    });
     this.sendAll("updateUser", {
         name: user.name,
         rank: user.rank,

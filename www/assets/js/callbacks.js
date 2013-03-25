@@ -36,29 +36,8 @@ function initCallbacks() {
     });
 
     socket.on("rank", function(data) {
-        if(data.rank >= Rank.Moderator) {
-            $("#playlist_controls").css("display", "block");
-            $("#playlist_controls button").each(function() {
-                $(this).attr("disabled", false);
-            });
-            $("#qlockbtn").css("display", "block");
-            var poll = $("#pollcontainer .active");
-            if(poll.length > 0) {
-                $("<button/>").addClass("btn btn-danger pull-right").text("Close Poll")
-                    .insertAfter(poll.find(".close"))
-                    .click(function() {
-                        socket.emit("closePoll")
-                    });
-            }
-            var users = $("#userlist").children();
-            for(var i = 0; i < users.length; i++) {
-                addUserDropdown(users[i], users[i].children[1].innerHTML);
-            }
-
-            $("#modnav").show();
-            $("#chancontrols").show();
-        }
         RANK = data.rank;
+        handleRankChange();
     });
 
     socket.on("login", function(data) {
@@ -132,7 +111,7 @@ function initCallbacks() {
         }
         for(var i = 0; i < data.pl.length; i++) {
             var li = makeQueueEntry(data.pl[i]);
-            if(RANK >= Rank.Moderator || OPENQUEUE)
+            if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
                 addQueueButtons(li);
             $(li).appendTo(ul);
         }
@@ -140,7 +119,7 @@ function initCallbacks() {
 
     socket.on("queue", function(data) {
         var li = makeQueueEntry(data.media);
-        if(RANK >= Rank.Moderator || OPENQUEUE)
+        if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
             addQueueButtons(li);
         $(li).css("display", "none");
         var idx = data.pos;
@@ -203,6 +182,8 @@ function initCallbacks() {
 
     socket.on("mediaUpdate", function(data) {
         $("#currenttitle").text("Currently Playing: " + data.title);
+        if(data.type != "sc" && MEDIATYPE == "sc")
+            fixSoundcloudShit();
         if(data.type == "yt")
             updateYT(data);
         else if(data.type == "tw")
@@ -230,8 +211,9 @@ function initCallbacks() {
     socket.on("updateUser", function(data) {
         if(data.name == uname) {
             LEADER = data.leader;
+            handleRankChange();
             if(LEADER) {
-                // I"m a leader!  Set up sync function
+                // I'm a leader!  Set up sync function
                 sendVideoUpdate = function() {
                     if(MEDIATYPE == "yt") {
                         socket.emit("mediaUpdate", {
@@ -271,14 +253,11 @@ function initCallbacks() {
                     }
                 };
             }
-            // I"m not a leader.  Don"t send syncs to the server
+            // I'm not a leader.  Don"t send syncs to the server
             else {
                 sendVideoUpdate = function() { }
             }
 
-            RANK = data.rank;
-            if(data.rank >= Rank.Moderator)
-                $("#playlist_controls").css("display", "block");
         }
         var users = $("#userlist").children();
         for(var i = 0; i < users.length; i++) {
@@ -308,7 +287,7 @@ function initCallbacks() {
         var ul = $("#library")[0];
         for(var i = 0; i < data.results.length; i++) {
             var li = makeQueueEntry(data.results[i]);
-            if(RANK >= Rank.Moderator || OPENQUEUE)
+            if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
                 addLibraryButtons(li, data.results[i].id);
             $(li).appendTo(ul);
         }

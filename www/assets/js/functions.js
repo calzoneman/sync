@@ -319,6 +319,7 @@ function updateYT(data) {
 // Soundcloud synchronization
 function updateSC(data) {
     if(MEDIATYPE != "sc") {
+        unfixSoundcloudShit();
         var currentEmbed = $("#ytapiplayer");
         var iframe = $("<iframe/>").insertBefore(currentEmbed);
         currentEmbed.remove();
@@ -350,7 +351,6 @@ function updateSC(data) {
 // Dailymotion synchronization
 function updateDM(data) {
     if(MEDIATYPE != "dm") {
-        console.log("updateDM: MEDIATYPE=", MEDIATYPE);
         removeCurrentPlayer();
         PLAYER = DM.player("ytapiplayer", {
             video: data.id,
@@ -369,6 +369,9 @@ function updateDM(data) {
     else {
         if(Math.abs(data.currentTime - PLAYER.currentTime) > SYNC_THRESHOLD) {
             PLAYER.api("seek", data.currentTime);
+        }
+        else if(PLAYER.currentTime > data.seconds || PLAYER.currentTime+"" == "NaN") {
+            PLAYER.api("load", data.id);
         }
     }
 }
@@ -582,7 +585,7 @@ function showChannelRegistration() {
     $("<button/>").addClass("close pull-right").text("×")
         .appendTo(div)
         .click(function() { div.remove(); });
-    $("<h3/>").text("This channel isn"t registered").appendTo(div);
+    $("<h3/>").text("This channel isn't registered").appendTo(div);
     $("<button/>").addClass("btn btn-primary").text("Register it")
         .appendTo(div)
         .click(function() {
@@ -620,5 +623,48 @@ function updateBanlist(entries) {
             });
         } })(entries[i].ip);
         remove.click(callback);
+    }
+}
+
+function handleRankChange() {
+    rebuildPlaylist();
+    if(RANK >= Rank.Moderator || LEADER) {
+        $("#playlist_controls").css("display", "block");
+        $("#playlist_controls button").each(function() {
+            $(this).attr("disabled", false);
+        });
+    }
+    if(RANK >= Rank.Moderator) {
+        $("#qlockbtn").css("display", "block");
+        var poll = $("#pollcontainer .active");
+        if(poll.length > 0) {
+            $("<button/>").addClass("btn btn-danger pull-right").text("Close Poll")
+                .insertAfter(poll.find(".close"))
+                .click(function() {
+                    socket.emit("closePoll")
+                });
+        }
+        var users = $("#userlist").children();
+        for(var i = 0; i < users.length; i++) {
+            addUserDropdown(users[i], users[i].children[1].innerHTML);
+        }
+
+        $("#modnav").show();
+        $("#chancontrols").show();
+    }
+    else {
+        if(OPENQUEUE) {
+            if(CHANNELOPTS.qopen_allow_qnext || LEADER)
+                $("#queue_next").attr("disabled", false);
+            else
+                $("#queue_next").attr("disabled", true);
+            if(CHANNELOPTS.qopen_allow_playnext || LEADER)
+                $("#play_next").attr("disabled", false);
+            else
+                $("#play_next").attr("disabled", true);
+        }
+        else {
+            $("#playlist_controls").css("display", "none");
+        }
     }
 }
