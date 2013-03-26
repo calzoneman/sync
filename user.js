@@ -58,11 +58,11 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("login", function(data) {
         if(this.name == "")
-            this.login(data.name, data.sha256);
+            this.login(data.name, data.pw);
     }.bind(this));
 
     this.socket.on("register", function(data) {
-        this.register(data.name, data.sha256);
+        this.register(data.name, data.pw);
     }.bind(this));
 
     this.socket.on("assignLeader", function(data) {
@@ -272,7 +272,7 @@ User.prototype.handleAdm = function(data) {
 };
 
 // Attempt to login
-User.prototype.login = function(name, sha256) {
+User.prototype.login = function(name, pw) {
     if(this.channel != null && name != "") {
         for(var i = 0; i < this.channel.users.length; i++) {
             if(this.channel.users[i].name == name) {
@@ -285,7 +285,7 @@ User.prototype.login = function(name, sha256) {
         }
     }
     // No password => try guest login
-    if(sha256 == "") {
+    if(pw == "") {
         // Sorry bud, can"t take that name
         if(Auth.isRegistered(name)) {
             this.socket.emit("login", {
@@ -321,7 +321,7 @@ User.prototype.login = function(name, sha256) {
     }
     else {
         var row;
-        if((row = Auth.login(name, sha256))) {
+        if((row = Auth.login(name, pw))) {
             this.loggedIn = true;
             this.socket.emit("login", {
                 success: true
@@ -355,8 +355,8 @@ User.prototype.login = function(name, sha256) {
 }
 
 // Attempt to register a user account
-User.prototype.register = function(name, sha256) {
-    if(sha256 == "") {
+User.prototype.register = function(name, pw) {
+    if(pw == "") {
         // Sorry bud, password required
         this.socket.emit("register", {
             success: false,
@@ -377,12 +377,12 @@ User.prototype.register = function(name, sha256) {
             error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
         });
     }
-    else if(Auth.register(name, sha256)) {
+    else if(Auth.register(name, pw)) {
         console.log(this.ip + " registered " + name);
         this.socket.emit("register", {
             success: true
         });
-        this.login(name, sha256);
+        this.login(name, pw);
     }
     else {
         this.socket.emit("register", {

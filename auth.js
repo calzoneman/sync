@@ -11,6 +11,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var mysql = require("mysql-libmysqlclient");
 var Config = require("./config.js");
+var bcrypt = require("bcrypt");
+var hashlib = require("node_hash");
 
 // Check if a name is taken
 exports.isRegistered = function(name) {
@@ -39,7 +41,7 @@ exports.validateName = function(name) {
 }
 
 // Try to register a new account
-exports.register = function(name, sha256) {
+exports.register = function(name, pw) {
     if(!exports.validateName(name))
         return false;
     if(exports.isRegistered(name))
@@ -51,16 +53,17 @@ exports.register = function(name, sha256) {
         console.log("MySQL Connection Failed");
         return false;
     }
+    var hash = bcrypt.hashSync(pw, 10);
     var query = "INSERT INTO registrations VALUES (NULL, '{1}', '{2}', 0)"
         .replace(/\{1\}/, name)
-        .replace(/\{2\}/, sha256);
+        .replace(/\{2\}/, hash);
     var results = db.querySync(query);
     db.closeSync();
     return results;
 }
 
 // Try to login
-exports.login = function(name, sha256) {
+exports.login = function(name, pw) {
     var db = mysql.createConnectionSync();
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
@@ -68,14 +71,34 @@ exports.login = function(name, sha256) {
         console.log("MySQL Connection Failed");
         return false;
     }
-    var query = "SELECT * FROM registrations WHERE uname='{1}' AND pw='{2}'"
+    var query = "SELECT * FROM registrations WHERE uname='{1}'"
         .replace(/\{1\}/, name)
-        .replace(/\{2\}/, sha256);
     var results = db.querySync(query);
     var rows = results.fetchAllSync();
-    db.closeSync();
     if(rows.length > 0) {
-        return rows[0];
+        if(bcrypt.compareSync(pw, rows[0].pw)) {
+            db.closeSync();
+            return rows[0];
+        }
+        else {
+            // Check if the sha256 is in the database
+            // If so, migrate to bcrypt
+            var sha256 = hashlib.sha256(pw);
+            if(sha256 == rows[0].pw) {
+                var newhash = bcrypt.hashSync(pw, 10);
+                var query = "UPDATE registrations SET pw='{1}' WHERE uname='{2}'"
+                    .replace(/\{1\}/, newhash)
+                    .replace(/\{2\}/, name);
+                var results = db.querySync(query);
+                db.closeSync();
+                if(!results) {
+                    console.log("Failed to migrate password! user=", name);
+                    return false;
+                }
+                return rows[0];
+            }
+            return false;
+        }
     }
     return false;
 }

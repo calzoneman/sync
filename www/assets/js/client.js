@@ -98,7 +98,7 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 if(uname != null && pw != null && pw != "false") {
     socket.emit("login", {
         name: uname,
-        sha256: pw
+        pw: pw
     });
 }
 
@@ -147,23 +147,20 @@ $("#qlockbtn").click(function() {
 
 function loginClick() {
     uname = $("#username").val();
-    if($("#password").val() == "")
-        pw = "";
-    else
-        pw = SHA256($("#password").val());
+    pw = $("#password").val();
     socket.emit("login", {
         name: uname,
-        sha256: pw
+        pw: pw
     });
 };
 
 $("#login").click(loginClick);
 $("#username").keydown(function(ev) {
-    if(ev.key == 13)
+    if(ev.keyCode == 13)
         loginClick();
 });
 $("#password").keydown(function(ev) {
-    if(ev.key == 13)
+    if(ev.keyCode == 13)
         loginClick();
 });
 
@@ -175,13 +172,10 @@ $("#logout").click(function() {
 
 $("#register").click(function() {
     uname = $("#username").val();
-    if($("#password").val() == "")
-        pw = "";
-    else
-        pw = SHA256($("#password").val());
+    pw = $("#password").val();
     socket.emit("register", {
         name: uname,
-        sha256: pw
+        pw: pw
     });
 });
 

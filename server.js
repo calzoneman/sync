@@ -13,6 +13,7 @@ var Config = require("./config.js");
 var connect = require("connect");
 var app = connect.createServer(connect.static(__dirname+"/www")).listen(Config.IO_PORT);
 exports.io = require("socket.io").listen(app);
+exports.io.set("log level", 1);
 var User = require("./user.js").User;
 var Database = require("./database.js");
 Database.init();

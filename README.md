@@ -30,8 +30,10 @@ I'm using v0.10, please feel free to report which versions do/do not work
     4. Install connect: `npm install connect`
     5. Install your distribution's `libmysqlclient` package
     6. Install the libmysql node module: `npm install mysql-libmysqlclient`
-    7. Edit `config.js` and input your database details and connection port
-    8. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
+    7. Install bcrypt: `npm install bcrypt`
+    8. Install node_hash: `npm install node_hash`
+    9. Edit `config.js` and input your database details and connection port
+    10. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
 
 Running
 -------
