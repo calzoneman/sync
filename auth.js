@@ -77,28 +77,34 @@ exports.login = function(name, pw) {
     var results = db.querySync(query);
     var rows = results.fetchAllSync();
     if(rows.length > 0) {
-        if(bcrypt.compareSync(pw, rows[0].pw)) {
-            db.closeSync();
-            return rows[0];
-        }
-        else {
-            // Check if the sha256 is in the database
-            // If so, migrate to bcrypt
-            var sha256 = hashlib.sha256(pw);
-            if(sha256 == rows[0].pw) {
-                var newhash = bcrypt.hashSync(pw, 10);
-                var query = "UPDATE registrations SET pw='{1}' WHERE uname='{2}'"
-                    .replace(/\{1\}/, newhash)
-                    .replace(/\{2\}/, name);
-                var results = db.querySync(query);
+        try {
+            if(bcrypt.compareSync(pw, rows[0].pw)) {
                 db.closeSync();
-                if(!results) {
-                    Logger.errlog.log("Failed to migrate password! user=" + name);
-                    return false;
-                }
                 return rows[0];
             }
-            return false;
+            else {
+                // Check if the sha256 is in the database
+                // If so, migrate to bcrypt
+                var sha256 = hashlib.sha256(pw);
+                if(sha256 == rows[0].pw) {
+                    var newhash = bcrypt.hashSync(pw, 10);
+                    var query = "UPDATE registrations SET pw='{1}' WHERE uname='{2}'"
+                        .replace(/\{1\}/, newhash)
+                        .replace(/\{2\}/, name);
+                    var results = db.querySync(query);
+                    db.closeSync();
+                    if(!results) {
+                        Logger.errlog.log("Failed to migrate password! user=" + name);
+                        return false;
+                    }
+                    return rows[0];
+                }
+                return false;
+            }
+        }
+        catch(e) {
+            Logger.errlog.log("Auth.login fail");
+            Logger.errlog.log(e);
         }
     }
     return false;
