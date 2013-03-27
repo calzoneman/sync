@@ -74,19 +74,15 @@ if(window.location.search) {
 if(uname != null && pw != null && pw != "false") {
     socket.emit("login", {
         name: uname,
-        sha256: pw
+        pw: pw
     });
 }
 
 function loginClick() {
     uname = $("#username").val();
-    if($("#password").val() == "")
-        pw = "";
-    else
-        pw = SHA256($("#password").val());
     socket.emit("login", {
         name: uname,
-        sha256: pw
+        pw: $("#password").val();
     });
 };
 
