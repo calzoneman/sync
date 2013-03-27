@@ -82,7 +82,7 @@ function loginClick() {
     uname = $("#username").val();
     socket.emit("login", {
         name: uname,
-        pw: $("#password").val();
+        pw: $("#password").val()
     });
 };
 
