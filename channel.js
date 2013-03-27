@@ -481,7 +481,7 @@ Channel.prototype.enqueue = function(data) {
     }
     // YouTube Playlist
     else if(data.type == "yp") {
-        var callback = (function(chan, id) { return function(res, data) {
+        var callback = (function(chan, plid) { return function(res, data) {
             if(res != 200) {
                 return;
             }
@@ -492,7 +492,16 @@ Channel.prototype.enqueue = function(data) {
                     var title = item.title.$t;
                     var url = item.link[1].href;
                     var parts = url.split("/");
-                    var id = parts[parts.length - 1];
+                    // INCOMING H4X BECAUSE YTAPI IS INCONSISTENT
+                    var last = parts[parts.length - 1];
+                    var match = last.match(/watch\?v=([^&]+)/);
+                    var id;
+                    if(match) {
+                        id = match[1];
+                    }
+                    else {
+                        id = parts[parts.length - 2];
+                    }
                     var seconds = item.media$group.yt$duration.seconds;
                     var vid = new Media(id, title, seconds, "yt");
                     chan.queue.splice(idx, 0, vid);
@@ -503,7 +512,7 @@ Channel.prototype.enqueue = function(data) {
                     chan.addToLibrary(vid);
                     idx++;
                 }
-                chan.logger.log("*** Queued YT Playlist: id=" + id);
+                chan.logger.log("*** Queued YT Playlist: id=" + plid);
             }
             catch(e) {
                 Logger.errlog.log("YTPlaylist Failed: id=", id);
