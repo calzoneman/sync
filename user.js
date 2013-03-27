@@ -14,6 +14,7 @@ var Auth = require("./auth.js");
 var Channel = require("./channel.js").Channel;
 var Server = require("./server.js");
 var Database = require("./database.js");
+var Logger = require("./logger.js");
 
 // Represents a client connected via socket.io
 var User = function(socket, ip) {
@@ -303,7 +304,7 @@ User.prototype.login = function(name, pw) {
         }
         // Woah, success!
         else {
-            console.log(this.ip + " signed in as " + name);
+            Logger.syslog.log(this.ip + " signed in as " + name);
             this.name = name;
             this.loggedIn = false;
             this.socket.emit("login", {
@@ -313,6 +314,7 @@ User.prototype.login = function(name, pw) {
                 rank: this.rank
             });
             if(this.channel != null) {
+                this.channel.logger.log(this.ip + " signed in as " + name);
                 if(this.rank >= Rank.Moderator)
                     this.channel.sendPlaylist(this);
                 this.channel.broadcastNewUser(this);
@@ -326,7 +328,7 @@ User.prototype.login = function(name, pw) {
             this.socket.emit("login", {
                 success: true
             });
-            console.log(this.ip + " logged in as " + name);
+            Logger.syslog.log(this.ip + " logged in as " + name);
             // Sweet, let"s look up our rank
             var chanrank = (this.channel != null) ? this.channel.getRank(name)
                                                   : Rank.Guest;
@@ -338,6 +340,7 @@ User.prototype.login = function(name, pw) {
             });
             this.name = name;
             if(this.channel != null) {
+                this.channel.logger.log(this.ip + " logged in as " + name);
                 if(this.rank >= Rank.Moderator)
                     this.channel.sendPlaylist(this);
                 this.channel.broadcastNewUser(this);

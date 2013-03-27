@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var http = require("http");
 var https = require("https");
+var Logger = require("./logger.js");
 
 // Helper function for making an HTTP request and getting the result
 // as JSON
@@ -26,7 +27,7 @@ function getJSON(options, callback) {
                 var data = JSON.parse(buffer);
             }
             catch(e) {
-                console.log("JSON fail: ", options);
+                Logger.errlog.log("JSON fail: " + options.path);
                 return;
             }
             callback(res.statusCode, data);
@@ -49,7 +50,7 @@ function getJSONHTTPS(options, callback) {
                 var data = JSON.parse(buffer);
             }
             catch(e) {
-                console.log("JSON fail: ", options);
+                Logger.errlog.log("JSON fail: " + options.path);
                 return;
             }
             callback(res.statusCode, data);

@@ -13,6 +13,7 @@ var mysql = require("mysql-libmysqlclient");
 var Config = require("./config.js");
 var bcrypt = require("bcrypt");
 var hashlib = require("node_hash");
+var Logger = require("./logger.js");
 
 // Check if a name is taken
 exports.isRegistered = function(name) {
@@ -20,7 +21,7 @@ exports.isRegistered = function(name) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Auth.isRegistered: DB connection failed");
         return true;
     }
     var query = "SELECT * FROM registrations WHERE uname='{}'"
@@ -50,7 +51,7 @@ exports.register = function(name, pw) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Auth.register: DB connection failed");
         return false;
     }
     var hash = bcrypt.hashSync(pw, 10);
@@ -68,7 +69,7 @@ exports.login = function(name, pw) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Auth.login: DB connection failed");
         return false;
     }
     var query = "SELECT * FROM registrations WHERE uname='{1}'"
@@ -92,7 +93,7 @@ exports.login = function(name, pw) {
                 var results = db.querySync(query);
                 db.closeSync();
                 if(!results) {
-                    console.log("Failed to migrate password! user=", name);
+                    Logger.errlog.log("Failed to migrate password! user=" + name);
                     return false;
                 }
                 return rows[0];

@@ -18,9 +18,10 @@ var Media = require("./media.js").Media;
 var ChatCommand = require("./chatcommand.js");
 var Server = require("./server.js");
 var io = Server.io;
+var Logger = require("./logger.js");
 
 var Channel = function(name) {
-    console.log("Opening channel " + name);
+    Logger.syslog.log("Opening channel " + name);
     this.name = name;
     this.registered = false;
     this.users = [];
@@ -38,10 +39,11 @@ var Channel = function(name) {
         qopen_allow_playnext: false,
         qopen_allow_delete: false,
         pagetitle: "Sync",
-        bgimage: ""
+        customcss: ""
     };
 
-    this.ipbans = [];
+    this.ipbans = {};
+    this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
 
     // Autolead stuff
     // Accumulator
@@ -59,7 +61,7 @@ Channel.prototype.loadMysql = function() {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Channel.loadMysql: MySQL Connection Failed");
         return false;
     }
     // Check if channel exists
@@ -67,12 +69,12 @@ Channel.prototype.loadMysql = function() {
         .replace(/\{\}/, this.name);
     var results = db.querySync(query);
     if(!results) {
-        console.log("channel query failed");
+        Logger.errlog.log("Channel.loadMysql: Channel query failed");
         return;
     }
     var rows = results.fetchAllSync();
     if(rows.length == 0) {
-        console.log("Channel " + this.name + " is unregistered");
+        Logger.syslog.log("Channel " + this.name + " is unregistered.");
         return;
     }
     this.registered = true;
@@ -82,7 +84,7 @@ Channel.prototype.loadMysql = function() {
         .replace(/\{\}/, this.name);
     var results = db.querySync(query);
     if(!results) {
-        console.log("channel library query failed");
+        Logger.errlog.log("Channel.loadMysql: failed to load library for " + this.name);
         return;
     }
     var rows = results.fetchAllSync();
@@ -95,7 +97,7 @@ Channel.prototype.loadMysql = function() {
         .replace(/\{\}/, this.name);
     var results = db.querySync(query);
     if(!results) {
-        console.log("Channel banlist query failed");
+        Logger.errlog.log("Channel.loadMysql: failed to load banlist for " + this.name);
         return;
     }
     var rows = results.fetchAllSync();
@@ -103,7 +105,7 @@ Channel.prototype.loadMysql = function() {
         this.ipbans[rows[i].ip] = [rows[i].name, rows[i].banner];
     }
 
-    console.log("Loaded channel " + this.name + " from MySQL DB");
+    Logger.syslog.log("Loaded channel " + this.name + " from database");
     db.closeSync();
 }
 
@@ -114,7 +116,7 @@ Channel.prototype.createTables = function() {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Channel.createTables: DB connection failed");
         return false;
     }
     // Create library table
@@ -187,6 +189,8 @@ Channel.prototype.tryRegister = function(user) {
             user.socket.emit("registerChannel", {
                 success: true,
             });
+            this.logger.log("*** " + user.name + " registered the channel");
+            Logger.syslog.log("Channel " + this.name + " was registered by " + user.name);
         }
         else {
             user.socket.emit("registerChannel", {
@@ -205,7 +209,7 @@ Channel.prototype.getRank = function(name) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Channel.getRank: DB connection failed");
         return Rank.Guest;
     }
     var query = "SELECT * FROM chan_{1}_ranks WHERE name='{2}'"
@@ -231,7 +235,7 @@ Channel.prototype.saveRank = function(user) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Channel.saveRank: DB connection failed");
         return false;
     }
     var query = "UPDATE chan_{1}_ranks SET rank='{2}' WHERE name='{3}'"
@@ -261,7 +265,7 @@ Channel.prototype.addToLibrary = function(media) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Channel.addToLibrary: DB connection failed");
         return false;
     }
     var query = "INSERT INTO chan_{1}_library VALUES ('{2}', '{3}', {4}, '{5}', '{6}')"
@@ -287,7 +291,7 @@ Channel.prototype.banIP = function(banner, bannee) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Channel.banIP: DB connection failed");
         return false;
     }
     var query = "INSERT INTO chan_{1}_bans (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
@@ -297,7 +301,10 @@ Channel.prototype.banIP = function(banner, bannee) {
         .replace(/\{4\}/, banner.name);
     results = db.querySync(query);
     if(!results) {
-        console.log("Insert into ban table failed");
+        Logger.errlog.log("Channel.banIP: Insert failed");
+    }
+    else {
+        this.logger.log(bannee.ip + " (" + bannee.name + ") was banned by " + banner.name);
     }
     db.closeSync();
     return results;
@@ -313,7 +320,7 @@ Channel.prototype.unbanIP = function(ip) {
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
     if(!db.connectedSync()) {
-        console.log("MySQL Connection Failed");
+        Logger.errlog.log("Channel.unbanIP: DB connection failed");
         return false;
     }
 
@@ -323,7 +330,7 @@ Channel.prototype.unbanIP = function(ip) {
 
     results = db.querySync(query);
     if(!results) {
-        console.log("Delete from ban table failed");
+        Logger.errlog.log("Channel.unbanIP: Failed  to delete entry");
         return;
     }
     db.closeSync();
@@ -351,7 +358,7 @@ Channel.prototype.searchLibrary = function(query) {
 // Called when a new user enters the channel
 Channel.prototype.userJoin = function(user) {
     if(user.ip in this.ipbans && this.ipbans[user.ip] != null) {
-        console.log("/" + user.ip + " was disconnected - banned");
+        this.logger.log("--- Kicking /" + user.ip + " - banned");
         user.socket.disconnect();
         return;
     }
@@ -403,7 +410,8 @@ Channel.prototype.userJoin = function(user) {
     user.socket.emit("banlist", {entries: ents});
     if(user.playerReady)
         this.sendMediaUpdate(user);
-    console.log("/" + user.ip + " joined channel " + this.name);
+    this.logger.log("+++ /" + user.ip + " joined");
+    Logger.syslog.log("/" + user.ip + " joined channel " + this.name);
 }
 
 // Called when a user leaves the channel
@@ -428,6 +436,7 @@ Channel.prototype.userLeave = function(user) {
             name: user.name
         });
     }
+    this.logger.log("--- /" + user.ip + " (" + user.name + ") left");
 }
 
 // Queues a new media
@@ -440,6 +449,7 @@ Channel.prototype.enqueue = function(data) {
             media: this.library[data.id].pack(),
             pos: idx
         });
+        this.logger.log("*** Queued from cache: id=" + data.id);
     }
     // Query metadata from YouTube
     else if(data.type == "yt") {
@@ -460,9 +470,11 @@ Channel.prototype.enqueue = function(data) {
                     pos: idx
                 });
                 chan.addToLibrary(vid);
+                chan.logger.log("*** Queued new YT video: " + id);
             }
             catch(e) {
-                console.log("YTQueue Fail: id=" + id);
+                Logger.errlog.log("YTQueue Fail: id=" + id);
+                console.log(e);
             }
         }})(this, data.id);
         InfoGetter.getYTInfo(data.id, callback);
@@ -491,9 +503,10 @@ Channel.prototype.enqueue = function(data) {
                     chan.addToLibrary(vid);
                     idx++;
                 }
+                chan.logger.log("*** Queued YT Playlist: id=" + id);
             }
             catch(e) {
-                console.log("YTPlaylist Failed: id=", id);
+                Logger.errlog.log("YTPlaylist Failed: id=", id);
                 console.log(e);
             }
         }})(this, data.id);
@@ -507,6 +520,7 @@ Channel.prototype.enqueue = function(data) {
             media: media.pack(),
             pos: idx
         });
+        this.logger.log("*** Queued Twitch channel: " + data.id);
     }
     else if(data.type == "li") {
         var media = new Media(data.id, "Livestream ~ " + data.id, 0, "li");
@@ -515,6 +529,7 @@ Channel.prototype.enqueue = function(data) {
             media: media.pack(),
             pos: idx
         });
+        this.logger.log("*** Queued Livestream channel: " + data.id);
     }
     // Query metadata from Soundcloud
     else if(data.type == "sc") {
@@ -523,15 +538,22 @@ Channel.prototype.enqueue = function(data) {
                 return;
             }
 
-            var seconds = data.duration / 1000;
-            var title = data.title;
-            var vid = new Media(id, title, seconds, "sc");
-            chan.queue.splice(idx, 0, vid);
-            chan.sendAll("queue", {
-                media: vid.pack(),
-                pos: idx
-            });
-            chan.addToLibrary(vid);
+            try {
+                var seconds = data.duration / 1000;
+                var title = data.title;
+                var vid = new Media(id, title, seconds, "sc");
+                chan.queue.splice(idx, 0, vid);
+                chan.sendAll("queue", {
+                    media: vid.pack(),
+                    pos: idx
+                });
+                chan.addToLibrary(vid);
+                chan.logger.log("*** Queued Soundcloud id=" + id);
+            }
+            catch(e) {
+                Logger.errlog.log("SCQueue fail: id=" + id);
+                Logger.errlog.log(e);
+            }
         }})(this, data.id);
         InfoGetter.getSCInfo(data.id, callback);
     }
@@ -542,16 +564,23 @@ Channel.prototype.enqueue = function(data) {
                 return;
             }
 
-            data = data[0];
-            var seconds = data.duration;
-            var title = data.title;
-            var vid = new Media(id, title, seconds, "vi");
-            chan.queue.splice(idx, 0, vid);
-            chan.sendAll("queue", {
-                media: vid.pack(),
-                pos: idx
-            });
-            chan.addToLibrary(vid);
+            try {
+                data = data[0];
+                var seconds = data.duration;
+                var title = data.title;
+                var vid = new Media(id, title, seconds, "vi");
+                chan.queue.splice(idx, 0, vid);
+                chan.sendAll("queue", {
+                    media: vid.pack(),
+                    pos: idx
+                });
+                chan.addToLibrary(vid);
+                chan.logger.log("*** Queued Vimeo id=" + id);
+            }
+            catch(e) {
+                Logger.errlog.log("VIQueue fail: id=" + id);
+                Logger.errlog.log(e);
+            }
         }})(this, data.id);
         InfoGetter.getVIInfo(data.id, callback);
     }
@@ -563,15 +592,22 @@ Channel.prototype.enqueue = function(data) {
                 return;
             }
 
-            var seconds = data.duration;
-            var title = data.title;
-            var vid = new Media(id, title, seconds, "dm");
-            chan.queue.splice(idx, 0, vid);
-            chan.sendAll("queue", {
-                media: vid.pack(),
-                pos: idx
-            });
-            chan.addToLibrary(vid);
+            try {
+                var seconds = data.duration;
+                var title = data.title;
+                var vid = new Media(id, title, seconds, "dm");
+                chan.queue.splice(idx, 0, vid);
+                chan.sendAll("queue", {
+                    media: vid.pack(),
+                    pos: idx
+                });
+                chan.addToLibrary(vid);
+                chan.logger.log("*** Queued Dailymotion id=" + id);
+            }
+            catch(e) {
+                Logger.errlog.log("DMQueue fail: id=" + id);
+                Logger.errlog.log(e);
+            }
         }})(this, data.id);
         InfoGetter.getDMInfo(data.id, callback);
     }
@@ -693,6 +729,7 @@ Channel.prototype.sendMessage = function(username, msg, msgclass) {
     });
     if(this.recentChat.length > 15)
         this.recentChat.shift();
+    this.logger.log("<" + username + "." + msgclass + "> " + msg);
 };
 
 // Promotion!  Actor is the client who initiated the promotion, name is the
@@ -715,6 +752,7 @@ Channel.prototype.promoteUser = function(actor, name) {
             if(receiver.loggedIn) {
                 this.saveRank(receiver);
             }
+            this.logger.log("*** " + actor.name + " promoted " + receiver.name + " from " + (receiver.rank - 1) + " to " + receiver.rank);
             this.broadcastRankUpdate(receiver);
         }
     }
@@ -738,6 +776,7 @@ Channel.prototype.demoteUser = function(actor, name) {
             if(receiver.loggedIn) {
                 this.saveRank(receiver);
             }
+            this.logger.log("*** " + actor.name + " demoted " + receiver.name + " from " + (receiver.rank + 1) + " to " + receiver.rank);
             this.broadcastRankUpdate(receiver);
         }
     }
@@ -752,6 +791,7 @@ Channel.prototype.changeLeader = function(name) {
         this.broadcastRankUpdate(old);
     }
     if(name == "") {
+        this.logger.log("*** Resuming autolead");
         if(this.currentMedia != null) {
             this.time = new Date().getTime();
             this.i = 0;
@@ -761,6 +801,7 @@ Channel.prototype.changeLeader = function(name) {
     }
     for(var i = 0; i < this.users.length; i++) {
         if(this.users[i].name == name) {
+            this.logger.log("*** Assigned leader: " + name);
             this.leader = this.users[i];
             this.broadcastRankUpdate(this.leader);
         }
@@ -811,9 +852,6 @@ Channel.prototype.sendRecentChat = function(user) {
 Channel.prototype.sendMediaUpdate = function(user) {
     if(this.currentMedia != null) {
         user.socket.emit("mediaUpdate", this.currentMedia.packupdate());
-    }
-    else {
-        console.log("currentMedia is null");
     }
 }
 

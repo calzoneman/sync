@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var mysql = require("mysql-libmysqlclient");
 var Config = require("./config.js");
+var Logger = require("./logger.js");
 
 var initialized = false;
 
@@ -28,7 +29,7 @@ exports.init = function() {
                      ENGINE = MyISAM;";
     var results = db.querySync(query);
     if(!results) {
-        console.log("Database initialization failed! Could not create channel table");
+        Logger.errlog.log("database.init: channel table init failed!");
         return false;
     }
 
@@ -41,7 +42,7 @@ exports.init = function() {
                      ENGINE = MyISAM;";
     var results = db.querySync(query);
     if(!results) {
-        console.log("Database initialization failed! Could not create registration table");
+        Logger.errlog.log("database.init: registration table init failed!");
         return false;
     }
 
@@ -59,7 +60,7 @@ exports.listChannels = function() {
     var query = "SELECT * FROM `channels`";
     var results = db.querySync(query);
     if(!results) {
-        console.log("Database channel listing failed!");
+        Logger.errlog.log("database.listChannels: query failed");
         return false;
     }
 
@@ -79,7 +80,7 @@ exports.listUsers = function() {
     var query = "SELECT * FROM `registrations`";
     var results = db.querySync(query);
     if(!results) {
-        console.log("Database user listing failed!");
+        Logger.errlog.log("database.listUsers: query failed");
         return false;
     }
 
@@ -101,7 +102,7 @@ exports.listChannelRanks = function(chan) {
     console.log(query);
     var results = db.querySync(query);
     if(!results) {
-        console.log("Database channel listing failed!");
+        Logger.errlog.log("database.listChannelRanks: query failed");
         return false;
     }
 

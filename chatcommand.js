@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var Rank = require("./rank.js");
 var Poll = require("./poll.js").Poll;
+var Logger = require("./logger.js");
 
 function handle(chan, user, msg) {
     if(msg.indexOf("/me ") == 0)
@@ -46,6 +47,7 @@ function handleKick(chan, user, args) {
             }
         }
         if(kickee) {
+            chan.logger.log("*** " + user.name + " kicked " + args[0]);
             kickee.socket.disconnect();
         }
     }
@@ -61,6 +63,7 @@ function handleBan(chan, user, args) {
             }
         }
         if(kickee && kickee.rank < user.rank) {
+            chan.logger.log("*** " + user.name + " banned " + args[0]);
             chan.banIP(user, kickee);
         }
     }
@@ -68,6 +71,7 @@ function handleBan(chan, user, args) {
 
 function handleUnban(chan, user, args) {
     if(Rank.hasPermission(user, "ipban") && args.length > 0) {
+        chan.logger.log("*** " + user.name + " unbanned " + args[0]);
         chan.unbanIP(args[0]);
     }
 }
@@ -80,6 +84,7 @@ function handlePoll(chan, user, msg) {
         var poll = new Poll(user.name, title, args);
         chan.poll = poll;
         chan.broadcastPoll();
+        chan.logger.log("*** " + user.name + " Opened Poll: '" + poll.title + "'");
     }
 }
 
