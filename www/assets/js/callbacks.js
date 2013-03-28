@@ -68,7 +68,7 @@ function initCallbacks() {
         $("#opt_qopen_allow_playnext").prop("checked", opts.qopen_allow_playnext);
         $("#opt_pagetitle").attr("placeholder", opts.pagetitle);
         document.title = opts.pagetitle;
-        $("opt_customcss").val(opts.customcss);
+        $("#opt_customcss").attr("placeholder", opts.customcss);
         $("#customCss").remove();
         if(opts.customcss != "") {
             $("<link/>").attr("rel", "stylesheet")
@@ -82,6 +82,8 @@ function initCallbacks() {
             $("#queue_next").attr("disabled", false);
         if(opts.qopen_allow_playnext)
             $("#play_next").attr("disabled", false);
+        else if(RANK < Rank.Moderator && !LEADER)
+            $("#play_next").attr("disabled", true);
         rebuildPlaylist();
     });
 

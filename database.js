@@ -22,6 +22,10 @@ exports.init = function() {
     var db = mysql.createConnectionSync();
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    if(!db.connectedSync()) {
+        Logger.errlog.log("database.init: DB connection failed");
+        return false;
+    }
     var query = "CREATE TABLE IF NOT EXISTS `channels` \
                     (`id` INT NOT NULL, \
                      `name` VARCHAR(255) NOT NULL, \

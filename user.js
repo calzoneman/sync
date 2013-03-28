@@ -42,7 +42,11 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("joinChannel", function(data) {
+        if(data.name == undefined)
+            return;
         if(!data.name.match(/^[a-zA-Z0-9]+$/))
+            return;
+        if(data.name.length > 100)
             return;
         // Channel already loaded
         if(data.name in Server.channels) {
@@ -58,15 +62,25 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("login", function(data) {
+        if(data.name == undefined || data.pw == undefined)
+            return;
+        if(data.pw.length > 100)
+            data.pw = data.pw.substring(0, 100);
         if(this.name == "")
             this.login(data.name, data.pw);
     }.bind(this));
 
     this.socket.on("register", function(data) {
+        if(data.name == undefined || data.pw == undefined)
+            return;
+        if(data.pw.length > 100)
+            data.pw = data.pw.substring(0, 100);
         this.register(data.name, data.pw);
     }.bind(this));
 
     this.socket.on("assignLeader", function(data) {
+        if(data.name == undefined)
+            return;
         if(Rank.hasPermission(this, "assignLeader")) {
             if(this.channel != null)
                 this.channel.changeLeader(data.name);
@@ -74,6 +88,8 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("promote", function(data) {
+        if(data.name == undefined)
+            return;
         if(Rank.hasPermission(this, "promote")) {
             if(this.channel != null) {
                 this.channel.promoteUser(this, data.name);
@@ -134,6 +150,15 @@ User.prototype.initCallbacks = function() {
             this.channel.leader == this ||
             this.channel.opts.qopen_allow_move && !this.channel.qlocked ) {
                 this.channel.moveMedia(data);
+        }
+    }.bind(this));
+
+    this.socket.on("jumpTo", function(data) {
+        if(this.channel == null || data.pos == undefined)
+            return;
+        if(Rank.hasPermission(this, "jump") ||
+            this.channel.leader == this) {
+            this.channel.jumpTo(data.pos);
         }
     }.bind(this));
 

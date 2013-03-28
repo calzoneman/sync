@@ -9,6 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+var fs = require("fs");
 var Logger = require("./logger.js");
 var Config = require("./config.js");
 var connect = require("connect");
@@ -25,3 +26,27 @@ exports.io.sockets.on("connection", function(socket) {
     var user = new User(socket, socket.handshake.address.address);
     Logger.syslog.log("Accepted connection from /" + user.ip);
 });
+
+process.on("uncaughtException", function(err) {
+    Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
+});
+
+process.on("exit", shutdown);
+process.on("SIGINT", shutdown);
+
+function shutdown() {
+    Logger.syslog.log("Unloading channels...");
+    for(var name in exports.channels) {
+        var chan = exports.channels[name];
+        var dump = {
+            currentPosition: chan.currentPosition,
+            queue: chan.queue,
+            opts: chan.opts
+        };
+        var text = JSON.stringify(dump);
+        fs.writeFileSync("chandump/" + name, text);
+        chan.logger.flush();
+    }
+    Logger.syslog.log("Shutting Down");
+    process.exit(0);
+}

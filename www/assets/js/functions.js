@@ -1,11 +1,11 @@
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -166,39 +166,57 @@ function makeQueueEntry(video) {
 function addQueueButtons(li) {
     var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
+    var btnMove = $("<button />").addClass("btn qe_btn").appendTo(btnstrip);
+    $("<i />").addClass("icon-resize-vertical").appendTo(btnMove);
+
     var btnRemove =  $("<button />").attr("class", "btn btn-danger qe_btn").appendTo(btnstrip);
     $("<i />").attr("class", "icon-remove").appendTo(btnRemove);
 
-    var btnUp =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
-    $("<i />").attr("class", "icon-arrow-up").appendTo(btnUp);
-
-    var btnDown =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
-    $("<i />").attr("class", "icon-arrow-down").appendTo(btnDown);
+    var btnPlay =  $("<button />").attr("class", "btn btn-success qe_btn").appendTo(btnstrip);
+    $("<i />").attr("class", "icon-play").appendTo(btnPlay);
 
     var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
     //$("<i />").attr("class", "icon-play").appendTo(btnNext);
     btnNext.text("Next");
 
+
     // Callback time
+    btnMove.mousedown(function() {
+        GRABBEDLI = li;
+        OLDINDEX = $("#queue").children().index(li);
+    });
+
+    btnMove.mousemove(function() {
+        if(GRABBEDLI != null) {
+            var idx = $("#queue").children().index(li);
+            var lidx = $("#queue").children().index(GRABBEDLI);
+            if(idx != lidx)
+                moveVideo(lidx, idx);
+        }
+    });
+
+    $(li).mouseup(function() {
+        if(GRABBEDLI != null) {
+            var idx = $("#queue").children().index(GRABBEDLI);
+            GRABBEDLI = null;
+            moveVideo(idx, OLDINDEX, true);
+            socket.emit("moveMedia", {
+                src: OLDINDEX,
+                dest: idx
+            });
+        }
+    });
+
     $(btnRemove).click(function() {
         btnstrip.remove();
         var idx = $("#queue").children().index(li);
         socket.emit("unqueue", { pos: idx });
     });
 
-    $(btnUp).click(function() {
+    $(btnPlay).click(function() {
         var idx = $("#queue").children().index(li);
-        socket.emit("moveMedia", {
-            src: idx,
-            dest: idx-1
-        });
-    });
-
-    $(btnDown).click(function() {
-        var idx = $("#queue").children().index(li);
-        socket.emit("moveMedia", {
-            src: idx,
-            dest: idx+1
+        socket.emit("jumpTo", {
+            pos: idx
         });
     });
 
@@ -214,12 +232,11 @@ function addQueueButtons(li) {
     if(RANK < Rank.Moderator && !LEADER) {
         if(!CHANNELOPTS.qopen_allow_delete)
             $(btnRemove).attr("disabled", true);
-        if(!CHANNELOPTS.qopen_allow_move) {
-            $(btnUp).attr("disabled", true);
-            $(btnDown).attr("disabled", true);
-        }
+        if(!CHANNELOPTS.qopen_allow_move)
+            $(btnMove).attr("disabled", true);
         if(!CHANNELOPTS.qopen_allow_qnext)
             $(btnNext).attr("disabled", true);
+        $(btnPlay).attr("disabled", true);
     }
 }
 
@@ -261,9 +278,19 @@ function addLibraryButtons(li, id) {
 }
 
 // Rearranges the queue
-function moveVideo(src, dest) {
+function moveVideo(src, dest, noanim) {
     var li = $("#queue").children()[src];
     var ul = $("#queue")[0];
+    if(noanim) {
+        ul.removeChild(li);
+        if(dest == ul.children.length) {
+            ul.appendChild(li);
+        }
+        else {
+            ul.insertBefore(li, ul.getElementsByTagName("li")[dest]);
+        }
+        return;
+    }
     $(li).hide("blind", function() {
         ul.removeChild(li);
         if(dest == ul.children.length) {
@@ -274,10 +301,12 @@ function moveVideo(src, dest) {
         }
         $(li).show("blind");
     });
-    if(src < POSITION && dest >= POSITION)
+    if(src < POSITION && dest > POSITION)
         POSITION--;
     if(src > POSITION && dest < POSITION)
         POSITION++;
+    if(src == POSITION)
+        POSITION = dest;
 }
 
 // YouTube Synchronization
@@ -578,7 +607,7 @@ function addPoll(data) {
             .prependTo($("<div/>").addClass("option").text(data.options[i])
                     .appendTo(poll))
             .click(callback);
-            
+
     }
 }
 

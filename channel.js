@@ -9,6 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+var fs = require("fs");
 var mysql = require("mysql-libmysqlclient");
 var Config = require("./config.js");
 var Rank = require("./rank.js");
@@ -44,6 +45,29 @@ var Channel = function(name) {
 
     this.ipbans = {};
     this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
+    fs.readFile("chandump/" + this.name, function(err, data) {
+        if(err) {
+            return;
+        }
+        try {
+            this.logger.log("*** Loading channel dump from disk");
+            data = JSON.parse(data);
+            for(var i = 0; i < data.queue.length; i++) {
+                var e = data.queue[i];
+                this.queue.push(new Media(e.id, e.title, e.seconds, e.type));
+            }
+            this.sendAll("playlist", {
+                pl: this.queue
+            });
+            this.currentPosition = data.currentPosition - 1;
+            this.playNext();
+            this.opts = data.opts;
+        }
+        catch(e) {
+            Logger.errlog.log("Channel dump load failed: ");
+            Logger.errlog.log(e);
+        }
+    }.bind(this));
 
     // Autolead stuff
     // Accumulator
@@ -667,6 +691,26 @@ Channel.prototype.playNext = function() {
     }
 }
 
+Channel.prototype.jumpTo = function(pos) {
+    if(this.queue.length == 0)
+        return;
+    if(pos >= this.queue.length || pos < 0)
+        return;
+    this.currentPosition = pos;
+    this.currentMedia = this.queue[this.currentPosition];
+    this.currentMedia.currentTime = 0;
+
+    this.sendAll("mediaUpdate", this.currentMedia.packupdate());
+    this.sendAll("updatePlaylistIdx", {
+        idx: this.currentPosition
+    });
+    // Enable autolead for non-twitch
+    if(this.leader == null && this.currentMedia.type != "tw" && this.currentMedia.type != "li") {
+        this.time = new Date().getTime();
+        channelVideoUpdate(this, this.currentMedia.id);
+    }
+}
+
 Channel.prototype.setLock = function(locked) {
     this.qlocked = locked;
     this.sendAll("queueLock", {locked: locked});
@@ -701,12 +745,14 @@ Channel.prototype.moveMedia = function(data) {
         dest: data.dest
     });
 
-    if(data.src < this.currentPosition && data.dest >= this.currentPosition) {
+    if(data.src < this.currentPosition && data.dest > this.currentPosition) {
         this.currentPosition--;
     }
     if(data.src > this.currentPosition && data.dest < this.currentPosition) {
         this.currentPosition++
     }
+    if(data.src == this.currentPosition)
+        this.currentPosition = data.dest;
 }
 
 // Chat message from a user

@@ -28,6 +28,7 @@ var permissions = {
     poll            : exports.Moderator,
     shout           : exports.Moderator,
     channelOpts     : exports.Moderator,
+    jump            : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };
