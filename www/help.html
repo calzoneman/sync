@@ -104,6 +104,7 @@
                         </td>
                     </tr>
                 </table>
+                <p>There are also some other chat features.  When your name appears in a message, <span class="nick-highlight">the message will be highlighted.</span>  If you type the beginning of someone's name in chat, pressing tab will attempt to autocomplete the name.</p>
 
                 <h1>Queue Controls</h1>
                 <p>Queue Controls are only visible to moderators by default.  A moderator can unlock the queue to make the controls visible to everyone.<br> Below is an example of the queue controls.  On your channel, simply paste a link of one of the following accepted formats and press "Queue Next" to add it after the current video, or "Queue @ End" to add it at the end of the playlist.  Press "Play Next" to advance to the next video in the playlist.<br>
@@ -125,14 +126,14 @@
                     </div>
                     <button class="btn btn-inverse" id="play_next">Play Next</button>
                 </div>
-                <p>Below is an example of an entry in the playlist.  Please note the control buttons only appear if you are a moderator or if the queue is unlocked.  The red "X" button will remove the video from the playlist.  The next two buttons will shift its position up or down.  The "Next" button will move the video so that it plays after the current video.
+                <p>Below is an example of an entry in the playlist.  Please note the control buttons only appear if you are a moderator or if the queue is unlocked.  The button with vertical arrows is for moving videos in the playlist.  Click and hold the button and drag the mouse up and down to move the video in the playlist.  The red "X" button will remove the video from the playlist.  The green play button will jump the playlist to that video.  The "Next" button will move the video so that it plays after the current video.
                 </p>
                 <ul class="videolist">
                     <li class="well">
                         <div class="btn-group qe_buttons">
+                            <button class="btn qe_btn"><i class="icon-resize-vertical"></i></button>
                             <button class="btn btn-danger qe_btn"><i class="icon-remove"></i></button>
-                            <button class="btn qe_btn"><i class="icon-arrow-up"></i></button>
-                            <button class="btn qe_btn"><i class="icon-arrow-down"></i></button>
+                            <button class="btn btn-success qe_btn"><i class="icon-play"></i></button>
                             <button class="btn qe_btn">Next</button>
                         </div>
                         <div class="qe_title">Title</div>

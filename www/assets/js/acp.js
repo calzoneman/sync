@@ -43,9 +43,11 @@ function initCallbacks() {
             $("#logoutform").css("display", "");
             $("#loginform").css("display", "none");
         }
-        socket.emit("adm", {
-            cmd: "listchannels"
-        });
+        setInterval(function() {
+            socket.emit("adm", {
+                cmd: "listchannels"
+            });
+        }, 10000);
     });
 }
 
@@ -80,9 +82,10 @@ if(uname != null && pw != null && pw != "false") {
 
 function loginClick() {
     uname = $("#username").val();
+    pw = $("#password").val();
     socket.emit("login", {
         name: uname,
-        pw: $("#password").val()
+        pw: pw
     });
 };
 
