@@ -170,9 +170,6 @@ User.prototype.initCallbacks = function() {
         if(Rank.hasPermission(this, "queue") ||
             this.channel.leader == this ||
             this.channel.opts.qopen_allow_playnext && !this.channel.qlocked) {
-                if(this.channel.currentPosition + 1 >= this.channel.queue.length) {
-                    this.channel.currentPosition = -1;
-                }
                 this.channel.playNext();
         }
     }.bind(this));

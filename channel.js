@@ -664,9 +664,6 @@ Channel.prototype.unqueue = function(data) {
 
     if(data.pos < this.currentPosition) {
         this.currentPosition--;
-        this.sendAll("updatePlaylistIdx", {
-            idx: this.currentPosition
-        });
     }
     if(data.pos == this.currentPosition) {
         this.currentPosition--;
@@ -678,6 +675,7 @@ Channel.prototype.unqueue = function(data) {
 Channel.prototype.playNext = function() {
     if(this.queue.length == 0)
         return;
+    var old = this.currentPosition;
     if(this.currentPosition + 1 >= this.queue.length) {
         this.currentPosition = -1;
     }
@@ -687,6 +685,7 @@ Channel.prototype.playNext = function() {
 
     this.sendAll("mediaUpdate", this.currentMedia.packupdate());
     this.sendAll("updatePlaylistIdx", {
+        old: old,
         idx: this.currentPosition
     });
     // Enable autolead for non-twitch
@@ -701,13 +700,15 @@ Channel.prototype.jumpTo = function(pos) {
         return;
     if(pos >= this.queue.length || pos < 0)
         return;
+    var old = this.currentPosition;
     this.currentPosition = pos;
     this.currentMedia = this.queue[this.currentPosition];
     this.currentMedia.currentTime = 0;
 
     this.sendAll("mediaUpdate", this.currentMedia.packupdate());
     this.sendAll("updatePlaylistIdx", {
-        idx: this.currentPosition
+        idx: this.currentPosition,
+        old: old
     });
     // Enable autolead for non-twitch
     if(this.leader == null && this.currentMedia.type != "tw" && this.currentMedia.type != "li") {
@@ -743,21 +744,22 @@ Channel.prototype.moveMedia = function(data) {
         return;
 
     var media = this.queue[data.src];
+    this.queue.splice(data.dest + 1, 0, media);
     this.queue.splice(data.src, 1);
-    this.queue.splice(data.dest, 0, media);
     this.sendAll("moveVideo", {
         src: data.src,
         dest: data.dest
     });
 
-    if(data.src < this.currentPosition && data.dest > this.currentPosition) {
+    if(data.src < this.currentPosition && data.dest >= this.currentPosition) {
         this.currentPosition--;
     }
-    if(data.src > this.currentPosition && data.dest < this.currentPosition) {
+    else if(data.src > this.currentPosition && data.dest < this.currentPosition) {
         this.currentPosition++
     }
-    if(data.src == this.currentPosition)
+    else if(data.src == this.currentPosition) {
         this.currentPosition = data.dest;
+    }
 }
 
 // Chat message from a user

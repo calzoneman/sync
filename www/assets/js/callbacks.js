@@ -133,9 +133,6 @@ function initCallbacks() {
     });
 
     socket.on("unqueue", function(data) {
-        if(data.pos == POSITION && $("#queue").children().length > POSITION + 1) {
-            $($("#queue").children()[POSITION+1]).addClass("alert alert-info");
-        }
         var li = $("#queue").children()[data.pos];
         //$(li).hide("blind", function() {
             $(li).remove();
@@ -175,11 +172,14 @@ function initCallbacks() {
     });
 
     socket.on("updatePlaylistIdx", function(data) {
-        var liold = $("#queue").children()[POSITION];
-        $(liold).removeClass("alert alert-info");
+        if(data.old != undefined) {
+            console.log("unhighlight", data.old);
+            var liold = $("#queue").children()[data.old];
+            $(liold).removeClass("alert alert-info");
+        }
         var linew = $("#queue").children()[data.idx];
         $(linew).addClass("alert alert-info");
-        POSITION= data.idx;
+        POSITION = data.idx;
     });
 
     socket.on("mediaUpdate", function(data) {

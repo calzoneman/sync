@@ -191,11 +191,11 @@ function addQueueButtons(li) {
             var idx = $("#queue").children().index(li);
             var lidx = $("#queue").children().index(GRABBEDLI);
             if(idx != lidx)
-                moveVideo(lidx, idx);
+                moveVideo(lidx, idx, true);
         }
     });
 
-    $(li).mouseup(function() {
+    $(document).mouseup(function() {
         if(GRABBEDLI != null) {
             var idx = $("#queue").children().index(GRABBEDLI);
             GRABBEDLI = null;
@@ -289,24 +289,23 @@ function moveVideo(src, dest, noanim) {
         else {
             ul.insertBefore(li, ul.getElementsByTagName("li")[dest]);
         }
-        return;
     }
-    $(li).hide("blind", function() {
-        ul.removeChild(li);
-        if(dest == ul.children.length) {
-            ul.appendChild(li);
-        }
-        else {
-            ul.insertBefore(li, ul.getElementsByTagName("li")[dest]);
-        }
-        $(li).show("blind");
-    });
-    if(src < POSITION && dest > POSITION)
+    else {
+        $(li).hide("blind", function() {
+            ul.removeChild(li);
+            if(dest == ul.children.length) {
+                ul.appendChild(li);
+            }
+            else {
+                ul.insertBefore(li, ul.getElementsByTagName("li")[dest]);
+            }
+            $(li).show("blind");
+        });
+    }
+    if(src < POSITION && dest >= POSITION)
         POSITION--;
     if(src > POSITION && dest < POSITION)
         POSITION++;
-    if(src == POSITION)
-        POSITION = dest;
 }
 
 // YouTube Synchronization
