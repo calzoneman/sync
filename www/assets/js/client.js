@@ -19,6 +19,8 @@ var OPENQUEUE = false;
 var CHANNELOPTS = {};
 var GRABBEDLI = null;
 var OLDINDEX = -1;
+var CHATHIST = [];
+var CHATHISTIDX = 0;
 var uname = readCookie("sync_uname");
 var pw = readCookie("sync_pw");
 
@@ -186,6 +188,10 @@ $("#chatline").keydown(function(ev) {
         socket.emit("chatMsg", {
             msg: $("#chatline").val()
         });
+        CHATHIST.push($("#chatline").val());
+        if(CHATHIST.length > 10)
+            CHATHIST.shift();
+        CHATHISTIDX = CHATHIST.length;
         $("#chatline").val("");
     }
     else if(ev.keyCode == 9) { // Tab completion
@@ -211,6 +217,27 @@ $("#chatline").keydown(function(ev) {
                 words[words.length - 1] += " ";
             $("#chatline").val(words.join(" "));
         }
+        ev.preventDefault();
+        return false;
+    }
+    else if(ev.keyCode == 38) {
+        if(CHATHISTIDX == CHATHIST.length) {
+            CHATHIST.push($("#chatline").val());
+        }
+        if(CHATHISTIDX > 0) {
+            CHATHISTIDX--;
+            $("#chatline").val(CHATHIST[CHATHISTIDX]);
+        }
+        
+        ev.preventDefault();
+        return false;
+    }
+    else if(ev.keyCode == 40) {
+        if(CHATHISTIDX < CHATHIST.length - 1) {
+            CHATHISTIDX++;
+            $("#chatline").val(CHATHIST[CHATHISTIDX]);
+        }
+        
         ev.preventDefault();
         return false;
     }

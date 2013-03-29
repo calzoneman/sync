@@ -42,6 +42,11 @@ var Channel = function(name) {
         pagetitle: "Sync",
         customcss: ""
     };
+    this.filters = [
+        [new RegExp("`([^`]+)`", "g"),        "<code>$1</code>",     true],
+        [new RegExp("\\*([^\\*]+)\\*", "g"),  "<strong>$1</strong>", true],
+        [new RegExp("_([^_]+)_", "g"),        "<em>$1</em>",         true]
+    ];
 
     this.ipbans = {};
     this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
@@ -771,7 +776,21 @@ Channel.prototype.sendMessage = function(username, msg, msgclass) {
     // I don"t want HTML from strangers
     msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     // Match URLs
-    msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/, "<a href=\"$1\" target=\"_blank\">$1</a>");
+    msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/g, "<a href=\"$1\" target=\"_blank\">$1</a>");
+    // Apply other filters
+    for(var i = 0; i < this.filters.length; i++) {
+        if(!this.filters[i][2])
+            continue;
+        var regex = this.filters[i][0];
+        var replace = this.filters[i][1];
+        msg = msg.replace(regex, replace);
+    }
+    // Chat modifier - monospace
+    //msg = msg.replace(/`([^`]+)`/g, "<span class=\"mono\">$1</span>");
+    // Bold
+    //msg = msg.replace(/\*\*([^\*]+)\*\*/g, "<strong>$1</strong>");
+    // Italic
+    //msg = msg.replace(/\*([^\*]+)\*/g, "<em>$1</em>");
     this.sendAll("chatMsg", {
         username: username,
         msg: msg,

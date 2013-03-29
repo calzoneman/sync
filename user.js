@@ -106,7 +106,9 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("chatMsg", function(data) {
-        if(this.name != "" && this.channel != null) {
+        if(this.name != "" && this.channel != null && data.msg != undefined) {
+            if(data.msg.length > 500)
+                data.msg = data.msg.substring(0, 500);
             this.channel.chatMessage(this, data.msg);
         }
     }.bind(this));

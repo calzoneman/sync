@@ -56,7 +56,7 @@
     border-left: 0;
 }
 
-#messagebuffer div {
+#messagebuffer div, #messagebuffer code {
     white-space: pre-wrap; /* css-3 */
     white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
     white-space: -pre-wrap; /* Opera 4-6 */
@@ -104,6 +104,10 @@
     color: #ff0000;
     font-weight: bold;
     font-size: 18pt;
+}
+
+.mono {
+    font-family: Monospace;
 }
 
 .poll-notify {
