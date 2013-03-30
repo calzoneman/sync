@@ -22,6 +22,7 @@ var OLDINDEX = -1;
 var CHATHIST = [];
 var CHATHISTIDX = 0;
 var FOCUSED = true;
+var SCROLLCHAT = true;
 var PAGETITLE = "Sync";
 var TITLE_BLINK;
 var uname = readCookie("sync_uname");
@@ -253,6 +254,9 @@ $("#chatline").keydown(function(ev) {
         return false;
     }
 });
+
+$("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
+$("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 
 $("#opt_submit").click(function() {
     var ptitle = $("#opt_pagetitle").val();

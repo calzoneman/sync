@@ -103,7 +103,8 @@ function initCallbacks() {
         if($("#messagebuffer").children().length > 100) {
             $($("#messagebufer").children()[0]).remove();
         }
-        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+        if(SCROLLCHAT)
+            $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
     });
 
     socket.on("playlist", function(data) {
@@ -298,6 +299,9 @@ function initCallbacks() {
 
     socket.on("newPoll", function(data) {
         addPoll(data);
+        if(SCROLLCHAT) {
+            $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+        }
     });
 
     socket.on("updatePoll", function(data) {
