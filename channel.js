@@ -45,7 +45,7 @@ var Channel = function(name) {
     this.filters = [
         [new RegExp("`([^`]+)`", "g"),        "<code>$1</code>",     true],
         [new RegExp("\\*([^\\*]+)\\*", "g"),  "<strong>$1</strong>", true],
-        [new RegExp("_([^_]+)_", "g"),        "<em>$1</em>",         true]
+        [new RegExp(" _([^_]+)_", "g"),        " <em>$1</em>",         true]
     ];
 
     this.ipbans = {};
