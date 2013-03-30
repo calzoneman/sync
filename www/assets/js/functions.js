@@ -128,8 +128,17 @@ function addUserDropdown(entry, name) {
 
 function formatChatMessage(data) {
     var div = document.createElement("div");
-    if(data.msg.indexOf(uname) != -1)
+    if(data.msg.toUpperCase().indexOf(uname.toUpperCase()) != -1) {
         $(div).addClass("nick-highlight");
+        if(!FOCUSED) {
+            TITLE_BLINK = setInterval(function() {
+                if(document.title == "*Chat*")
+                    document.title = PAGETITLE;
+                else
+                    document.title = "*Chat*";
+            }, 1000);
+        }
+    }
     if(data.msgclass == "action") {
         var message = document.createElement("span");
         $(message).addClass("action");
@@ -707,4 +716,9 @@ function handleRankChange() {
             $("#playlist_controls").css("display", "none");
         }
     }
+}
+
+function onWindowFocus() {
+    clearInterval(TITLE_BLINK);
+    document.title = PAGETITLE;
 }

@@ -68,6 +68,7 @@ function initCallbacks() {
         $("#opt_qopen_allow_playnext").prop("checked", opts.qopen_allow_playnext);
         $("#opt_pagetitle").attr("placeholder", opts.pagetitle);
         document.title = opts.pagetitle;
+        PAGETITLE = opts.pagetitle;
         $("#opt_customcss").attr("placeholder", opts.customcss);
         $("#customCss").remove();
         if(opts.customcss != "") {

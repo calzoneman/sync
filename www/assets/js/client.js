@@ -21,6 +21,9 @@ var GRABBEDLI = null;
 var OLDINDEX = -1;
 var CHATHIST = [];
 var CHATHISTIDX = 0;
+var FOCUSED = true;
+var PAGETITLE = "Sync";
+var TITLE_BLINK;
 var uname = readCookie("sync_uname");
 var pw = readCookie("sync_pw");
 
@@ -34,6 +37,14 @@ var Rank = {
 
 var socket = io.connect(IO_URL);
 initCallbacks();
+
+$(window).focus(function() { 
+    FOCUSED = true;
+    onWindowFocus();
+})
+.blur(function() {
+    FOCUSED = false
+});
 
 var params = {};
 if(window.location.search) {
