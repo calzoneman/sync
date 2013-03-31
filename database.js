@@ -27,7 +27,7 @@ exports.init = function() {
         return false;
     }
     var query = "CREATE TABLE IF NOT EXISTS `channels` \
-                    (`id` INT NOT NULL, \
+                    (`id` INT NOT NULL AUTO_INCREMENT, \
                      `name` VARCHAR(255) NOT NULL, \
                      PRIMARY KEY (`id`)) \
                      ENGINE = MyISAM;";
