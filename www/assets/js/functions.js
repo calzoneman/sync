@@ -325,8 +325,8 @@ function updateYT(data) {
         // Note to Soundcloud/Vimeo API designers:
         // YouTube"s API is actually nice to use
         PLAYER = new YT.Player("ytapiplayer", {
-            height: "390",
-            width: "640",
+            height: VHEIGHT,
+            width: VWIDTH,
             videoId: "",
             playerVars: {
                 "autoplay": 0,
@@ -391,8 +391,8 @@ function updateDM(data) {
         removeCurrentPlayer();
         PLAYER = DM.player("ytapiplayer", {
             video: data.id,
-            width: 640,
-            height: 390,
+            width: parseInt(VWIDTH),
+            height: parseInt(VHEIGHT),
             params: {autoplay: 1}
         });
 
@@ -439,7 +439,7 @@ function initVI(data) {
     var div = currentEmbed.parent();
     currentEmbed.remove();
     // Ugly but it"s the only way I managed to get the API calls to work
-    div[0].innerHTML += "<iframe id=\"ytapiplayer\" src=\"http://player.vimeo.com/video/" + data.id + "?api=1&player_id=ytapiplayer\" width=\"640\" height=\"390\" frameborder=\"0\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
+    div[0].innerHTML += "<iframe id=\"ytapiplayer\" src=\"http://player.vimeo.com/video/" + data.id + "?api=1&player_id=ytapiplayer\" width=\"" + VWIDTH + "\" height=\"" + VHEIGHT + "\" frameborder=\"0\" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>";
     // $f() is defined by froogaloop, Vimeo"s API wrapper
     PLAYER = $f($("iframe")[0]);
     // So we can retrieve the ID synchronously instead of waiting for
@@ -465,7 +465,7 @@ function loadTwitch(channel) {
         id: "live_embed_player_flash",
         flashvars:"hostname=www.twitch.tv&channel="+channel+"&auto_play=true&start_volume=100"
     };
-    swfobject.embedSWF( url, "ytapiplayer", "640", "390", "8", null, null, params, {} );
+    swfobject.embedSWF( url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
 }
 
 function loadLivestream(channel) {
@@ -473,7 +473,7 @@ function loadLivestream(channel) {
     removeCurrentPlayer();
     flashvars = { channel: channel };
     params = { AllowScriptAccess: "always" };
-    swfobject.embedSWF("http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf", "ytapiplayer", "640", "390", "9.0.0", "expressInstall.swf", flashvars, params);
+    swfobject.embedSWF("http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf", "ytapiplayer", VWIDTH, VHEIGHT, "9.0.0", "expressInstall.swf", flashvars, params);
 }
 
 function removeCurrentPlayer(){

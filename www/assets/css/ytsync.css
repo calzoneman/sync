@@ -43,7 +43,7 @@
 #userlist {
     overflow-y: scroll;
     overflow-x: hidden;
-    height: 360px;
+    height: 347px;
     float: left;
     width: 150px;
     border: 1px solid #aaaaaa; // [](/z13)
@@ -51,7 +51,7 @@
 
 #messagebuffer {
     overflow-y: scroll;
-    height: 360px;
+    height: 347px;
     border: 1px solid #aaaaaa; // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
     border-left: 0;
 }
@@ -65,7 +65,8 @@
 }
 
 #chatline {
-    width: 456px;
+    /*width: 456px;*/
+    width: 100%;
 }
 
 .userlist_siteadmin {

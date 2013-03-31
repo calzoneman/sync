@@ -25,6 +25,8 @@ var FOCUSED = true;
 var SCROLLCHAT = true;
 var PAGETITLE = "Sync";
 var TITLE_BLINK;
+var VWIDTH = "670";
+var VHEIGHT = "377";
 var uname = readCookie("sync_uname");
 var pw = readCookie("sync_pw");
 
@@ -301,10 +303,62 @@ $("#library_query").keydown(function(ev) {
         searchLibrary();
 });
 
+$("#largelayout").click(largeLayout);
+$("#hugelayout").click(hugeLayout);
+$("#narrowlayout").click(narrowLayout);
+$("#stlayout").click(synchtubeLayout);
+
+function largeLayout() {
+    $("#videodiv").removeClass().addClass("span8 offset2");
+    VWIDTH = "770";
+    VHEIGHT = "430";
+    $("#ytapiplayer").attr("width", "770").attr("height", "430");
+    var chat = $("#chatdiv").remove();
+    $("#layoutrow").remove();
+    var r = $("<div />").addClass("row").insertAfter($(".row")[1]);
+    r.attr("id", "layoutrow");
+    chat.removeClass().addClass("span8 offset2").appendTo(r);
+    $("#userlist").css("width", "200px");
+    //$("#chatline").css("width", "756px");
+}
+
+function hugeLayout() {
+    VWIDTH = "1170";
+    VHEIGHT = "658";
+    $("#videodiv").removeClass().addClass("span12");
+    $("#ytapiplayer").attr("width", "1170").attr("height", "658");
+    var chat = $("#chatdiv").remove();
+    $("#layoutrow").remove();
+    var r = $("<div />").addClass("row").insertAfter($(".row")[1]);
+    r.attr("id", "layoutrow");
+    chat.removeClass().addClass("span12").appendTo(r);
+    $("#userlist").css("width", "200px").css("height", "200px");
+    $("#messagebuffer").css("height", "200px");
+    //$("#chatline").css("width", "1156px");
+}
+
+function narrowLayout() {
+    VWIDTH = "570";
+    VHEIGHT = "321";
+    $("#videodiv").removeClass().addClass("span6");
+    $("#ytapiplayer").attr("width", "570").attr("height", "321");
+    var chat = $("#chatdiv").remove();
+    $("#layoutrow").remove();
+    var r = $("<div />").addClass("row").insertAfter($(".row")[1]);
+    r.attr("id", "layoutrow");
+    chat.removeClass().addClass("span6").appendTo(r);
+    $("#userlist").css("width", "150px");
+    //$("#chatline").css("width", "556px");
+}
+
+function synchtubeLayout() {
+    $("#videodiv").remove().insertBefore($("#chatdiv"));
+}
+
 function onYouTubeIframeAPIReady() {
     PLAYER = new YT.Player("ytapiplayer", {
-        height: "390",
-        width: "640",
+        height: VHEIGHT,
+        width: VWIDTH,
         videoId: "",
         playerVars: {
             "autoplay": 0,

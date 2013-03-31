@@ -22,13 +22,8 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
           <a class="brand" href="#">CyTube</a>
-          <div class="nav-collapse collapse">
+          <div class="">
             <ul class="nav">
               <li class="active"><a href="#">Home</a></li>
               <li><a href="help.html">Help</a></li>
@@ -54,7 +49,7 @@
             </div>
         </div>
         <div class="row" style="margin-top: 20px;">
-            <div class="span5">
+            <div class="span5" id="chatdiv">
                 <p id="usercount"></p>
                 <div id="userlist">
                 </div>
@@ -62,7 +57,7 @@
                 </div>
                 <input type="text" id="chatline">
             </div>
-            <div class="span7">
+            <div class="span7" id="videodiv">
                 <p id="currenttitle">Currently Playing: </p>
                 <div id="ytapiplayer">
                 </div>
@@ -73,7 +68,7 @@
             </div>
         </div>
         <div class="row" style="margin-top: 50px;">
-            <div class="span6">
+            <div class="span6" id="queuediv">
                 <div id="playlist_controls" style="display: none;">
                     <input type="text" id="mediaurl" style="margin:auto;">
                     <div class="btn-group">
@@ -86,7 +81,7 @@
                 </ul>
                 <button class="btn btn-danger" id="qlockbtn" style="width: 100%; display:none;">Unlock Queue</button>
             </div>
-            <div class="span6">
+            <div class="span6" id="librarydiv">
                 <input type="text" id="library_query" style="margin:auto;">
                 <button class="btn" id="library_search">Search Library</button>
                 <ul id="library" class="videolist">
@@ -94,7 +89,7 @@
             </div>
         </div>
         <div class="row" style="display: none;" id="modnav">
-            <div class="span10 offset1">
+            <div class="span10 offset1" id="modtabs">
                 <ul class="nav nav-tabs">
                     <li class="active">
                         <a href="javascript:void(0)" id="show_chancontrols">Channel Controls</a>
@@ -156,6 +151,16 @@
                         <th>Banned By</th>
                     </thead>
                 </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span4 offset3">
+                <div class="btn-group" style="width: 100%">
+                    <button id="largelayout" class="btn">Large Layout</button>
+                    <button id="hugelayout" class="btn">Huge Layout</button>
+                    <button id="narrowlayout" class="btn">Narrow Layout</button>
+                    <button id="stlayout" class="btn">Synchtube Layout</button>
+                </div>
             </div>
         </div>
     </div> <!-- /container -->
