@@ -38,7 +38,7 @@ exports.init = function() {
     }
 
     var query = "CREATE TABLE IF NOT EXISTS `registrations` \
-                    (`id` INT NOT NULL, \
+                    (`id` INT NOT NULL AUTO_INCREMENT, \
                      `uname` VARCHAR(20) NOT NULL, \
                      `pw` VARCHAR(64) NOT NULL, \
                      `global_rank` INT NOT NULL, \
