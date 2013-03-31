@@ -22,6 +22,24 @@ Database.init();
 
 exports.channels = {};
 
+fs.exists("chandump", function(exists) {
+    if(!exists) {
+        fs.mkdir("chandump", function(err) {
+            if(err)
+                Logger.errlog.log(err);
+        });
+    }
+});
+
+fs.exists("chanlogs", function(exists) {
+    if(!exists) {
+        fs.mkdir("chanlogs", function(err) {
+            if(err)
+                Logger.errlog.log(err);
+        });
+    }
+});
+
 exports.io.sockets.on("connection", function(socket) {
     var user = new User(socket, socket.handshake.address.address);
     Logger.syslog.log("Accepted connection from /" + user.ip);
