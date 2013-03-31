@@ -43,9 +43,10 @@ var Channel = function(name) {
         customcss: ""
     };
     this.filters = [
-        [new RegExp("`([^`]+)`", "g"),        "<code>$1</code>",     true],
-        [new RegExp("\\*([^\\*]+)\\*", "g"),  "<strong>$1</strong>", true],
-        [new RegExp(" _([^_]+)_", "g"),        " <em>$1</em>",         true]
+        [/`([^`]+)`/g          , "<code>$1</code>"    , true],
+        [/\*([^\*]+)\*/g       , "<strong>$1</strong>", true],
+        [/(^| )_([^_]+)_/g     , "$1<em>$2</em>"      , true],
+        [/\\\\([-a-zA-Z0-9]+)/g, "[](/$1)"            , true]
     ];
 
     this.ipbans = {};
@@ -67,6 +68,14 @@ var Channel = function(name) {
             this.currentPosition = data.currentPosition - 1;
             this.playNext();
             this.opts = data.opts;
+            if(data.filters) {
+                this.filters = new Array(data.filters.length);
+                for(var i = 0; i < data.filters.length; i++) {
+                    this.filters[i] = [new RegExp(data.filters[i][0]),
+                                       data.filters[i][1],
+                                       data.filters[i][2]];
+                }
+            }
         }
         catch(e) {
             Logger.errlog.log("Channel dump load failed: ");
@@ -426,17 +435,6 @@ Channel.prototype.userJoin = function(user) {
         user.socket.emit("newPoll", this.poll.packUpdate());
     }
     user.socket.emit("channelOpts", this.opts);
-    var ents = [];
-    for(var ip in this.ipbans) {
-        if(this.ipbans[ip] != null) {
-            ents.push({
-                ip: ip,
-                name: this.ipbans[ip][0],
-                banner: this.ipbans[ip][1]
-            });
-        }
-    }
-    user.socket.emit("banlist", {entries: ents});
     if(user.playerReady)
         this.sendMediaUpdate(user);
     this.logger.log("+++ /" + user.ip + " joined");
@@ -762,6 +760,31 @@ Channel.prototype.moveMedia = function(data) {
     }
 }
 
+Channel.prototype.updateFilter = function(filter) {
+    var found = false;
+    for(var i = 0; i < this.filters.length; i++) {
+        if(this.filters[i][0].source == filter[0].source) {
+            found = true;
+            this.filters[i][1] = filter[1];
+            this.filters[i][2] = filter[2];
+        }
+    }
+    if(!found) {
+        this.filters.push(filter);
+    }
+    this.broadcastChatFilters();
+}
+
+Channel.prototype.removeFilter = function(regex) {
+    for(var i = 0; i < this.filters.length; i++) {
+        if(this.filters[i][0].source == regex) {
+            this.filters.splice(i, 1);
+            break;
+        }
+    }
+    this.broadcastChatFilters();
+}
+
 // Chat message from a user
 Channel.prototype.chatMessage = function(user, msg) {
     if(msg.indexOf("/") == 0)
@@ -950,6 +973,28 @@ Channel.prototype.broadcastRankUpdate = function(user) {
         rank: user.rank,
         leader: this.leader == user
     });
+
+    // Rank specific stuff
+    if(Rank.hasPermission(user, "ipban")) {
+        var ents = [];
+        for(var ip in this.ipbans) {
+            if(this.ipbans[ip] != null) {
+                ents.push({
+                    ip: ip,
+                    name: this.ipbans[ip][0],
+                    banner: this.ipbans[ip][1]
+                });
+            }
+        }
+        user.socket.emit("banlist", {entries: ents});
+    }
+    if(Rank.hasPermission(user, "chatFilter")) {
+        var filts = new Array(this.filters.length);
+        for(var i = 0; i < this.filters.length; i++) {
+            filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
+        }
+        user.socket.emit("chatFilters", {filters: filts});
+    }
 }
 
 Channel.prototype.broadcastPoll = function() {
@@ -979,7 +1024,23 @@ Channel.prototype.broadcastIpbans = function() {
             });
         }
     }
-    this.sendAll("banlist", {entries: ents});
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], "ipban")) {
+            this.users[i].socket.emit("banlist", {entries: ents});
+        }
+    }
+}
+
+Channel.prototype.broadcastChatFilters = function() {
+    var filts = new Array(this.filters.length);
+    for(var i = 0; i < this.filters.length; i++) {
+        filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
+    }
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], "ipban")) {
+            this.users[i].socket.emit("chatFilters", {filters: filts});
+        }
+    }
 }
 
 // Send to ALL the clients!

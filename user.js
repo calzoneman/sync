@@ -248,6 +248,16 @@ User.prototype.initCallbacks = function() {
             this.channel.broadcastOpts();
         }
     }.bind(this));
+
+    this.socket.on("chatFilter", function(data) {
+        if(data.cmd && data.cmd == "update" && this.channel != null) {
+            data.filter[0] = new RegExp(data.filter[0], "g");
+            this.channel.updateFilter(data.filter);
+        }
+        else if(data.cmd && data.cmd == "remove" && this.channel != null) {
+            this.channel.removeFilter(data.filter[0]);
+        }
+    }.bind(this));
 }
 
 // Handle administration
@@ -339,8 +349,6 @@ User.prototype.login = function(name, pw) {
             });
             if(this.channel != null) {
                 this.channel.logger.log(this.ip + " signed in as " + name);
-                if(this.rank >= Rank.Moderator)
-                    this.channel.sendPlaylist(this);
                 this.channel.broadcastNewUser(this);
             }
         }
@@ -365,8 +373,6 @@ User.prototype.login = function(name, pw) {
             this.name = name;
             if(this.channel != null) {
                 this.channel.logger.log(this.ip + " logged in as " + name);
-                if(this.rank >= Rank.Moderator)
-                    this.channel.sendPlaylist(this);
                 this.channel.broadcastNewUser(this);
             }
         }

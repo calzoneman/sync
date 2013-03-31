@@ -56,10 +56,17 @@ function shutdown() {
     Logger.syslog.log("Unloading channels...");
     for(var name in exports.channels) {
         var chan = exports.channels[name];
+        var filts = new Array(chan.filters.length);
+        for(var i = 0; i < chan.filters.length; i++) {
+            filts[i] = [chan.filters[i][0].source,
+                        chan.filters[i][1],
+                        chan.filters[i][2]];
+        }
         var dump = {
             currentPosition: chan.currentPosition,
             queue: chan.queue,
-            opts: chan.opts
+            opts: chan.opts,
+            filters: filts
         };
         var text = JSON.stringify(dump);
         fs.writeFileSync("chandump/" + name, text);
