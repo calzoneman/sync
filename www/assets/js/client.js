@@ -61,7 +61,7 @@ if(window.location.search) {
 }
 
 if(params["novideo"] != undefined) {
-    $(".span7").remove();
+    $("#videodiv").remove();
 }
 
 if(params["channel"] == undefined) {
@@ -197,68 +197,71 @@ $("#register").click(function() {
     });
 });
 
-$("#chatline").keydown(function(ev) {
-    if(ev.keyCode == 13 && $("#chatline").val() != "") {
-        socket.emit("chatMsg", {
-            msg: $("#chatline").val()
-        });
-        CHATHIST.push($("#chatline").val());
-        if(CHATHIST.length > 10)
-            CHATHIST.shift();
-        CHATHISTIDX = CHATHIST.length;
-        $("#chatline").val("");
-    }
-    else if(ev.keyCode == 9) { // Tab completion
-        var words = $("#chatline").val().split(" ");
-        var current = words[words.length - 1].toLowerCase();
-        var users = $("#userlist").children();
-        var match = null;
-        for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerHTML.toLowerCase();
-            if(name.indexOf(current) == 0 && match == null) {
-                match = users[i].children[1].innerHTML;
-            }
-            else if(name.indexOf(current) == 0) {
-                match = null;
-                break;
-            }
-        }
-        if(match != null) {
-            words[words.length - 1] = match;
-            if(words.length == 1)
-                words[0] += ": ";
-            else
-                words[words.length - 1] += " ";
-            $("#chatline").val(words.join(" "));
-        }
-        ev.preventDefault();
-        return false;
-    }
-    else if(ev.keyCode == 38) {
-        if(CHATHISTIDX == CHATHIST.length) {
+function initChatCallback() {
+    $("#chatline").keydown(function(ev) {
+        if(ev.keyCode == 13 && $("#chatline").val() != "") {
+            socket.emit("chatMsg", {
+                msg: $("#chatline").val()
+            });
             CHATHIST.push($("#chatline").val());
+            if(CHATHIST.length > 10)
+                CHATHIST.shift();
+            CHATHISTIDX = CHATHIST.length;
+            $("#chatline").val("");
         }
-        if(CHATHISTIDX > 0) {
-            CHATHISTIDX--;
-            $("#chatline").val(CHATHIST[CHATHISTIDX]);
+        else if(ev.keyCode == 9) { // Tab completion
+            var words = $("#chatline").val().split(" ");
+            var current = words[words.length - 1].toLowerCase();
+            var users = $("#userlist").children();
+            var match = null;
+            for(var i = 0; i < users.length; i++) {
+                var name = users[i].children[1].innerHTML.toLowerCase();
+                if(name.indexOf(current) == 0 && match == null) {
+                    match = users[i].children[1].innerHTML;
+                }
+                else if(name.indexOf(current) == 0) {
+                    match = null;
+                    break;
+                }
+            }
+            if(match != null) {
+                words[words.length - 1] = match;
+                if(words.length == 1)
+                    words[0] += ": ";
+                else
+                    words[words.length - 1] += " ";
+                $("#chatline").val(words.join(" "));
+            }
+            ev.preventDefault();
+            return false;
         }
-        
-        ev.preventDefault();
-        return false;
-    }
-    else if(ev.keyCode == 40) {
-        if(CHATHISTIDX < CHATHIST.length - 1) {
-            CHATHISTIDX++;
-            $("#chatline").val(CHATHIST[CHATHISTIDX]);
+        else if(ev.keyCode == 38) {
+            if(CHATHISTIDX == CHATHIST.length) {
+                CHATHIST.push($("#chatline").val());
+            }
+            if(CHATHISTIDX > 0) {
+                CHATHISTIDX--;
+                $("#chatline").val(CHATHIST[CHATHISTIDX]);
+            }
+            
+            ev.preventDefault();
+            return false;
         }
-        
-        ev.preventDefault();
-        return false;
-    }
-});
+        else if(ev.keyCode == 40) {
+            if(CHATHISTIDX < CHATHIST.length - 1) {
+                CHATHISTIDX++;
+                $("#chatline").val(CHATHIST[CHATHISTIDX]);
+            }
+            
+            ev.preventDefault();
+            return false;
+        }
+    });
+    $("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
+    $("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
+}
+initChatCallback();
 
-$("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
-$("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 
 $("#opt_submit").click(function() {
     var ptitle = $("#opt_pagetitle").val();
@@ -320,6 +323,7 @@ function largeLayout() {
     chat.removeClass().addClass("span8 offset2").appendTo(r);
     $("#userlist").css("width", "200px");
     //$("#chatline").css("width", "756px");
+    initChatCallback();
 }
 
 function hugeLayout() {
@@ -335,6 +339,7 @@ function hugeLayout() {
     $("#userlist").css("width", "200px").css("height", "200px");
     $("#messagebuffer").css("height", "200px");
     //$("#chatline").css("width", "1156px");
+    initChatCallback();
 }
 
 function narrowLayout() {
@@ -349,6 +354,7 @@ function narrowLayout() {
     chat.removeClass().addClass("span6").appendTo(r);
     $("#userlist").css("width", "150px");
     //$("#chatline").css("width", "556px");
+    initChatCallback();
 }
 
 function synchtubeLayout() {
