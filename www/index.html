@@ -48,6 +48,11 @@
                 <h3 id="welcome"></h3>
             </div>
         </div>
+        <div class="row">
+            <div class="span10 offset1 well">
+                <p id="motd"></p>
+            </div>
+        </div>
         <div class="row" style="margin-top: 20px;">
             <div class="span5" id="chatdiv">
                 <p id="usercount"></p>
@@ -97,10 +102,16 @@
                     <li>
                         <a href="javascript:void(0)" id="show_banlist">Ban List</a>
                     </li>
+                    <li>
+                        <a href="javascript:void(0)" id="show_motdeditor">MOTD</a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0)" id="show_filtereditor">Chat Filters</a>
+                    </li>
                 </ul>
             </div>
         </div>
-        <div class="row" style="display: none" id="chancontrols">
+        <div class="row modonly" style="display: none" id="chancontrols">
             <div class="span10 offset1">
                 <form action="javascript:void(0)">
                     <fieldset>
@@ -141,7 +152,7 @@
                 </form>
             </div>
         </div>
-        <div class="row" id="banlist" style="display: none;">
+        <div class="row modonly" id="banlist" style="display: none;">
             <div class="span10 offset1">
                 <table class="table table-striped">
                     <thead>
@@ -149,6 +160,24 @@
                         <th>IP</th>
                         <th>Name</th>
                         <th>Banned By</th>
+                    </thead>
+                </table>
+            </div>
+        </div>
+        <div class="row modonly" id="motdeditor" style="display: none;">
+            <div class="span10 offset1">
+                <textarea rows="10" id="motdtext"></textarea>
+                <button class="btn btn-primary" id="updatemotd">Update</button>
+            </div>
+        </div>
+        <div class="row modonly" id="filtereditor" style="display: none;">
+            <div class="span10 offset1">
+                <table class="table table-striped">
+                    <thead>
+                        <th></th>
+                        <th>Regex</th>
+                        <th>Replacement</th>
+                        <th>Active</th>
                     </thead>
                 </table>
             </div>

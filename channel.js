@@ -48,6 +48,10 @@ var Channel = function(name) {
         [/(^| )_([^_]+)_/g     , "$1<em>$2</em>"      , true],
         [/\\\\([-a-zA-Z0-9]+)/g, "[](/$1)"            , true]
     ];
+    this.motd = {
+        motd: "",
+        html: ""
+    };
 
     this.ipbans = {};
     this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
@@ -75,6 +79,9 @@ var Channel = function(name) {
                                        data.filters[i][1],
                                        data.filters[i][2]];
                 }
+            }
+            if(data.motd) {
+                this.motd = data.motd;
             }
         }
         catch(e) {
@@ -435,6 +442,7 @@ Channel.prototype.userJoin = function(user) {
         user.socket.emit("newPoll", this.poll.packUpdate());
     }
     user.socket.emit("channelOpts", this.opts);
+    user.socket.emit("updateMotd", this.motd);
     if(user.playerReady)
         this.sendMediaUpdate(user);
     this.logger.log("+++ /" + user.ip + " joined");
@@ -797,10 +805,7 @@ Channel.prototype.chatMessage = function(user, msg) {
         this.sendMessage(user.name, msg, "");
 }
 
-Channel.prototype.sendMessage = function(username, msg, msgclass) {
-    // I don"t want HTML from strangers
-    msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    // Match URLs
+Channel.prototype.filterMessage = function(msg) {
     msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/g, "<a href=\"$1\" target=\"_blank\">$1</a>");
     // Apply other filters
     for(var i = 0; i < this.filters.length; i++) {
@@ -810,12 +815,13 @@ Channel.prototype.sendMessage = function(username, msg, msgclass) {
         var replace = this.filters[i][1];
         msg = msg.replace(regex, replace);
     }
-    // Chat modifier - monospace
-    //msg = msg.replace(/`([^`]+)`/g, "<span class=\"mono\">$1</span>");
-    // Bold
-    //msg = msg.replace(/\*\*([^\*]+)\*\*/g, "<strong>$1</strong>");
-    // Italic
-    //msg = msg.replace(/\*([^\*]+)\*/g, "<em>$1</em>");
+    return msg;
+}
+
+Channel.prototype.sendMessage = function(username, msg, msgclass) {
+    // I don"t want HTML from strangers
+    msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    msg = this.filterMessage(msg);
     this.sendAll("chatMsg", {
         username: username,
         msg: msg,
@@ -961,20 +967,13 @@ Channel.prototype.broadcastNewUser = function(user) {
         rank: user.rank,
         leader: this.leader == user
     });
+    this.handleRankChange(user);
 }
 
-// Someone"s rank changed, or their leadership status changed
-Channel.prototype.broadcastRankUpdate = function(user) {
+Channel.prototype.handleRankChange = function(user) {
     user.socket.emit("rank", {
         rank: user.rank
     });
-    this.sendAll("updateUser", {
-        name: user.name,
-        rank: user.rank,
-        leader: this.leader == user
-    });
-
-    // Rank specific stuff
     if(Rank.hasPermission(user, "ipban")) {
         var ents = [];
         for(var ip in this.ipbans) {
@@ -995,6 +994,16 @@ Channel.prototype.broadcastRankUpdate = function(user) {
         }
         user.socket.emit("chatFilters", {filters: filts});
     }
+}
+
+// Someone"s rank changed, or their leadership status changed
+Channel.prototype.broadcastRankUpdate = function(user) {
+    this.sendAll("updateUser", {
+        name: user.name,
+        rank: user.rank,
+        leader: this.leader == user
+    });
+    this.handleRankChange(user);
 }
 
 Channel.prototype.broadcastPoll = function() {
@@ -1041,6 +1050,10 @@ Channel.prototype.broadcastChatFilters = function() {
             this.users[i].socket.emit("chatFilters", {filters: filts});
         }
     }
+}
+
+Channel.prototype.broadcastMotd = function() {
+    this.sendAll("updateMotd", this.motd);
 }
 
 // Send to ALL the clients!

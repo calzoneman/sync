@@ -278,18 +278,47 @@ $("#opt_submit").click(function() {
     socket.emit("channelOpts", opts);
 });
 
+$("#updatemotd").click(function() {
+    var motd = $("#motdtext").val();
+    socket.emit("updateMotd", {
+        motd: motd
+    });
+});
+
 $("#show_chancontrols").click(function() {
-    $("#show_chancontrols").parent().addClass("active");
     $("#show_banlist").parent().removeClass("active");
-    $("#banlist").hide();
+    $("#show_motdeditor").parent().removeClass("active");
+    $("#show_filtereditor").parent().removeClass("active");
+    $("#show_chancontrols").parent().addClass("active");
+    $(".modonly").hide();
     $("#chancontrols").show();
 });
 
 $("#show_banlist").click(function() {
     $("#show_chancontrols").parent().removeClass("active");
+    $("#show_motdeditor").parent().removeClass("active");
+    $("#show_filtereditor").parent().removeClass("active");
     $("#show_banlist").parent().addClass("active");
+    $(".modonly").hide();
     $("#banlist").show();
-    $("#chancontrols").hide();
+});
+
+$("#show_motdeditor").click(function() {
+    $("#show_chancontrols").parent().removeClass("active");
+    $("#show_banlist").parent().removeClass("active");
+    $("#show_filtereditor").parent().removeClass("active");
+    $("#show_motdeditor").parent().addClass("active");
+    $(".modonly").hide();
+    $("#motdeditor").show();
+});
+
+$("#show_filtereditor").click(function() {
+    $("#show_chancontrols").parent().removeClass("active");
+    $("#show_banlist").parent().removeClass("active");
+    $("#show_motdeditor").parent().removeClass("active");
+    $("#show_filtereditor").parent().addClass("active");
+    $(".modonly").hide();
+    $("#filtereditor").show();
 });
 
 function searchLibrary() {

@@ -30,6 +30,7 @@ var permissions = {
     channelOpts     : exports.Moderator,
     jump            : exports.Moderator,
     chatFilter      : exports.Moderator,
+    updateMotd      : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };

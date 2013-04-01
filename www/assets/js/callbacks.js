@@ -26,6 +26,19 @@ function initCallbacks() {
         showAnnouncement(data.title, data.text);
     });
 
+    socket.on("updateMotd", function(data) {
+        $("#motdtext").val(data.motd);
+        if(data.motd != "")
+            $("#motd").parent().css("display", "");
+        else
+            $("#motd").parent().css("display", "none");
+        $("#motd")[0].innerHTML = data.html;
+    });
+
+    socket.on("chatFilters", function(data) {
+        updateChatFilters(data.filters);
+    });
+
     socket.on("registerChannel", function(data) {
         if(data.success) {
             $("#chregnotice").remove();

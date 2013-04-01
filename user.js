@@ -250,12 +250,28 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("chatFilter", function(data) {
-        if(data.cmd && data.cmd == "update" && this.channel != null) {
-            data.filter[0] = new RegExp(data.filter[0], "g");
-            this.channel.updateFilter(data.filter);
+        if(Rank.hasPermission(this, "chatFilter")) {
+            if(data.cmd && data.cmd == "update" && this.channel != null) {
+                data.filter[0] = new RegExp(data.filter[0], "g");
+                this.channel.updateFilter(data.filter);
+            }
+            else if(data.cmd && data.cmd == "remove" && this.channel != null) {
+                this.channel.removeFilter(data.filter[0]);
+            }
         }
-        else if(data.cmd && data.cmd == "remove" && this.channel != null) {
-            this.channel.removeFilter(data.filter[0]);
+    }.bind(this));
+
+    this.socket.on("updateMotd", function(data) {
+        if(Rank.hasPermission(this, "updateMotd")) {
+            if(data.motd != undefined && this.channel != null) {
+                var html = data.motd.replace(/\n/g, "<br>");
+                html = this.channel.filterMessage(html);
+                this.channel.motd = {
+                    motd: data.motd,
+                    html: html
+                };
+                this.channel.broadcastMotd();
+            }
         }
     }.bind(this));
 }

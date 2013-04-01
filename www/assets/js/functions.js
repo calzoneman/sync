@@ -675,6 +675,62 @@ function updateBanlist(entries) {
     }
 }
 
+function updateChatFilters(entries) {
+    var tbl = $("#filtereditor table");
+    if(tbl.children().length > 1) {
+        $(tbl.children()[1]).remove();
+    }
+    for(var i = 0; i < entries.length; i++) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var remove = $("<button/>").addClass("btn btn-mini btn-danger")
+            .appendTo($("<td/>").appendTo(tr));
+        $("<i/>").addClass("icon-remove-circle").appendTo(remove);
+        var regex = $("<code/>").text(entries[i][0])
+            .appendTo($("<td/>").appendTo(tr));
+        var replace = $("<code/>").text(entries[i][1])
+            .appendTo($("<td/>").appendTo(tr));
+        var activetd = $("<td/>").appendTo(tr);
+        var active = $("<input/>").attr("type", "checkbox")
+            .prop("checked", entries[i][2]).appendTo(activetd);
+
+        var remcallback = (function(filter) { return function() {
+            socket.emit("chatFilter", {
+                cmd: "remove",
+                filter: filter
+            });
+        } })(entries[i]);
+        remove.click(remcallback);
+        
+        var actcallback = (function(filter) { return function() {
+            filter[2] = active.prop("checked");
+            socket.emit("chatFilter", {
+                cmd: "update",
+                filter: filter
+            });
+        } })(entries[i]);
+        active.click(actcallback);
+    }
+
+    var newfilt = $("<tr/>").appendTo(tbl);
+    $("<td/>").appendTo(newfilt);
+    var regex = $("<input/>").attr("type", "text")
+        .appendTo($("<td/>").appendTo(newfilt));
+    var replace = $("<input/>").attr("type", "text")
+        .appendTo($("<td/>").appendTo(newfilt));
+    var add = $("<button/>").addClass("btn btn-primary")
+        .text("Add Filter")
+        .appendTo($("<td/>").appendTo(newfilt));
+    var cback = (function(regex, replace) { return function() {
+        if(regex.val() && replace.val()) {
+            socket.emit("chatFilter", {
+                cmd: "update",
+                filter: [regex.val(), replace.val(), true]
+            });
+        }
+    } })(regex, replace);
+    add.click(cback);
+}
+
 function handleRankChange() {
     rebuildPlaylist();
     if(RANK >= Rank.Moderator || LEADER) {

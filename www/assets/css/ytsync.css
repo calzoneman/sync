@@ -124,3 +124,7 @@
 .nick-highlight {
     background-color: #ddffdd;
 }
+
+#motdtext {
+    width: 100%;
+}

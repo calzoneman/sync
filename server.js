@@ -66,7 +66,8 @@ function shutdown() {
             currentPosition: chan.currentPosition,
             queue: chan.queue,
             opts: chan.opts,
-            filters: filts
+            filters: filts,
+            motd: chan.motd
         };
         var text = JSON.stringify(dump);
         fs.writeFileSync("chandump/" + name, text);
