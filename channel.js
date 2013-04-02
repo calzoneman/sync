@@ -70,7 +70,10 @@ var Channel = function(name) {
                 pl: this.queue
             });
             this.currentPosition = data.currentPosition - 1;
-            this.playNext();
+            if(this.currentPosition < -1)
+                this.currentPosition = -1;
+            if(this.queue.length > 0)
+                this.playNext();
             this.opts = data.opts;
             if(data.filters) {
                 this.filters = new Array(data.filters.length);
@@ -750,8 +753,13 @@ Channel.prototype.moveMedia = function(data) {
         return;
 
     var media = this.queue[data.src];
-    this.queue.splice(data.dest + 1, 0, media);
-    this.queue.splice(data.src, 1);
+    // Took me a while to figure out why the queue was going insane
+    // Gotta account for when you've copied it to the destination
+    // but not removed the source yet
+    var dest = data.dest > data.src ? data.dest + 1 : data.dest;
+    var src  = data.dest > data.src ? data.src : data.src + 1;
+    this.queue.splice(dest, 0, media);
+    this.queue.splice(src, 1);
     this.sendAll("moveVideo", {
         src: data.src,
         dest: data.dest
