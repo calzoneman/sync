@@ -274,6 +274,12 @@ User.prototype.initCallbacks = function() {
             }
         }
     }.bind(this));
+    
+    this.socket.on("voteskip", function(data) {
+        if(this.channel != null) {
+            this.channel.handleVoteskip(this);
+        }
+    }.bind(this));
 }
 
 // Handle administration

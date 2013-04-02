@@ -80,8 +80,9 @@
                         <button class="btn" id="queue_next">Queue Next</button>
                         <button class="btn" id="queue_end">Queue @ End</button>
                     </div>
-                    <button class="btn btn-primary pull-right" id="play_next">Play Next</button>
+                    <button class="btn btn-primary" id="play_next">Play Next</button>
                 </div>
+                <button class="btn btn-danger" id="voteskip">Voteskip</button>
                 <ul id="queue" class="videolist">
                 </ul>
                 <button class="btn btn-danger" id="qlockbtn" style="width: 100%; display:none;">Unlock Queue</button>
@@ -142,6 +143,10 @@
                             <br>
                             <label>Custom CSS<sup class="text-warning">BETA</sup>
                                 <input type="text" id="opt_customcss" class="pull-right">
+                            </label>
+                            <label class="checkbox">
+                                <input type="checkbox" id="opt_allow_voteskip">
+                                Allow voteskip
                             </label>
                         </div>
                             

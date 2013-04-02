@@ -90,6 +90,7 @@ function initCallbacks() {
                        .attr("id", "customCss")
                        .insertAfter($("link[href='./assets/css/ytsync.css']"));
         }
+        $("#opt_allow_voteskip").prop("checked", opts.allow_voteskip);
 
         CHANNELOPTS = opts;
         if(opts.qopen_allow_qnext)
@@ -98,6 +99,11 @@ function initCallbacks() {
             $("#play_next").attr("disabled", false);
         else if(RANK < Rank.Moderator && !LEADER)
             $("#play_next").attr("disabled", true);
+
+        if(opts.allow_voteskip)
+            $("#voteskip").attr("disabled", false);
+        else
+            $("#voteskip").attr("disabled", true);
         rebuildPlaylist();
     });
 
@@ -195,6 +201,7 @@ function initCallbacks() {
         var linew = $("#queue").children()[data.idx];
         $(linew).addClass("alert alert-info");
         POSITION = data.idx;
+        $("#voteskip").attr("disabled", false);
     });
 
     socket.on("mediaUpdate", function(data) {

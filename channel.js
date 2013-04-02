@@ -20,6 +20,7 @@ var ChatCommand = require("./chatcommand.js");
 var Server = require("./server.js");
 var io = Server.io;
 var Logger = require("./logger.js");
+var Poll = require("./poll.js").Poll;
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
@@ -34,11 +35,13 @@ var Channel = function(name) {
     this.recentChat = [];
     this.qlocked = true;
     this.poll = false;
+    this.voteskip = false;
     this.opts = {
         qopen_allow_qnext: false,
         qopen_allow_move: false,
         qopen_allow_playnext: false,
         qopen_allow_delete: false,
+        allow_voteskip: true,
         pagetitle: "Sync",
         customcss: ""
     };
@@ -685,6 +688,7 @@ Channel.prototype.playNext = function() {
     if(this.queue.length == 0)
         return;
     var old = this.currentPosition;
+    this.voteskip = false;
     if(this.currentPosition + 1 >= this.queue.length) {
         this.currentPosition = -1;
     }
@@ -709,6 +713,7 @@ Channel.prototype.jumpTo = function(pos) {
         return;
     if(pos >= this.queue.length || pos < 0)
         return;
+    this.voteskip = false;
     var old = this.currentPosition;
     this.currentPosition = pos;
     this.currentMedia = this.queue[this.currentPosition];
@@ -1062,6 +1067,16 @@ Channel.prototype.broadcastChatFilters = function() {
 
 Channel.prototype.broadcastMotd = function() {
     this.sendAll("updateMotd", this.motd);
+}
+
+Channel.prototype.handleVoteskip = function(user) {
+    if(!this.voteskip) {
+        this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
+    }
+    this.voteskip.vote(user.ip, 0);
+    if(this.voteskip.counts[0] > this.users.length / 2) {
+        this.playNext();
+    }
 }
 
 // Send to ALL the clients!

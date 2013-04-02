@@ -157,6 +157,11 @@ $("#play_next").click(function() {
     socket.emit("playNext");
 });
 
+$("#voteskip").click(function() {
+    socket.emit("voteskip");
+    $("#voteskip").attr("disabled", true);
+});
+
 $("#qlockbtn").click(function() {
     socket.emit("queueLock", {
         locked: OPENQUEUE
@@ -272,6 +277,7 @@ $("#opt_submit").click(function() {
         qopen_allow_move: $("#opt_qopen_allow_move").prop("checked"),
         qopen_allow_delete: $("#opt_qopen_allow_delete").prop("checked"),
         qopen_allow_playnext: $("#opt_qopen_allow_playnext").prop("checked"),
+        allow_voteskip: $("#opt_allow_voteskip").prop("checked"),
         pagetitle: ptitle,
         customcss: css
     };
