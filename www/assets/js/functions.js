@@ -702,7 +702,12 @@ function updateChatFilters(entries) {
         remove.click(remcallback);
         
         var actcallback = (function(filter) { return function() {
-            filter[2] = active.prop("checked");
+            // Apparently when you check a checkbox, its value is changed
+            // before this callback.  When you uncheck it, its value is not
+            // changed before this callback
+            // [](/amgic)
+            var enabled = active.prop("checked");
+            filter[2] = (filter[2] == enabled) ? !enabled : enabled;
             socket.emit("chatFilter", {
                 cmd: "update",
                 filter: filter
