@@ -484,6 +484,7 @@ function removeCurrentPlayer(){
 }
 
 function parseVideoURL(url){
+    url = url.trim()
     if(typeof(url) != "string")
         return null;
     if(url.indexOf("youtu.be") != -1 || url.indexOf("youtube.com") != -1) {
@@ -505,21 +506,18 @@ function parseVideoURL(url){
 }
 
 function parseYTURL(url) {
-    url = url.replace("feature=player_embedded&", "");
-    if(url.indexOf("&list=") != -1)
-        url = url.substring(0, url.indexOf("&list="));
-    var m = url.match(/youtube\.com\/watch\?v=([^&]+)/);
+    var m = url.match(/v=([^&#]+)/);
     if(m) {
         // Extract ID
         return m[1];
     }
-    var m = url.match(/youtu\.be\/([^&]+)/);
+    var m = url.match(/youtu\.be\/([^&#]+)/);
     if(m) {
         // Extract ID
         return m[1];
     }
     // Final try
-    var m = url.match(/v=([^&]*)/);
+    var m = url.match(/([^&#]*)/);
     if(m) {
         // Extract ID
         return m[1];
@@ -727,6 +725,12 @@ function updateChatFilters(entries) {
         .appendTo($("<td/>").appendTo(newfilt));
     var cback = (function(regex, replace) { return function() {
         if(regex.val() && replace.val()) {
+            try {
+                var dummy = new RegExp(regex.val(), "g");
+            }
+            catch(e) {
+                alert("Invalid regex: " + e);
+            }
             socket.emit("chatFilter", {
                 cmd: "update",
                 filter: [regex.val(), replace.val(), true]

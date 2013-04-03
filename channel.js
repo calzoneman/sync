@@ -128,6 +128,11 @@ Channel.prototype.loadMysql = function() {
         Logger.syslog.log("Channel " + this.name + " is unregistered.");
         return;
     }
+    // [](/picard) I didn't realize that MySQL wasn't case sensitive.
+    // My bad.
+    else if(rows[0].name != this.name) {
+        this.name = rows[0].name;
+    }
     this.registered = true;
 
     // Load library
@@ -674,12 +679,13 @@ Channel.prototype.unqueue = function(data) {
         pos: data.pos
     });
 
-    if(data.pos < this.currentPosition) {
-        this.currentPosition--;
-    }
     if(data.pos == this.currentPosition) {
         this.currentPosition--;
         this.playNext();
+        return;
+    }
+    if(data.pos < this.currentPosition) {
+        this.currentPosition--;
     }
 }
 
