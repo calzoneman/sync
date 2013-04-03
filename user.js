@@ -252,7 +252,12 @@ User.prototype.initCallbacks = function() {
     this.socket.on("chatFilter", function(data) {
         if(Rank.hasPermission(this, "chatFilter")) {
             if(data.cmd && data.cmd == "update" && this.channel != null) {
-                data.filter[0] = new RegExp(data.filter[0], "g");
+                try {
+                    data.filter[0] = new RegExp(data.filter[0], "g");
+                }
+                catch(e) {
+                    return;
+                }
                 this.channel.updateFilter(data.filter);
             }
             else if(data.cmd && data.cmd == "remove" && this.channel != null) {
