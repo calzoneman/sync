@@ -510,6 +510,7 @@ Channel.prototype.enqueue = function(data) {
     else {
         switch(data.type) {
             case "yt":
+            case "yp":
             case "vi":
             case "dm":
             case "sc":
@@ -520,6 +521,8 @@ Channel.prototype.enqueue = function(data) {
                         pos: idx
                     });
                     this.cacheMedia(media);
+                    if(data.type == "yp")
+                        idx++;
                 }.bind(this));
                 break;
             case "li":

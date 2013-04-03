@@ -73,11 +73,15 @@ exports.getYTInfo = function(id, callback) {
         timeout: 1000}, callback);
 }
 
-exports.getYTPlaylist = function(id, callback) {
+exports.getYTPlaylist = function(id, callback, url) {
+    var path = "/feeds/api/playlists/" + id + "?v=2&alt=json";
+    if(url) {
+        path = "/" + url.split("gdata.youtube.com")[1];
+    }
     getJSON({
         host: "gdata.youtube.com",
         port: 80,
-        path: "/feeds/api/playlists/" + id + "?v=2&alt=json",
+        path: path,
         method: "GET",
         dataType: "jsonp",
         timeout: 1000}, callback);
@@ -209,6 +213,43 @@ exports.getMedia = function(id, type, callback) {
                 }
             });
             break;
+        case "yp":
+            var cback = function(res, data) {
+                if(res != 200) {
+                    return;
+                }
+
+                try {
+
+                    for(var i = 0; i < data.feed.entry.length; i++) {
+                        try {
+                            var item = data.feed.entry[i];
+
+                            var id = item.media$group.yt$videoid.$t;
+                            var title = item.title.$t;
+                            var seconds = item.media$group.yt$duration.seconds;
+                            var media = new Media(id, title, seconds, "yt");
+                            callback(media);
+                        }
+                        catch(e) {
+                            Logger.errlog.log("getMedia failed: ");
+                            Logger.errlog.log(e);
+                        }
+                    }
+
+                    var links = data.feed.link;
+                    for(var i = 0; i < links.length; i++) {
+                        if(links[i].rel == "next") {
+                            exports.getYTPlaylist(id, cback, links[i].href);
+                        }
+                    }
+                }
+                catch(e) {
+                    Logger.errlog.log("getMedia failed: ");
+                    Logger.errlog.log(e);
+                }
+            }
+            exports.getYTPlaylist(id, cback);
         default:
             break;
     }
