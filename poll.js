@@ -25,16 +25,13 @@ Poll.prototype.vote = function(ip, option) {
         this.votes[ip] = option;
         this.counts[option]++;
     }
-    console.log(this.votes);
 }
 
 Poll.prototype.unvote = function(ip) {
-    console.log('unvote ' + ip + this.votes[ip]);
     if(ip in this.votes && this.votes[ip] != null) {
         this.counts[this.votes[ip]]--;
         this.votes[ip] = null;
     }
-    console.log(this.votes);
 }
 
 Poll.prototype.packUpdate = function() {

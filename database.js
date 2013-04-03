@@ -13,6 +13,7 @@ var mysql = require("mysql-libmysqlclient");
 var Config = require("./config.js");
 var Logger = require("./logger.js");
 var Rank = require("./rank.js");
+var Media = require("./media.js").Media;
 
 var initialized = false;
 
@@ -83,6 +84,9 @@ exports.loadChannel = function(chan) {
     if(rows.length == 0) {
         Logger.syslog.log("Channel " + chan.name + " is unregistered.");
         return;
+    }
+    else if(rows[0].name != chan.name) {
+        chan.name = rows[0].name;
     }
     chan.registered = true;
 
@@ -229,7 +233,7 @@ exports.cacheMedia = function(channame, media) {
     return results;
 }
 
-exports.addChannelBan(channame, actor, receiver) {
+exports.addChannelBan = function(channame, actor, receiver) {
     var db = exports.getConnection();
     if(!db) {
         Logger.errlog.log("exports.addChannelBan: DB connection failed");
@@ -245,7 +249,7 @@ exports.addChannelBan(channame, actor, receiver) {
     return results;
 }
 
-exports.removeChannelBan(channame, ip) {
+exports.removeChannelBan = function(channame, ip) {
     var db = exports.getConnection();
     if(!db) {
         Logger.errlog.log("exports.removeChannelBan: DB connection failed");

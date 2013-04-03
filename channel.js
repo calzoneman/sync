@@ -1,39 +1,38 @@
+
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 var fs = require("fs");
-var mysql = require("mysql-libmysqlclient");
-var Config = require("./config.js");
-var Rank = require("./rank.js");
-// I should use the <noun><verb>er naming scheme more often
-var InfoGetter = require("./get-info.js");
-var Media = require("./media.js").Media;
-var ChatCommand = require("./chatcommand.js");
-var Server = require("./server.js");
-var io = Server.io;
-var Logger = require("./logger.js");
+var Database = require("./database.js");
 var Poll = require("./poll.js").Poll;
+var Media = require("./media.js").Media;
+var Logger = require("./logger.js");
+var InfoGetter = require("./get-info.js");
+var io = require("./server.js").io;
+var Rank = require("./rank.js");
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
+
     this.name = name;
+    // Initialize defaults
     this.registered = false;
     this.users = [];
     this.queue = [];
     this.library = {};
-    this.currentPosition = -1;
-    this.currentMedia = null;
+    this.position = -1;
+    this.media = null;
     this.leader = null;
-    this.recentChat = [];
-    this.qlocked = true;
+    this.chatbuffer = [];
+    this.openqueue = false;
     this.poll = false;
     this.voteskip = false;
     this.opts = {
@@ -42,7 +41,7 @@ var Channel = function(name) {
         qopen_allow_playnext: false,
         qopen_allow_delete: false,
         allow_voteskip: true,
-        pagetitle: "Sync",
+        pagetitle: this.name,
         customcss: ""
     };
     this.filters = [
@@ -55,9 +54,19 @@ var Channel = function(name) {
         motd: "",
         html: ""
     };
-
     this.ipbans = {};
     this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
+    this.i = 0;
+    this.time = new Date().getTime();
+
+    Database.loadChannel(this);
+    if(this.registered) {
+        this.loadDump();
+    }
+}
+
+/* REGION Channel data */
+Channel.prototype.loadDump = function() {
     fs.readFile("chandump/" + this.name, function(err, data) {
         if(err) {
             return;
@@ -72,9 +81,15 @@ var Channel = function(name) {
             this.sendAll("playlist", {
                 pl: this.queue
             });
-            this.currentPosition = data.currentPosition - 1;
-            if(this.currentPosition < -1)
-                this.currentPosition = -1;
+            // Backwards compatibility
+            if(data.currentPosition != undefined) {
+                this.position = data.currentPosition - 1;
+            }
+            else {
+                this.position = data.position - 1;
+            }
+            if(this.position < -1)
+                this.position = -1;
             if(this.queue.length > 0)
                 this.playNext();
             this.opts = data.opts;
@@ -95,127 +110,25 @@ var Channel = function(name) {
             Logger.errlog.log(e);
         }
     }.bind(this));
-
-    // Autolead stuff
-    // Accumulator
-    this.i = 0;
-    // Time of last update
-    this.time = new Date().getTime();
-
-    this.loadMysql();
-};
-
-// Check if this channel is registered
-// If it is, fetch the library
-Channel.prototype.loadMysql = function() {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Channel.loadMysql: MySQL Connection Failed");
-        return false;
-    }
-    // Check if channel exists
-    var query = "SELECT * FROM channels WHERE name='{}'"
-        .replace(/\{\}/, this.name);
-    var results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.loadMysql: Channel query failed");
-        return;
-    }
-    var rows = results.fetchAllSync();
-    if(rows.length == 0) {
-        Logger.syslog.log("Channel " + this.name + " is unregistered.");
-        return;
-    }
-    // [](/picard) I didn't realize that MySQL wasn't case sensitive.
-    // My bad.
-    else if(rows[0].name != this.name) {
-        this.name = rows[0].name;
-    }
-    this.registered = true;
-
-    // Load library
-    var query = "SELECT * FROM chan_{}_library"
-        .replace(/\{\}/, this.name);
-    var results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.loadMysql: failed to load library for " + this.name);
-        return;
-    }
-    var rows = results.fetchAllSync();
-    for(var i = 0; i < rows.length; i++) {
-        this.library[rows[i].id] = new Media(rows[i].id, rows[i].title, rows[i].seconds, rows[i].type);
-    }
-
-    // Load bans
-    var query = "SELECT * FROM chan_{}_bans"
-        .replace(/\{\}/, this.name);
-    var results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.loadMysql: failed to load banlist for " + this.name);
-        return;
-    }
-    var rows = results.fetchAllSync();
-    for(var i = 0; i < rows.length; i++) {
-        this.ipbans[rows[i].ip] = [rows[i].name, rows[i].banner];
-    }
-
-    Logger.syslog.log("Loaded channel " + this.name + " from database");
-    db.closeSync();
 }
 
-// Creates a new channel record in the MySQL Database
-// Currently unused, but might be useful if I add a registration page
-Channel.prototype.createTables = function() {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Channel.createTables: DB connection failed");
-        return false;
+Channel.prototype.saveDump = function() {
+    var filts = new Array(this.filters.length);
+    for(var i = 0; i < this.filters.length; i++) {
+        filts[i] = [this.filters[i][0].source,
+                    this.filters[i][1],
+                    this.filters[i][2]];
     }
-    // Create library table
-    var query= "CREATE TABLE `chan_{}_library` \
-                    (`id` VARCHAR(255) NOT NULL, \
-                    `title` VARCHAR(255) NOT NULL, \
-                    `seconds` INT NOT NULL, \
-                    `playtime` VARCHAR(8) NOT NULL, \
-                    `type` VARCHAR(2) NOT NULL, \
-                    PRIMARY KEY (`id`)) \
-                    ENGINE = MyISAM;"
-        .replace(/\{\}/, this.name);
-    var results = db.querySync(query);
-
-    // Create rank table
-    var query = "CREATE TABLE  `chan_{}_ranks` (\
-                    `name` VARCHAR( 32 ) NOT NULL ,\
-                    `rank` INT NOT NULL ,\
-                    UNIQUE (\
-                    `name`\
-                    )\
-                    ) ENGINE = MYISAM"
-        .replace(/\{\}/, this.name);
-    results = db.querySync(query) || results;
-
-    // Create ban table
-    var query = "CREATE TABLE  `chan_{}_bans` (\
-                    `ip` VARCHAR( 15 ) NOT NULL ,\
-                    `name` VARCHAR( 32 ) NOT NULL ,\
-                    `banner` VARCHAR( 32 ) NOT NULL ,\
-                    PRIMARY KEY (\
-                    `ip`\
-                    )\
-                    ) ENGINE = MYISAM"
-        .replace(/\{\}/, this.name);
-    results = db.querySync(query) || results;
-
-    // Insert into global channel table
-    var query = "INSERT INTO channels (`id`, `name`) VALUES (NULL, '{}')"
-        .replace(/\{\}/, this.name);
-    results = db.querySync(query) || results;
-    db.closeSync();
-    return results;
+    var dump = {
+        position: this.position,
+        queue: this.queue,
+        opts: this.opts,
+        filters: filts,
+        motd: this.motd
+    };
+    var text = JSON.stringify(dump);
+    fs.writeFileSync("chandump/" + this.name, text);
+    this.logger.flush();
 }
 
 Channel.prototype.tryRegister = function(user) {
@@ -239,7 +152,7 @@ Channel.prototype.tryRegister = function(user) {
         });
     }
     else {
-        if(this.createTables()) {
+        if(Database.registerChannel(this)) {
             this.registered = true;
             this.saveRank(user);
             user.socket.emit("registerChannel", {
@@ -257,144 +170,55 @@ Channel.prototype.tryRegister = function(user) {
     }
 }
 
-// Retrieves a user"s rank from the database
-Channel.prototype.getRank = function(name) {
-    if(!this.registered)
-        return Rank.Guest;
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Channel.getRank: DB connection failed");
+Channel.prototype.getRank = function(user) {
+    if(!this.registered) {
         return Rank.Guest;
     }
-    var query = "SELECT * FROM chan_{1}_ranks WHERE name='{2}'"
-        .replace(/\{1\}/, this.name)
-        .replace(/\{2\}/, name);
-    var results = db.querySync(query);
-    if(!results)
-        return Rank.Guest;
-    var rows = results.fetchAllSync();
-    if(rows.length == 0) {
-        return Rank.Guest;
-    }
-
-    db.closeSync();
-    return rows[0].rank;
+    return Database.lookupChannelRank(this.name, user.name);
 }
 
-// Saves a user"s rank to the database
 Channel.prototype.saveRank = function(user) {
-    if(!this.registered)
-        return false;
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Channel.saveRank: DB connection failed");
-        return false;
-    }
-    var query = "UPDATE chan_{1}_ranks SET rank='{2}' WHERE name='{3}'"
-        .replace(/\{1\}/, this.name)
-        .replace(/\{2\}/, user.rank)
-        .replace(/\{3\}/, user.name);
-    var results = db.querySync(query);
-    // Gonna have to insert a new one, bugger
-    if(!results.fetchAllSync) {
-        var query = "INSERT INTO chan_{1}_ranks (`name`, `rank`) VALUES ('{2}', '{3}')"
-            .replace(/\{1\}/, this.name)
-            .replace(/\{2\}/, user.name)
-            .replace(/\{3\}/, user.rank);
-        results = db.querySync(query);
-    }
-    db.closeSync();
-    return results;
+    return Database.saveChannelRank(this.name, user);
 }
 
-// Caches media metadata to the channel library.
-// If the channel is registered, stores it in the database as well
-Channel.prototype.addToLibrary = function(media) {
+Channel.prototype.cacheMedia = function(media) {
     this.library[media.id] = media;
-    if(!this.registered)
-        return;
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Channel.addToLibrary: DB connection failed");
-        return false;
+    if(this.registered) {
+        return Database.cacheMedia(this.name, media);
     }
-    var query = "INSERT INTO chan_{1}_library VALUES ('{2}', '{3}', {4}, '{5}', '{6}')"
-        .replace(/\{1\}/, this.name)
-        .replace(/\{2\}/, media.id)
-        .replace(/\{3\}/, media.title)
-        .replace(/\{4\}/, media.seconds)
-        .replace(/\{5\}/, media.duration)
-        .replace(/\{6\}/, media.type);
-    var results = db.querySync(query);
-    db.closeSync();
-    return results;
+    return false;
 }
 
-Channel.prototype.banIP = function(banner, bannee) {
-    // It is assumed that the banner has permission at this point
-    this.ipbans[bannee.ip] = [bannee.name, banner.name];
-    bannee.socket.disconnect();
-    this.broadcastIpbans();
-    if(!this.registered)
+Channel.prototype.banIP = function(actor, receiver) {
+    if(!Rank.hasPermission(actor, "ipban"))
         return false;
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Channel.banIP: DB connection failed");
-        return false;
-    }
-    var query = "INSERT INTO chan_{1}_bans (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
-        .replace(/\{1\}/, this.name)
-        .replace(/\{2\}/, bannee.ip)
-        .replace(/\{3\}/, bannee.name)
-        .replace(/\{4\}/, banner.name);
-    results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.banIP: Insert failed");
-    }
-    else {
-        this.logger.log(bannee.ip + " (" + bannee.name + ") was banned by " + banner.name);
-    }
-    db.closeSync();
-    return results;
-}
 
-Channel.prototype.unbanIP = function(ip) {
-    this.ipbans[ip] = null;
-    this.broadcastIpbans();
+    this.ipbans[receiver.ip] = [receiver.name, actor.name];
+    receiver.socket.disconnect();
+    this.broadcastBanlist();
+    this.logger.log(bannee.ip + " (" + bannee.name + ") was banned by " + banner.name);
 
     if(!this.registered)
         return false;
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Channel.unbanIP: DB connection failed");
-        return false;
-    }
 
-    var query = "DELETE FROM chan_{1}_bans WHERE `ip` = '{2}'"
-        .replace(/\{1\}/, this.name)
-        .replace(/\{2\}/, ip);
-
-    results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.unbanIP: Failed  to delete entry");
-        return;
-    }
-    db.closeSync();
-    return results;
+    // Update database ban table
+    return Database.addChannelBan(this.name, actor, receiver);
 }
 
-// Searches the local library for media titles containing query
-Channel.prototype.searchLibrary = function(query) {
+Channel.prototype.unbanIP = function(actor, ip) {
+    if(!Rank.hasPermission(actor, "ipban"))
+        return false;
+
+    delete this.ipbans[ip];
+
+    if(!this.registered)
+        return false;
+
+    // Update database ban table
+    return Database.removeChannelBan(this.name, ip);
+}
+
+Channel.prototype.search = function(query) {
     query = query.toLowerCase();
     var results = [];
     for(var id in this.library) {
@@ -411,15 +235,19 @@ Channel.prototype.searchLibrary = function(query) {
     return results;
 }
 
-// Called when a new user enters the channel
+/* REGION User interaction */
+
 Channel.prototype.userJoin = function(user) {
-    if(user.ip in this.ipbans && this.ipbans[user.ip] != null) {
-        this.logger.log("--- Kicking /" + user.ip + " - banned");
+    // GTFO
+    if(user.ip in this.ipbans) {
+        this.logger.log("--- Kicking " + user.ip + " - banned");
         user.socket.disconnect();
         return;
     }
 
+    // Join the socket pool for this channel
     user.socket.join(this.name);
+
     // Prevent duplicate login
     if(user.name != "") {
         for(var i = 0; i < this.users.length; i++) {
@@ -433,7 +261,8 @@ Channel.prototype.userJoin = function(user) {
             }
         }
     }
-    // If the channel is empty and isn"t registered, the first person
+
+    // If the channel is empty and isn't registered, the first person
     // gets ownership of the channel (temporarily)
     if(this.users.length == 0 && !this.registered) {
         user.rank = (user.rank < Rank.Owner) ? Rank.Owner + 7 : user.rank;
@@ -443,9 +272,12 @@ Channel.prototype.userJoin = function(user) {
     if(user.name != "") {
         this.broadcastNewUser(user);
     }
-    this.updateUsercount();
+    this.broadcastUsercount();
+
     // Set the new guy up
     this.sendPlaylist(user);
+    if(user.playerReady)
+        this.sendMediaUpdate(user);
     user.socket.emit("queueLock", {locked: this.qlocked});
     this.sendUserlist(user);
     this.sendRecentChat(user);
@@ -454,29 +286,40 @@ Channel.prototype.userJoin = function(user) {
     }
     user.socket.emit("channelOpts", this.opts);
     user.socket.emit("updateMotd", this.motd);
-    if(user.playerReady)
-        this.sendMediaUpdate(user);
+
+    // Send things that require special permission
+    this.sendRankStuff(user);
+
     this.logger.log("+++ /" + user.ip + " joined");
     Logger.syslog.log("/" + user.ip + " joined channel " + this.name);
 }
 
-// Called when a user leaves the channel
 Channel.prototype.userLeave = function(user) {
+    // Their socket might already be dead, so wrap in a try-catch
     try {
         user.socket.leave(this.name);
     }
     catch(e) {}
+
+    // Undo vote for people who leave
     if(this.poll) {
         this.poll.unvote(user.ip);
         this.broadcastPollUpdate();
     }
+    if(this.voteskip) {
+        this.voteskip.unvote(user.ip);
+    }
+
+    // If they were leading, return control to the server
     if(this.leader == user) {
         this.changeLeader("");
     }
+
+    // Remove the user from the client list for this channel
     var idx = this.users.indexOf(user);
     if(idx >= 0 && idx < this.users.length)
         this.users.splice(idx, 1);
-    this.updateUsercount();
+    this.broadcastUsercount();
     if(user.name != "") {
         this.sendAll("userLeave", {
             name: user.name
@@ -485,10 +328,177 @@ Channel.prototype.userLeave = function(user) {
     this.logger.log("--- /" + user.ip + " (" + user.name + ") left");
 }
 
-// Queues a new media
+Channel.prototype.sendRankStuff = function(user) {
+    if(Rank.hasPermission(user, "ipban")) {
+        var ents = [];
+        for(var ip in this.ipbans) {
+            if(this.ipbans[ip] != null) {
+                ents.push({
+                    ip: ip,
+                    name: this.ipbans[ip][0],
+                    banner: this.ipbans[ip][1]
+                });
+            }
+        }
+        user.socket.emit("banlist", {entries: ents});
+    }
+    if(Rank.hasPermission(user, "chatFilter")) {
+        var filts = new Array(this.filters.length);
+        for(var i = 0; i < this.filters.length; i++) {
+            filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
+        }
+        user.socket.emit("chatFilters", {filters: filts});
+    }
+}
+
+Channel.prototype.sendPlaylist = function(user) {
+    user.socket.emit("playlist", {
+        pl: this.queue
+    });
+    user.socket.emit("updatePlaylistIdx", {
+        idx: this.currentPosition
+    });
+}
+
+Channel.prototype.sendMediaUpdate = function(user) {
+    if(this.media != null) {
+        user.socket.emit("mediaUpdate", this.media.packupdate());
+    }
+}
+
+Channel.prototype.sendUserlist = function(user) {
+    var users = [];
+    for(var i = 0; i < this.users.length; i++) {
+        // Skip people who haven't logged in
+        if(this.users[i].name != "") {
+            users.push({
+                name: this.users[i].name,
+                rank: this.users[i].rank,
+                leader: this.users[i] == this.leader
+            });
+        }
+    }
+    user.socket.emit("userlist", users);
+}
+
+// Send the last 15 messages for context
+Channel.prototype.sendRecentChat = function(user) {
+    for(var i = 0; i < this.chatbuffer.length; i++) {
+        user.socket.emit("chatMsg", this.chatbuffer[i]);
+    }
+}
+
+/* REGION Broadcasts to all clients */
+
+Channel.prototype.sendAll = function(message, data) {
+    io.sockets.in(this.name).emit(message, data);
+}
+
+Channel.prototype.broadcastUsercount = function() {
+    this.sendAll("usercount", {
+        count: this.users.length
+    });
+}
+
+Channel.prototype.broadcastNewUser = function(user) {
+    this.sendAll("addUser", {
+        name: user.name,
+        rank: user.rank,
+        leader: this.leader == user
+    });
+    this.sendRankStuff(user);
+}
+
+Channel.prototype.broadcastRankUpdate = function(user) {
+    this.sendAll("updateUser", {
+        name: user.name,
+        rank: user.rank,
+        leader: this.leader == user
+    });
+    this.sendRankStuff(user);
+}
+
+Channel.prototype.broadcastPoll = function() {
+    this.sendAll("newPoll", this.poll.packUpdate());
+}
+
+Channel.prototype.broadcastPollUpdate = function() {
+    this.sendAll("updatePoll", this.poll.packUpdate());
+}
+
+Channel.prototype.broadcastPollClose = function() {
+    this.sendAll("closePoll");
+}
+
+Channel.prototype.broadcastOpts = function() {
+    this.sendAll("channelOpts", this.opts);
+}
+
+Channel.prototype.broadcastBanlist = function() {
+    var ents = [];
+    for(var ip in this.ipbans) {
+        if(this.ipbans[ip] != null) {
+            ents.push({
+                ip: ip,
+                name: this.ipbans[ip][0],
+                banner: this.ipbans[ip][1]
+            });
+        }
+    }
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], "ipban")) {
+            this.users[i].socket.emit("banlist", {entries: ents});
+        }
+    }
+}
+
+Channel.prototype.broadcastChatFilters = function() {
+    var filts = new Array(this.filters.length);
+    for(var i = 0; i < this.filters.length; i++) {
+        filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
+    }
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], "chatFilter")) {
+            this.users[i].socket.emit("chatFilters", {filters: filts});
+        }
+    }
+}
+
+Channel.prototype.broadcastMotd = function() {
+    this.sendAll("updateMotd", this.motd);
+}
+
+/* REGION Playlist Stuff */
+
+// The server autolead function
+function mediaUpdate(chan, id) {
+    // Bail cases - video changed, someone's leader, no video playing
+    if(chan.currentMedia == null ||
+           id != chan.currentMedia.id ||
+           chan.leader != null) {
+        return;
+    }
+
+    chan.currentMedia.currentTime += (new Date().getTime() - chan.time) / 1000.0;
+    chan.time = new Date().getTime();
+
+    // Show's over, move on to the next thing
+    if(chan.currentMedia.currentTime > chan.currentMedia.seconds) {
+        chan.playNext();
+    }
+    // Send updates about every 5 seconds
+    else if(chan.i % 5 == 0) {
+        chan.sendAll("mediaUpdate", chan.currentMedia.packupdate());
+    }
+    chan.i++;
+
+    setTimeout(function() { channelVideoUpdate(chan, id); }, 1000);
+}
+
 Channel.prototype.enqueue = function(data) {
-    var idx = data.pos == "next" ? this.currentPosition + 1 : this.queue.length;
-    // Try to look up cached metadata first
+    var idx = data.pos == "next" ? this.position + 1 : this.queue.length;
+
+    // Prefer cache over looking up new data
     if(data.id in this.library) {
         this.queue.splice(idx, 0, this.library[data.id]);
         this.sendAll("queue", {
@@ -497,278 +507,218 @@ Channel.prototype.enqueue = function(data) {
         });
         this.logger.log("*** Queued from cache: id=" + data.id);
     }
-    // Query metadata from YouTube
-    else if(data.type == "yt") {
-        var callback = (function(chan, id) { return function(res, data) {
-            if(res != 200) {
-                return;
-            }
-
-            try {
-                // Whoever decided on this variable name should be fired
-                var seconds = data.entry.media$group.yt$duration.seconds;
-                // This one"s slightly better
-                var title = data.entry.title.$t;
-                var vid = new Media(id, title, seconds, "yt");
-                chan.queue.splice(idx, 0, vid);
-                chan.sendAll("queue", {
-                    media: vid.pack(),
-                    pos: idx
-                });
-                chan.addToLibrary(vid);
-                chan.logger.log("*** Queued new YT video: " + id);
-            }
-            catch(e) {
-                Logger.errlog.log("YTQueue Fail: id=" + id);
-                console.log(e);
-            }
-        }})(this, data.id);
-        InfoGetter.getYTInfo(data.id, callback);
-    }
-    // YouTube Playlist
-    else if(data.type == "yp") {
-        var callback = (function(chan, plid) { return function(res, data) {
-            if(res != 200) {
-                return;
-            }
-
-            try {
-                for(var i = 0; i < data.feed.entry.length; i++) {
-                    var item = data.feed.entry[i];
-                    var title = item.title.$t;
-                    var url = item.link[1].href;
-                    var parts = url.split("/");
-                    // INCOMING H4X BECAUSE YTAPI IS INCONSISTENT
-                    var last = parts[parts.length - 1];
-                    var match = last.match(/watch\?v=([^&]+)/);
-                    var id;
-                    if(match) {
-                        id = match[1];
-                    }
-                    else {
-                        id = parts[parts.length - 2];
-                    }
-                    var seconds = item.media$group.yt$duration.seconds;
-                    var vid = new Media(id, title, seconds, "yt");
-                    chan.queue.splice(idx, 0, vid);
-                    chan.sendAll("queue", {
-                        media: vid.pack(),
+    else {
+        switch(data.type) {
+            case "yt":
+            case "vi":
+            case "dm":
+            case "sc":
+                InfoGetter.getMedia(data.id, data.type, function(media) {
+                    this.queue.splice(idx, 0, media);
+                    this.sendAll("queue", {
+                        media: media.pack(),
                         pos: idx
                     });
-                    chan.addToLibrary(vid);
-                    idx++;
-                }
-                chan.logger.log("*** Queued YT Playlist: id=" + plid);
-            }
-            catch(e) {
-                Logger.errlog.log("YTPlaylist Failed: id=", id);
-                console.log(e);
-            }
-        }})(this, data.id);
-        InfoGetter.getYTPlaylist(data.id, callback);
-    }
-    // Set up twitch metadata
-    else if(data.type == "tw") {
-        var media = new Media(data.id, "Twitch ~ " + data.id, 0, "tw");
-        this.queue.splice(idx, 0, media);
-        this.sendAll("queue", {
-            media: media.pack(),
-            pos: idx
-        });
-        this.logger.log("*** Queued Twitch channel: " + data.id);
-    }
-    else if(data.type == "li") {
-        var media = new Media(data.id, "Livestream ~ " + data.id, 0, "li");
-        this.queue.splice(idx, 0, media);
-        this.sendAll("queue", {
-            media: media.pack(),
-            pos: idx
-        });
-        this.logger.log("*** Queued Livestream channel: " + data.id);
-    }
-    // Query metadata from Soundcloud
-    else if(data.type == "sc") {
-        var callback = (function(chan, id) { return function(res, data) {
-            if(res != 200) {
-                return;
-            }
-
-            try {
-                var seconds = data.duration / 1000;
-                var title = data.title;
-                var vid = new Media(id, title, seconds, "sc");
-                chan.queue.splice(idx, 0, vid);
-                chan.sendAll("queue", {
-                    media: vid.pack(),
+                    this.cacheMedia(media);
+                }.bind(this));
+                break;
+            case "li":
+                var media = new Media(data.id, "Livestream ~ " + data.id, "--:--", "li");
+                this.queue.splice(idx, 0, media);
+                this.sendAll("queue", {
+                    media: media.pack(),
                     pos: idx
                 });
-                chan.addToLibrary(vid);
-                chan.logger.log("*** Queued Soundcloud id=" + id);
-            }
-            catch(e) {
-                Logger.errlog.log("SCQueue fail: id=" + id);
-                Logger.errlog.log(e);
-            }
-        }})(this, data.id);
-        InfoGetter.getSCInfo(data.id, callback);
-    }
-    // Query metadata from Vimeo
-    else if(data.type == "vi") {
-        var callback = (function(chan, id) { return function(res, data) {
-            if(res != 200) {
-                return;
-            }
-
-            try {
-                data = data[0];
-                var seconds = data.duration;
-                var title = data.title;
-                var vid = new Media(id, title, seconds, "vi");
-                chan.queue.splice(idx, 0, vid);
-                chan.sendAll("queue", {
-                    media: vid.pack(),
+                break;
+            case "tw":
+                var media = new Media(data.id, "Twitch ~ " + data.id, "--:--", "li");
+                this.queue.splice(idx, 0, media);
+                this.sendAll("queue", {
+                    media: media.pack(),
                     pos: idx
                 });
-                chan.addToLibrary(vid);
-                chan.logger.log("*** Queued Vimeo id=" + id);
-            }
-            catch(e) {
-                Logger.errlog.log("VIQueue fail: id=" + id);
-                Logger.errlog.log(e);
-            }
-        }})(this, data.id);
-        InfoGetter.getVIInfo(data.id, callback);
-    }
+                break;
+            default:
+                break;
 
-    // Dailymotion
-    else if(data.type == "dm") {
-        var callback = (function(chan, id) { return function(res, data) {
-            if(res != 200) {
-                return;
-            }
-
-            try {
-                var seconds = data.duration;
-                var title = data.title;
-                var vid = new Media(id, title, seconds, "dm");
-                chan.queue.splice(idx, 0, vid);
-                chan.sendAll("queue", {
-                    media: vid.pack(),
-                    pos: idx
-                });
-                chan.addToLibrary(vid);
-                chan.logger.log("*** Queued Dailymotion id=" + id);
-            }
-            catch(e) {
-                Logger.errlog.log("DMQueue fail: id=" + id);
-                Logger.errlog.log(e);
-            }
-        }})(this, data.id);
-        InfoGetter.getDMInfo(data.id, callback);
+        }
     }
 }
 
-// Removes a media from the play queue
-Channel.prototype.unqueue = function(data) {
-    // Stop trying to break my server
-    if(data.pos < 0 || data.pos >= this.queue.length)
+Channel.prototype.tryQueue = function(user, data) {
+    if(!Rank.hasPermission(user, "queue") &&
+            this.leader != user &&
+            !this.openqueue) {
         return;
+    }
+    if(data.pos == undefined || data.id == undefined) {
+        return;
+    }
+    if(data.type == undefined && !(data.id in this.library)) {
+        return;
+    }
+
+    if(data.pos == "next" && !Rank.hasPermission(user, "queue") &&
+            this.leader != user &&
+            !this.opts.qopen_allow_qnext) {
+        return;
+    }
+    this.enqueue(data);
+}
+
+Channel.prototype.dequeue = function(data) {
+    if(data.pos < 0 || data.pos >= this.queue.length) {
+        return;
+    }
 
     this.queue.splice(data.pos, 1);
     this.sendAll("unqueue", {
         pos: data.pos
     });
 
-    if(data.pos == this.currentPosition) {
-        this.currentPosition--;
+    // If you remove the currently playing video, play the next one
+    if(data.pos == this.position) {
+        this.position--;
         this.playNext();
         return;
     }
-    if(data.pos < this.currentPosition) {
-        this.currentPosition--;
+    // If you remove a video whose position is before the one currently
+    // playing, you have to reduce the position of the one playing
+    if(data.pos < this.position) {
+        this.position--;
     }
 }
 
-// Play the next media in the queue
-Channel.prototype.playNext = function() {
-    if(this.queue.length == 0)
+Channel.prototype.tryDequeue = function(user, data) {
+    if(!Rank.hasPermission(user, "queue") &&
+            this.leader != user &&
+            (!this.openqueue ||
+             this.openqueue && !this.opts.qopen_allow_delete)) {
         return;
-    var old = this.currentPosition;
-    this.voteskip = false;
-    if(this.currentPosition + 1 >= this.queue.length) {
-        this.currentPosition = -1;
-    }
-    this.currentPosition++;
-    this.currentMedia = this.queue[this.currentPosition];
-    this.currentMedia.currentTime = 0;
+     }
 
-    this.sendAll("mediaUpdate", this.currentMedia.packupdate());
+     if(data.pos == undefined) {
+         return;
+     }
+
+     this.dequeue(data);
+}
+
+Channel.prototype.playNext = function() {
+    // Nothing to play
+    if(this.queue.length == 0) {
+        return;
+    }
+
+    // Reset voteskip
+    this.voteskip = false;
+
+    var old = this.position;
+    // Wrap around if the end is hit
+    if(this.position + 1 >= this.queue.length) {
+        this.position = -1;
+    }
+
+    this.position++;
+    this.media = this.queue[this.position];
+    this.media.currentTime = 0;
+
+    this.sendAll("mediaUpdate", this.media.packupdate());
     this.sendAll("updatePlaylistIdx", {
         old: old,
-        idx: this.currentPosition
+        idx: this.position
     });
-    // Enable autolead for non-twitch
-    if(this.leader == null && this.currentMedia.type != "tw" && this.currentMedia.type != "li") {
+
+    // If it's not a livestream, enable autolead
+    if(this.leader == null && this.media.type != "tw"
+                           && this.media.type != "li") {
         this.time = new Date().getTime();
-        channelVideoUpdate(this, this.currentMedia.id);
+        mediaUpdate(this, this.media.id);
     }
+}
+
+Channel.prototype.tryPlayNext = function(user) {
+    if(!Rank.hasPermission(user, "queue") &&
+            this.leader != user &&
+            (!this.openqueue ||
+             this.openqueue && !this.opts.qopen_allow_playnext)) {
+         return;
+     }
+
+     this.playNext();
 }
 
 Channel.prototype.jumpTo = function(pos) {
-    if(this.queue.length == 0)
+    if(pos >= this.queue.length || pos < 0) {
         return;
-    if(pos >= this.queue.length || pos < 0)
-        return;
+    }
+
+    // Reset voteskip
     this.voteskip = false;
-    var old = this.currentPosition;
-    this.currentPosition = pos;
-    this.currentMedia = this.queue[this.currentPosition];
-    this.currentMedia.currentTime = 0;
 
-    this.sendAll("mediaUpdate", this.currentMedia.packupdate());
+    var old = this.position;
+    this.position = pos;
+    this.media = this.queue[this.position];
+    this.media.currentTime = 0;
+
+    this.sendAll("mediaUpdate", this.media.packupdate());
     this.sendAll("updatePlaylistIdx", {
-        idx: this.currentPosition,
-        old: old
+        old: old,
+        idx: this.position
     });
-    // Enable autolead for non-twitch
-    if(this.leader == null && this.currentMedia.type != "tw" && this.currentMedia.type != "li") {
+
+    // If it's not a livestream, enable autolead
+    if(this.leader == null && this.media.type != "tw"
+                           && this.media.type != "li") {
         this.time = new Date().getTime();
-        channelVideoUpdate(this, this.currentMedia.id);
+        mediaUpdate(this, this.media.id);
     }
 }
 
-Channel.prototype.setLock = function(locked) {
-    this.qlocked = locked;
-    this.sendAll("queueLock", {locked: locked});
-    for(var i = 0; i < this.users.length; i++) {
-        this.sendPlaylist(this.users[i]);
+Channel.prototype.tryJumpTo = function(user, data) {
+    if(!Rank.hasPermission(user, "jump") &&
+            this.leader != user) {
+         return;
     }
-}
 
-// Synchronize to a sync packet from the leader
-Channel.prototype.update = function(data) {
-    if(this.currentMedia == null) {
-        this.currentMedia = new Media(data.id, data.title, data.seconds, data.type);
-        this.currentMedia.currentTime = data.currentTime;
-    }
-    else
-        this.currentMedia.currentTime = data.seconds;
-    this.sendAll("mediaUpdate", this.currentMedia.packupdate());
-}
-
-// Move something around in the queue
-Channel.prototype.moveMedia = function(data) {
-    if(data.src < 0 || data.src >= this.queue.length)
+    if(data.pos == undefined) {
         return;
-    if(data.dest < 0 || data.dest > this.queue.length)
+    }
+
+    this.jumpTo(data.pos);
+}
+
+Channel.prototype.tryUpdate = function(user, data) {
+    if(this.leader != user) {
         return;
+    }
+
+    if(data.id == undefined || data.title == undefined ||
+       data.seconds == undefined || data.type == undefined) {
+           return;
+    }
+
+    if(this.media != null && (this.media.type == "li" ||
+                              this.media.type == "tw")) {
+        return;
+    }
+
+    this.media = new Media(data.id, data.title, data.seconds, data.type);
+    this.sendAll("mediaUpdate", this.media.packupdate());
+}
+
+Channel.prototype.move = function(data) {
+    if(data.src < 0 || data.src >= this.queue.length) {
+        return;
+    }
+    if(data.dest < 0 || data.dest > this.queue.length) {
+        return;
+    }
 
     var media = this.queue[data.src];
-    // Took me a while to figure out why the queue was going insane
-    // Gotta account for when you've copied it to the destination
-    // but not removed the source yet
     var dest = data.dest > data.src ? data.dest + 1 : data.dest;
-    var src  = data.dest > data.src ? data.src : data.src + 1;
+    var src =  data.dest > data.src ? data.src      : data.src + 1;
+
     this.queue.splice(dest, 0, media);
     this.queue.splice(src, 1);
     this.sendAll("moveVideo", {
@@ -776,15 +726,85 @@ Channel.prototype.moveMedia = function(data) {
         dest: data.dest
     });
 
-    if(data.src < this.currentPosition && data.dest >= this.currentPosition) {
-        this.currentPosition--;
+    // Account for moving things around the active video
+    if(data.src < this.position && data.dest >= this.currentPosition) {
+        this.position--;
     }
-    else if(data.src > this.currentPosition && data.dest < this.currentPosition) {
-        this.currentPosition++
+    else if(data.src > this.position && data.dest < this.currentPosition) {
+        this.position++
     }
-    else if(data.src == this.currentPosition) {
-        this.currentPosition = data.dest;
+    else if(data.src == this.position) {
+        this.position = data.dest;
     }
+}
+
+Channel.prototype.tryMove = function(user, data) {
+    if(!Rank.hasPermission(user, "queue") &&
+            this.leader != user && 
+            (!this.openqueue ||
+             this.openqueue || !this.opts.qopen_allow_move)) {
+         return;
+     }
+
+     if(data.src == undefined || data.dest == undefined) {
+         return;
+     }
+
+     this.move(data);
+}
+
+/* REGION Polls */
+
+Channel.prototype.tryClosePoll = function(user) {
+    if(!Rank.hasPermission(user, "poll")) {
+        return;
+    }
+
+    if(this.poll) {
+        this.poll = false;
+        this.broadcastPollClose();
+    }
+}
+
+Channel.prototype.tryVote = function(user, data) {
+    if(data.option == undefined) {
+        return;
+    }
+
+    if(this.poll) {
+        this.poll.vote(user.ip, data.option);
+        this.broadcastPollUpdate();
+    }
+}
+
+Channel.prototype.tryVoteskip = function(user) {
+    if(!this.voteskip) {
+        this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
+    }
+    this.voteskip.vote(user.ip, 0);
+    if(this.voteskip.counts[0] > this.users.length / 2) {
+        this.playNext();
+    }
+}
+
+
+/* REGION Channel Option stuff */
+
+Channel.prototype.setLock = function(locked) {
+    this.openqueue = !locked;
+    this.sendAll("queueLock", {locked: locked});
+}
+
+Channel.prototype.trySetLock = function(user, data) {
+    if(!Rank.hasPermission(user, "qlock")) {
+        return;
+    }
+    
+    if(data.locked == undefined) {
+        return;
+    }
+
+    this.setLock(data.locked);
 }
 
 Channel.prototype.updateFilter = function(filter) {
@@ -812,8 +832,76 @@ Channel.prototype.removeFilter = function(regex) {
     this.broadcastChatFilters();
 }
 
-// Chat message from a user
-Channel.prototype.chatMessage = function(user, msg) {
+Channel.prototype.tryChangeFilter = function(user, data) {
+    if(!Rank.hasPermission(user, "chatFilter")) {
+        return;
+    }
+
+    if(data.cmd == undefined || data.filter == undefined) {
+        return;
+    }
+
+    if(data.cmd == "update") {
+        try {
+            data.filter[0] = new RegExp(data.filter[0], "g");
+        }
+        catch(e) {
+            return;
+        }
+        this.updateFilter(data);
+    }
+    else if(data.cmd == "remove") {
+        this.removeFilter(data.filter[0]);
+    }
+}
+
+Channel.prototype.tryUpdateOptions = function(user, data) {
+    if(!Rank.hasPermission(user, "channelOpts")) {
+        return;
+    }
+
+    for(var key in this.opts) {
+        if(key in data) {
+            this.opts[key] = data[key];
+        }
+    }
+    
+    this.broadcastOpts();
+}
+
+Channel.prototype.updateMotd = function(motd) {
+    var html = motd.replace(/\n/g, "<br>");
+    html = this.filterMessage(html);
+    this.motd = {
+        motd: motd,
+        html: html
+    };
+    this.broadcastMotd();
+}
+
+Channel.prototype.tryUpdateMotd = function(user, data) {
+    if(!Rank.hasPermission(user, "updateMotd")) {
+        return;
+    }
+
+    if(data.motd) {
+        this.updateMotd(data.motd);
+    }
+}
+
+/* REGION Chat */
+
+Channel.prototype.tryChat = function(user, data) {
+    if(user.name == "") {
+        return;
+    }
+    
+    if(data.msg == undefined) {
+        return;
+    }
+
+    var msg = data.msg;
+
     if(msg.indexOf("/") == 0)
         ChatCommand.handle(this, user, msg);
 
@@ -838,7 +926,7 @@ Channel.prototype.filterMessage = function(msg) {
 }
 
 Channel.prototype.sendMessage = function(username, msg, msgclass) {
-    // I don"t want HTML from strangers
+    // I don't want HTML from strangers
     msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     msg = this.filterMessage(msg);
     this.sendAll("chatMsg", {
@@ -851,14 +939,24 @@ Channel.prototype.sendMessage = function(username, msg, msgclass) {
         msg: msg,
         msgclass: msgclass
     });
-    if(this.recentChat.length > 15)
-        this.recentChat.shift();
+    if(this.chatbuffer.length > 15)
+        this.chatbuffer.shift();
     this.logger.log("<" + username + "." + msgclass + "> " + msg);
 };
 
-// Promotion!  Actor is the client who initiated the promotion, name is the
-// name of the person being promoted
-Channel.prototype.promoteUser = function(actor, name) {
+/* REGION Rank stuff */
+
+Channel.prototype.tryPromoteUser = function(actor, data) {
+    if(!Rank.hasPermission(actor, "promote")) {
+        return;
+    }
+
+    if(data.name == undefined) {
+        return;
+    }
+
+    var name = data.name;
+
     var receiver;
     for(var i = 0; i < this.users.length; i++) {
         if(this.users[i].name == name) {
@@ -868,9 +966,6 @@ Channel.prototype.promoteUser = function(actor, name) {
     }
 
     if(receiver) {
-        // You can only promote someone if you are 2 ranks or higher above
-        // them.  This way you can"t promote them to your rank and end
-        // up in a situation where you can"t demote them
         if(actor.rank > receiver.rank + 1) {
             receiver.rank++;
             if(receiver.loggedIn) {
@@ -882,8 +977,16 @@ Channel.prototype.promoteUser = function(actor, name) {
     }
 }
 
-// You"re fired
-Channel.prototype.demoteUser = function(actor, name) {
+Channel.prototype.tryDemoteUser = function(actor, data) {
+    if(!Rank.hasPermission(actor, "promote")) {
+        return;
+    }
+
+    if(data.name == undefined) {
+        return;
+    }
+
+    var name = data.name;
     var receiver;
     for(var i = 0; i < this.users.length; i++) {
         if(this.users[i].name == name) {
@@ -893,8 +996,6 @@ Channel.prototype.demoteUser = function(actor, name) {
     }
 
     if(receiver) {
-        // Wouldn"t it be funny if you could demote people who rank higher
-        // than you?  No, it wouldn"t.
         if(actor.rank > receiver.rank) {
             receiver.rank--;
             if(receiver.loggedIn) {
@@ -906,8 +1007,6 @@ Channel.prototype.demoteUser = function(actor, name) {
     }
 }
 
-// Manual leader.  This shouldn"t be necessary since the server autoleads,
-// but you never know
 Channel.prototype.changeLeader = function(name) {
     if(this.leader != null) {
         var old = this.leader;
@@ -916,10 +1015,11 @@ Channel.prototype.changeLeader = function(name) {
     }
     if(name == "") {
         this.logger.log("*** Resuming autolead");
-        if(this.currentMedia != null) {
+        if(this.media != null && this.media.type != "li"
+                              && this.media.type != "tw") {
             this.time = new Date().getTime();
             this.i = 0;
-            channelVideoUpdate(this, this.currentMedia.id);
+            mediaUpdate(this, this.media.id);
         }
         return;
     }
@@ -932,183 +1032,16 @@ Channel.prototype.changeLeader = function(name) {
     }
 }
 
-// Send the userlist to a client
-// Do you know you"re all my very best friends?
-Channel.prototype.sendUserlist = function(user) {
-    var users = [];
-    for(var i = 0; i < this.users.length; i++) {
-        // Skip people who haven"t logged in
-        if(this.users[i].name != "") {
-            users.push({
-                name: this.users[i].name,
-                rank: this.users[i].rank,
-                leader: this.users[i] == this.leader
-            });
-        }
-    }
-    user.socket.emit("userlist", users)
-}
-
-Channel.prototype.updateUsercount = function() {
-    this.sendAll("usercount", {
-        count: this.users.length
-    });
-}
-
-// Send the play queue
-Channel.prototype.sendPlaylist = function(user) {
-    user.socket.emit("playlist", {
-        pl: this.queue
-    });
-    user.socket.emit("updatePlaylistIdx", {
-        idx: this.currentPosition
-    });
-}
-
-// Send the last 15 messages for context
-Channel.prototype.sendRecentChat = function(user) {
-    for(var i = 0; i < this.recentChat.length; i++) {
-        user.socket.emit("chatMsg", this.recentChat[i]);
-    }
-}
-
-// Send a sync packet
-Channel.prototype.sendMediaUpdate = function(user) {
-    if(this.currentMedia != null) {
-        user.socket.emit("mediaUpdate", this.currentMedia.packupdate());
-    }
-}
-
-// Sent when someone logs in, to add them to the user list
-Channel.prototype.broadcastNewUser = function(user) {
-    this.sendAll("addUser", {
-        name: user.name,
-        rank: user.rank,
-        leader: this.leader == user
-    });
-    this.handleRankChange(user);
-}
-
-Channel.prototype.handleRankChange = function(user) {
-    user.socket.emit("rank", {
-        rank: user.rank
-    });
-    if(Rank.hasPermission(user, "ipban")) {
-        var ents = [];
-        for(var ip in this.ipbans) {
-            if(this.ipbans[ip] != null) {
-                ents.push({
-                    ip: ip,
-                    name: this.ipbans[ip][0],
-                    banner: this.ipbans[ip][1]
-                });
-            }
-        }
-        user.socket.emit("banlist", {entries: ents});
-    }
-    if(Rank.hasPermission(user, "chatFilter")) {
-        var filts = new Array(this.filters.length);
-        for(var i = 0; i < this.filters.length; i++) {
-            filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
-        }
-        user.socket.emit("chatFilters", {filters: filts});
-    }
-}
-
-// Someone"s rank changed, or their leadership status changed
-Channel.prototype.broadcastRankUpdate = function(user) {
-    this.sendAll("updateUser", {
-        name: user.name,
-        rank: user.rank,
-        leader: this.leader == user
-    });
-    this.handleRankChange(user);
-}
-
-Channel.prototype.broadcastPoll = function() {
-    this.sendAll("newPoll", this.poll.packUpdate());
-}
-
-Channel.prototype.broadcastPollUpdate = function() {
-    this.sendAll("updatePoll", this.poll.packUpdate());
-}
-
-Channel.prototype.broadcastPollClose = function() {
-    this.sendAll("closePoll");
-}
-
-Channel.prototype.broadcastOpts = function() {
-    this.sendAll("channelOpts", this.opts);
-}
-
-Channel.prototype.broadcastIpbans = function() {
-    var ents = [];
-    for(var ip in this.ipbans) {
-        if(this.ipbans[ip] != null) {
-            ents.push({
-                ip: ip,
-                name: this.ipbans[ip][0],
-                banner: this.ipbans[ip][1]
-            });
-        }
-    }
-    for(var i = 0; i < this.users.length; i++) {
-        if(Rank.hasPermission(this.users[i], "ipban")) {
-            this.users[i].socket.emit("banlist", {entries: ents});
-        }
-    }
-}
-
-Channel.prototype.broadcastChatFilters = function() {
-    var filts = new Array(this.filters.length);
-    for(var i = 0; i < this.filters.length; i++) {
-        filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
-    }
-    for(var i = 0; i < this.users.length; i++) {
-        if(Rank.hasPermission(this.users[i], "ipban")) {
-            this.users[i].socket.emit("chatFilters", {filters: filts});
-        }
-    }
-}
-
-Channel.prototype.broadcastMotd = function() {
-    this.sendAll("updateMotd", this.motd);
-}
-
-Channel.prototype.handleVoteskip = function(user) {
-    if(!this.voteskip) {
-        this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
-    }
-    this.voteskip.vote(user.ip, 0);
-    if(this.voteskip.counts[0] > this.users.length / 2) {
-        this.playNext();
-    }
-}
-
-// Send to ALL the clients!
-Channel.prototype.sendAll = function(message, data) {
-    io.sockets.in(this.name).emit(message, data);
-}
-
-// Autolead yay
-function channelVideoUpdate(chan, id) {
-    // Someone changed the video or there"s a manual leader, so your
-    // argument is invalid
-    if(chan.currentMedia == null || id != chan.currentMedia.id || chan.leader != null)
+Channel.prototype.tryChangeLeader = function(user, data) {
+    if(!Rank.hasPermission(user, "assignLeader")) {
         return;
-    // Add dt since last update
-    chan.currentMedia.currentTime += (new Date().getTime() - chan.time)/1000.0;
-    chan.time = new Date().getTime();
-    // Video over, move on to next
-    if(chan.currentMedia.currentTime > chan.currentMedia.seconds) {
-        chan.playNext();
     }
-    // Every ~5 seconds send a sync packet to everyone
-    else if(chan.i % 5 == 0)
-        chan.sendAll("mediaUpdate", chan.currentMedia.packupdate());
-    chan.i++;
-    // Do it all over again in about a second
-    setTimeout(function() { channelVideoUpdate(chan, id); }, 1000);
+
+    if(data.name == undefined) {
+        return;
+    }
+
+    this.changeLeader(data.name);
 }
 
 exports.Channel = Channel;

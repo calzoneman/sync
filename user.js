@@ -133,7 +133,7 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("playNext", function() {
         if(this.channel != null) {
-            this.channel.tryPlayNext(this, data);
+            this.channel.tryPlayNext(this);
         }
     }.bind(this));
 
@@ -219,7 +219,7 @@ User.prototype.initCallbacks = function() {
     
     this.socket.on("voteskip", function(data) {
         if(this.channel != null) {
-            this.channel.voteskip(this);
+            this.channel.tryVoteskip(this);
         }
     }.bind(this));
 }
