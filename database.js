@@ -228,3 +228,33 @@ exports.cacheMedia = function(channame, media) {
     db.closeSync();
     return results;
 }
+
+exports.addChannelBan(channame, actor, receiver) {
+    var db = exports.getConnection();
+    if(!db) {
+        Logger.errlog.log("exports.addChannelBan: DB connection failed");
+        return false;
+    }
+    var query = "INSERT INTO chan_{1}_bans (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
+        .replace("{1}", channame)
+        .replace("{2}", reciever.ip)
+        .replace("{3}", reciever.name)
+        .replace("{4}", actor.name);
+    results = db.querySync(query);
+    db.closeSync();
+    return results;
+}
+
+exports.removeChannelBan(channame, ip) {
+    var db = exports.getConnection();
+    if(!db) {
+        Logger.errlog.log("exports.removeChannelBan: DB connection failed");
+        return false;
+    }
+    var query = "DELETE FROM chan_{1}_bans WHERE `ip` = '{2}'"
+        .replace("{1}", channame)
+        .replace("{2}", ip);
+    results = db.querySync(query);
+    db.closeSync();
+    return results;
+}

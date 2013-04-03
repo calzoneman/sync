@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var http = require("http");
 var https = require("https");
 var Logger = require("./logger.js");
+var Media = require("./media.js").Media;
 
 // Helper function for making an HTTP request and getting the result
 // as JSON
@@ -129,4 +130,86 @@ exports.getDMInfo = function(id, callback) {
         method: "GET",
         dataType: "jsonp",
         timeout: 1000}, callback);
+}
+
+exports.getMedia = function(id, type, callback) {
+    switch(type) {
+        case "yt":
+            exports.getYTInfo(id, function(res, data) {
+                if(res != 200) {
+                    return;
+                }
+
+                try {
+                    // Whoever named this should be fired
+                    var seconds = data.entry.media$group.yt$duration.seconds;
+                    var title = data.entry.title.$t;
+                    var media = new Media(id, title, seconds, "yt");
+                    callback(media);
+                }
+                catch(e) {
+                    Logger.errlog.log("getMedia failed: ");
+                    Logger.errlog.log(e);
+                }
+            });
+            break;
+        case "vi":
+            exports.getVIInfo(id, function(res, data) {
+                if(res != 200) {
+                    return;
+                }
+
+                try {
+                    data = data[0];
+                    var seconds = data.duration;
+                    var title = data.title;
+                    var media = new Media(id, title, seconds, "vi");
+                    callback(media);
+                }
+                catch(e) {
+                    Logger.errlog.log("getMedia failed: ");
+                    Logger.errlog.log(e);
+                }
+            });
+            break;
+        case "dm":
+            exports.getDMInfo(id, function(res, data) {
+                if(res != 200) {
+                    return;
+                }
+
+                try {
+                    var seconds = data.duration;
+                    var title = data.title;
+                    var media = new Media(id, title, seconds, "dm");
+                    callback(media);
+                }
+                catch(e) {
+                    Logger.errlog.log("getMedia failed: ");
+                    Logger.errlog.log(e);
+                }
+            });
+            break;
+        case "sc":
+            exports.getSCInfo(id, function(res, data) {
+                if(res != 200) {
+                    return;
+                }
+
+                try {
+                    // Soundcloud's durations are in ms
+                    var seconds = data.duration / 1000;
+                    var title = data.title;
+                    var media = new Media(id, title, seconds, "sc");
+                    callback(media);
+                }
+                catch(e) {
+                    Logger.errlog.log("getMedia failed: ");
+                    Logger.errlog.log(e);
+                }
+            });
+            break;
+        default:
+            break;
+    }
 }

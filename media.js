@@ -12,6 +12,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 // Helper function for formatting a time value in seconds
 // to the format hh:mm:ss
 function formatTime(sec) {
+    if(sec == "--:--")
+        return sec;
+
     sec = Math.floor(sec);
     var hours="", minutes="", seconds="";
     if(sec > 3600) {
