@@ -33,9 +33,7 @@ var User = function(socket, ip) {
 };
 
 
-// Set up socket callbacks
 User.prototype.initCallbacks = function() {
-    // What a shame
     this.socket.on("disconnect", function() {
         if(this.channel != null)
             this.channel.userLeave(this);
@@ -79,37 +77,26 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("assignLeader", function(data) {
-        if(data.name == undefined)
-            return;
-        if(Rank.hasPermission(this, "assignLeader")) {
-            if(this.channel != null)
-                this.channel.changeLeader(data.name);
+        if(this.channel != null) {
+            this.channel.tryChangeLeader(this, data);
         }
     }.bind(this));
 
     this.socket.on("promote", function(data) {
-        if(data.name == undefined)
-            return;
-        if(Rank.hasPermission(this, "promote")) {
-            if(this.channel != null) {
-                this.channel.promoteUser(this, data.name);
-            }
+        if(this.channel != null) {
+            this.channel.tryPromote(this, data);
         }
     }.bind(this));
 
     this.socket.on("demote", function(data) {
-        if(Rank.hasPermission(this, "promote")) {
-            if(this.channel != null) {
-                this.channel.demoteUser(this, data.name);
-            }
+        if(this.channel != null) {
+            this.channel.tryDemote(this, data);
         }
     }.bind(this));
 
     this.socket.on("chatMsg", function(data) {
-        if(this.name != "" && this.channel != null && data.msg != undefined) {
-            if(data.msg.length > 500)
-                data.msg = data.msg.substring(0, 500);
-            this.channel.chatMessage(this, data.msg);
+        if(this.channel != null) {
+            this.channel.tryChat(this, data);
         }
     }.bind(this));
 
@@ -121,94 +108,64 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("queue", function(data) {
-        if(this.channel == null)
-            return;
-        if(Rank.hasPermission(this, "queue") ||
-            this.channel.leader == this ||
-            !this.channel.qlocked) {
-                if(data.pos == "next" && 
-                    !this.channel.qopts_allow_qnext &&
-                    this.channel.leader != this &&
-                    !Rank.hasPermission(this, "queue"))
-                    return;
-                this.channel.enqueue(data);
+        if(this.channel != null) {
+            this.channel.tryQueue(this, data);
         }
     }.bind(this));
 
     this.socket.on("unqueue", function(data) {
-        if(this.channel == null)
-            return;
-        if(Rank.hasPermission(this, "queue") ||
-            this.channel.leader == this ||
-            this.channel.opts.qopen_allow_delete && !this.channel.qlocked) {
-                this.channel.unqueue(data);
+        if(this.channel != null) {
+            this.channel.tryDequeue(this, data);
         }
     }.bind(this));
 
     this.socket.on("moveMedia", function(data) {
-        if(this.channel == null)
-            return;
-        if(Rank.hasPermission(this, "queue") ||
-            this.channel.leader == this ||
-            this.channel.opts.qopen_allow_move && !this.channel.qlocked ) {
-                this.channel.moveMedia(data);
+        if(this.channel != null) {
+            this.channel.tryMove(this, data);
         }
     }.bind(this));
 
     this.socket.on("jumpTo", function(data) {
-        if(this.channel == null || data.pos == undefined)
-            return;
-        if(Rank.hasPermission(this, "jump") ||
-            this.channel.leader == this) {
-            this.channel.jumpTo(data.pos);
+        if(this.channel != null) {
+            this.channel.tryJumpTo(this, data);
         }
     }.bind(this));
 
     this.socket.on("playNext", function() {
-        if(this.channel == null)
-            return;
-        if(Rank.hasPermission(this, "queue") ||
-            this.channel.leader == this ||
-            this.channel.opts.qopen_allow_playnext && !this.channel.qlocked) {
-                this.channel.playNext();
+        if(this.channel != null) {
+            this.channel.tryPlayNext(this, data);
         }
     }.bind(this));
 
     this.socket.on("queueLock", function(data) {
-        if(Rank.hasPermission(this, "qlock")) {
-            if(this.channel != null) {
-                this.channel.setLock(data.locked);
-            }
+        if(this.channel != null) {
+            this.channel.trySetLock(this, data);
         }
     }.bind(this));
 
     this.socket.on("mediaUpdate", function(data) {
-        if(this.channel != null && this.channel.leader == this) {
-            this.channel.update(data);
+        if(this.channel != null) {
+            this.channel.tryUpdate(this, data);
         }
     }.bind(this));
 
     this.socket.on("searchLibrary", function(data) {
-        if(this.channel != null &&  Rank.hasPermission(this, "search")) {
+        if(this.channel != null) {
             this.socket.emit("librarySearchResults", {
-                results: this.channel.searchLibrary(data.query)
+                results: this.channel.search(data.query)
             });
         }
     }.bind(this));
 
     this.socket.on("closePoll", function() {
-        if(Rank.hasPermission(this, "poll")) {
-            if(this.channel != null && this.channel.poll) {
-                this.channel.poll = null;
-                this.channel.broadcastPollClose();
-            }
+        if(this.channel != null) {
+            this.channel.tryClosePoll(this);
         }
     }.bind(this));
 
     this.socket.on("vote", function(data) {
-        if(this.channel != null && this.channel.poll) {
-            this.channel.poll.vote(this.ip, data.option);
-            this.channel.broadcastPollUpdate();
+        if(this.channel != null) {
+            this.channel.tryVote(this, data);
         }
     }.bind(this));
 
@@ -243,46 +200,26 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("channelOpts", function(data) {
-        if(Rank.hasPermission(this, "channelOpts") && this.channel != null) {
-            this.channel.opts = data;
-            this.channel.broadcastOpts();
+        if(this.channel != null) {
+            this.channel.tryUpdateOptions(this, data);
         }
     }.bind(this));
 
     this.socket.on("chatFilter", function(data) {
-        if(Rank.hasPermission(this, "chatFilter")) {
-            if(data.cmd && data.cmd == "update" && this.channel != null) {
-                try {
-                    data.filter[0] = new RegExp(data.filter[0], "g");
-                }
-                catch(e) {
-                    return;
-                }
-                this.channel.updateFilter(data.filter);
-            }
-            else if(data.cmd && data.cmd == "remove" && this.channel != null) {
-                this.channel.removeFilter(data.filter[0]);
-            }
+        if(this.channel != null) {
+            this.channel.tryChangeFilter(this, data);
         }
     }.bind(this));
 
     this.socket.on("updateMotd", function(data) {
-        if(Rank.hasPermission(this, "updateMotd")) {
-            if(data.motd != undefined && this.channel != null) {
-                var html = data.motd.replace(/\n/g, "<br>");
-                html = this.channel.filterMessage(html);
-                this.channel.motd = {
-                    motd: data.motd,
-                    html: html
-                };
-                this.channel.broadcastMotd();
-            }
+        if(this.channel != null) {
+            this.channel.tryUpdateMotd(this, data);
         }
     }.bind(this));
     
     this.socket.on("voteskip", function(data) {
         if(this.channel != null) {
-            this.channel.handleVoteskip(this);
+            this.channel.voteskip(this);
         }
     }.bind(this));
 }
@@ -348,7 +285,7 @@ User.prototype.login = function(name, pw) {
     }
     // No password => try guest login
     if(pw == "") {
-        // Sorry bud, can"t take that name
+        // Sorry bud, can't take that name
         if(Auth.isRegistered(name)) {
             this.socket.emit("login", {
                 success: false,
@@ -363,7 +300,6 @@ User.prototype.login = function(name, pw) {
                 error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
             });
         }
-        // Woah, success!
         else {
             Logger.syslog.log(this.ip + " signed in as " + name);
             this.name = name;
@@ -388,7 +324,6 @@ User.prototype.login = function(name, pw) {
                 success: true
             });
             Logger.syslog.log(this.ip + " logged in as " + name);
-            // Sweet, let"s look up our rank
             var chanrank = (this.channel != null) ? this.channel.getRank(name)
                                                   : Rank.Guest;
             var rank = (chanrank > row.global_rank) ? chanrank

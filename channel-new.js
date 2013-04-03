@@ -665,6 +665,11 @@ Channel.prototype.tryUpdate = function(user, data) {
            return;
     }
 
+    if(this.media != null && (this.media.type == "li" ||
+                              this.media.type == "tw")) {
+        return;
+    }
+
     this.media = new Media(data.id, data.title, data.seconds, data.type);
     this.sendAll("mediaUpdate", this.media.packupdate());
 }
@@ -804,7 +809,12 @@ Channel.prototype.tryChangeFilter = function(user, data) {
     }
 
     if(data.cmd == "update") {
-        data.filter[0] = new RegExp(data.filter[0], "g");
+        try {
+            data.filter[0] = new RegExp(data.filter[0], "g");
+        }
+        catch(e) {
+            return;
+        }
         this.updateFilter(data);
     }
     else if(data.cmd == "remove") {
@@ -846,7 +856,17 @@ Channel.prototype.tryUpdateMotd = function(user, data) {
 
 /* REGION Chat */
 
-Channel.prototype.tryChat = function(user, msg) {
+Channel.prototype.tryChat = function(user, data) {
+    if(user.name == "") {
+        return;
+    }
+    
+    if(data.msg == undefined) {
+        return;
+    }
+
+    var msg = data.msg;
+
     if(msg.indexOf("/") == 0)
         ChatCommand.handle(this, user, msg);
 
@@ -950,4 +970,41 @@ Channel.prototype.tryDemoteUser = function(actor, data) {
             this.broadcastRankUpdate(receiver);
         }
     }
+}
+
+Channel.prototype.changeLeader = function(name) {
+    if(this.leader != null) {
+        var old = this.leader;
+        this.leader = null;
+        this.broadcastRankUpdate(old);
+    }
+    if(name == "") {
+        this.logger.log("*** Resuming autolead");
+        if(this.media != null && this.media.type != "li"
+                              && this.media.type != "tw") {
+            this.time = new Date().getTime();
+            this.i = 0;
+            mediaUpdate(this, this.media.id);
+        }
+        return;
+    }
+    for(var i = 0; i < this.users.length; i++) {
+        if(this.users[i].name == name) {
+            this.logger.log("*** Assigned leader: " + name);
+            this.leader = this.users[i];
+            this.broadcastRankUpdate(this.leader);
+        }
+    }
+}
+
+Channel.prototype.tryChangeLeader = function(user, data) {
+    if(!Rank.hasPermission(user, "assignLeader")) {
+        return;
+    }
+
+    if(data.name == undefined) {
+        return;
+    }
+
+    this.changeLeader(data.name);
 }
