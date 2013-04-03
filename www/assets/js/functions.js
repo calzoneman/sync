@@ -39,9 +39,9 @@ function fmtUserlistItem(div, rank, leader) {
         $(name).attr("class", "userlist_op");
 
     var flair = div.children[0];
-    // denote current leader with [L]
+    // denote current leader with a star
     if(leader) {
-        flair.innerHTML = "[L]";
+        $("<i/>").addClass("icon-star-empty").appendTo(flair);
     }
     else {
         flair.innerHTML = "";
