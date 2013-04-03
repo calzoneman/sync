@@ -11,36 +11,32 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 // Adds a user to the chatbox userlist
 function addUser(name, rank, leader) {
-    var div = document.createElement("div");
-    $(div).attr("class", "userlist_item");
-    var span = document.createElement("span");
-    var flair = document.createElement("span");
-    span.innerHTML = name;
-    div.appendChild(flair);
-    div.appendChild(span);
-    fmtUserlistItem(div, rank, leader);
+    var div = $("<div/>").attr("class", "userlist_item");
+    var flair = $("<span/>").appendTo(div);
+    var nametag = $("<span/>").text(name).appendTo(div);
+    fmtUserlistItem(div[0], rank, leader);
     if(RANK >= Rank.Moderator)
         addUserDropdown(div, name);
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
         var othername = users[i].children[1].innerHTML;
         if(othername.toLowerCase() > name.toLowerCase()) {
-            $(div).insertBefore(users[i]);
+            div.insertBefore(users[i]);
             return;
         }
     }
-    $("#userlist")[0].appendChild(div);
+    div.appendTo($("#userlist"));
 }
 
 // Format a userlist entry based on a person"s rank
 function fmtUserlistItem(div, rank, leader) {
-    var span = div.children[1];
+    var name = div.children[1];
     if(rank >= Rank.Siteadmin)
-        $(span).attr("class", "userlist_siteadmin");
+        $(name).attr("class", "userlist_siteadmin");
     else if(rank >= Rank.Owner)
-        $(span).attr("class", "userlist_owner");
+        $(name).attr("class", "userlist_owner");
     else if(rank >= Rank.Moderator)
-        $(span).attr("class", "userlist_op");
+        $(name).attr("class", "userlist_op");
 
     var flair = div.children[0];
     // denote current leader with [L]
@@ -127,9 +123,9 @@ function addUserDropdown(entry, name) {
 }
 
 function formatChatMessage(data) {
-    var div = document.createElement("div");
+    var div = $("<div/>");
     if(data.msg.toUpperCase().indexOf(uname.toUpperCase()) != -1) {
-        $(div).addClass("nick-highlight");
+        div.addClass("nick-highlight");
         if(!FOCUSED) {
             TITLE_BLINK = setInterval(function() {
                 if(document.title == "*Chat*")
@@ -140,21 +136,18 @@ function formatChatMessage(data) {
         }
     }
     if(data.msgclass == "action") {
-        var message = document.createElement("span");
-        $(message).addClass("action");
-        message.innerHTML = data.username + " " + data.msg;
-        div.appendChild(message);
+        var message = $("<span/>").text(data.username + " " + data.msg)
+            .addClass("action")
+            .appendTo(div);
     }
     else {
-        var name = document.createElement("span");
-        var message = document.createElement("span");
-        name.innerHTML = "<strong>&lt;" + data.username + "&gt;</strong> ";
+        var name = $("<span/>");
+        $("<strong/>").text("<" + data.username + ">").appendTo(name);
         if(data.msgclass == "shout")
-            $(name).addClass("shout");
-        $(message).addClass(data.msgclass);
-        message.innerHTML = data.msg;
-        div.appendChild(name);
-        div.appendChild(message);
+            name.addClass("shout");
+        var message = $("<span/>").text(data.msg).addClass(data.msgclass);
+        name.appendTo(div);
+        message.appendTo(div);
     }
     return div;
 }
@@ -265,6 +258,8 @@ function addLibraryButtons(li, id) {
     var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
     //$("<i />").attr("class", "icon-play").appendTo(btnNext);
     btnNext.text("Next");
+    if(!CHANNELOPTS.qopen_allow_qnext)
+        btnNext.attr("disabled", true);
 
     var btnEnd =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
     //$("<i />").attr("class", "icon-fast-forward").appendTo(btnEnd);
@@ -288,25 +283,25 @@ function addLibraryButtons(li, id) {
 
 // Rearranges the queue
 function moveVideo(src, dest, noanim) {
-    var li = $("#queue").children()[src];
+    var li = $($("#queue").children()[src]);
     var ul = $("#queue")[0];
     if(noanim) {
-        ul.removeChild(li);
+        li.detach();
         if(dest == ul.children.length) {
-            ul.appendChild(li);
+            li.appendTo(ul);
         }
         else {
-            ul.insertBefore(li, ul.getElementsByTagName("li")[dest]);
+            li.insertBefore(ul.getElementsByTagName("li")[dest]);
         }
     }
     else {
-        $(li).hide("blind", function() {
-            ul.removeChild(li);
+        li.hide("blind", function() {
+            li.detach();
             if(dest == ul.children.length) {
-                ul.appendChild(li);
+                li.appendTo(ul);
             }
             else {
-                ul.insertBefore(li, ul.getElementsByTagName("li")[dest]);
+                li.insertBefore(ul.getElementsByTagName("li")[dest]);
             }
             $(li).show("blind");
         });
@@ -342,18 +337,14 @@ function parseVideoURL(url){
 function parseYTURL(url) {
     var m = url.match(/v=([^&#]+)/);
     if(m) {
-        // Extract ID
         return m[1];
     }
     var m = url.match(/youtu\.be\/([^&#]+)/);
     if(m) {
-        // Extract ID
         return m[1];
     }
-    // Final try
     var m = url.match(/([^&#]*)/);
     if(m) {
-        // Extract ID
         return m[1];
     }
     return null;
@@ -370,7 +361,6 @@ function parseYTPlaylist(url) {
 function parseTwitch(url) {
     var m = url.match(/twitch\.tv\/([a-zA-Z0-9]+)/);
     if(m) {
-        // Extract channel name
         return m[1];
     }
     return null;
@@ -379,7 +369,6 @@ function parseTwitch(url) {
 function parseLivestream(url) {
     var m = url.match(/livestream\.com\/([a-zA-Z0-9]+)/);
     if(m) {
-        // Extract channel name
         return m[1];
     }
     return null;
@@ -388,7 +377,6 @@ function parseLivestream(url) {
 function parseVimeo(url) {
     var m = url.match(/vimeo\.com\/([0-9]+)/);
     if(m) {
-        // Extract video ID
         return m[1];
     }
     return null;
@@ -435,7 +423,6 @@ function addPoll(data) {
     $("<h3/>").text(data.title).appendTo(poll);
     for(var i = 0; i < data.options.length; i++) {
         var callback = (function(i) { return function() {
-                console.log(i);
                 socket.emit("vote", {
                     option: i
                 });
@@ -600,13 +587,13 @@ function handleRankChange() {
         $("#modnav").show();
         $("#chancontrols").show();
     }
-    else {
+    else if(!LEADER) {
         if(OPENQUEUE) {
-            if(CHANNELOPTS.qopen_allow_qnext || LEADER)
+            if(CHANNELOPTS.qopen_allow_qnext)
                 $("#queue_next").attr("disabled", false);
             else
                 $("#queue_next").attr("disabled", true);
-            if(CHANNELOPTS.qopen_allow_playnext || LEADER)
+            if(CHANNELOPTS.qopen_allow_playnext)
                 $("#play_next").attr("disabled", false);
             else
                 $("#play_next").attr("disabled", true);

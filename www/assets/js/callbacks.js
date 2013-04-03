@@ -12,18 +12,30 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 // Wrapped in a function so I can ensure that the socket
 // is defined before these statements are run
 function initCallbacks() {
+    /* REGION Globals */
+
     socket.on("disconnect", function() {
         $("<div/>").addClass("alert").addClass("alert-error")
             .insertAfter($(".row")[0])[0]
             .innerHTML = "<h3>Disconnected from server</h3>";
     });
 
+    socket.on("announcement", function(data) {
+        showAnnouncement(data.title, data.text);
+    });
+
+    /* REGION Channel Meta */
     socket.on("channelNotRegistered", function() {
         showChannelRegistration();
     });
 
-    socket.on("announcement", function(data) {
-        showAnnouncement(data.title, data.text);
+    socket.on("registerChannel", function(data) {
+        if(data.success) {
+            $("#chregnotice").remove();
+        }
+        else {
+            alert(data.error);
+        }
     });
 
     socket.on("updateMotd", function(data) {
@@ -37,41 +49,6 @@ function initCallbacks() {
 
     socket.on("chatFilters", function(data) {
         updateChatFilters(data.filters);
-    });
-
-    socket.on("registerChannel", function(data) {
-        if(data.success) {
-            $("#chregnotice").remove();
-        }
-        else {
-            alert(data.error);
-        }
-    });
-
-    socket.on("rank", function(data) {
-        RANK = data.rank;
-        handleRankChange();
-    });
-
-    socket.on("login", function(data) {
-        if(!data.success)
-            alert(data.error);
-        else {
-            $("#welcome")[0].innerHTML = "Welcome, " + uname;
-            $("#loginform").css("display", "none");
-            $("#logoutform").css("display", "");
-            $("#loggedin").css("display", "");
-            if(pw != "") {
-                createCookie("sync_uname", uname, 1);
-                createCookie("sync_pw", pw, 1);
-            }
-        }
-    });
-
-    socket.on("register", function(data) {
-        if(data.error) {
-            alert(data.error);
-        }
     });
 
     socket.on("channelOpts", function(opts) {
@@ -95,6 +72,8 @@ function initCallbacks() {
         CHANNELOPTS = opts;
         if(opts.qopen_allow_qnext)
             $("#queue_next").attr("disabled", false);
+        else if(RANK < Rank.Moderator && !LEADER)
+            $("#queue_next").attr("disabled", true);
         if(opts.qopen_allow_playnext)
             $("#play_next").attr("disabled", false);
         else if(RANK < Rank.Moderator && !LEADER)
@@ -111,13 +90,44 @@ function initCallbacks() {
         updateBanlist(data.entries);
     });
 
+    /* REGION Rank Stuff */
+
+    socket.on("rank", function(data) {
+        RANK = data.rank;
+        handleRankChange();
+    });
+
+    socket.on("register", function(data) {
+        if(data.error) {
+            alert(data.error);
+        }
+    });
+
+    socket.on("login", function(data) {
+        if(!data.success)
+            alert(data.error);
+        else {
+            $("#welcome")[0].innerHTML = "Welcome, " + uname;
+            $("#loginform").css("display", "none");
+            $("#logoutform").css("display", "");
+            $("#loggedin").css("display", "");
+            if(pw != "") {
+                createCookie("sync_uname", uname, 1);
+                createCookie("sync_pw", pw, 1);
+            }
+        }
+    });
+
+
+    /* REGION Chat */
+
     socket.on("usercount", function(data) {
         $("#usercount").text(data.count + " connected users");
     });
 
     socket.on("chatMsg", function(data) {
         var div = formatChatMessage(data);
-        $("#messagebuffer")[0].appendChild(div);
+        div.appendTo($("#messagebuffer"));
         // Cap chatbox at most recent 100 messages
         if($("#messagebuffer").children().length > 100) {
             $($("#messagebufer").children()[0]).remove();
@@ -126,7 +136,63 @@ function initCallbacks() {
             $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
     });
 
+    socket.on("userlist", function(data) {
+        for(var i = 0; i < data.length; i++) {
+            addUser(data[i].name, data[i].rank, data[i].leader);
+        }
+    });
+
+    socket.on("addUser", function(data) {
+        addUser(data.name, data.rank, data.leader);
+    });
+
+    socket.on("updateUser", function(data) {
+        if(data.name == uname) {
+            LEADER = data.leader;
+            handleRankChange();
+            if(LEADER) {
+                // I'm a leader!  Set up sync function
+                sendVideoUpdate = function() {
+                    PLAYER.getTime(function(seconds) {
+                        socket.emit("mediaUpdate", {
+                            id: PLAYER.id,
+                            currentTime: seconds,
+                            paused: false,
+                            type: PLAYER.type
+                        });
+                    });
+                };
+            }
+            // I'm not a leader.  Don't send syncs to the server
+            else {
+                sendVideoUpdate = function() { }
+            }
+
+        }
+        var users = $("#userlist").children();
+        for(var i = 0; i < users.length; i++) {
+            var name = users[i].children[1].innerHTML;
+            // Reformat user
+            if(name == data.name) {
+                fmtUserlistItem(users[i], data.rank, data.leader);
+            }
+        }
+    });
+
+    socket.on("userLeave", function(data) {
+        var users = $("#userlist").children();
+        for(var i = 0; i < users.length; i++) {
+            var name = users[i].children[1].innerHTML;
+            if(name == data.name) {
+                $("#userlist")[0].removeChild(users[i]);
+            }
+        }
+    });
+
+    /* REGION Playlist Stuff */
+
     socket.on("playlist", function(data) {
+        // Clear the playlist first
         var ul = $("#queue")[0];
         var n = ul.children.length;
         for(var i = 0; i < n; i++) {
@@ -155,13 +221,36 @@ function initCallbacks() {
 
     socket.on("unqueue", function(data) {
         var li = $("#queue").children()[data.pos];
-        //$(li).hide("blind", function() {
-            $(li).remove();
-        //});
+        $(li).remove();
     });
 
     socket.on("moveVideo", function(data) {
         moveVideo(data.src, data.dest);
+    });
+
+    socket.on("updatePlaylistIdx", function(data) {
+        if(data.old != undefined) {
+            var liold = $("#queue").children()[data.old];
+            $(liold).removeClass("alert alert-info");
+        }
+        var linew = $("#queue").children()[data.idx];
+        $(linew).addClass("alert alert-info");
+        POSITION = data.idx;
+        $("#voteskip").attr("disabled", false);
+    });
+
+    socket.on("mediaUpdate", function(data) {
+        $("#currenttitle").text("Currently Playing: " + data.title);
+        if(data.type != "sc" && MEDIATYPE == "sc")
+            // [](/goddamnitmango)
+            fixSoundcloudShit();
+        if(data.type != MEDIATYPE) {
+            MEDIATYPE = data.type;
+            PLAYER = new Media(data);
+        }
+        else if(PLAYER.update) {
+            PLAYER.update(data);
+        }
     });
 
     socket.on("queueLock", function(data) {
@@ -177,8 +266,9 @@ function initCallbacks() {
                     $("#play_next").attr("disabled", true);
             }
         }
-        else if(RANK < Rank.Moderator) {
+        else if(RANK < Rank.Moderator && !LEADER) {
             $("#playlist_controls").css("display", "none");
+            rebuildPlaylist();
         }
         if(OPENQUEUE) {
             $("#qlockbtn").removeClass("btn-danger")
@@ -189,123 +279,6 @@ function initCallbacks() {
             $("#qlockbtn").removeClass("btn-success")
                 .addClass("btn-danger")
                 .text("Unlock Queue");
-        }
-    });
-
-    socket.on("updatePlaylistIdx", function(data) {
-        if(data.old != undefined) {
-            console.log("unhighlight", data.old);
-            var liold = $("#queue").children()[data.old];
-            $(liold).removeClass("alert alert-info");
-        }
-        var linew = $("#queue").children()[data.idx];
-        $(linew).addClass("alert alert-info");
-        POSITION = data.idx;
-        $("#voteskip").attr("disabled", false);
-    });
-
-    socket.on("mediaUpdate", function(data) {
-        $("#currenttitle").text("Currently Playing: " + data.title);
-        if(data.type != "sc" && MEDIATYPE == "sc")
-            fixSoundcloudShit();
-        if(data.type != MEDIATYPE) {
-            MEDIATYPE = data.type;
-            PLAYER = new Media(data);
-        }
-        else {
-            PLAYER.update(data);
-        }
-    });
-
-    socket.on("userlist", function(data) {
-        for(var i = 0; i < data.length; i++) {
-            addUser(data[i].name, data[i].rank, data[i].leader);
-        }
-    });
-
-    socket.on("addUser", function(data) {
-        addUser(data.name, data.rank, data.leader);
-    });
-
-    socket.on("updateUser", function(data) {
-        if(data.name == uname) {
-            LEADER = data.leader;
-            handleRankChange();
-            if(LEADER) {
-                // I'm a leader!  Set up sync function
-                sendVideoUpdate = function() {
-                    PLAYER.getTime(function(seconds) {
-                        socket.emit("mediaUpdate", {
-                            id: PLAYER.id,
-                            seconds: seconds,
-                            paused: false,
-                            type: PLAYER.type
-                        });
-                    });
-                        
-                    /*
-                    if(MEDIATYPE == "yt") {
-                        socket.emit("mediaUpdate", {
-                            id: parseYTURL(PLAYER.getVideoUrl()),
-                            seconds: PLAYER.getCurrentTime(),
-                            paused: PLAYER.getPlayerState() == YT.PlayerState.PAUSED,
-                            type: "yt"
-                        });
-                    }
-                    else if(MEDIATYPE == "sc") {
-                        PLAYER.getPosition(function(pos) {
-                            socket.emit("mediaUpdate", {
-                                id: PLAYER.mediaId,
-                                seconds: pos / 1000,
-                                paused: false,
-                                type: "sc"
-                            });
-                        });
-                    }
-                    else if(MEDIATYPE == "vi") {
-                        PLAYER.api("getCurrentTime", function(data) {
-                            socket.emit("mediaUpdate", {
-                                id: PLAYER.videoid,
-                                seconds: data,
-                                paused: false,
-                                type: "vi"
-                            });
-                        });
-                    }
-                    else if(MEDIATYPE == "dm") {
-                        socket.emit("mediaUpdate", {
-                            id: PLAYER.mediaId,
-                            seconds: PLAYER.currentTime,
-                            paused: PLAYER.paused,
-                            type: "dm"
-                        });
-                    }
-                    */
-                };
-            }
-            // I'm not a leader.  Don"t send syncs to the server
-            else {
-                sendVideoUpdate = function() { }
-            }
-
-        }
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerHTML;
-            // Reformat user
-            if(name == data.name) {
-                fmtUserlistItem(users[i], data.rank, data.leader);
-            }
-        }
-    });
-
-    socket.on("userLeave", function(data) {
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerHTML;
-            if(name == data.name) {
-                $("#userlist")[0].removeChild(users[i]);
-            }
         }
     });
 
@@ -322,6 +295,8 @@ function initCallbacks() {
             $(li).appendTo(ul);
         }
     });
+
+    /* REGION Poll */
 
     socket.on("newPoll", function(data) {
         addPoll(data);

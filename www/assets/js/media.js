@@ -44,8 +44,10 @@ Media.prototype.initYouTube = function() {
     });
 
     this.load = function(data) {
-        this.player.loadVideoById(data.id, data.currentTime);
-        this.id = data.id;
+        if(this.player.loadVideoById) {
+            this.player.loadVideoById(data.id, data.currentTime);
+            this.id = data.id;
+        }
     }
 
     this.pause = function() {
@@ -230,7 +232,9 @@ Media.prototype.update = function(data) {
     }
     this.getTime(function(seconds) {
         if(Math.abs(data.currentTime - seconds) > SYNC_THRESHOLD) {
-            this.seek(data.currentTime);
+            if(!LEADER) {
+                this.seek(data.currentTime);
+            }
         }
     }.bind(this));
 }

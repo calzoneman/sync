@@ -277,7 +277,7 @@ Channel.prototype.userJoin = function(user) {
     // Set the new guy up
     this.sendPlaylist(user);
     this.sendMediaUpdate(user);
-    user.socket.emit("queueLock", {locked: this.qlocked});
+    user.socket.emit("queueLock", {locked: !this.openqueue});
     this.sendUserlist(user);
     this.sendRecentChat(user);
     if(this.poll) {
@@ -355,7 +355,7 @@ Channel.prototype.sendPlaylist = function(user) {
         pl: this.queue
     });
     user.socket.emit("updatePlaylistIdx", {
-        idx: this.currentPosition
+        idx: this.position
     });
 }
 
@@ -695,8 +695,7 @@ Channel.prototype.tryUpdate = function(user, data) {
         return;
     }
 
-    if(data.id == undefined || data.title == undefined ||
-       data.seconds == undefined || data.type == undefined) {
+    if(data.id == undefined || data.currentTime == undefined) {
            return;
     }
 
@@ -705,7 +704,11 @@ Channel.prototype.tryUpdate = function(user, data) {
         return;
     }
 
-    this.media = new Media(data.id, data.title, data.seconds, data.type);
+    if(this.media.id != data.id) {
+        return;
+    }
+
+    this.media.currentTime = data.currentTime;
     this.sendAll("mediaUpdate", this.media.packupdate());
 }
 
