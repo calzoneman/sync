@@ -208,18 +208,13 @@ function initCallbacks() {
         $("#currenttitle").text("Currently Playing: " + data.title);
         if(data.type != "sc" && MEDIATYPE == "sc")
             fixSoundcloudShit();
-        if(data.type == "yt")
-            updateYT(data);
-        else if(data.type == "tw")
-            loadTwitch(data.id);
-        else if(data.type == "li")
-            loadLivestream(data.id);
-        else if(data.type == "sc")
-            updateSC(data);
-        else if(data.type == "vi")
-            updateVI(data);
-        else if(data.type == "dm")
-            updateDM(data);
+        if(data.type != MEDIATYPE) {
+            MEDIATYPE = data.type;
+            PLAYER = new Media(data);
+        }
+        else {
+            PLAYER.update(data);
+        }
     });
 
     socket.on("userlist", function(data) {
@@ -239,6 +234,16 @@ function initCallbacks() {
             if(LEADER) {
                 // I'm a leader!  Set up sync function
                 sendVideoUpdate = function() {
+                    PLAYER.getTime(function(seconds) {
+                        socket.emit("mediaUpdate", {
+                            id: PLAYER.id,
+                            seconds: seconds,
+                            paused: false,
+                            type: PLAYER.type
+                        });
+                    });
+                        
+                    /*
                     if(MEDIATYPE == "yt") {
                         socket.emit("mediaUpdate", {
                             id: parseYTURL(PLAYER.getVideoUrl()),
@@ -275,6 +280,7 @@ function initCallbacks() {
                             type: "dm"
                         });
                     }
+                    */
                 };
             }
             // I'm not a leader.  Don"t send syncs to the server

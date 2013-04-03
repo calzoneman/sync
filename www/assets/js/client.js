@@ -102,17 +102,6 @@ tag.src = "http://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName("script")[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-// Load the Dailymotion iframe API
-
-/*
-var tag = document.createElement("script");
-tag.src = "http://api.dmcdn.net/all.js";
-var firstScriptTag = document.getElementsByTagName("script")[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-*/
-
-
-
 if(uname != null && pw != null && pw != "false") {
     socket.emit("login", {
         name: uname,
@@ -391,45 +380,7 @@ function synchtubeLayout() {
 }
 
 function onYouTubeIframeAPIReady() {
-    PLAYER = new YT.Player("ytapiplayer", {
-        height: VHEIGHT,
-        width: VWIDTH,
-        videoId: "",
-        playerVars: {
-            "autoplay": 0,
-            "controls": 1,
-        },
-        events: {
-            "onReady": onPlayerReady,
-            "onStateChange": onPlayerStateChange
-        }
-    });
-}
-
-function onPlayerReady() {
-    socket.emit("playerReady");
-}
-
-function onPlayerStateChange(state) {
-    if(LEADER && state.data == YT.PlayerState.ENDED) {
-        socket.emit("playNext");
-    }
-    else if(LEADER && state.data == YT.PlayerState.PAUSED) {
-        socket.emit("mediaUpdate", {
-            id: parseYTURL(PLAYER.getVideoUrl()),
-            seconds: PLAYER.getCurrentTime(),
-            type: "yt",
-            paused: true
-        });
-    }
-    if(LEADER && state.data == YT.PlayerState.PLAYING) {
-        socket.emit("mediaUpdate", {
-            id: parseYTURL(PLAYER.getVideoUrl()),
-            seconds: PLAYER.getCurrentTime(),
-            type: "yt",
-            paused: false
-        });
-    }
+    PLAYER = new Media({id: "", type: "yt"});
 }
 
 function createCookie(name,value,days) {

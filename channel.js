@@ -276,8 +276,7 @@ Channel.prototype.userJoin = function(user) {
 
     // Set the new guy up
     this.sendPlaylist(user);
-    if(user.playerReady)
-        this.sendMediaUpdate(user);
+    this.sendMediaUpdate(user);
     user.socket.emit("queueLock", {locked: this.qlocked});
     this.sendUserlist(user);
     this.sendRecentChat(user);
@@ -473,26 +472,26 @@ Channel.prototype.broadcastMotd = function() {
 // The server autolead function
 function mediaUpdate(chan, id) {
     // Bail cases - video changed, someone's leader, no video playing
-    if(chan.currentMedia == null ||
-           id != chan.currentMedia.id ||
+    if(chan.media == null ||
+           id != chan.media.id ||
            chan.leader != null) {
         return;
     }
 
-    chan.currentMedia.currentTime += (new Date().getTime() - chan.time) / 1000.0;
+    chan.media.currentTime += (new Date().getTime() - chan.time) / 1000.0;
     chan.time = new Date().getTime();
 
     // Show's over, move on to the next thing
-    if(chan.currentMedia.currentTime > chan.currentMedia.seconds) {
+    if(chan.media.currentTime > chan.media.seconds) {
         chan.playNext();
     }
     // Send updates about every 5 seconds
     else if(chan.i % 5 == 0) {
-        chan.sendAll("mediaUpdate", chan.currentMedia.packupdate());
+        chan.sendAll("mediaUpdate", chan.media.packupdate());
     }
     chan.i++;
 
-    setTimeout(function() { channelVideoUpdate(chan, id); }, 1000);
+    setTimeout(function() { mediaUpdate(chan, id); }, 1000);
 }
 
 Channel.prototype.enqueue = function(data) {
@@ -534,7 +533,7 @@ Channel.prototype.enqueue = function(data) {
                 });
                 break;
             case "tw":
-                var media = new Media(data.id, "Twitch ~ " + data.id, "--:--", "li");
+                var media = new Media(data.id, "Twitch ~ " + data.id, "--:--", "tw");
                 this.queue.splice(idx, 0, media);
                 this.sendAll("queue", {
                     media: media.pack(),
@@ -730,10 +729,10 @@ Channel.prototype.move = function(data) {
     });
 
     // Account for moving things around the active video
-    if(data.src < this.position && data.dest >= this.currentPosition) {
+    if(data.src < this.position && data.dest >= this.position) {
         this.position--;
     }
-    else if(data.src > this.position && data.dest < this.currentPosition) {
+    else if(data.src > this.position && data.dest < this.position) {
         this.position++
     }
     else if(data.src == this.position) {
