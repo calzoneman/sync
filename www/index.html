@@ -80,7 +80,6 @@
                         <button class="btn" id="queue_next">Queue Next</button>
                         <button class="btn" id="queue_end">Queue @ End</button>
                     </div>
-                    <button class="btn btn-primary" id="play_next">Play Next</button>
                 </div>
                 <button class="btn btn-danger" id="voteskip">Voteskip</button>
                 <ul id="queue" class="videolist">
@@ -89,7 +88,10 @@
             </div>
             <div class="span6" id="librarydiv">
                 <input type="text" id="library_query" style="margin:auto;">
-                <button class="btn" id="library_search">Search Library</button>
+                <div class="btn-group">
+                    <button class="btn" id="library_search">Search Library</button>
+                    <button class="btn" id="youtube_search">Search YouTube</button>
+                </div>
                 <ul id="library" class="videolist">
                 </ul>
             </div>
@@ -133,7 +135,7 @@
                             </label>
                             <label class="checkbox">
                                 <input type="checkbox" id="opt_qopen_allow_playnext">
-                                Allow anyone to skip to next video
+                                Allow anyone to jump to a video
                             </label>
                         </div>
                         <div class="span5">

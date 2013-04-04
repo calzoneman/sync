@@ -218,7 +218,18 @@ Channel.prototype.unbanIP = function(actor, ip) {
     return Database.removeChannelBan(this.name, ip);
 }
 
-Channel.prototype.search = function(query) {
+Channel.prototype.search = function(query, callback) {
+    // Search youtube
+    if(callback) {
+        if(query.trim() == "") {
+            return;
+        }
+        InfoGetter.getYTSearchResults(query, function(vids) {
+            callback(vids);
+        });
+        return;
+    }
+
     query = query.toLowerCase();
     var results = [];
     for(var id in this.library) {
@@ -232,6 +243,7 @@ Channel.prototype.search = function(query) {
 
         return (x == y) ? 0 : (x < y ? -1 : 1);
     });
+
     return results;
 }
 
@@ -678,8 +690,10 @@ Channel.prototype.jumpTo = function(pos) {
 }
 
 Channel.prototype.tryJumpTo = function(user, data) {
-    if(!Rank.hasPermission(user, "jump") &&
-            this.leader != user) {
+    if(!Rank.hasPermission(user, "queue") &&
+            this.leader != user &&
+            (!this.openqueue ||
+             this.openqueue && !this.opts.qopen_allow_playnext)) {
          return;
     }
 

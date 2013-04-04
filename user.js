@@ -151,9 +151,19 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("searchLibrary", function(data) {
         if(this.channel != null) {
-            this.socket.emit("librarySearchResults", {
-                results: this.channel.search(data.query)
-            });
+            if(data.yt) {
+                var callback = function(vids) {
+                    this.socket.emit("librarySearchResults", {
+                        results: vids
+                    });
+                }.bind(this);
+                this.channel.search(data.query, callback);
+            }
+            else {
+                this.socket.emit("librarySearchResults", {
+                    results: this.channel.search(data.query)
+                });
+            }
         }
     }.bind(this));
 

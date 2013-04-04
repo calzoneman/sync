@@ -87,8 +87,55 @@ exports.getYTPlaylist = function(id, callback, url) {
         timeout: 1000}, callback);
 }
 
+exports.searchYT = function(terms, callback) {
+    getJSON({
+        host: "gdata.youtube.com",
+        port: 80,
+        path: "/feeds/api/videos/-/" + terms.join("/") + "?v=2&alt=json",
+        method: "GET",
+        dataType: "jsonp",
+        timeout: 1000}, callback);
+}
+
+exports.getYTSearchResults = function(query, callback) {
+    var cback = function(res, data) {
+        if(res != 200) {
+            return;
+        }
+
+        var vids = [];
+        try {
+
+            for(var i = 0; i < data.feed.entry.length; i++) {
+                try {
+                    var item = data.feed.entry[i];
+
+                    var id = item.media$group.yt$videoid.$t;
+                    var title = item.title.$t;
+                    var seconds = item.media$group.yt$duration.seconds;
+                    var media = new Media(id, title, seconds, "yt");
+                    media.thumb = item.media$group.media$thumbnail[0];
+                    vids.push(media);
+                }
+                catch(e) {
+                    Logger.errlog.log("getYTSearchResults failed: ");
+                    Logger.errlog.log(e);
+                }
+            }
+
+        }
+        catch(e) {
+            Logger.errlog.log("getYTSearchResults failed: ");
+            Logger.errlog.log(e);
+        }
+        callback(vids);
+    }
+    
+    exports.searchYT(query.split(" "), cback);
+}
+
 // Look up Soundcloud metadata
-// Whoever designed this should rethink it.  I"ll submit a feedback
+// Whoever designed this should rethink it.  I'll submit a feedback
 // form on their website.
 exports.getSCInfo = function(url, callback) {
     const SC_CLIENT = "2e0c82ab5a020f3a7509318146128abd";

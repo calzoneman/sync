@@ -323,8 +323,15 @@ function searchLibrary() {
 }
 $("#library_search").click(searchLibrary);
 $("#library_query").keydown(function(ev) {
-    if(ev.key == 13)
+    if(ev.keyCode == 13)
         searchLibrary();
+});
+
+$("#youtube_search").click(function() {
+    socket.emit("searchLibrary", {
+        query: $("#library_query").val(),
+        yt: true
+    });
 });
 
 $("#largelayout").click(largeLayout);

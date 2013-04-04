@@ -156,11 +156,17 @@ function formatChatMessage(data) {
 function makeQueueEntry(video) {
     var li = $("<li />");
     li.attr("class", "well");
-    var title = $("<span />").attr("class", "qe_title").appendTo(li);
+    if(video.thumb) {
+        $("<img/>").attr("src", video.thumb.url)
+            .css("float", "left")
+            .css("clear", "both")
+            .appendTo(li);
+    }
+    var title = $("<span />").addClass("qe_title").appendTo(li);
     title.text(video.title);
-    var time = $("<span />").attr("class", "qe_time").appendTo(li);
+    var time = $("<span />").addClass("qe_time").appendTo(li);
     time.text(video.duration);
-    var clear = $("<div />").attr("class", "qe_clear").appendTo(li);
+    var clear = $("<div />").addClass("qe_clear").appendTo(li);
     return li;
 }
 
@@ -258,7 +264,7 @@ function addLibraryButtons(li, id) {
     var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
     //$("<i />").attr("class", "icon-play").appendTo(btnNext);
     btnNext.text("Next");
-    if(!CHANNELOPTS.qopen_allow_qnext)
+    if(!CHANNELOPTS.qopen_allow_qnext && RANK < Rank.Moderator && !LEADER)
         btnNext.attr("disabled", true);
 
     var btnEnd =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
