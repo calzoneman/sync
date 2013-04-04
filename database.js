@@ -180,7 +180,6 @@ exports.lookupChannelRank = function(channame, username) {
     var query = "SELECT * FROM chan_{1}_ranks WHERE name='{2}'"
         .replace("{1}", channame)
         .replace("{2}", username);
-    console.log(query);
     var results = db.querySync(query);
     if(!results) {
         return Rank.Guest;

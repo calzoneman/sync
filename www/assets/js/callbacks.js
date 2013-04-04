@@ -302,8 +302,12 @@ function initCallbacks() {
         var ul = $("#library")[0];
         for(var i = 0; i < data.results.length; i++) {
             var li = makeQueueEntry(data.results[i]);
-            if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
-                addLibraryButtons(li, data.results[i].id);
+            if(RANK >= Rank.Moderator || OPENQUEUE || LEADER) {
+                if(data.results[i].thumb)
+                    addLibraryButtons(li, data.results[i].id, true);
+                else
+                    addLibraryButtons(li, data.results[i].id);
+            }
             $(li).appendTo(ul);
         }
     });

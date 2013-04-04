@@ -265,7 +265,7 @@ function rebuildPlaylist() {
 }
 
 // Add buttons to a list entry for the library search results
-function addLibraryButtons(li, id) {
+function addLibraryButtons(li, id, yt) {
     var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
 
@@ -281,17 +281,35 @@ function addLibraryButtons(li, id) {
 
     // Callback time
     $(btnNext).click(function() {
-        socket.emit("queue", {
-            id: id,
-            pos: "next"
-        });
+        if(yt) {
+            socket.emit("queue", {
+                id: id,
+                pos: "next",
+                type: "yt"
+            });
+        }
+        else {
+            socket.emit("queue", {
+                id: id,
+                pos: "next"
+            });
+        }
     });
 
     $(btnEnd).click(function() {
-        socket.emit("queue", {
-            id: id,
-            pos: "end"
-        });
+        if(yt) {
+            socket.emit("queue", {
+                id: id,
+                pos: "end",
+                type: "yt"
+            });
+        }
+        else {
+            socket.emit("queue", {
+                id: id,
+                pos: "end"
+            });
+        }
     });
 }
 
