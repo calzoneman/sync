@@ -172,11 +172,11 @@ Channel.prototype.tryRegister = function(user) {
     }
 }
 
-Channel.prototype.getRank = function(user) {
+Channel.prototype.getRank = function(name) {
     if(!this.registered) {
         return Rank.Guest;
     }
-    return Database.lookupChannelRank(this.name, user.name);
+    return Database.lookupChannelRank(this.name, name);
 }
 
 Channel.prototype.saveRank = function(user) {

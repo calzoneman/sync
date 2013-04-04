@@ -84,13 +84,13 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("promote", function(data) {
         if(this.channel != null) {
-            this.channel.tryPromote(this, data);
+            this.channel.tryPromoteUser(this, data);
         }
     }.bind(this));
 
     this.socket.on("demote", function(data) {
         if(this.channel != null) {
-            this.channel.tryDemote(this, data);
+            this.channel.tryDemoteUser(this, data);
         }
     }.bind(this));
 
