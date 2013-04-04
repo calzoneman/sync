@@ -18,6 +18,7 @@ var Logger = require("./logger.js");
 var InfoGetter = require("./get-info.js");
 var io = require("./server.js").io;
 var Rank = require("./rank.js");
+var ChatCommand = require("./chatcommand.js");
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
@@ -30,6 +31,7 @@ var Channel = function(name) {
     this.library = {};
     this.position = -1;
     this.media = null;
+    this.drinks = 0;
     this.leader = null;
     this.chatbuffer = [];
     this.openqueue = false;
@@ -297,6 +299,7 @@ Channel.prototype.userJoin = function(user) {
     }
     user.socket.emit("channelOpts", this.opts);
     user.socket.emit("updateMotd", this.motd);
+    user.socket.emit("drinkCount", {count: this.drinks});
 
     // Send things that require special permission
     this.sendRankStuff(user);
@@ -477,6 +480,10 @@ Channel.prototype.broadcastChatFilters = function() {
 
 Channel.prototype.broadcastMotd = function() {
     this.sendAll("updateMotd", this.motd);
+}
+
+Channel.prototype.broadcastDrinks = function() {
+    this.sendAll("drinkCount", {count: this.drinks});
 }
 
 /* REGION Playlist Stuff */
@@ -709,12 +716,16 @@ Channel.prototype.tryUpdate = function(user, data) {
         return;
     }
 
-    if(data.id == undefined || data.currentTime == undefined) {
+    if(data == null ||
+       data.id == undefined || data.currentTime == undefined) {
            return;
     }
 
-    if(this.media != null && (this.media.type == "li" ||
-                              this.media.type == "tw")) {
+    if(this.media == null) {
+        return;
+    }
+
+    if(this.media.type == "li" || this.media.type == "tw") {
         return;
     }
 
@@ -956,7 +967,7 @@ Channel.prototype.sendMessage = function(username, msg, msgclass) {
         msg: msg,
         msgclass: msgclass
     });
-    this.recentChat.push({
+    this.chatbuffer.push({
         username: username,
         msg: msg,
         msgclass: msgclass

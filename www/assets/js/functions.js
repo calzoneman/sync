@@ -140,6 +140,14 @@ function formatChatMessage(data) {
             .addClass("action")
             .appendTo(div);
     }
+    else if(data.msgclass == "drink") {
+        div.addClass("drink");
+        var name = $("<span/>");
+        $("<strong/>").text("<" + data.username + ">").appendTo(name);
+        var message = $("<span/>").text(data.msg);
+        name.appendTo(div);
+        message.appendTo(div);
+    }
     else {
         var name = $("<span/>");
         $("<strong/>").text("<" + data.username + ">").appendTo(name);

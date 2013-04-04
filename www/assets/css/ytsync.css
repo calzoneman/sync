@@ -125,6 +125,18 @@
     background-color: #ddffdd;
 }
 
+.drink {
+    margin: 10px 10px;
+    padding: 10px 0px;
+    border: 2px solid #0000cc;
+}
+
+.drinkbar {
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+}
+
 #motdtext {
     width: 100%;
 }

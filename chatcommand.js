@@ -35,6 +35,10 @@ function handle(chan, user, msg) {
     else if(msg.indexOf("/poll ") == 0) {
         handlePoll(chan, user, msg.substring(6));
     }
+    else if(msg.indexOf("/d") == 0 && msg.length > 2 &&
+            msg[2].match(/[-0-9 ]/)) {
+        handleDrink(chan, user, msg.substring(2));
+    }
 }
 
 function handleKick(chan, user, args) {
@@ -86,6 +90,30 @@ function handlePoll(chan, user, msg) {
         chan.broadcastPoll();
         chan.logger.log("*** " + user.name + " Opened Poll: '" + poll.title + "'");
     }
+}
+
+function handleDrink(chan, user, msg) {
+    if(!Rank.hasPermission(user, "drink") && chan.leader != user) {
+        return;
+    }
+
+    var count = msg.split(" ")[0];
+    msg = msg.substring(count.length + 1);
+    if(count == "")
+        count = 1;
+    else
+        count = parseInt(count);
+
+    chan.drinks += count;
+    chan.broadcastDrinks();
+    if(count < 0) {
+        return;
+    }
+    
+    msg = msg + " drink!";
+    if(count > 1)
+        msg += "  (x" + count + ")";
+    chan.sendMessage(user.name, msg, "drink");
 }
 
 exports.handle = handle;

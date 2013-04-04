@@ -31,6 +31,7 @@ var permissions = {
     jump            : exports.Moderator,
     chatFilter      : exports.Moderator,
     updateMotd      : exports.Moderator,
+    drink           : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };

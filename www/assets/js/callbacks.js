@@ -189,6 +189,17 @@ function initCallbacks() {
         }
     });
 
+    socket.on("drinkCount", function(data) {
+        var count = data.count;
+        if(count != 0) {
+            $("#drinkcount").text(count + " drinks");
+            $(".drinkbar").show();
+        }
+        else {
+            $(".drinkbar").hide();
+        }
+    });
+
     /* REGION Playlist Stuff */
 
     socket.on("playlist", function(data) {
