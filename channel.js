@@ -783,6 +783,9 @@ Channel.prototype.tryVote = function(user, data) {
 }
 
 Channel.prototype.tryVoteskip = function(user) {
+    if(!this.opts.allow_voteskip) {
+        return;
+    }
     if(!this.voteskip) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }

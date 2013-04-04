@@ -236,7 +236,8 @@ function initCallbacks() {
         var linew = $("#queue").children()[data.idx];
         $(linew).addClass("alert alert-info");
         POSITION = data.idx;
-        $("#voteskip").attr("disabled", false);
+        if(CHANNELOPTS.allow_voteskip)
+            $("#voteskip").attr("disabled", false);
     });
 
     socket.on("mediaUpdate", function(data) {
