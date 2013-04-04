@@ -14,6 +14,7 @@ var Config = require("./config.js");
 var Logger = require("./logger.js");
 var Rank = require("./rank.js");
 var Media = require("./media.js").Media;
+var Server = require("./server.js");
 
 var initialized = false;
 
@@ -86,7 +87,7 @@ exports.loadChannel = function(chan) {
         return;
     }
     else if(rows[0].name != chan.name) {
-        chan.name = rows[0].name;
+        return rows[0].name;
     }
     chan.registered = true;
 

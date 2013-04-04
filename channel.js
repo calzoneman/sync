@@ -633,6 +633,8 @@ Channel.prototype.playNext = function() {
 
     // Reset voteskip
     this.voteskip = false;
+    this.drinks = 0;
+    this.broadcastDrinks();
 
     var old = this.position;
     // Wrap around if the end is hit
@@ -676,6 +678,8 @@ Channel.prototype.jumpTo = function(pos) {
 
     // Reset voteskip
     this.voteskip = false;
+    this.drinks = 0;
+    this.broadcastDrinks();
 
     var old = this.position;
     this.position = pos;
@@ -881,7 +885,7 @@ Channel.prototype.tryChangeFilter = function(user, data) {
         catch(e) {
             return;
         }
-        this.updateFilter(data);
+        this.updateFilter(data.filter);
     }
     else if(data.cmd == "remove") {
         this.removeFilter(data.filter[0]);
