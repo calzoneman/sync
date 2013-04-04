@@ -136,24 +136,27 @@ function formatChatMessage(data) {
         }
     }
     if(data.msgclass == "action") {
-        var message = $("<span/>").text(data.username + " " + data.msg)
+        var message = $("<span/>")
             .addClass("action")
             .appendTo(div);
+        message[0].innerHTML = data.username + " " + data.msg;
     }
     else if(data.msgclass == "drink") {
         div.addClass("drink");
         var name = $("<span/>");
-        $("<strong/>").text("<" + data.username + ">").appendTo(name);
-        var message = $("<span/>").text(data.msg);
+        $("<strong/>").text("<" + data.username + "> ").appendTo(name);
+        var message = $("<span/>");
+        message[0].innerHTML = data.msg;
         name.appendTo(div);
         message.appendTo(div);
     }
     else {
         var name = $("<span/>");
-        $("<strong/>").text("<" + data.username + ">").appendTo(name);
+        $("<strong/>").text("<" + data.username + "> ").appendTo(name);
         if(data.msgclass == "shout")
             name.addClass("shout");
-        var message = $("<span/>").text(data.msg).addClass(data.msgclass);
+        var message = $("<span/>").addClass(data.msgclass);
+        message[0].innerHTML = data.msg;
         name.appendTo(div);
         message.appendTo(div);
     }
