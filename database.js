@@ -87,7 +87,7 @@ exports.loadChannel = function(chan) {
         return;
     }
     else if(rows[0].name != chan.name) {
-        return rows[0].name;
+        chan.name = rows[0].name;
     }
     chan.registered = true;
 

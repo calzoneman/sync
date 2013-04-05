@@ -46,6 +46,7 @@ User.prototype.initCallbacks = function() {
             return;
         if(data.name.length > 100)
             return;
+        data.name = data.name.toLowerCase();
         // Channel already loaded
         if(data.name in Server.channels) {
             this.channel = Server.channels[data.name];
