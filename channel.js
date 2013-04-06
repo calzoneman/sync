@@ -94,6 +94,9 @@ Channel.prototype.loadDump = function() {
                 this.position = -1;
             if(this.queue.length > 0)
                 this.playNext();
+            if(this.media && data.currentTime) {
+                this.media.currentTime = data.currentTime;
+            }
             this.opts = data.opts;
             if(data.filters) {
                 this.filters = new Array(data.filters.length);
@@ -123,6 +126,7 @@ Channel.prototype.saveDump = function() {
     }
     var dump = {
         position: this.position,
+        currentTime: this.media ? this.media.currentTime : 0,
         queue: this.queue,
         opts: this.opts,
         filters: filts,

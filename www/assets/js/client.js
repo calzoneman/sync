@@ -38,15 +38,20 @@ var Rank = {
     Siteadmin: 255
 };
 
-var socket = io.connect(IO_URL);
-initCallbacks();
+try {
+    var socket = io.connect(IO_URL);
+    initCallbacks();
+}
+catch(e) {
+    handleDisconnect();
+}
 
 $(window).focus(function() { 
     FOCUSED = true;
     onWindowFocus();
 })
 .blur(function() {
-    FOCUSED = false
+    FOCUSED = false;
 });
 
 var params = {};
@@ -89,11 +94,22 @@ else if(!params["channel"].match(/^[a-zA-Z0-9]+$/)) {
         .innerHTML = "<h3>Invalid Channel Name</h3><p>Channel names must conain only numbers and letters</p>";
 
 }
-else {
+
+socket.on("connect", function() {
     socket.emit("joinChannel", {
         name: params["channel"]
     });
-}
+    if(uname != null && pw != null && pw != "false") {
+        socket.emit("login", {
+            name: uname,
+            pw: pw
+        });
+    }
+    $("<div/>").addClass("server-msg-reconnect")
+        .text("Connected")
+        .appendTo($("#messagebuffer"));
+    setTimeout(function() { $("#reconnect_box").remove(); }, 3000);
+});
 
 
 // Load the youtube iframe API
@@ -101,13 +117,6 @@ var tag = document.createElement("script");
 tag.src = "http://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName("script")[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-if(uname != null && pw != null && pw != "false") {
-    socket.emit("login", {
-        name: uname,
-        pw: pw
-    });
-}
 
 var sendVideoUpdate = function() { }
 setInterval(function() {

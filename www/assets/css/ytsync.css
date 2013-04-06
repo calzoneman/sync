@@ -111,6 +111,20 @@
     font-family: Monospace;
 }
 
+.server-msg-disconnect {
+    border: 1px solid #ff0000;
+    margin: 5px;
+    padding: 5px;
+    color: #ff0000;
+}
+
+.server-msg-reconnect {
+    border: 1px solid #009900;
+    margin: 5px;
+    padding: 5px;
+    color: #009900;
+}
+
 .poll-notify {
     color: #0000aa;
     font-weight: bold;

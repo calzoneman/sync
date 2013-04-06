@@ -15,9 +15,7 @@ function initCallbacks() {
     /* REGION Globals */
 
     socket.on("disconnect", function() {
-        $("<div/>").addClass("alert").addClass("alert-error")
-            .insertAfter($(".row")[0])[0]
-            .innerHTML = "<h3>Disconnected from server</h3>";
+        handleDisconnect();
     });
 
     socket.on("announcement", function(data) {
@@ -130,13 +128,14 @@ function initCallbacks() {
         div.appendTo($("#messagebuffer"));
         // Cap chatbox at most recent 100 messages
         if($("#messagebuffer").children().length > 100) {
-            $($("#messagebufer").children()[0]).remove();
+            $($("#messagebuffer").children()[0]).remove();
         }
         if(SCROLLCHAT)
             $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
     });
 
     socket.on("userlist", function(data) {
+        $(".userlist_item").each(function() { this.remove(); });
         for(var i = 0; i < data.length; i++) {
             addUser(data[i].name, data[i].rank, data[i].leader);
         }
