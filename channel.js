@@ -98,7 +98,7 @@ Channel.prototype.loadDump = function() {
             if(data.filters) {
                 this.filters = new Array(data.filters.length);
                 for(var i = 0; i < data.filters.length; i++) {
-                    this.filters[i] = [new RegExp(data.filters[i][0]),
+                    this.filters[i] = [new RegExp(data.filters[i][0], "g"),
                                        data.filters[i][1],
                                        data.filters[i][2]];
                 }
