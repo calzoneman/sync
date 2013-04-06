@@ -241,8 +241,8 @@ User.prototype.handleAdm = function(data) {
         var chans = [];
         for(var chan in Server.channels) {
             var nowplaying = "-";
-            if(Server.channels[chan].currentMedia != null)
-                nowplaying = Server.channels[chan].currentMedia.title;
+            if(Server.channels[chan].media != null)
+                nowplaying = Server.channels[chan].media.title;
             chans.push({
                 name: chan,
                 usercount: Server.channels[chan].users.length,
@@ -254,31 +254,6 @@ User.prototype.handleAdm = function(data) {
             chans: chans
         });
     }
-    else if(data.cmd == "listusers") {
-        var users = [];
-        var dbusers = Database.listUsers();
-        if(!dbusers)
-            return;
-        for(var i = 0; i < dbusers.length; i++) {
-            users[i] = {
-                name: dbusers[i].uname,
-                rank: dbusers[i].global_rank
-            };
-        }
-        this.socket.emit("adm", {
-            cmd: "listusers",
-            users: users
-        });
-    }
-    else if(data.cmd == "listchannelranks") {
-        if(data.chan == undefined)
-            return;
-        this.socket.emit("adm", {
-            cmd: "listchannelranks",
-            ranks: Database.listChannelRanks(data.chan)
-        });
-    }
-
 };
 
 // Attempt to login

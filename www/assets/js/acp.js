@@ -48,6 +48,9 @@ function initCallbacks() {
                 cmd: "listchannels"
             });
         }, 10000);
+        socket.emit("adm", {
+            cmd: "listchannels"
+        });
     });
 }
 

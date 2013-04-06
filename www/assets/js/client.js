@@ -268,8 +268,6 @@ $("#opt_submit").click(function() {
     if(ptitle == "")
         ptitle = $("#opt_pagetitle").attr("placeholder")
     var css = $("#opt_customcss").val();
-    if(css == "")
-        css = $("#opt_customcss").attr("placeholder");
     opts = {
         qopen_allow_qnext: $("#opt_qopen_allow_qnext").prop("checked"),
         qopen_allow_move: $("#opt_qopen_allow_move").prop("checked"),

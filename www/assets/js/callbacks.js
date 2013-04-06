@@ -57,9 +57,9 @@ function initCallbacks() {
         $("#opt_pagetitle").attr("placeholder", opts.pagetitle);
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
-        $("#opt_customcss").attr("placeholder", opts.customcss);
+        $("#opt_customcss").val(opts.customcss);
         $("#customCss").remove();
-        if(opts.customcss != "") {
+        if(opts.customcss.trim() != "") {
             $("<link/>").attr("rel", "stylesheet")
                        .attr("href", opts.customcss)
                        .attr("id", "customCss")
