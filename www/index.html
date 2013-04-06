@@ -63,7 +63,7 @@
                 </div>
                 <div id="messagebuffer">
                 </div>
-                <input type="text" id="chatline">
+                <input type="text" id="chatline" class="span5">
             </div>
             <div class="span7" id="videodiv">
                 <p id="currenttitle">Currently Playing: </p>
@@ -77,12 +77,10 @@
         </div>
         <div class="row" style="margin-top: 50px;">
             <div class="span6" id="queuediv">
-                <div id="playlist_controls" style="display: none;">
+                <div id="playlist_controls" class="input-append" style="display: none;">
                     <input type="text" id="mediaurl" style="margin:auto;">
-                    <div class="btn-group">
-                        <button class="btn" id="queue_next">Queue Next</button>
-                        <button class="btn" id="queue_end">Queue @ End</button>
-                    </div>
+                    <button class="btn" id="queue_next">Queue Next</button>
+                    <button class="btn" id="queue_end">Queue @ End</button>
                 </div>
                 <button class="btn btn-danger" id="voteskip">Voteskip</button>
                 <ul id="queue" class="videolist">
@@ -90,8 +88,8 @@
                 <button class="btn btn-danger" id="qlockbtn" style="width: 100%; display:none;">Unlock Queue</button>
             </div>
             <div class="span6" id="librarydiv">
-                <input type="text" id="library_query" style="margin:auto;">
-                <div class="btn-group">
+                <div class="input-append">
+                    <input type="text" id="library_query" style="margin:auto;">
                     <button class="btn" id="library_search">Search Library</button>
                     <button class="btn" id="youtube_search">Search YouTube</button>
                 </div>

@@ -355,11 +355,11 @@ function largeLayout() {
     $("#ytapiplayer").attr("width", "770").attr("height", "430");
     var chat = $("#chatdiv").detach();
     $("#layoutrow").remove();
-    var r = $("<div />").addClass("row").insertAfter($(".row")[1]);
+    var r = $("<div />").addClass("row").insertAfter($("#videodiv").parent());
     r.attr("id", "layoutrow");
     chat.removeClass().addClass("span8 offset2").appendTo(r);
+    $("#chatline").removeClass().addClass("span8");
     $("#userlist").css("width", "200px");
-    //$("#chatline").css("width", "756px");
 }
 
 function hugeLayout() {
@@ -369,12 +369,12 @@ function hugeLayout() {
     $("#ytapiplayer").attr("width", "1170").attr("height", "658");
     var chat = $("#chatdiv").detach();
     $("#layoutrow").remove();
-    var r = $("<div />").addClass("row").insertAfter($(".row")[1]);
+    var r = $("<div />").addClass("row").insertAfter($("#videodiv").parent());
     r.attr("id", "layoutrow");
     chat.removeClass().addClass("span12").appendTo(r);
+    $("#chatline").removeClass().addClass("span12");
     $("#userlist").css("width", "200px").css("height", "200px");
     $("#messagebuffer").css("height", "200px");
-    //$("#chatline").css("width", "1156px");
 }
 
 function narrowLayout() {
@@ -384,11 +384,11 @@ function narrowLayout() {
     $("#ytapiplayer").attr("width", "570").attr("height", "321");
     var chat = $("#chatdiv").detach();
     $("#layoutrow").remove();
-    var r = $("<div />").addClass("row").insertAfter($(".row")[1]);
+    var r = $("<div />").addClass("row").insertAfter($("#videodiv").parent());
     r.attr("id", "layoutrow");
     chat.removeClass().addClass("span6").appendTo(r);
+    $("#chatline").removeClass().addClass("span6");
     $("#userlist").css("width", "150px");
-    //$("#chatline").css("width", "556px");
 }
 
 function synchtubeLayout() {

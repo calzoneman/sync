@@ -29,6 +29,7 @@
 }
 
 .qe_time {
+    font-family: Monospace;
     float: right;
 }
 
@@ -36,8 +37,10 @@
     clear: both;
 }
 
-#library {
-    width: 640px;
+#usercount, #currenttitle {
+    border: 1px solid #aaaaaa;
+    border-bottom: none;
+    margin: 0;
 }
 
 #userlist {
@@ -47,6 +50,7 @@
     float: left;
     width: 150px;
     border: 1px solid #aaaaaa; // [](/z13)
+    border-left: none;
 }
 
 #messagebuffer {
@@ -64,11 +68,6 @@
     word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
-#chatline {
-    /*width: 456px;*/
-    width: 100%;
-}
-
 .userlist_siteadmin {
     color: #cc0000;
     font-weight: bold;
@@ -81,6 +80,10 @@
 
 .userlist_op {
     color: #00aa00;
+}
+
+.userlist_guest {
+    color: #aaaaaa;
 }
 
 .action {
