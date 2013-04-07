@@ -21,6 +21,9 @@ var Media = function(data) {
         case "tw":
             this.initTwitch();
             break;
+        case "rt":
+            this.initRTMP();
+            break;
         default:
             break;
     }
@@ -208,6 +211,34 @@ Media.prototype.initTwitch = function() {
         flashvars:"hostname=www.twitch.tv&channel="+this.id+"&auto_play=true&start_volume=100"
     };
     swfobject.embedSWF( url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initTwitch();
+    }
+
+    this.pause = function() { }
+    
+    this.play = function() { }
+
+    this.getTime = function() { }
+
+    this.seek = function() { }
+}
+
+Media.prototype.initRTMP = function() {
+    this.removeOld();
+    var url = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf"; 
+    var src = encodeURIComponent(this.id);
+    var params = {
+            allowFullScreen:"true",
+            allowScriptAccess:"always",
+            allowNetworking:"all",
+            wMode:"direct",
+            movie:"http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
+            flashvars:"src="+src+"&streamType=live&autoPlay=true"
+        };
+        swfobject.embedSWF(url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
 
     this.load = function(data) {
         this.id = data.id;

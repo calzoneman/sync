@@ -563,6 +563,14 @@ Channel.prototype.enqueue = function(data) {
                     pos: idx
                 });
                 break;
+            case "rt":
+                var media = new Media(data.id, "Livestream", "--:--", "rt");
+                this.queue.splice(idx, 0, media);
+                this.sendAll("queue", {
+                    media: media.pack(),
+                    pos: idx
+                });
+                break;
             default:
                 break;
 
@@ -658,7 +666,8 @@ Channel.prototype.playNext = function() {
 
     // If it's not a livestream, enable autolead
     if(this.leader == null && this.media.type != "tw"
-                           && this.media.type != "li") {
+                           && this.media.type != "li"
+                           && this.media.type != "rt") {
         this.time = new Date().getTime();
         mediaUpdate(this, this.media.id);
     }
@@ -698,7 +707,8 @@ Channel.prototype.jumpTo = function(pos) {
 
     // If it's not a livestream, enable autolead
     if(this.leader == null && this.media.type != "tw"
-                           && this.media.type != "li") {
+                           && this.media.type != "li"
+                           && this.media.type != "rt") {
         this.time = new Date().getTime();
         mediaUpdate(this, this.media.id);
     }
@@ -733,7 +743,8 @@ Channel.prototype.tryUpdate = function(user, data) {
         return;
     }
 
-    if(this.media.type == "li" || this.media.type == "tw") {
+    if(this.media.type == "li" || this.media.type == "tw" ||
+                                  this.media.type == "rt") {
         return;
     }
 
@@ -1057,7 +1068,8 @@ Channel.prototype.changeLeader = function(name) {
     if(name == "") {
         this.logger.log("*** Resuming autolead");
         if(this.media != null && this.media.type != "li"
-                              && this.media.type != "tw") {
+                              && this.media.type != "tw"
+                              && this.media.type != "rt") {
             this.time = new Date().getTime();
             this.i = 0;
             mediaUpdate(this, this.media.id);

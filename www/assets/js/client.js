@@ -394,7 +394,8 @@ function synchtubeLayout() {
 }
 
 function onYouTubeIframeAPIReady() {
-    PLAYER = new Media({id: "", type: "yt"});
+    if(!PLAYER)
+        PLAYER = new Media({id: "", type: "yt"});
 }
 
 function createCookie(name,value,days) {

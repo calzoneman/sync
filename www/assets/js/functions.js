@@ -360,7 +360,10 @@ function parseVideoURL(url){
     url = url.trim()
     if(typeof(url) != "string")
         return null;
-    if(url.indexOf("youtu.be") != -1 || url.indexOf("youtube.com") != -1) {
+    if(url.indexOf("rtmp://") == 0) {
+        return [url, "rt"];
+    }
+    else if(url.indexOf("youtu.be") != -1 || url.indexOf("youtube.com") != -1) {
         if(url.indexOf("playlist") != -1) {
             return [parseYTPlaylist(url), "yp"];
         }
