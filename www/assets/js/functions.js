@@ -131,15 +131,17 @@ function addUserDropdown(entry, name) {
 
 function formatChatMessage(data) {
     var div = $("<div/>");
-    if(data.msg.toUpperCase().indexOf(uname.toUpperCase()) != -1) {
-        div.addClass("nick-highlight");
-        if(!FOCUSED) {
-            TITLE_BLINK = setInterval(function() {
-                if(document.title == "*Chat*")
-                    document.title = PAGETITLE;
-                else
-                    document.title = "*Chat*";
-            }, 1000);
+    if(uname) {
+        if(data.msg.toUpperCase().indexOf(uname.toUpperCase()) != -1) {
+            div.addClass("nick-highlight");
+            if(!FOCUSED) {
+                TITLE_BLINK = setInterval(function() {
+                    if(document.title == "*Chat*")
+                        document.title = PAGETITLE;
+                    else
+                        document.title = "*Chat*";
+                }, 1000);
+            }
         }
     }
     if(data.msgclass == "action") {
