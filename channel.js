@@ -215,7 +215,7 @@ Channel.prototype.unbanIP = function(actor, ip) {
     if(!Rank.hasPermission(actor, "ipban"))
         return false;
 
-    delete this.ipbans[ip];
+    this.ipbans[ip] = null;
 
     if(!this.registered)
         return false;
@@ -257,7 +257,7 @@ Channel.prototype.search = function(query, callback) {
 
 Channel.prototype.userJoin = function(user) {
     // GTFO
-    if(user.ip in this.ipbans) {
+    if(user.ip in this.ipbans && this.ipbans[user.ip] != null) {
         this.logger.log("--- Kicking " + user.ip + " - banned");
         user.socket.disconnect();
         return;
