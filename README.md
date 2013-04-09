@@ -4,36 +4,54 @@ calzoneman/sync
 About
 -----
 
-Sync is a server/client combination I wrote to synchronize media playback
-among clients.  It's inspired by Synchtube, but I wanted to make the
-interface simpler, add a searchable library for each channel, and it's just
-a fun challenge.
+CyTube (formerly Sync) is a server/client combination providing media synchronization, chat,
+and administration for an arbitrary number of channels.
+I began developing this as a hobby project, and when Synchtube announced their closure, I
+began polishing it and readying it for the public.
+
+I am hosting a CyTube server at http://cytube.calzoneman.net
 
 The serverside is written in JavaScript and runs on Node.JS.  It makes use
 of a MySQL database to store user registrations, cached media metadata, and
 data about each channel.
 
 The clientside is written in JavaScript and makes use of Socket.IO and
-jQuery.  The web interface uses Bootstrap for layout and styling.
+jQuery as well as the APIs for various media providers.
+The web interface uses Bootstrap for layout and styling.
 
-Sync currently supports YouTube, Soundcloud, Vimeo, Dailymotion, Livestream, and TwitchTV.
+The following media sources are currently supported:
+- YouTube (individual videos)
+- YouTube Playlists
+- Vimeo
+- Dailymotion
+- Soundcloud
+- Livestream.com
+- Twitch.tv
+- RTMP livestreams
 
 Installing
 ----------
 
 This assumes you have Node.JS installed.
-I'm using v0.10, please feel free to report which versions do/do not work
+I'm using v0.10, please feel free to report which versions do/do not work.
+I recommend using at least v0.8.20 due to a bug in previous versions of node
+that caused sketchy client connections to crash the server.
 
-    1. Clone this repository
-    2. `cd` to the directory containing the source files
-    3. Install socket.io: `npm install socket.io`
-    4. Install connect: `npm install connect`
-    5. Install your distribution's `libmysqlclient` package
-    6. Install the libmysql node module: `npm install mysql-libmysqlclient`
-    7. Install bcrypt: `npm install bcrypt`
-    8. Install node_hash: `npm install node_hash`
-    9. Edit `config.js` and input your database details and connection port
-    10. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
+First install MySQL on the server.  There are many online tutorials for setting up MySQL on
+various operating systems.
+I recommend installing phpMyAdmin so that you have a nice database administration interface.
+Create a new user and database, and make sure the user has full permissions for the database.
+
+Then, follow these instructions to install CyTube:
+
+1. Clone this repository (`git clone https://github.com/calzoneman/sync`)
+2. cd to the directory containing the source files
+3. Install dependencies: `npm install socket.io connect mysql-libmysqlclient node_hash bcrypt`
+4. Edit `config.js` and input your database details and connection port
+5. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
+
+If you get an error when trying to install `mysql-libmysqlclient`, you need to install your operating system's
+MySQL client library.  On Arch, this package is `libmysqlclient`.
 
 Running
 -------
