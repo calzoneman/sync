@@ -202,7 +202,7 @@ Channel.prototype.banIP = function(actor, receiver) {
     this.ipbans[receiver.ip] = [receiver.name, actor.name];
     receiver.socket.disconnect();
     this.broadcastBanlist();
-    this.logger.log(bannee.ip + " (" + bannee.name + ") was banned by " + banner.name);
+    this.logger.log(receiver.ip + " (" + receiver.name + ") was banned by " + actor.name);
 
     if(!this.registered)
         return false;
@@ -220,6 +220,7 @@ Channel.prototype.unbanIP = function(actor, ip) {
     if(!this.registered)
         return false;
 
+    this.broadcastBanlist();
     // Update database ban table
     return Database.removeChannelBan(this.name, ip);
 }

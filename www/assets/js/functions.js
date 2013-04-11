@@ -38,6 +38,7 @@ function addUser(name, rank, leader) {
 // Format a userlist entry based on a person"s rank
 function fmtUserlistItem(div, rank, leader) {
     var name = div.children[1];
+    $(name).removeClass();
     if(rank >= Rank.Siteadmin)
         $(name).attr("class", "userlist_siteadmin");
     else if(rank >= Rank.Owner)

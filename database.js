@@ -243,8 +243,8 @@ exports.addChannelBan = function(channame, actor, receiver) {
     }
     var query = "INSERT INTO chan_{1}_bans (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
         .replace("{1}", channame)
-        .replace("{2}", reciever.ip)
-        .replace("{3}", reciever.name)
+        .replace("{2}", receiver.ip)
+        .replace("{3}", receiver.name)
         .replace("{4}", actor.name);
     results = db.querySync(query);
     db.closeSync();
