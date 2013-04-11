@@ -317,6 +317,7 @@ Channel.prototype.userLeave = function(user) {
     // Their socket might already be dead, so wrap in a try-catch
     try {
         user.socket.leave(this.name);
+        user.socket.destroy();
     }
     catch(e) {}
 
