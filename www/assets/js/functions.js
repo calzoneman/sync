@@ -22,8 +22,7 @@ function addUser(name, rank, leader) {
     var flair = $("<span/>").appendTo(div);
     var nametag = $("<span/>").text(name).appendTo(div);
     fmtUserlistItem(div[0], rank, leader);
-    if(RANK >= Rank.Moderator)
-        addUserDropdown(div, name);
+    addUserDropdown(div, name);
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
         var othername = users[i].children[1].innerHTML;
@@ -58,66 +57,90 @@ function fmtUserlistItem(div, rank, leader) {
 
 // Adds a dropdown with user actions (promote/demote/leader)
 function addUserDropdown(entry, name) {
+    $(entry).find("dropdown").remove();
     var div = $("<div />").addClass("dropdown").appendTo(entry);
     var ul = $("<ul />").addClass("dropdown-menu").appendTo(div);
     ul.attr("role", "menu");
     ul.attr("aria-labelledby", "dropdownMenu");
 
-    var makeLeader = $("<li />").appendTo(ul);
-    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(makeLeader);
-    a.text("Make Leader");
+    var ignore = $("<li />").appendTo(ul);
+    var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(ignore);
+    if(IGNORED.indexOf(name) != -1) {
+        a.text("Unignore User");
+    }
+    else {
+        a.text("Ignore User");
+    }
     a.click(function() {
-        socket.emit("assignLeader", {
-            name: name
-        });
+        if(IGNORED.indexOf(name) != -1) {
+            IGNORED.splice(IGNORED.indexOf(name), 1);
+            a.text("Ignore User");
+        }
+        else {
+            IGNORED.push(name);
+            a.text("Unignore User");
+        }
     });
 
-    var takeLeader = $("<li />").appendTo(ul);
-    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(takeLeader);
-    a.text("Take Leader");
-    a.click(function() {
-        socket.emit("assignLeader", {
-            name: ""
-        });
-    });
+    if(RANK >= Rank.Moderator) {
+        $("<li />").addClass("divider").appendTo(ul);
 
-    var kick = $("<li />").appendTo(ul);
-    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(kick);
-    a.text("Kick");
-    a.click(function() {
-        socket.emit("chatMsg", {
-            msg: "/kick " + name
+        var makeLeader = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(makeLeader);
+        a.text("Make Leader");
+        a.click(function() {
+            socket.emit("assignLeader", {
+                name: name
+            });
         });
-    });
 
-    var ban = $("<li />").appendTo(ul);
-    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(ban);
-    a.text("IP Ban");
-    a.click(function() {
-        socket.emit("chatMsg", {
-            msg: "/ban " + name
+        var takeLeader = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(takeLeader);
+        a.text("Take Leader");
+        a.click(function() {
+            socket.emit("assignLeader", {
+                name: ""
+            });
         });
-    });
 
-    $("<li />").addClass("divider").appendTo(ul);
-
-    var promote = $("<li />").appendTo(ul);
-    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(promote);
-    a.text("Promote");
-    a.click(function() {
-        socket.emit("promote", {
-            name: name
+        var kick = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(kick);
+        a.text("Kick");
+        a.click(function() {
+            socket.emit("chatMsg", {
+                msg: "/kick " + name
+            });
         });
-    });
 
-    var demote = $("<li />").appendTo(ul);
-    var a = $("<a />").attr("tabindex", "-1").attr("href", "#").appendTo(demote);
-    a.text("Demote");
-    a.click(function() {
-        socket.emit("demote", {
-            name: name
+        var ban = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(ban);
+        a.text("IP Ban");
+        a.click(function() {
+            socket.emit("chatMsg", {
+                msg: "/ban " + name
+            });
         });
-    });
+
+        $("<li />").addClass("divider").appendTo(ul);
+
+        var promote = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(promote);
+        a.text("Promote");
+        a.click(function() {
+            socket.emit("promote", {
+                name: name
+            });
+        });
+
+        var demote = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(demote);
+        a.text("Demote");
+        a.click(function() {
+            socket.emit("demote", {
+                name: name
+            });
+        });
+    }
 
     $(entry).click(function() {
         if(ul.css("display") == "none") {
@@ -193,36 +216,70 @@ function makeQueueEntry(video) {
 
 // Add buttons to a queue list entry
 function addQueueButtons(li) {
+    if(RANK < Rank.Moderator && !LEADER) {
+        if(!CHANNELOPTS.qopen_allow_delete
+                && !CHANNELOPTS.qopen_allow_move
+                && !CHANNELOPTS.qopen_allow_qnext) {
+
+            return;
+        }
+    }
+    var fullperms = LEADER || RANK >= Rank.Moderator;
+
     var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
-    var btnMove = $("<button />").addClass("btn qe_btn").appendTo(btnstrip);
-    $("<i />").addClass("icon-resize-vertical").appendTo(btnMove);
+    if(CHANNELOPTS.qopen_allow_move || fullperms) {
+        var btnMove = $("<button />").addClass("btn qe_btn").appendTo(btnstrip);
+        $("<i />").addClass("icon-resize-vertical").appendTo(btnMove);
+        // Callback time
+        btnMove.mousedown(function() {
+            GRABBEDLI = li;
+            OLDINDEX = $("#queue").children().index(li);
+        });
 
-    var btnRemove =  $("<button />").attr("class", "btn btn-danger qe_btn").appendTo(btnstrip);
-    $("<i />").attr("class", "icon-remove").appendTo(btnRemove);
+        btnMove.mousemove(function() {
+            if(GRABBEDLI != null) {
+                var idx = $("#queue").children().index(li);
+                var lidx = $("#queue").children().index(GRABBEDLI);
+                if(idx != lidx)
+                    moveVideo(lidx, idx, true);
+            }
+        });
+    }
 
-    var btnPlay =  $("<button />").attr("class", "btn btn-success qe_btn").appendTo(btnstrip);
-    $("<i />").attr("class", "icon-play").appendTo(btnPlay);
-
-    var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
-    //$("<i />").attr("class", "icon-play").appendTo(btnNext);
-    btnNext.text("Next");
-
-
-    // Callback time
-    btnMove.mousedown(function() {
-        GRABBEDLI = li;
-        OLDINDEX = $("#queue").children().index(li);
-    });
-
-    btnMove.mousemove(function() {
-        if(GRABBEDLI != null) {
+    if(CHANNELOPTS.qopen_allow_delete || fullperms) {
+        var btnRemove =  $("<button />").attr("class", "btn btn-danger qe_btn").appendTo(btnstrip);
+        $("<i />").attr("class", "icon-remove").appendTo(btnRemove);
+        $(btnRemove).click(function() {
+            btnstrip.remove();
             var idx = $("#queue").children().index(li);
-            var lidx = $("#queue").children().index(GRABBEDLI);
-            if(idx != lidx)
-                moveVideo(lidx, idx, true);
-        }
-    });
+            socket.emit("unqueue", { pos: idx });
+        });
+    }
+
+    if(CHANNELOPTS.qopen_allow_playnext || fullperms) {
+        var btnPlay =  $("<button />").attr("class", "btn btn-success qe_btn").appendTo(btnstrip);
+        $("<i />").attr("class", "icon-play").appendTo(btnPlay);
+        $(btnPlay).click(function() {
+            var idx = $("#queue").children().index(li);
+            socket.emit("jumpTo", {
+                pos: idx
+            });
+        });
+    }
+
+    if(CHANNELOPTS.qopen_allow_qnext || fullperms) {
+        var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
+        btnNext.text("Next");
+        $(btnNext).click(function() {
+            var idx = $("#queue").children().index(li);
+            var dest = idx < POSITION ? POSITION : POSITION + 1;
+            socket.emit("moveMedia", {
+                src: idx,
+                dest: dest
+            });
+        });
+    }
 
     $(document).mouseup(function() {
         if(GRABBEDLI != null) {
@@ -235,38 +292,6 @@ function addQueueButtons(li) {
             });
         }
     });
-
-    $(btnRemove).click(function() {
-        btnstrip.remove();
-        var idx = $("#queue").children().index(li);
-        socket.emit("unqueue", { pos: idx });
-    });
-
-    $(btnPlay).click(function() {
-        var idx = $("#queue").children().index(li);
-        socket.emit("jumpTo", {
-            pos: idx
-        });
-    });
-
-    $(btnNext).click(function() {
-        var idx = $("#queue").children().index(li);
-        var dest = idx < POSITION ? POSITION : POSITION + 1;
-        socket.emit("moveMedia", {
-            src: idx,
-            dest: dest
-        });
-    });
-
-    if(RANK < Rank.Moderator && !LEADER) {
-        if(!CHANNELOPTS.qopen_allow_delete)
-            $(btnRemove).attr("disabled", true);
-        if(!CHANNELOPTS.qopen_allow_move)
-            $(btnMove).attr("disabled", true);
-        if(!CHANNELOPTS.qopen_allow_qnext)
-            $(btnNext).attr("disabled", true);
-        $(btnPlay).attr("disabled", true);
-    }
 }
 
 function rebuildPlaylist() {

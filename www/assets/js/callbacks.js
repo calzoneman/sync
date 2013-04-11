@@ -124,6 +124,9 @@ function initCallbacks() {
     });
 
     socket.on("chatMsg", function(data) {
+        if(IGNORED.indexOf(data.username) != -1) {
+            return;
+        }
         var div = formatChatMessage(data);
         div.appendTo($("#messagebuffer"));
         // Cap chatbox at most recent 100 messages
