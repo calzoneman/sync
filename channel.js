@@ -200,7 +200,7 @@ Channel.prototype.banIP = function(actor, receiver) {
         return false;
 
     this.ipbans[receiver.ip] = [receiver.name, actor.name];
-    receiver.socket.disconnect();
+    receiver.socket.disconnect(true);
     this.broadcastBanlist();
     this.logger.log(receiver.ip + " (" + receiver.name + ") was banned by " + actor.name);
 
@@ -260,7 +260,7 @@ Channel.prototype.userJoin = function(user) {
     // GTFO
     if(user.ip in this.ipbans && this.ipbans[user.ip] != null) {
         this.logger.log("--- Kicking " + user.ip + " - banned");
-        user.socket.disconnect();
+        user.socket.disconnect(true);
         return;
     }
 
@@ -317,7 +317,6 @@ Channel.prototype.userLeave = function(user) {
     // Their socket might already be dead, so wrap in a try-catch
     try {
         user.socket.leave(this.name);
-        user.socket.destroy();
     }
     catch(e) {}
 
