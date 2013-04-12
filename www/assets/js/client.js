@@ -125,31 +125,41 @@ setInterval(function() {
 }, 5000);
 
 $("#queue_end").click(function() {
-    var parsed = parseVideoURL($("#mediaurl").val());
-    var id = parsed[0];
-    var type = parsed[1];
-    if(id) {
-        $("#mediaurl").val("");
+    var urls = $("#mediaurl").val().split(",");
+    for(var i = 0; i < urls.length; i++) {
+        if(!urls[i].trim())
+            continue;
+        var parsed = parseVideoURL(urls[i].trim());
+        var id = parsed[0];
+        var type = parsed[1];
+        if(id) {
+            $("#mediaurl").val("");
+        }
+        socket.emit("queue", {
+            id: id,
+            pos: "end",
+            type: type
+        });
     }
-    socket.emit("queue", {
-        id: id,
-        pos: "end",
-        type: type
-    });
 });
 
 $("#queue_next").click(function() {
-    var parsed = parseVideoURL($("#mediaurl").val());
-    var id = parsed[0];
-    var type = parsed[1];
-    if(id) {
-        $("#mediaurl").val("");
+    var urls = $("#mediaurl").val().split(",");
+    for(var i = 0; i < urls.length; i++) {
+        if(!urls[i].trim())
+            continue;
+        var parsed = parseVideoURL(urls[i].trim());
+        var id = parsed[0];
+        var type = parsed[1];
+        if(id) {
+            $("#mediaurl").val("");
+        }
+        socket.emit("queue", {
+            id: id,
+            pos: "next",
+            type: type
+        });
     }
-    socket.emit("queue", {
-        id: id,
-        pos: "next",
-        type: type
-    });
 });
 
 $("#play_next").click(function() {
