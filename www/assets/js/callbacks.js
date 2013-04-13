@@ -248,6 +248,9 @@ function initCallbacks() {
         }
         var linew = $("#queue").children()[data.idx];
         $(linew).addClass("alert alert-info");
+        $("#queue").scrollTop(0);
+        var scroll = $(linew).position().top - $("#queue").position().top;
+        $("#queue").scrollTop(scroll);
         POSITION = data.idx;
         if(CHANNELOPTS.allow_voteskip)
             $("#voteskip").attr("disabled", false);
