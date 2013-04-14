@@ -19,7 +19,7 @@ function handle(chan, user, msg) {
     else if(msg.indexOf("/sp ") == 0)
         chan.sendMessage(user.name, msg.substring(4), "spoiler");
     else if(msg.indexOf("/say ") == 0) {
-        if(Rank.hasPermission(user, "shout")) {
+        if(Rank.hasPermission(user, "shout") || chan.leader == user) {
             chan.sendMessage(user.name, msg.substring(5), "shout");
         }
     }
@@ -52,10 +52,9 @@ function handleKick(chan, user, args) {
         }
         if(kickee) {
             chan.logger.log("*** " + user.name + " kicked " + args[0]);
-            if(kickee.socket.disconnected) {
-                chan.userLeave(kickee);
-            }
-            kickee.socket.disconnect(true);
+            args[0] = "";
+            var reason = args.join(" ");
+            chan.kick(kickee, reason);
         }
     }
 }
@@ -71,10 +70,9 @@ function handleBan(chan, user, args) {
         }
         if(kickee && kickee.rank < user.rank) {
             chan.logger.log("*** " + user.name + " banned " + args[0]);
-            if(kickee.socket.disconnected) {
-                chan.userLeave(kickee);
-            }
-            chan.banIP(user, kickee);
+            args[0] = "";
+            var reason = args.join(" ");
+            chan.kick(kickee, "(banned) " + reason);
         }
     }
 }
@@ -87,7 +85,7 @@ function handleUnban(chan, user, args) {
 }
 
 function handlePoll(chan, user, msg) {
-    if(Rank.hasPermission(user, "poll")) {
+    if(Rank.hasPermission(user, "poll") || chan.leader == user) {
         var args = msg.split(",");
         var title = args[0];
         args.splice(0, 1);
@@ -112,12 +110,12 @@ function handleDrink(chan, user, msg) {
 
     chan.drinks += count;
     chan.broadcastDrinks();
-    if(count < 0) {
+    if(count < 0 && msg.trim() == "") {
         return;
     }
 
     msg = msg + " drink!";
-    if(count > 1)
+    if(count != 1)
         msg += "  (x" + count + ")";
     chan.sendMessage(user.name, msg, "drink");
 }

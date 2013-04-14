@@ -28,6 +28,7 @@ var TITLE_BLINK;
 var VWIDTH = "670";
 var VHEIGHT = "377";
 var IGNORED = [];
+var KICKED = false;
 var uname = readCookie("sync_uname");
 var pw = readCookie("sync_pw");
 

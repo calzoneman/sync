@@ -23,6 +23,14 @@ function initCallbacks() {
     });
 
     /* REGION Channel Meta */
+    socket.on("kick", function(data) {
+        KICKED = true;
+        $("<div/>")
+            .addClass("server-msg-disconnect")
+            .text("Kicked: " + data.reason)
+            .appendTo($("#messagebuffer"));
+    });
+
     socket.on("channelNotRegistered", function() {
         showChannelRegistration();
     });

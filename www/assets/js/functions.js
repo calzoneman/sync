@@ -10,6 +10,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 function handleDisconnect() {
+    if(KICKED)
+        return;
     $("<div/>")
         .addClass("server-msg-disconnect")
         .text("Disconnected from server.  Attempting reconnection...")

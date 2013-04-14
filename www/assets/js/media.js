@@ -91,7 +91,7 @@ Media.prototype.initVimeo = function() {
     this.player = $f(iframe[0]);
     $f(iframe[0]).addEvent("ready", function() {
         this.player = $f(iframe[0]);
-        this.play();
+        this.player.api("play");
 
         this.player.addEvent("finish", function() {
             if(LEADER) {

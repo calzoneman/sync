@@ -260,6 +260,7 @@ Channel.prototype.userJoin = function(user) {
     // GTFO
     if(user.ip in this.ipbans && this.ipbans[user.ip] != null) {
         this.logger.log("--- Kicking " + user.ip + " - banned");
+        this.kick(user, "You're banned!");
         user.socket.disconnect(true);
         return;
     }
@@ -345,6 +346,16 @@ Channel.prototype.userLeave = function(user) {
         });
     }
     this.logger.log("--- /" + user.ip + " (" + user.name + ") left");
+}
+
+Channel.prototype.kick = function(user, reason) {
+    user.socket.emit("kick", {
+        reason: reason
+    });
+    if(user.socket.disconnected) {
+        this.userLeave(user);
+    }
+    user.socket.disconnect(true);
 }
 
 Channel.prototype.sendRankStuff = function(user) {
@@ -806,7 +817,7 @@ Channel.prototype.tryMove = function(user, data) {
 /* REGION Polls */
 
 Channel.prototype.tryClosePoll = function(user) {
-    if(!Rank.hasPermission(user, "poll")) {
+    if(!Rank.hasPermission(user, "poll") && this.leader != user) {
         return;
     }
 
