@@ -42,6 +42,11 @@ Media.prototype.initYouTube = function() {
         events: {
             onPlayerReady: function() {
                 socket.emit("playerReady");
+            },
+            onStateChange: function(ev) {
+                if(LEADER && ev.data == YT.PlayerState.ENDED) {
+                    socket.emit("playNext");
+                }
             }
         }
     });
@@ -87,6 +92,12 @@ Media.prototype.initVimeo = function() {
     $f(iframe[0]).addEvent("ready", function() {
         this.player = $f(iframe[0]);
         this.play();
+
+        this.player.addEvent("finish", function() {
+            if(LEADER) {
+                socket.emit("playNext");
+            }
+        });
     }.bind(this));
 
     this.load = function(data) {
@@ -118,6 +129,12 @@ Media.prototype.initDailymotion = function() {
         width: parseInt(VWIDTH),
         height: parseInt(VHEIGHT),
         params: {autoplay: 1}
+    });
+
+    this.player.addEventListener("ended", function(e) {
+        if(LEADER) {
+            socket.emit("playNext");
+        }
     });
 
     this.load = function(data) {
@@ -153,7 +170,13 @@ Media.prototype.initSoundcloud = function() {
     iframe.css("border", "none");
 
     this.player = SC.Widget("ytapiplayer");
-    setTimeout(function() { this.play(); }.bind(this), 1000);
+    this.player.load(this.id, {auto_play: true});
+
+    this.player.bind(SC.Widget.Events.FINISH, function() {
+        if(LEADER) {
+            socket.emit("playNext");
+        }
+    });
 
     this.load = function(data) {
         this.id = data.id;
