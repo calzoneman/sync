@@ -144,15 +144,20 @@
                                 <input type="text" id="opt_pagetitle" placeholder="Sync" class="pull-right">
                             </label>
                             <br>
-                            <label>Custom CSS<sup class="text-warning">BETA</sup>
+                            <label>Custom CSS
                                 <input type="text" id="opt_customcss" class="pull-right">
                             </label>
+                            <br>
+                            <label>Custom JS<sup class="text-warning">BETA</sup>
+                                <input type="text" id="opt_customjs" class="pull-right">
+                            </label>
+                            <br>
                             <label class="checkbox">
                                 <input type="checkbox" id="opt_allow_voteskip">
                                 Allow voteskip
                             </label>
                         </div>
-                            
+
                         <div class="span10">
                             <button class="btn btn-primary" id="opt_submit">Save</button>
                         </div>
@@ -201,19 +206,51 @@
             </div>
         </div>
     </div> <!-- /container -->
+    <div id="userOpts" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="userOptsLbl" aria-hidden="true" data-backdrop="false">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>Options</h3>
+        </div>
+        <div class="modal-body">
+            <form action="javascript:void(0);">
+                <fieldset>
+                    <label>Layout</label>
+                    <select id="uopt_layout">
+                        <option value="default">Default</option>
+                        <option value="large">Large</option>
+                        <option value="huge">Huge</option>
+                        <option value="narrow">Narrow</option>
+                        <option value="synchtube">Synchtube</option>
+                    </select>
+                    <label class="checkbox">
+                        <input type="checkbox" id="uopt_playlist_follow">
+                        Playlist follows current video
+                    </label>
+                </fieldset>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Save</button>
+        </div>
+    </div>
 
+    <!-- APIs -->
     <script src="http://api.dmcdn.net/all.js"></script>
     <script src="./assets/js/sc.js"></script>
     <script src="./assets/js/froogaloop.min.js"></script>
+    <script src="./assets/js/swf.js"></script>
+    <!-- Third party -->
     <script src="./assets/js/jquery.js"></script>
-    <script src="./assets/js/webtoolkit.sha256.js" type="text/javascript"></script>
+    <script src="./assets/js/bootstrap.js"></script>
+    <script src="./assets/js/bootstrap-transition.js"></script>
+    <script src="./assets/js/bootstrap-modal.js"></script>
     <script src="./socket.io/socket.io.js"></script>
+    <!-- My Javascript -->
     <script src="./assets/js/functions.js"></script>
     <script src="./assets/js/callbacks.js"></script>
     <script src="./assets/js/iourl.js"></script>
     <script src="./assets/js/media.js"></script>
     <script src="./assets/js/client.js"></script>
-    <script src="./assets/js/swf.js"></script>
 
   </body>
 </html>

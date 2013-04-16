@@ -287,7 +287,8 @@ $("#opt_submit").click(function() {
         qopen_allow_playnext: $("#opt_qopen_allow_playnext").prop("checked"),
         allow_voteskip: $("#opt_allow_voteskip").prop("checked"),
         pagetitle: ptitle,
-        customcss: css
+        customcss: css,
+        customjs: $("#opt_customjs").val()
     };
     socket.emit("channelOpts", opts);
 });

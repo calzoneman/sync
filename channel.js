@@ -44,7 +44,8 @@ var Channel = function(name) {
         qopen_allow_delete: false,
         allow_voteskip: true,
         pagetitle: this.name,
-        customcss: ""
+        customcss: "",
+        customjs: ""
     };
     this.filters = [
         [/`([^`]+)`/g          , "<code>$1</code>"    , true],
@@ -97,7 +98,9 @@ Channel.prototype.loadDump = function() {
             if(this.media && data.currentTime) {
                 this.media.currentTime = data.currentTime;
             }
-            this.opts = data.opts;
+            for(var key in data.opts) {
+                this.opts[key] = data.opts[key];
+            }
             if(data.filters) {
                 this.filters = new Array(data.filters.length);
                 for(var i = 0; i < data.filters.length; i++) {

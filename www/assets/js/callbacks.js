@@ -66,6 +66,7 @@ function initCallbacks() {
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
         $("#opt_customcss").val(opts.customcss);
+        $("#opt_customjs").val(opts.customjs);
         $("#customCss").remove();
         if(opts.customcss.trim() != "") {
             $("<link/>").attr("rel", "stylesheet")
@@ -74,6 +75,9 @@ function initCallbacks() {
                        .insertAfter($("link[href='./assets/css/ytsync.css']"));
         }
         $("#opt_allow_voteskip").prop("checked", opts.allow_voteskip);
+        if(opts.customjs.trim() != "") {
+            $.getScript(opts.customjs);
+        }
 
         CHANNELOPTS = opts;
         if(opts.qopen_allow_qnext)
