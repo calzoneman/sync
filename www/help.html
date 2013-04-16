@@ -210,6 +210,44 @@
                 When someone is leader, they also get partial moderator powers temporarily.  Leaders can open polls, use <code>/say</code>, and manage the queue, but cannot kick/ban, change channel options, or change chat filters.  This is useful if you want to leave someone in charge but not make them a full moderator.  Leadership is revoked upon refresh, or you can revoke it manually.
                 </p>
                 <br>
+                <a name="channeloptions"></a>
+                <a href="#channeloptions"><h1>Channel Options</h1></a>
+                <p>
+                Moderators have access to a menu (at the bottom of the page) for toggling various channel options.  This is pretty self explanatory.  The "Channel Options" tab contains various channel settings, the "Ban List" tab allows you to view and lift IP Bans, and the "MOTD" tab allows you to edit the message of the day.  The "Chat Filters" tab is explained below.
+                </p>
+                <br>
+
+                <a name="chatfilters"></a>
+                <a href="#chatfilters"><h1>Chat Filters</h1></a>
+                <p>
+                Moderators can apply various filters to chat messages using Regular Expressions.  The first column contains a button to remove filters.  The second is the regular expression to match in the message.  The third is the replacement text, and the last is a checkbox for toggling the filter on/off.  Regular Expressions are given in Javascript syntax, and by default have the "g" flag set.  You can set custom flags by adding them at the end of the regex after a slash; for example <code>js/ig</code> matches "js", "JS", "jS", and "Js".  The following example replaces money amounts of the form "$amount" to "amount dollars":</p><br>
+                <table class="table table-striped">
+                    <thead>
+                        <th></th>
+                        <th>Regex</th>
+                        <th>Replacement</th>
+                        <th>Active</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <button class="btn btn-mini btn-danger">
+                                    <i class="icon-remove-circle"></i>
+                                </button>
+                            </td>
+                            <td>
+                                <code>\$([0-9\.]+)</code>
+                            </td>
+                            <td>
+                                <code>$1 dollars</code>
+                            </td>
+                            <td>
+                                <input type="checkbox" checked="checked">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
                 <a name="ranks"></a>
                 <a href="#ranks"><h1>Ranks</h1></a>
                 <table class="table table-bordered table-striped">
