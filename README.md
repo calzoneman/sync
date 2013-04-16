@@ -46,12 +46,10 @@ Then, follow these instructions to install CyTube:
 
 1. Clone this repository (`git clone https://github.com/calzoneman/sync`)
 2. cd to the directory containing the source files
-3. Install dependencies: `npm install socket.io connect mysql-libmysqlclient node_hash bcrypt`
+3. Install your distribution's `libmysqlclient` package.
+3. Install dependencies: `npm install`
 4. Edit `config.js` and input your database details and connection port
 5. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
-
-If you get an error when trying to install `mysql-libmysqlclient`, you need to install your operating system's
-MySQL client library.  On Arch, this package is `libmysqlclient`.
 
 Running
 -------
