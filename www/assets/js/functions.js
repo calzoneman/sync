@@ -501,8 +501,8 @@ function addPoll(data) {
     $("<button/>").addClass("close pull-right").text("×")
         .appendTo(poll)
         .click(function() { poll.remove(); });
-    if(RANK >= Rank.Moderator) {
-        $("<button/>").addClass("btn btn-danger pull-right").text("Close Poll")
+    if(RANK >= Rank.Moderator || LEADER) {
+        $("<button/>").addClass("btn btn-danger pull-right").text("End Poll")
             .appendTo(poll)
             .click(function() {
                 socket.emit("closePoll")
@@ -608,7 +608,7 @@ function updateChatFilters(entries) {
             });
         } })(entries[i]);
         remove.click(remcallback);
-        
+
         var actcallback = (function(filter) { return function() {
             // Apparently when you check a checkbox, its value is changed
             // before this callback.  When you uncheck it, its value is not
@@ -657,17 +657,20 @@ function handleRankChange() {
         $("#playlist_controls button").each(function() {
             $(this).attr("disabled", false);
         });
+        $("#pollcontainer .active").each(function() {
+            var btns = $(this).find(".btn-danger");
+            if(btns.length == 0) {
+                $("<button/>").addClass("btn btn-danger pull-right")
+                    .text("End Poll")
+                    .insertAfter($(this).find(".close"))
+                    .click(function() {
+                        socket.emit("closePoll")
+                    });
+            }
+        });
     }
     if(RANK >= Rank.Moderator) {
         $("#qlockbtn").css("display", "block");
-        var poll = $("#pollcontainer .active");
-        if(poll.length > 0) {
-            $("<button/>").addClass("btn btn-danger pull-right").text("Close Poll")
-                .insertAfter(poll.find(".close"))
-                .click(function() {
-                    socket.emit("closePoll")
-                });
-        }
         var users = $("#userlist").children();
         for(var i = 0; i < users.length; i++) {
             addUserDropdown(users[i], users[i].children[1].innerHTML);
@@ -690,6 +693,10 @@ function handleRankChange() {
         else {
             $("#playlist_controls").css("display", "none");
         }
+
+        $("#pollcontainer .active").each(function() {
+            $(this).find(".btn-danger").remove();
+        });
     }
 }
 
