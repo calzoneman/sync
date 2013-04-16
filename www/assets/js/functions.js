@@ -59,7 +59,8 @@ function fmtUserlistItem(div, rank, leader) {
 
 // Adds a dropdown with user actions (promote/demote/leader)
 function addUserDropdown(entry, name) {
-    $(entry).find("dropdown").remove();
+    $(entry).find(".dropdown").remove();
+    $(entry).unbind();
     var div = $("<div />").addClass("dropdown").appendTo(entry);
     var ul = $("<ul />").addClass("dropdown-menu").appendTo(div);
     ul.attr("role", "menu");
@@ -76,13 +77,13 @@ function addUserDropdown(entry, name) {
     a.click(function() {
         if(IGNORED.indexOf(name) != -1) {
             IGNORED.splice(IGNORED.indexOf(name), 1);
-            a.text("Ignore User");
+            this.text("Ignore User");
         }
         else {
             IGNORED.push(name);
-            a.text("Unignore User");
+            this.text("Unignore User");
         }
-    });
+    }.bind(a));
 
     if(RANK >= Rank.Moderator) {
         $("<li />").addClass("divider").appendTo(ul);
@@ -146,6 +147,12 @@ function addUserDropdown(entry, name) {
 
     $(entry).click(function() {
         if(ul.css("display") == "none") {
+            // Hide others
+            $("#userlist ul.dropdown-menu").each(function() {
+                if(this != ul) {
+                    $(this).css("display", "none");
+                }
+            });
             ul.css("display", "block");
         }
         else {
