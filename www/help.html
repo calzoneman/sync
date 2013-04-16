@@ -41,7 +41,8 @@
     <div class="container">
         <div class="row">
             <div class="span8">
-                <h1>Chat Commands</h1>
+                <a name="chatcommands"></a>
+                <a href="#chatcommands"><h1>Chat Commands</h1></a>
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
@@ -86,7 +87,7 @@
                         <td>
                             <div class="well active">
                                 <button class="close pull-right">&times;</button>
-                                <button class="btn btn-danger pull-right">Close Poll</button>
+                                <button class="btn btn-danger pull-right">End Poll</button>
                                 <h3>Title</h3>
                                 <div class="option">
                                     <button class="btn">0</button>
@@ -106,25 +107,28 @@
                 </table>
                 <p>There are also some other chat features.  When your name appears in a message, <span class="nick-highlight">the message will be highlighted.</span>  If you type the beginning of someone's name in chat, pressing tab will attempt to autocomplete the name.</p>
 
-                <h1>Queue Controls</h1>
-                <p>Queue Controls are only visible to moderators by default.  A moderator can unlock the queue to make the controls visible to everyone.<br> Below is an example of the queue controls.  On your channel, simply paste a link of one of the following accepted formats and press "Queue Next" to add it after the current video, or "Queue @ End" to add it at the end of the playlist.  Press "Play Next" to advance to the next video in the playlist.<br>
+                <a name="queuecontrols"></a>
+                <a href="#queuecontrols"><h1>Queue Controls</h1></a>
+                <p>Queue Controls are only visible to moderators by default.  A moderator can unlock the queue to make the controls visible to everyone.<br> Below is an example of the queue controls.  On your channel, simply paste a link of one of the following accepted formats and press "Queue Next" to add it after the current video, or "Queue @ End" to add it at the end of the playlist.  If Voteskip is enabled in <a href="#channeloptions">Channel Options</a>, then pressing voteskip indicates you would like to skip the current video.  If a majority of connected users does this, the video will be skipped.</br>
                 </p>
                 <strong>Acceptable URLs</strong>
                 <ul>
                     <li>http://www.youtube.com/watch?v=(videoid)</li>
+                    <li>http://www.youtube.com/playlist?list=(playlistid)</li>
                     <li>http://www.vimeo.com/(videoid)</li>
                     <li>http://www.soundcloud.com/(songid)</li>
                     <li>http://www.dailymotion.com/video/(videoid)</li>
                     <li>http://www.twitch.tv/(channel)</li>
                     <li>http://www.livestream.com/(channel)</li>
                 </ul>
+                You can also queue multiple items at once by separating the URLs with commas.
                 <div>
                     <input type="text" id="mediaurl" style="margin:auto;">
                     <div class="btn-group">
-                        <button class="btn" id="queue_next">Queue Next</button>
-                        <button class="btn" id="queue_end">Queue @ End</button>
+                        <button class="btn">Queue Next</button>
+                        <button class="btn">Queue @ End</button>
                     </div>
-                    <button class="btn btn-inverse" id="play_next">Play Next</button>
+                    <button class="btn btn-danger">Voteskip</button>
                 </div>
                 <p>Below is an example of an entry in the playlist.  Please note the control buttons only appear if you are a moderator or if the queue is unlocked.  The button with vertical arrows is for moving videos in the playlist.  Click and hold the button and drag the mouse up and down to move the video in the playlist.  The red "X" button will remove the video from the playlist.  The green play button will jump the playlist to that video.  The "Next" button will move the video so that it plays after the current video.
                 </p>
@@ -145,25 +149,33 @@
                 </p>
                 <button class="btn btn-danger" style="width: 100%">Unlock Queue</button>
                 <button class="btn btn-success" style="width: 100%">Lock Queue</button>
-                <h1>Userlist Controls</h1>
+                <a name="userlistcontrols"></a>
+                <a href="#userlistcontrols"><h1>Userlist Controls</h1></a>
                 <div class="dropdown">
                     <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display: block;">
-                        <li><a tabindex="-1" href="#">Make Leader</a></li>
-                        <li><a tabindex="-1" href="#">Take Leader</a></li>
-                        <li><a tabindex="-1" href="#">Kick</a></li>
-                        <li><a tabindex="-1" href="#">IP Ban</a></li>
+                        <li><a tabindex="-1" href="javascript:void(0);">Ignore User</a></li>
                         <li class="divider"></li>
-                        <li><a tabindex="-1" href="#">Promote</a></li>
-                        <li><a tabindex="-1" href="#">Demote</a></li>
+                        <li><a tabindex="-1" href="javascript:void(0);">Make Leader</a></li>
+                        <li><a tabindex="-1" href="javascript:void(0);">Take Leader</a></li>
+                        <li><a tabindex="-1" href="javascript:void(0);">Kick</a></li>
+                        <li><a tabindex="-1" href="javascript:void(0);">IP Ban</a></li>
+                        <li class="divider"></li>
+                        <li><a tabindex="-1" href="javascript:void(0);">Promote</a></li>
+                        <li><a tabindex="-1" href="javascript:void(0);">Demote</a></li>
                     </ul>
                 </div>
-                <table class="table table-bordered table-striped" style="margin-top: 200px">
+                <table class="table table-bordered table-striped" style="margin-top: 280px">
                     <thead>
                         <tr>
                             <th>Function</th>
                             <th>Description</th>
                     </tr>
                     </thead>
+                    <tr>
+                        <td>Ignore User</td>
+                        <td>Ignores incoming chat messages from this user
+                        </td>
+                    </tr>
                     <tr>
                         <td>Make Leader</td>
                         <td>Assigns leadership of the media to this user.  When someone is assigned leadership, the server follows their video/audio and syncs other clients to them.  This allows for seeking within the video.  By default, the server leads by itself.
@@ -191,7 +203,15 @@
                     </tr>
                 </table>
 
-                <h1>Ranks</h1>
+                <a name="synchronization"></a>
+                <a href="#synchronization"><h1>Synchronization and Leaders</h1></a>
+                <p>
+                Synchronization is handled a little bit differently from Synchtube.  By default, media synchronization is managed by the server, which sends out synchronization updates every 5 seconds.  This means if you attempt to seek your client manually, it will be jumped back to the server's position.  If you need to seek the video, you can assign leader to someone (see <a href="#userlistcontrols">Userlist Controls</a>).  Giving someone leader makes the video follow their client, so any seeking they do will be broadcast to everyone in the channel.<br>
+                When someone is leader, they also get partial moderator powers temporarily.  Leaders can open polls, use <code>/say</code>, and manage the queue, but cannot kick/ban, change channel options, or change chat filters.  This is useful if you want to leave someone in charge but not make them a full moderator.  Leadership is revoked upon refresh, or you can revoke it manually.
+                </p>
+                <br>
+                <a name="ranks"></a>
+                <a href="#ranks"><h1>Ranks</h1></a>
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
@@ -216,8 +236,6 @@
                         <td>0-1</td>
                     </tr>
                 </table>
-
-                
             </div>
         </div>
     </div> <!-- /container -->
