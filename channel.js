@@ -801,7 +801,7 @@ Channel.prototype.move = function(data) {
 
 Channel.prototype.tryMove = function(user, data) {
     if(!Rank.hasPermission(user, "queue") &&
-            this.leader != user && 
+            this.leader != user &&
             (!this.openqueue ||
              this.openqueue || !this.opts.qopen_allow_move)) {
          return;
@@ -863,7 +863,7 @@ Channel.prototype.trySetLock = function(user, data) {
     if(!Rank.hasPermission(user, "qlock")) {
         return;
     }
-    
+
     if(data.locked == undefined) {
         return;
     }
@@ -906,8 +906,15 @@ Channel.prototype.tryChangeFilter = function(user, data) {
     }
 
     if(data.cmd == "update") {
+        var re = data.filter[0];
+        var flags = "g";
+        var slash = re.lastIndexOf("/");
+        if(slash > 0 && re[slash-1] != "\\") {
+            flags = re.substring(slash+1);
+            re = re.substring(0, slash);
+        }
         try {
-            data.filter[0] = new RegExp(data.filter[0], "g");
+            data.filter[0] = new RegExp(re, flags);
         }
         catch(e) {
             return;
@@ -929,7 +936,7 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
             this.opts[key] = data[key];
         }
     }
-    
+
     this.broadcastOpts();
 }
 
@@ -959,7 +966,7 @@ Channel.prototype.tryChat = function(user, data) {
     if(user.name == "") {
         return;
     }
-    
+
     if(data.msg == undefined) {
         return;
     }

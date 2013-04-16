@@ -635,8 +635,15 @@ function updateChatFilters(entries) {
         .appendTo($("<td/>").appendTo(newfilt));
     var cback = (function(regex, replace) { return function() {
         if(regex.val() && replace.val()) {
+            var re = regex.val();
+            var flags = "g";
+            var slash = re.lastIndexOf("/");
+            if(slash > 0 && re[slash-1] != "\\") {
+                flags = re.substring(slash+1);
+                re = re.substring(0, slash);
+            }
             try {
-                var dummy = new RegExp(regex.val(), "g");
+                var dummy = new RegExp(re, flags);
             }
             catch(e) {
                 alert("Invalid regex: " + e);
