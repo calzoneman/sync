@@ -155,6 +155,20 @@ function addUserDropdown(entry, name) {
     return ul;
 }
 
+function addChatMessage(data) {
+    if(IGNORED.indexOf(data.username) != -1) {
+        return;
+    }
+    var div = formatChatMessage(data);
+    div.appendTo($("#messagebuffer"));
+    // Cap chatbox at most recent 100 messages
+    if($("#messagebuffer").children().length > 100) {
+        $($("#messagebuffer").children()[0]).remove();
+    }
+    if(SCROLLCHAT)
+        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+}
+
 function formatChatMessage(data) {
     var div = $("<div/>");
     if(uname) {
@@ -682,4 +696,11 @@ function handleRankChange() {
 function onWindowFocus() {
     clearInterval(TITLE_BLINK);
     document.title = PAGETITLE;
+}
+
+function enableBerrymotes() {
+    $.getScript("./assets/js/berrymotes.js", function() {
+        berryEmoteDataRefresh();
+        monkeyPatchChat();
+    });
 }

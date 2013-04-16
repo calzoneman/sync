@@ -132,17 +132,7 @@ function initCallbacks() {
     });
 
     socket.on("chatMsg", function(data) {
-        if(IGNORED.indexOf(data.username) != -1) {
-            return;
-        }
-        var div = formatChatMessage(data);
-        div.appendTo($("#messagebuffer"));
-        // Cap chatbox at most recent 100 messages
-        if($("#messagebuffer").children().length > 100) {
-            $($("#messagebuffer").children()[0]).remove();
-        }
-        if(SCROLLCHAT)
-            $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+        addChatMessage(data);
     });
 
     socket.on("userlist", function(data) {
