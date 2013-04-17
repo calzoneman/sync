@@ -8,7 +8,7 @@
     },
     "dependencies": {
         "socket.io": ">=0.9",
-        "connect": "*",
+        "express": ">=3.2",
         "mysql-libmysqlclient": "*",
         "node_hash": "*",
         "bcrypt": "*"

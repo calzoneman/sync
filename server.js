@@ -9,15 +9,20 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-const VERSION = "1.1.6";
+const VERSION = "1.2.0";
 
 var fs = require("fs");
 var Logger = require("./logger.js");
+
 Logger.syslog.log("Starting CyTube v" + VERSION);
 var Config = require("./config.js");
-var connect = require("connect");
-var app = connect.createServer(connect.static(__dirname+"/www")).listen(Config.IO_PORT);
-exports.io = require("socket.io").listen(app);
+var express = require("express");
+
+var app = express();
+app.use(express.static(__dirname + "/www"));
+var httpserv = app.listen(Config.IO_PORT);
+
+exports.io = require("socket.io").listen(httpserv);
 exports.io.set("log level", 1);
 var User = require("./user.js").User;
 var Database = require("./database.js");
