@@ -55,7 +55,7 @@ exports.register = function(name, pw) {
         return false;
     }
     var hash = bcrypt.hashSync(pw, 10);
-    var query = "INSERT INTO registrations VALUES (NULL, '{1}', '{2}', 0)"
+    var query = "INSERT INTO registrations VALUES (NULL, '{1}', '{2}', 1)"
         .replace(/\{1\}/, name)
         .replace(/\{2\}/, hash);
     var results = db.querySync(query);

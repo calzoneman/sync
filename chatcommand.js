@@ -23,6 +23,13 @@ function handle(chan, user, msg) {
             chan.sendMessage(user.name, msg.substring(5), "shout");
         }
     }
+    else if(msg.indexOf("/m ") == 0) {
+        if(user.rank >= Rank.Moderator) {
+            chan.sendMessage(user.name, msg.substring(3), "modflair", {
+                modflair: user.rank
+            });
+        }
+    }
     else if(msg.indexOf("/kick ") == 0) {
         handleKick(chan, user, msg.substring(6).split(" "));
     }

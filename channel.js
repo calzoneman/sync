@@ -999,20 +999,22 @@ Channel.prototype.filterMessage = function(msg) {
     return msg;
 }
 
-Channel.prototype.sendMessage = function(username, msg, msgclass) {
+Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
     // I don't want HTML from strangers
     msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     msg = this.filterMessage(msg);
-    this.sendAll("chatMsg", {
+    var msgobj = {
         username: username,
         msg: msg,
         msgclass: msgclass
-    });
-    this.chatbuffer.push({
-        username: username,
-        msg: msg,
-        msgclass: msgclass
-    });
+    };
+    if(data) {
+        for(var key in data) {
+            msgobj[key] = data[key];
+        }
+    }
+    this.sendAll("chatMsg", msgobj);
+    this.chatbuffer.push(msgobj);
     if(this.chatbuffer.length > 15)
         this.chatbuffer.shift();
     this.logger.log("<" + username + "." + msgclass + "> " + msg);

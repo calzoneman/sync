@@ -23,7 +23,7 @@ function addUser(name, rank, leader) {
     var div = $("<div/>").attr("class", "userlist_item");
     var flair = $("<span/>").appendTo(div);
     var nametag = $("<span/>").text(name).appendTo(div);
-    fmtUserlistItem(div[0], rank, leader);
+    formatUserlistItem(div[0], rank, leader);
     addUserDropdown(div, name);
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
@@ -37,15 +37,10 @@ function addUser(name, rank, leader) {
 }
 
 // Format a userlist entry based on a person"s rank
-function fmtUserlistItem(div, rank, leader) {
+function formatUserlistItem(div, rank, leader) {
     var name = div.children[1];
     $(name).removeClass();
-    if(rank >= Rank.Siteadmin)
-        $(name).attr("class", "userlist_siteadmin");
-    else if(rank >= Rank.Owner)
-        $(name).attr("class", "userlist_owner");
-    else if(rank >= Rank.Moderator)
-        $(name).attr("class", "userlist_op");
+    $(name).addClass(getNameColor(rank));
 
     var flair = div.children[0];
     // denote current leader with a star
@@ -55,6 +50,19 @@ function fmtUserlistItem(div, rank, leader) {
     else {
         flair.innerHTML = "";
     }
+}
+
+function getNameColor(rank) {
+    if(rank >= Rank.Siteadmin)
+        return "userlist_siteadmin";
+    else if(rank >= Rank.Owner)
+        return "userlist_owner";
+    else if(rank >= Rank.Moderator)
+        return "userlist_op";
+    else if(rank == Rank.Guest)
+        return "userlist_guest";
+    else
+        return "";
 }
 
 // Adds a dropdown with user actions (promote/demote/leader)
@@ -191,30 +199,24 @@ function formatChatMessage(data) {
             }
         }
     }
+    var name = $("<span/>").appendTo(div);
+    $("<strong/>").text("<" + data.username + "> ").appendTo(name);
+    var message = $("<span/>").appendTo(div);
+    message[0].innerHTML = data.msg;
     if(data.msgclass == "action") {
-        var message = $("<span/>")
-            .addClass("action")
-            .appendTo(div);
+        name.remove();
+        message.addClass("action");
         message[0].innerHTML = data.username + " " + data.msg;
     }
-    else if(data.msgclass == "drink") {
+    if(data.msgclass == "drink") {
         div.addClass("drink");
-        var name = $("<span/>");
-        $("<strong/>").text("<" + data.username + "> ").appendTo(name);
-        var message = $("<span/>");
-        message[0].innerHTML = data.msg;
-        name.appendTo(div);
-        message.appendTo(div);
     }
-    else {
-        var name = $("<span/>");
-        $("<strong/>").text("<" + data.username + "> ").appendTo(name);
-        if(data.msgclass == "shout")
-            name.addClass("shout");
-        var message = $("<span/>").addClass(data.msgclass);
-        message[0].innerHTML = data.msg;
-        name.appendTo(div);
-        message.appendTo(div);
+    if(data.msgclass == "shout") {
+        message.addClass("shout");
+        name.addClass("shout");
+    }
+    if(data.modflair) {
+        name.addClass(getNameColor(data.modflair));
     }
     return div;
 }

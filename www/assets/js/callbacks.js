@@ -178,7 +178,7 @@ function initCallbacks() {
             var name = users[i].children[1].innerHTML;
             // Reformat user
             if(name == data.name) {
-                fmtUserlistItem(users[i], data.rank, data.leader);
+                formatUserlistItem(users[i], data.rank, data.leader);
             }
         }
     });
