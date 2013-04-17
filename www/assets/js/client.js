@@ -80,8 +80,7 @@ if(params["channel"] == undefined) {
     var label = $("<label/>").text("Enter Channel:").appendTo(div);
     var entry = $("<input/>").attr("type", "text").appendTo(div);
     entry.keydown(function(ev) {
-        if(ev.keyCode == 13) {
-            document.location = document.location + "?channel=" + entry.val();
+        if(ev.keyCode == 13) { document.location = document.location + "?channel=" + entry.val();
             socket.emit("joinChannel", {
                 name: entry.val()
             });
@@ -274,6 +273,64 @@ $("#chatline").keydown(function(ev) {
 $("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
 $("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 
+$("#getplaylist").click(function() {
+    var callback = function(data) {
+        socket.listeners("playlist").splice(
+            socket.listeners("playlist").indexOf(callback));
+        var list = [];
+        for(var i = 0; i < data.pl.length; i++) {
+            var entry;
+            switch(data.pl[i].type) {
+                case "yt":
+                    entry = "http://youtube.com/watch?v="+data.pl[i].id;
+                    break;
+                case "vi":
+                    entry = "http://vimeo.com/"+data.pl[i].id;
+                    break;
+                case "dm":
+                    entry = "http://dailymotion.com/video/"+data.pl[i].id;
+                    break;
+                case "sc":
+                    entry = data.pl[i].id;
+                    break;
+                case "li":
+                    entry = "http://livestream.com/"+data.pl[i].id;
+                    break;
+                case "tw":
+                    entry = "http://twitch.tv/"+data.pl[i].id;
+                    break;
+                case "rt":
+                    entry = data.pl[i].id;
+                    break;
+                default:
+                    break;
+            }
+            list.push(entry);
+        }
+        var urls = list.join(",");
+
+        var modal = $("<div/>").addClass("modal hide fade")
+            .appendTo($("body"));
+        var head = $("<div/>").addClass("modal-header")
+            .appendTo(modal);
+        $("<button/>").addClass("close")
+            .attr("data-dismiss", "modal")
+            .attr("aria-hidden", "true")
+            .appendTo(head)[0].innerHTML = "&times;";
+        $("<h3/>").text("Playlist URLs").appendTo(head);
+        var body = $("<div/>").addClass("modal-body").appendTo(modal);
+        $("<input/>").attr("type", "text")
+            .val(urls)
+            .appendTo(body);
+        $("<div/>").addClass("modal-footer").appendTo(modal);
+        modal.on("hidden", function() {
+            modal.remove();
+        });
+        modal.modal();
+    }
+    socket.on("playlist", callback);
+    socket.emit("requestPlaylist");
+});
 
 $("#opt_submit").click(function() {
     var ptitle = $("#opt_pagetitle").val();

@@ -108,6 +108,12 @@ User.prototype.initCallbacks = function() {
         this.playerReady = true;
     }.bind(this));
 
+    this.socket.on("requestPlaylist", function() {
+        if(this.channel != null) {
+            this.channel.sendPlaylist(this);
+        }
+    }.bind(this));
+
     this.socket.on("queue", function(data) {
         if(this.channel != null) {
             this.channel.tryQueue(this, data);
