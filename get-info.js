@@ -88,10 +88,11 @@ exports.getYTPlaylist = function(id, callback, url) {
 }
 
 exports.searchYT = function(terms, callback) {
+    var query = escape(terms.join("/"));
     getJSON({
         host: "gdata.youtube.com",
         port: 80,
-        path: "/feeds/api/videos/-/" + terms.join("/") + "?v=2&alt=json",
+        path: "/feeds/api/videos/-/" + query + "?v=2&alt=json",
         method: "GET",
         dataType: "jsonp",
         timeout: 1000}, callback);

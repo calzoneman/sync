@@ -208,15 +208,18 @@ function formatChatMessage(data) {
         message.addClass("action");
         message[0].innerHTML = data.username + " " + data.msg;
     }
-    if(data.msgclass == "drink") {
+    else if(data.msgclass == "drink") {
         div.addClass("drink");
     }
-    if(data.msgclass == "shout") {
+    else if(data.msgclass == "shout") {
         message.addClass("shout");
         name.addClass("shout");
     }
-    if(data.modflair) {
+    else if(data.modflair) {
         name.addClass(getNameColor(data.modflair));
+    }
+    else  {
+        message.addClass(data.msgclass);
     }
     return div;
 }
