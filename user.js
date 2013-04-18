@@ -101,6 +101,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("newPoll", function(data) {
+        if(this.channel != null) {
+            this.channel.tryOpenPoll(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("playerReady", function() {
         if(this.channel != null) {
             this.channel.sendMediaUpdate(this);

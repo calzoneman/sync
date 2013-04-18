@@ -730,3 +730,68 @@ function enableBerrymotes() {
         monkeyPatchChat();
     });
 }
+
+function newPollMenu() {
+    var modal = $("<div/>").addClass("modal hide fade")
+        .appendTo($("body"));
+    var head = $("<div/>").addClass("modal-header")
+        .appendTo(modal);
+    $("<button/>").addClass("close")
+        .attr("data-dismiss", "modal")
+        .attr("aria-hidden", "true")
+        .appendTo(head)[0].innerHTML = "&times;";
+    $("<h3/>").text("New Poll").appendTo(head);
+    var body = $("<div/>").addClass("modal-body").appendTo(modal);
+
+    var form = $("<form/>").addClass("form-horizontal")
+        .appendTo(body);
+
+    var tgroup = $("<div/>").addClass("control-group").appendTo(form);
+    $("<label/>").text("Title")
+        .addClass("control-label")
+        .attr("for", "polltitle")
+        .appendTo(tgroup);
+    $("<input/>").attr("type", "text")
+        .attr("id", "polltitle")
+        .appendTo($("<div/>").addClass("controls").appendTo(tgroup))
+
+    function addPollOption() {
+        var g = $("<div/>").addClass("control-group").appendTo(form);
+        var c = $("<div/>").addClass("controls").appendTo(g);
+        $("<input/>").attr("type", "text")
+            .appendTo(c);
+    }
+    addPollOption();
+
+    var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
+    $("<button/>").addClass("btn pull-left")
+        .text("Add Poll Option")
+        .appendTo(footer)
+        .click(addPollOption);
+
+    var submit = function() {
+        var all = form.find("input[type=\"text\"]");
+        var title = $(all[0]).val();
+        var opts = new Array(all.length - 1);
+        for(var i = 1; i < all.length; i++) {
+            opts[i - 1] = $(all[i]).val();
+        }
+
+        console.log(title, opts);
+        socket.emit("newPoll", {
+            title: title,
+            opts: opts
+        });
+    }
+
+    $("<button/>").addClass("btn btn-primary")
+        .attr("data-dismiss", "modal")
+        .attr("aria-hidden", "true")
+        .text("Open Poll")
+        .appendTo(footer)
+        .click(submit);
+    modal.on("hidden", function() {
+        modal.remove();
+    });
+    modal.modal();
+}

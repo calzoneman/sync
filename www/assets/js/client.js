@@ -213,9 +213,15 @@ $("#register").click(function() {
 
 $("#chatline").keydown(function(ev) {
     if(ev.keyCode == 13 && $("#chatline").val() != "") {
-        socket.emit("chatMsg", {
-            msg: $("#chatline").val()
-        });
+        if($("#chatline").val().trim() == "/poll") {
+            newPollMenu();
+            $("#chatline").val("");
+        }
+        else {
+            socket.emit("chatMsg", {
+                msg: $("#chatline").val()
+            });
+        }
         CHATHIST.push($("#chatline").val());
         if(CHATHIST.length > 10)
             CHATHIST.shift();

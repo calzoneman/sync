@@ -819,6 +819,21 @@ Channel.prototype.tryMove = function(user, data) {
 
 /* REGION Polls */
 
+Channel.prototype.tryOpenPoll = function(user, data) {
+    if(!Rank.hasPermission(user, "poll") && this.leader != user) {
+        return;
+    }
+
+    if(!data.title || !data.opts) {
+        return;
+    }
+
+    var poll = new Poll(user.name, data.title, data.opts);
+    this.poll = poll;
+    this.broadcastPoll();
+    this.logger.log("*** " + user.name + " Opened Poll: '" + poll.title + "'");
+}
+
 Channel.prototype.tryClosePoll = function(user) {
     if(!Rank.hasPermission(user, "poll") && this.leader != user) {
         return;
