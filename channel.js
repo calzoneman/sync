@@ -806,7 +806,7 @@ Channel.prototype.tryMove = function(user, data) {
     if(!Rank.hasPermission(user, "queue") &&
             this.leader != user &&
             (!this.openqueue ||
-             this.openqueue || !this.opts.qopen_allow_move)) {
+             this.openqueue && !this.opts.qopen_allow_move)) {
          return;
      }
 
