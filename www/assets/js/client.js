@@ -84,7 +84,7 @@ if(params["channel"] == undefined) {
         socket.emit("joinChannel", {
             name: m[1]
         });
-        return;
+        break;
     }
 
     var main = $($(".container")[1]);
