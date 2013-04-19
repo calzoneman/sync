@@ -77,6 +77,16 @@ if(params["novideo"] != undefined) {
 }
 
 if(params["channel"] == undefined) {
+    // Match URLs of the form http://site.tld/r/channel
+    var loc = document.location+"";
+    var m = loc.match(/\/r\/([a-zA-Z0-9]+)/);
+    if(m) {
+        socket.emit("joinChannel", {
+            name: m[1]
+        });
+        return;
+    }
+
     var main = $($(".container")[1]);
     var container = $("<div/>").addClass("container").insertBefore(main);
     var row = $("<div/>").addClass("row").appendTo(container);
