@@ -19,16 +19,16 @@ function handleDisconnect() {
 }
 
 // Adds a user to the chatbox userlist
-function addUser(name, rank, leader) {
+function addUser(data) {
     var div = $("<div/>").attr("class", "userlist_item");
     var flair = $("<span/>").appendTo(div);
-    var nametag = $("<span/>").text(name).appendTo(div);
-    formatUserlistItem(div[0], rank, leader);
-    addUserDropdown(div, name);
+    var nametag = $("<span/>").text(data.name).appendTo(div);
+    formatUserlistItem(div[0], data);
+    addUserDropdown(div, data.name);
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
         var othername = users[i].children[1].innerHTML;
-        if(othername.toLowerCase() > name.toLowerCase()) {
+        if(othername.toLowerCase() > data.name.toLowerCase()) {
             div.insertBefore(users[i]);
             return;
         }
@@ -36,19 +36,22 @@ function addUser(name, rank, leader) {
     div.appendTo($("#userlist"));
 }
 
-// Format a userlist entry based on a person"s rank
-function formatUserlistItem(div, rank, leader) {
+// Format a userlist entry based on a person's rank
+function formatUserlistItem(div, data) {
     var name = div.children[1];
     $(name).removeClass();
-    $(name).addClass(getNameColor(rank));
+    $(name).css("font-style", "");
+    $(name).addClass(getNameColor(data.rank));
 
     var flair = div.children[0];
+    flair.innerHTML = "";
     // denote current leader with a star
-    if(leader) {
+    if(data.leader) {
         $("<i/>").addClass("icon-star-empty").appendTo(flair);
     }
-    else {
-        flair.innerHTML = "";
+    if(data.meta.afk) {
+        $(name).css("font-style", "italic");
+        $("<i/>").addClass("icon-time").appendTo(flair);
     }
 }
 

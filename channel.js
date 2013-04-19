@@ -437,7 +437,8 @@ Channel.prototype.broadcastNewUser = function(user) {
     this.sendAll("addUser", {
         name: user.name,
         rank: user.rank,
-        leader: this.leader == user
+        leader: this.leader == user,
+        meta: user.meta
     });
     this.sendRankStuff(user);
 }
@@ -446,7 +447,8 @@ Channel.prototype.broadcastRankUpdate = function(user) {
     this.sendAll("updateUser", {
         name: user.name,
         rank: user.rank,
-        leader: this.leader == user
+        leader: this.leader == user,
+        meta: user.meta
     });
     this.sendRankStuff(user);
 }

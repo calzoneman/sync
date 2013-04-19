@@ -142,12 +142,12 @@ function initCallbacks() {
     socket.on("userlist", function(data) {
         $(".userlist_item").each(function() { $(this).remove(); });
         for(var i = 0; i < data.length; i++) {
-            addUser(data[i].name, data[i].rank, data[i].leader);
+            addUser(data[i]);
         }
     });
 
     socket.on("addUser", function(data) {
-        addUser(data.name, data.rank, data.leader);
+        addUser(data);
     });
 
     socket.on("updateUser", function(data) {
@@ -178,7 +178,7 @@ function initCallbacks() {
             var name = users[i].children[1].innerHTML;
             // Reformat user
             if(name == data.name) {
-                formatUserlistItem(users[i], data.rank, data.leader);
+                formatUserlistItem(users[i], data);
             }
         }
     });

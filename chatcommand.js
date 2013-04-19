@@ -23,6 +23,10 @@ function handle(chan, user, msg) {
             chan.sendMessage(user.name, msg.substring(5), "shout");
         }
     }
+    else if(msg.indexOf("/afk") == 0) {
+        user.meta.afk = !user.meta.afk;
+        chan.broadcastRankUpdate(user);
+    }
     else if(msg.indexOf("/m ") == 0) {
         if(user.rank >= Rank.Moderator) {
             chan.sendMessage(user.name, msg.substring(3), "modflair", {
