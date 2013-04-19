@@ -25,7 +25,7 @@ var FOCUSED = true;
 var SCROLLCHAT = true;
 var PAGETITLE = "Sync";
 var TITLE_BLINK;
-var VWIDTH = "670";
+var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//670
 var VHEIGHT = "377";
 var IGNORED = [];
 var KICKED = false;
@@ -54,6 +54,11 @@ $(window).focus(function() {
 })
 .blur(function() {
     FOCUSED = false;
+});
+
+$(window).resize(function() {
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    $("#ytapiplayer").attr("width", VWIDTH);
 });
 
 var params = {};
@@ -424,9 +429,9 @@ $("#stlayout").click(synchtubeLayout);
 
 function largeLayout() {
     $("#videodiv").removeClass().addClass("span8 offset2");
-    VWIDTH = "770";
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//770
     VHEIGHT = "430";
-    $("#ytapiplayer").attr("width", "770").attr("height", "430");
+    $("#ytapiplayer").attr("width", VWIDTH).attr("height", "430");
     var chat = $("#chatdiv").detach();
     $("#layoutrow").remove();
     var r = $("<div />").addClass("row").insertAfter($("#videodiv").parent());
@@ -437,10 +442,10 @@ function largeLayout() {
 }
 
 function hugeLayout() {
-    VWIDTH = "1170";
-    VHEIGHT = "658";
     $("#videodiv").removeClass().addClass("span12");
-    $("#ytapiplayer").attr("width", "1170").attr("height", "658");
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//1170
+    VHEIGHT = "658";
+    $("#ytapiplayer").attr("width", VWIDTH).attr("height", "658");
     var chat = $("#chatdiv").detach();
     $("#layoutrow").remove();
     var r = $("<div />").addClass("row").insertAfter($("#videodiv").parent());
@@ -452,10 +457,10 @@ function hugeLayout() {
 }
 
 function narrowLayout() {
-    VWIDTH = "570";
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//570
     VHEIGHT = "321";
     $("#videodiv").removeClass().addClass("span6");
-    $("#ytapiplayer").attr("width", "570").attr("height", "321");
+    $("#ytapiplayer").attr("width", VWIDTH).attr("height", "321");
     var chat = $("#chatdiv").detach();
     $("#layoutrow").remove();
     var r = $("<div />").addClass("row").insertAfter($("#videodiv").parent());

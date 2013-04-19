@@ -50,6 +50,7 @@ Media.prototype.initYouTube = function() {
             }
         }
     });
+    $("#ytapiplayer").css("border", "none");
 
     this.load = function(data) {
         if(this.player.loadVideoById) {
@@ -76,7 +77,6 @@ Media.prototype.initYouTube = function() {
 }
 
 Media.prototype.initVimeo = function() {
-    
     var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
     $("#ytapiplayer").remove();
     iframe.attr("id", "ytapiplayer");
@@ -87,7 +87,7 @@ Media.prototype.initVimeo = function() {
     iframe.attr("mozallowfullscreen", "");
     iframe.attr("allowFullScreen", "");
     iframe.css("border", "none");
-    
+
     this.player = $f(iframe[0]);
     $f(iframe[0]).addEvent("ready", function() {
         this.player = $f(iframe[0]);
@@ -214,7 +214,7 @@ Media.prototype.initLivestream = function() {
     }
 
     this.pause = function() { }
-    
+
     this.play = function() { }
 
     this.getTime = function() { }
@@ -241,7 +241,7 @@ Media.prototype.initTwitch = function() {
     }
 
     this.pause = function() { }
-    
+
     this.play = function() { }
 
     this.getTime = function() { }
@@ -251,7 +251,7 @@ Media.prototype.initTwitch = function() {
 
 Media.prototype.initRTMP = function() {
     this.removeOld();
-    var url = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf"; 
+    var url = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
     var src = encodeURIComponent(this.id);
     var params = {
             allowFullScreen:"true",
@@ -269,7 +269,7 @@ Media.prototype.initRTMP = function() {
     }
 
     this.pause = function() { }
-    
+
     this.play = function() { }
 
     this.getTime = function() { }
