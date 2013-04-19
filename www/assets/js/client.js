@@ -84,25 +84,26 @@ if(params["channel"] == undefined) {
         socket.emit("joinChannel", {
             name: m[1]
         });
-        break;
     }
+    else {
 
-    var main = $($(".container")[1]);
-    var container = $("<div/>").addClass("container").insertBefore(main);
-    var row = $("<div/>").addClass("row").appendTo(container);
-    var div = $("<div/>").addClass("span6").appendTo(row);
-    main.css("display", "none");
-    var label = $("<label/>").text("Enter Channel:").appendTo(div);
-    var entry = $("<input/>").attr("type", "text").appendTo(div);
-    entry.keydown(function(ev) {
-        if(ev.keyCode == 13) { document.location = document.location + "?channel=" + entry.val();
-            socket.emit("joinChannel", {
-                name: entry.val()
-            });
-            container.remove();
-            main.css("display", "");
-        }
-    });
+        var main = $($(".container")[1]);
+        var container = $("<div/>").addClass("container").insertBefore(main);
+        var row = $("<div/>").addClass("row").appendTo(container);
+        var div = $("<div/>").addClass("span6").appendTo(row);
+        main.css("display", "none");
+        var label = $("<label/>").text("Enter Channel:").appendTo(div);
+        var entry = $("<input/>").attr("type", "text").appendTo(div);
+        entry.keydown(function(ev) {
+            if(ev.keyCode == 13) { document.location = document.location + "?channel=" + entry.val();
+                socket.emit("joinChannel", {
+                    name: entry.val()
+                });
+                container.remove();
+                main.css("display", "");
+            }
+        });
+    }
 }
 else if(!params["channel"].match(/^[a-zA-Z0-9]+$/)) {
     $("<div/>").addClass("alert alert-error")
