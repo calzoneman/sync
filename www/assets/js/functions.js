@@ -49,7 +49,7 @@ function formatUserlistItem(div, data) {
     if(data.leader) {
         $("<i/>").addClass("icon-star-empty").appendTo(flair);
     }
-    if(data.meta.afk) {
+    if(data.meta && data.meta.afk) {
         $(name).css("font-style", "italic");
         $("<i/>").addClass("icon-time").appendTo(flair);
     }
