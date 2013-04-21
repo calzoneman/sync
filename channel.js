@@ -43,6 +43,7 @@ var Channel = function(name) {
         qopen_allow_playnext: false,
         qopen_allow_delete: false,
         allow_voteskip: true,
+        voteskip_ratio: 0.5,
         pagetitle: this.name,
         customcss: "",
         customjs: ""
@@ -292,6 +293,7 @@ Channel.prototype.userJoin = function(user) {
         user.socket.emit("channelNotRegistered");
     }
     this.users.push(user);
+    this.broadcastVoteskipUpdate();
     if(user.name != "") {
         this.broadcastNewUser(user);
     }
@@ -342,6 +344,7 @@ Channel.prototype.userLeave = function(user) {
     var idx = this.users.indexOf(user);
     if(idx >= 0 && idx < this.users.length)
         this.users.splice(idx, 1);
+    this.broadcastVoteskipUpdate();
     this.broadcastUsercount();
     if(user.name != "") {
         this.sendAll("userLeave", {
@@ -407,7 +410,8 @@ Channel.prototype.sendUserlist = function(user) {
             users.push({
                 name: this.users[i].name,
                 rank: this.users[i].rank,
-                leader: this.users[i] == this.leader
+                leader: this.users[i] == this.leader,
+                meta: this.users[i].meta
             });
         }
     }
@@ -495,6 +499,20 @@ Channel.prototype.broadcastChatFilters = function() {
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "chatFilter")) {
             this.users[i].socket.emit("chatFilters", {filters: filts});
+        }
+    }
+}
+
+Channel.prototype.broadcastVoteskipUpdate = function() {
+    var amt = this.voteskip ? this.voteskip.counts[0] : 0;
+    var need = this.voteskip ? this.users.length * this.opts.voteskip_ratio + 1 : 0;
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], "seeVoteskip") ||
+                this.leader == this.users[i]) {
+            this.users[i].socket.emit("voteskip", {
+                count: amt,
+                need: need
+            });
         }
     }
 }
@@ -662,6 +680,7 @@ Channel.prototype.playNext = function() {
 
     // Reset voteskip
     this.voteskip = false;
+    this.broadcastVoteskipUpdate();
     this.drinks = 0;
     this.broadcastDrinks();
 
@@ -708,6 +727,7 @@ Channel.prototype.jumpTo = function(pos) {
 
     // Reset voteskip
     this.voteskip = false;
+    this.broadcastVoteskipUpdate();
     this.drinks = 0;
     this.broadcastDrinks();
 
@@ -866,7 +886,8 @@ Channel.prototype.tryVoteskip = function(user) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }
     this.voteskip.vote(user.ip, 0);
-    if(this.voteskip.counts[0] > this.users.length / 2) {
+    this.broadcastVoteskipUpdate();
+    if(this.voteskip.counts[0] > this.users.length * this.opts.voteskip_ratio) {
         this.playNext();
     }
 }

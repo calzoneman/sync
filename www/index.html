@@ -22,10 +22,10 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="#">CyTube</a>
+          <a class="brand" href="index.html">CyTube</a>
           <div class="">
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
+              <li class="active"><a href="index.html">Home</a></li>
               <li><a href="help.html">Help</a></li>
             </ul>
             <div class="navbar-form pull-right" id="loginform">
@@ -120,7 +120,6 @@
             <div class="span10 offset1">
                 <form action="javascript:void(0)">
                     <fieldset>
-                        <legend>Channel Options</legend>
                         <div class="span4">
                             <label>When the queue is open:</label>
                             <label class="checkbox">
@@ -156,6 +155,10 @@
                             <label class="checkbox">
                                 <input type="checkbox" id="opt_allow_voteskip">
                                 Allow voteskip
+                            </label>
+                            <br>
+                            <label>Voteskip Ratio
+                                <input type="text" id="opt_voteskip_ratio" class="pull-right">
                             </label>
                         </div>
 

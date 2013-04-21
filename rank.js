@@ -32,6 +32,7 @@ var permissions = {
     chatFilter      : exports.Moderator,
     updateMotd      : exports.Moderator,
     drink           : exports.Moderator,
+    seeVoteskip     : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };

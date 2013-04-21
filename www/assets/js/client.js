@@ -359,12 +359,14 @@ $("#opt_submit").click(function() {
     if(ptitle == "")
         ptitle = $("#opt_pagetitle").attr("placeholder")
     var css = $("#opt_customcss").val();
+    var ratio = +$("#opt_voteskip_ratio").val() || 0.5;
     opts = {
         qopen_allow_qnext: $("#opt_qopen_allow_qnext").prop("checked"),
         qopen_allow_move: $("#opt_qopen_allow_move").prop("checked"),
         qopen_allow_delete: $("#opt_qopen_allow_delete").prop("checked"),
         qopen_allow_playnext: $("#opt_qopen_allow_playnext").prop("checked"),
         allow_voteskip: $("#opt_allow_voteskip").prop("checked"),
+        voteskip_ratio: ratio,
         pagetitle: ptitle,
         customcss: css,
         customjs: $("#opt_customjs").val()

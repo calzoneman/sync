@@ -75,6 +75,7 @@ function initCallbacks() {
                        .insertAfter($("link[href='./assets/css/ytsync.css']"));
         }
         $("#opt_allow_voteskip").prop("checked", opts.allow_voteskip);
+        $("#opt_voteskip_ratio").val(opts.voteskip_ratio);
         if(opts.customjs.trim() != "") {
             $.getScript(opts.customjs);
         }
@@ -98,6 +99,15 @@ function initCallbacks() {
 
     socket.on("banlist", function(data) {
         updateBanlist(data.entries);
+    });
+
+    socket.on("voteskip", function(data) {
+        if(data.count > 0) {
+            $("#voteskip").text("Voteskip ("+data.count+"/"+data.need+")");
+        }
+        else {
+            $("#voteskip").text("Voteskip");
+        }
     });
 
     /* REGION Rank Stuff */
