@@ -142,7 +142,11 @@ function initCallbacks() {
     /* REGION Chat */
 
     socket.on("usercount", function(data) {
-        $("#usercount").text(data.count + " connected users");
+        var text = data.count + " connected user";
+        if(data.count != 1) {
+            text += "s";
+        }
+        $("#usercount").text(text);
     });
 
     socket.on("chatMsg", function(data) {
@@ -204,9 +208,12 @@ function initCallbacks() {
     });
 
     socket.on("drinkCount", function(data) {
-        var count = data.count;
-        if(count != 0) {
-            $("#drinkcount").text(count + " drinks");
+        if(data.count != 0) {
+            var text = data.count + " drink";
+            if(data.count != 1) {
+                text += "s";
+            }
+            $("#drinkcount").text(text);
             $(".drinkbar").show();
         }
         else {
