@@ -382,39 +382,48 @@ $("#updatemotd").click(function() {
 });
 
 $("#show_chancontrols").click(function() {
-    $("#show_banlist").parent().removeClass("active");
-    $("#show_motdeditor").parent().removeClass("active");
-    $("#show_filtereditor").parent().removeClass("active");
-    $("#show_chancontrols").parent().addClass("active");
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
     $(".modonly").hide();
+    $("#show_chancontrols").parent().addClass("active");
     $("#chancontrols").show();
 });
 
 $("#show_banlist").click(function() {
-    $("#show_chancontrols").parent().removeClass("active");
-    $("#show_motdeditor").parent().removeClass("active");
-    $("#show_filtereditor").parent().removeClass("active");
-    $("#show_banlist").parent().addClass("active");
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
     $(".modonly").hide();
+    $("#show_banlist").parent().addClass("active");
     $("#banlist").show();
 });
 
 $("#show_motdeditor").click(function() {
-    $("#show_chancontrols").parent().removeClass("active");
-    $("#show_banlist").parent().removeClass("active");
-    $("#show_filtereditor").parent().removeClass("active");
-    $("#show_motdeditor").parent().addClass("active");
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
     $(".modonly").hide();
+    $("#show_motdeditor").parent().addClass("active");
     $("#motdeditor").show();
 });
 
 $("#show_filtereditor").click(function() {
-    $("#show_chancontrols").parent().removeClass("active");
-    $("#show_banlist").parent().removeClass("active");
-    $("#show_motdeditor").parent().removeClass("active");
-    $("#show_filtereditor").parent().addClass("active");
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
     $(".modonly").hide();
+    $("#show_filtereditor").parent().addClass("active");
     $("#filtereditor").show();
+});
+
+$("#show_acl").click(function() {
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
+    $(".modonly").hide();
+    $("#show_acl").parent().addClass("active");
+    $("#channelranks").show();
 });
 
 function searchLibrary() {

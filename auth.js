@@ -109,3 +109,21 @@ exports.login = function(name, pw) {
     }
     return false;
 }
+
+exports.getGlobalRank = function(name) {
+    var db = mysql.createConnectionSync();
+    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
+                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    if(!db.connectedSync()) {
+        Logger.errlog.log("Auth.getGlobalRank: DB connection failed");
+        return false;
+    }
+    var query = "SELECT * FROM registrations WHERE uname='{1}'"
+        .replace(/\{1\}/, name)
+    var results = db.querySync(query);
+    var rows = results.fetchAllSync();
+    if(rows.length > 0) {
+        return rows[0].global_rank;
+    }
+    return 0;
+}

@@ -19,6 +19,7 @@ var permissions = {
     acp             : exports.Siteadmin,
     announce        : exports.Siteadmin,
     registerChannel : exports.Owner,
+    acl             : exports.Owner,
     queue           : exports.Moderator,
     assignLeader    : exports.Moderator,
     kick            : exports.Moderator,

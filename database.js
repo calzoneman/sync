@@ -264,3 +264,23 @@ exports.removeChannelBan = function(channame, ip) {
     db.closeSync();
     return results;
 }
+
+exports.getChannelRanks = function(channame) {
+    var db = exports.getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = "SELECT * FROM chan_{}_ranks WHERE 1"
+        .replace("{}", channame);
+
+    var results = db.querySync(query);
+    if(results) {
+        var rows = results.fetchAllSync();
+        db.closeSync();
+        return rows;
+    }
+    else {
+        return [];
+    }
+}

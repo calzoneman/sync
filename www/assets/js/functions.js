@@ -672,6 +672,50 @@ function updateChatFilters(entries) {
     add.click(cback);
 }
 
+function updateACL(entries) {
+    entries.sort(function(a, b) {
+        var x = a.name.toLowerCase();
+        var y = b.name.toLowerCase();
+        return y == x ? 0 : (x < y ? -1 : 1);
+    });
+    var tbl = $("#channelranks table");
+    if(tbl.children().length > 1) {
+        $(tbl.children()[1]).remove();
+    }
+    for(var i = 0; i < entries.length; i++) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var name = $("<td/>").text(entries[i].name).appendTo(tr);
+        name.addClass(getNameColor(entries[i].rank));
+        var rank = $("<td/>").text(entries[i].rank).appendTo(tr);
+        var control = $("<td/>").appendTo(tr);
+        var up = $("<button/>").addClass("btn btn-mini btn-success")
+            .appendTo(control);
+        $("<i/>").addClass("icon-plus").appendTo(up);
+        var down = $("<button/>").addClass("btn btn-mini btn-danger")
+            .appendTo(control);
+        $("<i/>").addClass("icon-minus").appendTo(down);
+        if(entries[i].rank + 1 >= RANK) {
+            up.attr("disabled", true);
+        }
+        else {
+            up.click(function(name) { return function() {
+                socket.emit("promote", {
+                    name: name
+                });
+            }}(entries[i].name));
+        }
+        if(entries[i].rank >= RANK) {
+            down.attr("disabled", true);
+        }
+        else {
+            down.click(function(name) { return function() {
+                socket.emit("demote", {
+                    name: name
+                });
+            }}(entries[i].name));
+        }
+    }
+}
 function handleRankChange() {
     rebuildPlaylist();
     if(RANK >= Rank.Moderator || LEADER) {

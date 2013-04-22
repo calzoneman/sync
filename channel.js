@@ -18,6 +18,7 @@ var Logger = require("./logger.js");
 var InfoGetter = require("./get-info.js");
 var io = require("./server.js").io;
 var Rank = require("./rank.js");
+var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
 
 var Channel = function(name) {
@@ -181,10 +182,12 @@ Channel.prototype.tryRegister = function(user) {
 }
 
 Channel.prototype.getRank = function(name) {
+    var global = Auth.getGlobalRank(name);
     if(!this.registered) {
-        return Rank.Guest;
+        return global;
     }
-    return Database.lookupChannelRank(this.name, name);
+    var local = Database.lookupChannelRank(this.name, name);
+    return local > global ? local : global;
 }
 
 Channel.prototype.saveRank = function(user) {
@@ -385,6 +388,9 @@ Channel.prototype.sendRankStuff = function(user) {
         }
         user.socket.emit("chatFilters", {filters: filts});
     }
+    if(Rank.hasPermission(user, "acl")) {
+        user.socket.emit("acl", Database.getChannelRanks(this.name));
+    }
 }
 
 Channel.prototype.sendPlaylist = function(user) {
@@ -445,6 +451,10 @@ Channel.prototype.broadcastNewUser = function(user) {
         meta: user.meta
     });
     this.sendRankStuff(user);
+    if(user.rank > Rank.Guest) {
+        this.saveRank(user);
+        this.broadcastRankTable();
+    }
 }
 
 Channel.prototype.broadcastRankUpdate = function(user) {
@@ -487,6 +497,15 @@ Channel.prototype.broadcastBanlist = function() {
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "ipban")) {
             this.users[i].socket.emit("banlist", {entries: ents});
+        }
+    }
+}
+
+Channel.prototype.broadcastRankTable = function() {
+    var ranks = Database.getChannelRanks(this.name);
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], "acl")) {
+            this.users[i].socket.emit("acl", ranks);
         }
     }
 }
@@ -1079,15 +1098,25 @@ Channel.prototype.tryPromoteUser = function(actor, data) {
         }
     }
 
-    if(receiver) {
-        if(actor.rank > receiver.rank + 1) {
+    var rank = receiver ? receiver.rank : this.getRank(data.name);
+
+    if(actor.rank > rank + 1) {
+        rank++;
+        if(receiver) {
             receiver.rank++;
             if(receiver.loggedIn) {
                 this.saveRank(receiver);
             }
-            this.logger.log("*** " + actor.name + " promoted " + receiver.name + " from " + (receiver.rank - 1) + " to " + receiver.rank);
             this.broadcastRankUpdate(receiver);
         }
+        else {
+            Database.saveChannelRank(this.name, {
+                name: data.name,
+                rank: rank
+            });
+        }
+        this.logger.log("*** " + actor.name + " promoted " + data.name + " from " + (rank - 1) + " to " + rank);
+        this.broadcastRankTable();
     }
 }
 
@@ -1109,15 +1138,25 @@ Channel.prototype.tryDemoteUser = function(actor, data) {
         }
     }
 
-    if(receiver) {
-        if(actor.rank > receiver.rank) {
+    var rank = receiver ? receiver.rank : this.getRank(data.name);
+
+    if(actor.rank > rank) {
+        rank--;
+        if(receiver) {
             receiver.rank--;
             if(receiver.loggedIn) {
                 this.saveRank(receiver);
             }
-            this.logger.log("*** " + actor.name + " demoted " + receiver.name + " from " + (receiver.rank + 1) + " to " + receiver.rank);
             this.broadcastRankUpdate(receiver);
         }
+        else {
+            Database.saveChannelRank(this.name, {
+                name: data.name,
+                rank: rank
+            });
+        }
+        this.logger.log("*** " + actor.name + " demoted " + data.name + " from " + (rank + 1) + " to " + rank);
+        this.broadcastRankTable();
     }
 }
 

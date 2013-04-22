@@ -101,6 +101,8 @@ function initCallbacks() {
         updateBanlist(data.entries);
     });
 
+    socket.on("acl", updateACL);
+
     socket.on("voteskip", function(data) {
         if(data.count > 0) {
             $("#voteskip").text("Voteskip ("+data.count+"/"+data.need+")");
