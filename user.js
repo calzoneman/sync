@@ -153,6 +153,18 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("clearqueue", function() {
+        if(this.channel != null) {
+            this.channel.tryClearqueue(this);
+        }
+    }.bind(this));
+
+    this.socket.on("shufflequeue", function() {
+        if(this.channel != null) {
+            this.channel.tryShufflequeue(this);
+        }
+    }.bind(this));
+
     this.socket.on("queueLock", function(data) {
         if(this.channel != null) {
             this.channel.trySetLock(this, data);

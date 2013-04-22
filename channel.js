@@ -785,6 +785,45 @@ Channel.prototype.tryJumpTo = function(user, data) {
     this.jumpTo(data.pos);
 }
 
+Channel.prototype.clearqueue = function() {
+    this.queue = [];
+    for(var i = 0; i < this.users.length; i++) {
+        this.sendPlaylist(this.users[i]);
+    }
+}
+
+Channel.prototype.tryClearqueue = function(user) {
+    if(!Rank.hasPermission(user, "queue")) {
+        return;
+    }
+    this.clearqueue();
+}
+
+Channel.prototype.shufflequeue = function() {
+    var n = [];
+    var current = false;
+    while(this.queue.length > 0) {
+        var i = parseInt(Math.random() * this.queue.length);
+        n.push(this.queue[i]);
+        if(!current && i == this.position) {
+            this.position = n.length - 1;
+            current = true;
+        }
+        this.queue.splice(i, 1);
+    }
+    this.queue = n;
+    for(var i = 0; i < this.users.length; i++) {
+        this.sendPlaylist(this.users[i]);
+    }
+}
+
+Channel.prototype.tryShufflequeue = function(user) {
+    if(!Rank.hasPermission(user, "queue")) {
+        return;
+    }
+    this.shufflequeue();
+}
+
 Channel.prototype.tryUpdate = function(user, data) {
     if(this.leader != user) {
         return;

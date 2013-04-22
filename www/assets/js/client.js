@@ -295,6 +295,14 @@ $("#chatline").keydown(function(ev) {
 $("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
 $("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 
+$("#clearplaylist").click(function() {
+    socket.emit("clearqueue");
+});
+
+$("#shuffleplaylist").click(function() {
+    socket.emit("shufflequeue");
+});
+
 $("#getplaylist").click(function() {
     var callback = function(data) {
         socket.listeners("playlist").splice(
