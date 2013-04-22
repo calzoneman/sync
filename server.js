@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-const VERSION = "1.2.3";
+const VERSION = "1.2.4";
 
 var fs = require("fs");
 var Logger = require("./logger.js");
@@ -19,7 +19,30 @@ var Config = require("./config.js");
 var express = require("express");
 
 var app = express();
-app.use(express.static(__dirname + "/www"));
+app.get("/r/:channel(*)", function(req, res, next) {
+    var param = req.params.channel;
+    if(!param.match(/^[a-zA-Z0-9]+$/)) {
+        res.redirect("/" + param);
+    }
+    else {
+        res.sendfile(__dirname + "/www/index.html");
+    }
+});
+
+app.get("/:thing(*)", function(req, res, next) {
+    res.sendfile(__dirname + "/www/" + req.params.thing);
+});
+
+app.use(function(err, req, res, next) {
+    if(404 == err.status) {
+        res.statusCode = 404;
+        res.send("Page not found");
+    }
+    else {
+        next(err);
+    }
+});
+//app.use(express.static(__dirname + "/www"));
 var httpserv = app.listen(Config.IO_PORT);
 
 exports.io = require("socket.io").listen(httpserv);
