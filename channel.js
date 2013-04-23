@@ -388,6 +388,10 @@ Channel.prototype.sendRankStuff = function(user) {
         }
         user.socket.emit("chatFilters", {filters: filts});
     }
+    this.sendACL(user);
+}
+
+Channel.prototype.sendACL = function(user) {
     if(Rank.hasPermission(user, "acl")) {
         user.socket.emit("acl", Database.getChannelRanks(this.name));
     }
@@ -453,7 +457,6 @@ Channel.prototype.broadcastNewUser = function(user) {
     this.sendRankStuff(user);
     if(user.rank > Rank.Guest) {
         this.saveRank(user);
-        this.broadcastRankTable();
     }
 }
 
@@ -504,9 +507,7 @@ Channel.prototype.broadcastBanlist = function() {
 Channel.prototype.broadcastRankTable = function() {
     var ranks = Database.getChannelRanks(this.name);
     for(var i = 0; i < this.users.length; i++) {
-        if(Rank.hasPermission(this.users[i], "acl")) {
-            this.users[i].socket.emit("acl", ranks);
-        }
+        this.sendACL(this.users[i]);
     }
 }
 

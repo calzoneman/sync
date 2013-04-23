@@ -432,6 +432,7 @@ $("#show_acl").click(function() {
     $(".modonly").hide();
     $("#show_acl").parent().addClass("active");
     $("#channelranks").show();
+    socket.emit("requestAcl");
 });
 
 function searchLibrary() {
