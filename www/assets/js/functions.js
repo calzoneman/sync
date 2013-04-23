@@ -16,6 +16,7 @@ function handleDisconnect() {
         .addClass("server-msg-disconnect")
         .text("Disconnected from server.  Attempting reconnection...")
         .appendTo($("#messagebuffer"));
+    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
 }
 
 // Adds a user to the chatbox userlist

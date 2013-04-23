@@ -28,6 +28,8 @@ var User = function(socket, ip) {
     this.meta = {
         afk: false
     };
+    this.throttle = {};
+    this.flooded = {};
 
     this.initCallbacks();
     if(Server.announcement != null) {
@@ -35,6 +37,38 @@ var User = function(socket, ip) {
     }
 };
 
+// Throttling/cooldown
+User.prototype.noflood = function(name, hz) {
+    var time = new Date().getTime();
+    if(!(name in this.throttle)) {
+        this.throttle[name] = [time];
+        return false;
+    }
+    else if(name in this.flooded && time < this.flooded[name]) {
+        this.socket.emit("noflood", {
+            action: name,
+            msg: "You're still on cooldown!"
+        });
+        return true;
+    }
+    else {
+        this.throttle[name].push(time);
+        var diff = (time - this.throttle[name][0]) / 1000.0;
+        if(diff > 1.0) {
+            var rate = this.throttle[name].length / diff;
+            this.throttle[name] = [time];
+            if(rate > hz) {
+                this.flooded[name] = time + 5000;
+                this.socket.emit("noflood", {
+                    action: name,
+                    msg: "Stop doing that so fast!  Cooldown: 5s"
+                });
+                return true;
+            }
+            return false;
+        }
+    }
+}
 
 User.prototype.initCallbacks = function() {
     this.socket.on("disconnect", function() {
@@ -258,6 +292,7 @@ User.prototype.initCallbacks = function() {
     this.socket.on("requestAcl", function() {
         if(this.channel != null) {
             this.channel.sendACL(this);
+            this.noflood("requestAcl", 0.25);
         }
     }.bind(this));
 

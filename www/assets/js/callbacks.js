@@ -29,6 +29,15 @@ function initCallbacks() {
             .addClass("server-msg-disconnect")
             .text("Kicked: " + data.reason)
             .appendTo($("#messagebuffer"));
+        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+    });
+
+    socket.on("noflood", function(data) {
+        $("<div/>")
+            .addClass("server-msg-disconnect")
+            .text(data.action + ": " + data.msg)
+            .appendTo($("#messagebuffer"));
+        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
     });
 
     socket.on("channelNotRegistered", function() {
@@ -67,6 +76,7 @@ function initCallbacks() {
         PAGETITLE = opts.pagetitle;
         $("#opt_customcss").val(opts.customcss);
         $("#opt_customjs").val(opts.customjs);
+        $("#opt_chat_antiflood").prop("checked", opts.chat_antiflood);
         $("#customCss").remove();
         if(opts.customcss.trim() != "") {
             $("<link/>").attr("rel", "stylesheet")

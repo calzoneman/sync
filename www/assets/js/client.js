@@ -125,6 +125,7 @@ socket.on("connect", function() {
     $("<div/>").addClass("server-msg-reconnect")
         .text("Connected")
         .appendTo($("#messagebuffer"));
+    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
     setTimeout(function() { $("#reconnect_box").remove(); }, 3000);
 });
 
@@ -377,7 +378,8 @@ $("#opt_submit").click(function() {
         voteskip_ratio: ratio,
         pagetitle: ptitle,
         customcss: css,
-        customjs: $("#opt_customjs").val()
+        customjs: $("#opt_customjs").val(),
+        chat_antiflood: $("#opt_chat_antiflood").prop("checked")
     };
     socket.emit("channelOpts", opts);
 });
