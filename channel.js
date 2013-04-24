@@ -711,8 +711,9 @@ Channel.prototype.playNext = function() {
     }
 
     this.position++;
+    var oid = this.media ? this.media.id : "";
     this.media = this.queue[this.position];
-    this.media.currentTime = 0;
+    this.media.currentTime = -1;
 
     this.sendAll("mediaUpdate", this.media.packupdate());
     this.sendAll("updatePlaylistIdx", {
@@ -725,7 +726,9 @@ Channel.prototype.playNext = function() {
                            && this.media.type != "li"
                            && this.media.type != "rt") {
         this.time = new Date().getTime();
-        mediaUpdate(this, this.media.id);
+        if(this.media.id != oid) {
+            mediaUpdate(this, this.media.id);
+        }
     }
 }
 
@@ -753,8 +756,9 @@ Channel.prototype.jumpTo = function(pos) {
 
     var old = this.position;
     this.position = pos;
+    var oid = this.media ? this.media.id : "";
     this.media = this.queue[this.position];
-    this.media.currentTime = 0;
+    this.media.currentTime = -1;
 
     this.sendAll("mediaUpdate", this.media.packupdate());
     this.sendAll("updatePlaylistIdx", {
@@ -767,7 +771,9 @@ Channel.prototype.jumpTo = function(pos) {
                            && this.media.type != "li"
                            && this.media.type != "rt") {
         this.time = new Date().getTime();
-        mediaUpdate(this, this.media.id);
+        if(this.media.id != oid) {
+            mediaUpdate(this, this.media.id);
+        }
     }
 }
 

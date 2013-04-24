@@ -1,6 +1,7 @@
 var Media = function(data) {
     this.id = data.id;
     this.type = data.type;
+    this.lastdiff = 0;
 
     switch(this.type) {
         case "yt":
@@ -279,15 +280,28 @@ Media.prototype.initRTMP = function() {
 
 Media.prototype.update = function(data) {
     if(data.id != this.id) {
+        if(data.currentTime < 0) {
+            data.currentTime = 0;
+        }
         this.load(data);
     }
     if(data.paused) {
         this.pause();
     }
     this.getTime(function(seconds) {
+        var time = data.currentTime;
+        if(readCookie("sync_compensate")) {
+            var diff = time - seconds;
+            if(diff > 0) {
+                diff = diff > 5 ? 5 : diff;
+                time += diff;
+                diff = (diff + this.lastdiff) / 2 || 0;
+                this.lastdiff = diff;
+            }
+        }
         if(Math.abs(data.currentTime - seconds) > SYNC_THRESHOLD) {
             if(!LEADER) {
-                this.seek(data.currentTime);
+                this.seek(time);
             }
         }
     }.bind(this));
