@@ -246,6 +246,9 @@ function initCallbacks() {
             var li = makeQueueEntry(data.pl[i]);
             if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
                 addQueueButtons(li);
+            $(li).attr("title", data.pl[i].queueby
+                                ? ("Added by: " + data.pl[i].queueby)
+                                : "Added by: Unknown");
             $(li).appendTo(ul);
         }
     });
@@ -257,6 +260,9 @@ function initCallbacks() {
         $(li).css("display", "none");
         var idx = data.pos;
         var ul = $("#queue")[0];
+        $(li).attr("title", data.media.queueby
+                            ? ("Added by: " + data.media.queueby)
+                            : "Added by: Unknown");
         $(li).appendTo(ul);
         if(idx < ul.children.length - 1)
             moveVideo(ul.children.length - 1, idx);

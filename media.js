@@ -46,6 +46,7 @@ var Media = function(id, title, seconds, type) {
     this.seconds = seconds;
     this.duration = formatTime(this.seconds);
     this.type = type;
+    this.queueby = "";
 }
 
 // Returns an object containing the data in this Media but not the
@@ -56,7 +57,8 @@ Media.prototype.pack = function() {
         title: this.title,
         seconds: this.seconds,
         duration: this.duration,
-        type: this.type
+        type: this.type,
+        queueby: this.queueby
     };
 }
 
@@ -69,7 +71,8 @@ Media.prototype.packupdate = function() {
         seconds: this.seconds,
         duration: this.duration,
         type: this.type,
-        currentTime: this.currentTime
+        currentTime: this.currentTime,
+        queueby: this.queueby
     };
 }
 

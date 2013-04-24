@@ -81,7 +81,10 @@ Channel.prototype.loadDump = function() {
             data = JSON.parse(data);
             for(var i = 0; i < data.queue.length; i++) {
                 var e = data.queue[i];
-                this.queue.push(new Media(e.id, e.title, e.seconds, e.type));
+                var m = new Media(e.id, e.title, e.seconds, e.type);
+                m.queueby = data.queue[i].queueby ? data.queue[i].queueby
+                                                  : "";
+                this.queue.push(m);
             }
             this.sendAll("playlist", {
                 pl: this.queue
@@ -572,14 +575,16 @@ function mediaUpdate(chan, id) {
     setTimeout(function() { mediaUpdate(chan, id); }, 1000);
 }
 
-Channel.prototype.enqueue = function(data) {
+Channel.prototype.enqueue = function(data, user) {
     var idx = data.pos == "next" ? this.position + 1 : this.queue.length;
 
     // Prefer cache over looking up new data
     if(data.id in this.library) {
-        this.queue.splice(idx, 0, this.library[data.id]);
+        var media = this.library[data.id];
+        media.queueby = user ? user.name : "";
+        this.queue.splice(idx, 0, media);
         this.sendAll("queue", {
-            media: this.library[data.id].pack(),
+            media: media.pack(),
             pos: idx
         });
         this.logger.log("*** Queued from cache: id=" + data.id);
@@ -592,6 +597,7 @@ Channel.prototype.enqueue = function(data) {
             case "dm":
             case "sc":
                 InfoGetter.getMedia(data.id, data.type, function(media) {
+                    media.queueby = user ? user.name : "";
                     this.queue.splice(idx, 0, media);
                     this.sendAll("queue", {
                         media: media.pack(),
@@ -603,7 +609,8 @@ Channel.prototype.enqueue = function(data) {
                 }.bind(this));
                 break;
             case "li":
-                var media = new Media(data.id, "Livestream ~ " + data.id, "--:--", "li");
+                var media = new Media(data.id, "Livestream - " + data.id, "--:--", "li");
+                media.queueby = user ? user.name : "";
                 this.queue.splice(idx, 0, media);
                 this.sendAll("queue", {
                     media: media.pack(),
@@ -611,7 +618,8 @@ Channel.prototype.enqueue = function(data) {
                 });
                 break;
             case "tw":
-                var media = new Media(data.id, "Twitch ~ " + data.id, "--:--", "tw");
+                var media = new Media(data.id, "Twitch - " + data.id, "--:--", "tw");
+                media.queueby = user ? user.name : "";
                 this.queue.splice(idx, 0, media);
                 this.sendAll("queue", {
                     media: media.pack(),
@@ -620,6 +628,7 @@ Channel.prototype.enqueue = function(data) {
                 break;
             case "rt":
                 var media = new Media(data.id, "Livestream", "--:--", "rt");
+                media.queueby = user ? user.name : "";
                 this.queue.splice(idx, 0, media);
                 this.sendAll("queue", {
                     media: media.pack(),
@@ -656,7 +665,7 @@ Channel.prototype.tryQueue = function(user, data) {
         return;
     }
 
-    this.enqueue(data);
+    this.enqueue(data, user);
 }
 
 Channel.prototype.dequeue = function(data) {
