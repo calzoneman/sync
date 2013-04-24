@@ -14,6 +14,7 @@ var fs = require("fs");
 var Database = require("./database.js");
 var Poll = require("./poll.js").Poll;
 var Media = require("./media.js").Media;
+var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
 var InfoGetter = require("./get-info.js");
 var io = require("./server.js").io;
@@ -63,6 +64,10 @@ var Channel = function(name) {
     this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
     this.i = 0;
     this.time = new Date().getTime();
+    this.plmeta = {
+        count: 0,
+        time: "00:00"
+    };
 
     Database.loadChannel(this);
     if(this.registered) {
@@ -89,6 +94,7 @@ Channel.prototype.loadDump = function() {
             this.sendAll("playlist", {
                 pl: this.queue
             });
+            this.broadcastPlaylistMeta();
             // Backwards compatibility
             if(data.currentPosition != undefined) {
                 this.position = data.currentPosition - 1;
@@ -407,6 +413,7 @@ Channel.prototype.sendPlaylist = function(user) {
     user.socket.emit("updatePlaylistIdx", {
         idx: this.position
     });
+    user.socket.emit("updatePlaylistMeta", this.plmeta);
 }
 
 Channel.prototype.sendMediaUpdate = function(user) {
@@ -442,6 +449,20 @@ Channel.prototype.sendRecentChat = function(user) {
 
 Channel.prototype.sendAll = function(message, data) {
     io.sockets.in(this.name).emit(message, data);
+}
+
+Channel.prototype.broadcastPlaylistMeta = function() {
+    var total = 0;
+    for(var i = 0; i < this.queue.length; i++) {
+        total += this.queue[i].seconds;
+    }
+    var timestr = formatTime(total);
+    var packet = {
+        count: this.queue.length,
+        time: timestr
+    };
+    this.plmeta = packet;
+    this.sendAll("updatePlaylistMeta", packet);
 }
 
 Channel.prototype.broadcastUsercount = function() {
@@ -587,6 +608,7 @@ Channel.prototype.enqueue = function(data, user) {
             media: media.pack(),
             pos: idx
         });
+        this.broadcastPlaylistMeta();
         this.logger.log("*** Queued from cache: id=" + data.id);
     }
     else {
@@ -603,6 +625,7 @@ Channel.prototype.enqueue = function(data, user) {
                         media: media.pack(),
                         pos: idx
                     });
+                    this.broadcastPlaylistMeta();
                     this.cacheMedia(media);
                     if(data.type == "yp")
                         idx++;
@@ -616,6 +639,7 @@ Channel.prototype.enqueue = function(data, user) {
                     media: media.pack(),
                     pos: idx
                 });
+                this.broadcastPlaylistMeta();
                 break;
             case "tw":
                 var media = new Media(data.id, "Twitch - " + data.id, "--:--", "tw");
@@ -625,6 +649,7 @@ Channel.prototype.enqueue = function(data, user) {
                     media: media.pack(),
                     pos: idx
                 });
+                this.broadcastPlaylistMeta();
                 break;
             case "rt":
                 var media = new Media(data.id, "Livestream", "--:--", "rt");
@@ -634,6 +659,7 @@ Channel.prototype.enqueue = function(data, user) {
                     media: media.pack(),
                     pos: idx
                 });
+                this.broadcastPlaylistMeta();
                 break;
             default:
                 break;
@@ -677,6 +703,7 @@ Channel.prototype.dequeue = function(data) {
     this.sendAll("unqueue", {
         pos: data.pos
     });
+    this.broadcastPlaylistMeta();
 
     // If you remove the currently playing video, play the next one
     if(data.pos == this.position) {
@@ -811,6 +838,7 @@ Channel.prototype.clearqueue = function() {
     for(var i = 0; i < this.users.length; i++) {
         this.sendPlaylist(this.users[i]);
     }
+    this.broadcastPlaylistMeta();
 }
 
 Channel.prototype.tryClearqueue = function(user) {

@@ -253,6 +253,11 @@ function initCallbacks() {
         }
     });
 
+    socket.on("updatePlaylistMeta", function(data) {
+        $("#plcount").text(data.count + " items");
+        $("#pllength").text(data.time);
+    });
+
     socket.on("queue", function(data) {
         var li = makeQueueEntry(data.media);
         if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)

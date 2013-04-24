@@ -39,12 +39,17 @@ function formatTime(sec) {
     return time;
 }
 
+exports.formatTime = formatTime;
+
 // Represents a media entry
 var Media = function(id, title, seconds, type) {
     this.id = id;
     this.title = title;
-    this.seconds = seconds;
+    this.seconds = seconds == "--:--" ? "--:--" : parseInt(seconds);
     this.duration = formatTime(this.seconds);
+    if(seconds == "--:--") {
+        this.seconds = 0;
+    }
     this.type = type;
     this.queueby = "";
 }

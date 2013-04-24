@@ -37,10 +37,29 @@
     clear: both;
 }
 
+#queue {
+    margin-bottom: 0;
+}
+
 #usercount, #currenttitle {
     border: 1px solid #aaaaaa;
     border-bottom: none;
     margin: 0;
+}
+
+#plmeta {
+    border: 1px solid #aaaaaa;
+    margin: 0;
+    padding: 3px 3px;
+    font-size: 12pt;
+}
+
+#plcount {
+    float: left;
+}
+
+#pllength {
+    float: right;
 }
 
 #userlist {
