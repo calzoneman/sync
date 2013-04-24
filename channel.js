@@ -687,7 +687,7 @@ Channel.prototype.tryQueue = function(user, data) {
         return;
     }
     
-    if(user.noflood("queue", 0.25)) {
+    if(user.noflood("queue", l.5)) {
         return;
     }
 
