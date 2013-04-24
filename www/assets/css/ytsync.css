@@ -49,8 +49,9 @@
 
 #plmeta {
     border: 1px solid #aaaaaa;
+    background-color: #ffffff;
+    padding: 3px;
     margin: 0;
-    padding: 3px 3px;
     font-size: 12pt;
 }
 
@@ -176,3 +177,8 @@
 #motdtext {
     width: 100%;
 }
+
+#queue_next, #queue_end, #library_search, #youtube_search {
+    width: 50%;
+}
+

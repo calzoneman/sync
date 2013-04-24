@@ -71,40 +71,54 @@
                 </div>
             </div>
         </div>
-        <div class="row" id="pollrow" style="margin-top: 50px;">
-            <div class="span6" id="pollcontainer">
-            </div>
-        </div>
-        <div class="row" id="queuerow" style="margin-top: 50px;">
-            <div class="span6" id="queuediv">
-                <div id="playlist_controls" class="input-append" style="display: none;">
-                    <input type="text" id="mediaurl" style="margin:auto;">
-                    <button class="btn" id="queue_next">Queue Next</button>
-                    <button class="btn" id="queue_end">Queue @ End</button>
-                </div>
-                <button class="btn btn-danger" id="voteskip">Voteskip</button>
-                <ul id="queue" class="videolist">
-                </ul>
-                <div id="plmeta">
-                    <p id="plcount"></p>
-                    <p id="pllength"></p>
-                    <div style="clear: both;"></div>
-                </div>
-                <button class="btn btn-danger" id="qlockbtn" style="width: 100%; display:none;">Unlock Queue</button>
-                <div class="btn-group" style="width: 100%;">
-                    <button class="btn" id="getplaylist" style="width: 34%">Get Playlist URLs</button>
-                    <button class="btn" id="clearplaylist" style="width: 33%">Clear Playlist</button>
-                    <button class="btn" id="shuffleplaylist" style="width: 33%">Shuffle Playlist</button>
+        <div class="row" id="queuerow">
+            <div class="span5">
+                <div class="row-fluid">
+                    <div class="span12" id="pollcontainer">
+                    </div>
+                    <div class="span12" id="librarydiv">
+                        <div class="row-fluid">
+                            <div class="span7">
+                                <input type="text" id="library_query" class="input-block-level">
+                            </div>
+                            <div class="span5 btn-group">
+                                <button class="btn" id="library_search">Library</button>
+                                <button class="btn" id="youtube_search">YouTube</button>
+                            </div>
+                        </div>
+                        <ul id="library" class="videolist">
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <div class="span6" id="librarydiv">
-                <div class="input-append">
-                    <input type="text" id="library_query" style="margin:auto;">
-                    <button class="btn" id="library_search">Search Library</button>
-                    <button class="btn" id="youtube_search">Search YouTube</button>
+            <div class="span7" id="queuediv">
+                <div id="playlist_controls"style="display: none;">
+                    <div class="row-fluid">
+                        <div class="span8">
+                            <input type="text" id="mediaurl" class="input-block-level">
+                        </div>
+                        <div class="span4 btn-group">
+                            <button class="btn" id="queue_next">Next</button>
+                            <button class="btn" id="queue_end">End</button>
+                        </div>
+                    </div>
                 </div>
-                <ul id="library" class="videolist">
-                </ul>
+                <button class="btn btn-block" id="voteskip">Voteskip</button>
+                <div class="row-fluid">
+                    <ul id="queue" class="span12 videolist">
+                    </ul>
+                    <div class="span12 well well-small" id="plmeta">
+                        <span id="plcount"></span>
+                        <span id="pllength"></span>
+                        <div class="clear: both;"></div>
+                    </div>
+                    <button class="btn btn-danger btn-block" id="qlockbtn" style="display:none;">Unlock Queue</button>
+                    <div class="span12 btn-group" style="margin: 0">
+                        <button class="btn" id="getplaylist" style="width: 34%">Get Playlist URLs</button>
+                        <button class="btn" id="clearplaylist" style="width: 33%">Clear Playlist</button>
+                        <button class="btn" id="shuffleplaylist" style="width: 33%">Shuffle Playlist</button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="row" style="display: none;" id="modnav">
