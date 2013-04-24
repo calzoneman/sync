@@ -1,7 +1,7 @@
 var Media = function(data) {
     this.id = data.id;
     this.type = data.type;
-    this.lastdiff = 0;
+    this.diff = 0;
 
     switch(this.type) {
         case "yt":
@@ -279,6 +279,7 @@ Media.prototype.initRTMP = function() {
 }
 
 Media.prototype.update = function(data) {
+    console.log(parseInt(data.currentTime / 60), parseInt(data.currentTime % 60));
     if(data.id != this.id) {
         if(data.currentTime < 0) {
             data.currentTime = 0;
@@ -288,22 +289,27 @@ Media.prototype.update = function(data) {
     if(data.paused) {
         this.pause();
     }
+    if(LEADER) {
+        return;
+    }
     this.getTime(function(seconds) {
         var time = data.currentTime;
-        if(readCookie("sync_compensate")) {
-            var diff = time - seconds;
-            if(diff > 0) {
-                diff = diff > 5 ? 5 : diff;
-                time += diff;
-                diff = (diff + this.lastdiff) / 2 || 0;
-                this.lastdiff = diff;
-            }
+        var diff = time - seconds || time;
+
+        var a = SYNC_THRESHOLD + 1;
+        // If 2 updates in a row have lag, compensate for buffering
+        if(diff >= a && diff <= 6 && this.diff >= a && this.diff <= 6) {
+            this.seek(time + diff);
         }
-        if(Math.abs(data.currentTime - seconds) > SYNC_THRESHOLD) {
-            if(!LEADER) {
+        else if(diff < -2 || diff >= SYNC_THRESHOLD) {
+            if(diff < 0) {
+                this.seek(time + 0.5);
+            }
+            else {
                 this.seek(time);
             }
         }
+        this.diff = diff;
     }.bind(this));
 }
 
