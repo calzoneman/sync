@@ -651,6 +651,11 @@ Channel.prototype.tryQueue = function(user, data) {
             !this.opts.qopen_allow_qnext) {
         return;
     }
+    
+    if(user.noflood("queue", 0.25)) {
+        return;
+    }
+
     this.enqueue(data);
 }
 
