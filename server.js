@@ -17,6 +17,7 @@ var Logger = require("./logger.js");
 Logger.syslog.log("Starting CyTube v" + VERSION);
 var Config = require("./config.js");
 var express = require("express");
+var API = require("./api.js");
 
 var app = express();
 app.get("/r/:channel(*)", function(req, res, next) {
@@ -27,6 +28,10 @@ app.get("/r/:channel(*)", function(req, res, next) {
     else {
         res.sendfile(__dirname + "/www/index.html");
     }
+});
+
+app.get("/api/:apireq(*)", function(req, res, next) {
+    API.handle(req.url.substring(5), req, res);
 });
 
 app.get("/:thing(*)", function(req, res, next) {
