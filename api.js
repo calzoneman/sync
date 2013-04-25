@@ -92,9 +92,10 @@ function handleChannelData(params, req, res) {
     }
 
     var response = JSON.stringify(data, null, 4);
+    var len = unescape(encodeURIComponent(response)).length;
 
     res.setHeader("Content-Type", "application/json");
-    res.setHeader("Content-Length", response.length);
+    res.setHeader("Content-Length", len);
     res.end(response);
 }
 
