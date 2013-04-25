@@ -9,12 +9,14 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+var Auth = require("./auth.js");
 var Server = require("./server.js");
 var Logger = require("./logger.js");
 var apilog = new Logger.Logger("api.log");
 
 var jsonHandlers = {
-    "channeldata": handleChannelData
+    "channeldata": handleChannelData,
+    "listloaded" : handleChannelList
 };
 
 function handle(path, req, res) {
@@ -58,39 +60,54 @@ function handle(path, req, res) {
 exports.handle = handle;
 
 function handleChannelData(params, req, res) {
-    var cname = params["channel"] || "";
-    var data;
-    if(!cname.match(/^[a-zA-Z0-9]+$/)) {
-        data = {
-            error: "Invalid channel name"
-        };
-    }
-    else {
-        data = {
+    var clist = params.channel || "";
+    clist = clist.split(",");
+    var data = [];
+    for(var j = 0; j < clist.length; j++) {
+        var cname = clist[j];
+        if(!cname.match(/^[a-zA-Z0-9]+$/)) {
+            continue;
+        }
+        var d = {
             name: cname,
             loaded: (cname in Server.channels)
         };
 
-        if(data.loaded) {
+        if(d.loaded) {
             var chan = Server.channels[cname];
-            data.title = chan.media ? chan.media.title : "-";
-            data.usercount = chan.users.length;
-            data.users = [];
+            d.title = chan.media ? chan.media.title : "-";
+            d.usercount = chan.users.length;
+            d.users = [];
             for(var i = 0; i < chan.users.length; i++) {
                 if(chan.users[i].name) {
-                    data.users.push(chan.users[i].name);
+                    d.users.push(chan.users[i].name);
                 }
             }
-            data.chat = [];
+            d.chat = [];
             for(var i = 0; i < chan.chatbuffer.length; i++) {
-                data.chat.push(chan.chatbuffer[i]);
+                d.chat.push(chan.chatbuffer[i]);
             }
         }
+        data.push(d);
     }
 
     var response = JSON.stringify(data, null, 4);
 
-    res.setHeader("Content-Type", "text/plain");
+    res.setHeader("Content-Type", "application/json");
     res.setHeader("Content-Length", response.length);
     res.end(response);
+}
+
+function handleChannelList(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+    if(!Auth.login(name, pw)) {
+        res.send(403);
+        return;
+    }
+    var clist = [];
+    for(var key in Server.channels) {
+        clist.push(key);
+    }
+    handleChannelData({channel: clist.join(",")}, req, res);
 }
