@@ -143,10 +143,9 @@ function initCallbacks() {
             $("#loginform").css("display", "none");
             $("#logoutform").css("display", "");
             $("#loggedin").css("display", "");
-            if(pw != "") {
-                createCookie("sync_uname", uname, 1);
-                createCookie("sync_pw", pw, 1);
-            }
+            session = data.session;
+            createCookie("sync_uname", uname, 7);
+            createCookie("sync_session", session, 7);
         }
     });
 

@@ -30,7 +30,7 @@ var VHEIGHT = "377";
 var IGNORED = [];
 var KICKED = false;
 var uname = readCookie("sync_uname");
-var pw = readCookie("sync_pw");
+var session = readCookie("sync_session");
 
 var Rank = {
     Guest: 0,
@@ -116,10 +116,10 @@ socket.on("connect", function() {
     socket.emit("joinChannel", {
         name: params["channel"]
     });
-    if(uname != null && pw != null && pw != "false") {
+    if(uname && session) {
         socket.emit("login", {
             name: uname,
-            pw: pw
+            session: session
         });
     }
     $("<div/>").addClass("server-msg-reconnect")
@@ -194,38 +194,12 @@ $("#qlockbtn").click(function() {
     });
 });
 
-function loginClick() {
-    uname = $("#username").val();
-    pw = $("#password").val();
-    socket.emit("login", {
-        name: uname,
-        pw: pw
-    });
-};
-
-$("#login").click(loginClick);
-$("#username").keydown(function(ev) {
-    if(ev.keyCode == 13)
-        loginClick();
-});
-$("#password").keydown(function(ev) {
-    if(ev.keyCode == 13)
-        loginClick();
-});
+$("#login").click(showLoginFrame);
 
 $("#logout").click(function() {
     eraseCookie("sync_uname");
-    eraseCookie("sync_pw");
+    eraseCookie("sync_session");
     document.location.reload(true);
-});
-
-$("#register").click(function() {
-    uname = $("#username").val();
-    pw = $("#password").val();
-    socket.emit("register", {
-        name: uname,
-        pw: pw
-    });
 });
 
 $("#chatline").keydown(function(ev) {

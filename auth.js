@@ -55,16 +55,36 @@ exports.register = function(name, pw) {
         return false;
     }
     var hash = bcrypt.hashSync(pw, 10);
-    var query = "INSERT INTO registrations VALUES (NULL, '{1}', '{2}', 1)"
+    var query = "INSERT INTO registrations VALUES (NULL, '{1}', '{2}', 1, '', 0)"
         .replace(/\{1\}/, name)
         .replace(/\{2\}/, hash);
     var results = db.querySync(query);
     db.closeSync();
-    return results;
+    if(results) {
+        return exports.createSession(name);
+    }
+    return false;
 }
 
+exports.login = function(name, pw, session) {
+    if(session) {
+        var res = exports.loginSession(name, session);
+        if(res) {
+            return res;
+        }
+        else if(!pw) {
+            return false;
+        }
+    }
+    var row = exports.loginPassword(name, pw);
+    if(row) {
+        var hash = exports.createSession(name);
+        row.session_hash = hash;
+        return row;
+    }
+}
 // Try to login
-exports.login = function(name, pw) {
+exports.loginPassword = function(name, pw) {
     var db = mysql.createConnectionSync();
     db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
                    Config.MYSQL_PASSWORD, Config.MYSQL_DB);
@@ -108,6 +128,62 @@ exports.login = function(name, pw) {
         }
     }
     return false;
+}
+
+exports.createSession = function(name) {
+    var salt = sessionSalt();
+    var hash = hashlib.sha256(salt + name);
+    var db = mysql.createConnectionSync();
+    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
+                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    if(!db.connectedSync()) {
+        return false;
+    }
+    var query = ["UPDATE registrations SET ",
+                 "session_hash='{1}',",
+                 "expire={2} ",
+                 "WHERE uname='{3}'"].join("")
+        .replace(/\{1\}/, hash)
+        .replace(/\{2\}/, new Date().getTime() + 604800000)
+        .replace(/\{3\}/, name)
+    var results = db.querySync(query);
+    return results ? hash : false;
+}
+
+exports.loginSession = function(name, hash) {
+    var db = mysql.createConnectionSync();
+    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
+                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    if(!db.connectedSync()) {
+        return false;
+    }
+    var query = "SELECT * FROM registrations WHERE uname='{1}'"
+        .replace(/\{1\}/, name)
+    var results = db.querySync(query);
+    var rows = results.fetchAllSync();
+    if(rows.length != 1) {
+        return false;
+    }
+
+    var dbhash = rows[0].session_hash;
+    if(hash != dbhash) {
+        return false;
+    }
+    var timeout = rows[0].expire;
+    if(timeout < new Date().getTime()) {
+        return false;
+    }
+    return rows[0];
+}
+
+function sessionSalt() {
+    var chars = "abcdefgihjklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+              + "0123456789!@#$%^&*_+=~";
+    var salt = [];
+    for(var i = 0; i < 32; i++) {
+        salt.push(chars[parseInt(Math.random()*chars.length)]);
+    }
+    return salt.join('');
 }
 
 exports.getGlobalRank = function(name) {

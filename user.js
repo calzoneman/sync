@@ -98,12 +98,13 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("login", function(data) {
-        if(data.name == undefined || data.pw == undefined)
-            return;
-        if(data.pw.length > 100)
-            data.pw = data.pw.substring(0, 100);
+        var name = data.name || "";
+        var pw = data.pw || "";
+        var session = data.session || "";
+        if(pw.length > 100)
+            pw = pw.substring(0, 100);
         if(this.name == "")
-            this.login(data.name, data.pw);
+            this.login(name, pw, session);
     }.bind(this));
 
     this.socket.on("register", function(data) {
@@ -325,7 +326,7 @@ User.prototype.handleAdm = function(data) {
 };
 
 // Attempt to login
-User.prototype.login = function(name, pw) {
+User.prototype.login = function(name, pw, session) {
     if(this.channel != null && name != "") {
         for(var i = 0; i < this.channel.users.length; i++) {
             if(this.channel.users[i].name == name) {
@@ -338,7 +339,7 @@ User.prototype.login = function(name, pw) {
         }
     }
     // No password => try guest login
-    if(pw == "") {
+    if(pw == "" && session == "") {
         // Sorry bud, can't take that name
         if(Auth.isRegistered(name)) {
             this.socket.emit("login", {
@@ -372,10 +373,11 @@ User.prototype.login = function(name, pw) {
     }
     else {
         var row;
-        if((row = Auth.login(name, pw))) {
+        if((row = Auth.login(name, pw, session))) {
             this.loggedIn = true;
             this.socket.emit("login", {
-                success: true
+                success: true,
+                session: row.session_hash
             });
             Logger.syslog.log(this.ip + " logged in as " + name);
             var chanrank = (this.channel != null) ? this.channel.getRank(name)

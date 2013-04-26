@@ -16,7 +16,9 @@ var apilog = new Logger.Logger("api.log");
 
 var jsonHandlers = {
     "channeldata": handleChannelData,
-    "listloaded" : handleChannelList
+    "listloaded" : handleChannelList,
+    "login"      : handleLogin,
+    "register"   : handleRegister
 };
 
 function handle(path, req, res) {
@@ -59,6 +61,15 @@ function handle(path, req, res) {
 }
 exports.handle = handle;
 
+function sendJSON(res, obj) {
+    var response = JSON.stringify(obj, null, 4);
+    var len = unescape(encodeURIComponent(response)).length;
+
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Length", len);
+    res.end(response);
+}
+
 function handleChannelData(params, req, res) {
     var clist = params.channel || "";
     clist = clist.split(",");
@@ -91,18 +102,15 @@ function handleChannelData(params, req, res) {
         data.push(d);
     }
 
-    var response = JSON.stringify(data, null, 4);
-    var len = unescape(encodeURIComponent(response)).length;
-
-    res.setHeader("Content-Type", "application/json");
-    res.setHeader("Content-Length", len);
-    res.end(response);
+    sendJSON(res, data);
 }
 
 function handleChannelList(params, req, res) {
+    var session = params.session || "";
     var name = params.name || "";
     var pw = params.pw || "";
-    if(!Auth.login(name, pw)) {
+    var row = Auth.login(name, pw, session);
+    if(!row || row.global_rank < 255) {
         res.send(403);
         return;
     }
@@ -111,4 +119,65 @@ function handleChannelList(params, req, res) {
         clist.push(key);
     }
     handleChannelData({channel: clist.join(",")}, req, res);
+}
+
+function handleLogin(params, req, res) {
+    var session = params.session || "";
+    var name = params.name || "";
+    var pw = params.pw || "";
+
+    var row = Auth.login(name, pw, session);
+    if(row) {
+        sendJSON(res, {
+            success: true,
+            session: row.session_hash
+        });
+    }
+    else {
+        sendJSON(res, {
+            success: false
+        });
+    }
+}
+
+function handleRegister(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+
+    if(pw == "") {
+        sendJSON(res, {
+            success: false,
+            error: "You must provide a password"
+        });
+        return;
+    }
+    else if(Auth.isRegistered(name)) {
+        sendJSON(res, {
+            success: false,
+            error: "That username is already taken"
+        });
+        return false;
+    }
+    else if(!Auth.validateName(name)) {
+        sendJSON(res, {
+            success: false,
+            error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
+        });
+    }
+    else {
+        var session = Auth.register(name, pw);
+        if(session) {
+            Logger.syslog.log(this.ip + " registered " + name);
+            sendJSON(res, {
+                success: true,
+                session: session
+            });
+        }
+        else {
+            sendJSON(res, {
+                success: false,
+                error: "I dunno what went wrong"
+            });
+        }
+    }
 }

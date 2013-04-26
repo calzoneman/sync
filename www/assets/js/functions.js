@@ -843,3 +843,69 @@ function newPollMenu() {
     });
     modal.modal();
 }
+
+function showLoginFrame() {
+    var modal = $("<div/>").addClass("modal hide fade")
+        .appendTo($("body"));
+    var head = $("<div/>").addClass("modal-header")
+        .appendTo(modal);
+    $("<button/>").addClass("close")
+        .attr("data-dismiss", "modal")
+        .attr("aria-hidden", "true")
+        .appendTo(head)[0].innerHTML = "&times;";
+    $("<h3/>").text("Login").appendTo(head);
+    var body = $("<div/>").addClass("modal-body").appendTo(modal);
+    var frame = $("<iframe/>")
+        .attr("id", "loginframe")
+        .attr("src", "login.html")
+        .css("border", "none")
+        .css("width", "100%")
+        .css("height", "300px")
+        .css("margin", "0")
+        .appendTo(body);
+    var respond = function(e) {
+        if(e.data.indexOf(":") == -1) {
+            return;
+        }
+        if(e.data.substring(0, e.data.indexOf(":")) == "cytube-login") {
+            var data = e.data.substring(e.data.indexOf(":")+1);
+            data = JSON.parse(data);
+            if(data.error) {
+                alert(data.error);
+            }
+            else if(data.success) {
+                session = data.session;
+                uname = data.uname;
+                socket.emit("login", {
+                    name: uname,
+                    session: session
+                });
+                if(window.removeEventListener) {
+                    window.removeEventListener("message", respond, false);
+                }
+                else if(window.detachEvent) {
+                    // If an IE dev ever reads this, please tell your company 
+                    // to get their shit together
+                    window.detachEvent("onmessage", respond);
+                }
+                modal.modal("hide");
+            }
+        }
+    }
+    if(window.addEventListener) {
+        window.addEventListener("message", respond, false);
+    }
+    else if(window.attachEvent) {
+        // If an IE dev ever reads this, please tell your company to get
+        // their shit together
+        window.attachEvent("onmessage", respond);
+    }
+    setTimeout(function() {
+        frame[0].contentWindow.postMessage("cytube-syn", document.location);
+    }, 1000);
+    var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
+    modal.on("hidden", function() {
+        modal.remove();
+    });
+    modal.modal();
+}
