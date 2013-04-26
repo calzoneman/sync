@@ -130,7 +130,7 @@ function handleLogin(params, req, res) {
     var name = params.name || "";
     var pw = params.pw || "";
 
-    if(pw == "") {
+    if(pw == "" && session == "") {
         if(!Auth.isRegistered(name)) {
             sendJSON(res, {
                 success: true,
