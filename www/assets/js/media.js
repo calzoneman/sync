@@ -279,7 +279,6 @@ Media.prototype.initRTMP = function() {
 }
 
 Media.prototype.update = function(data) {
-    console.log(parseInt(data.currentTime / 60), parseInt(data.currentTime % 60));
     if(data.id != this.id) {
         if(data.currentTime < 0) {
             data.currentTime = 0;

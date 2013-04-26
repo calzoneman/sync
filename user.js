@@ -398,7 +398,7 @@ User.prototype.login = function(name, pw, session) {
         else {
             this.socket.emit("login", {
                 success: false,
-                error: "Invalid username/password pair"
+                error: "Invalid session"
             });
             return false;
         }

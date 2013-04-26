@@ -38,6 +38,7 @@
             var respond = function(e) {
                 if(e.data == "cytube-syn") {
                     source = e.source;
+                    source.postMessage("cytube-ack", document.location);
                 }
             }
             window.addEventListener("message", respond, false);

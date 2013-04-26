@@ -126,6 +126,23 @@ function handleLogin(params, req, res) {
     var name = params.name || "";
     var pw = params.pw || "";
 
+    if(pw == "") {
+        if(!Auth.isRegistered(name)) {
+            sendJSON(res, {
+                success: true,
+                session: ""
+            });
+            return;
+        }
+        else {
+            sendJSON(res, {
+                success: false,
+                error: "That username is already taken"
+            });
+            return;
+        }
+    }
+
     var row = Auth.login(name, pw, session);
     if(row) {
         sendJSON(res, {

@@ -143,7 +143,7 @@ function initCallbacks() {
             $("#loginform").css("display", "none");
             $("#logoutform").css("display", "");
             $("#loggedin").css("display", "");
-            session = data.session;
+            session = data.session || "";
             createCookie("sync_uname", uname, 7);
             createCookie("sync_session", session, 7);
         }

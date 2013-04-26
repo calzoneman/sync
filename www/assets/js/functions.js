@@ -863,7 +863,13 @@ function showLoginFrame() {
         .css("height", "300px")
         .css("margin", "0")
         .appendTo(body);
+    var timer = setInterval(function() {
+        frame[0].contentWindow.postMessage("cytube-syn", document.location);
+    }, 1000);
     var respond = function(e) {
+        if(e.data == "cytube-ack") {
+            clearInterval(timer);
+        }
         if(e.data.indexOf(":") == -1) {
             return;
         }
@@ -874,8 +880,8 @@ function showLoginFrame() {
                 alert(data.error);
             }
             else if(data.success) {
-                session = data.session;
-                uname = data.uname;
+                session = data.session || "";
+                uname = data.uname || "";
                 socket.emit("login", {
                     name: uname,
                     session: session
@@ -900,9 +906,6 @@ function showLoginFrame() {
         // their shit together
         window.attachEvent("onmessage", respond);
     }
-    setTimeout(function() {
-        frame[0].contentWindow.postMessage("cytube-syn", document.location);
-    }, 1000);
     var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
     modal.on("hidden", function() {
         modal.remove();
