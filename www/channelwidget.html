@@ -24,14 +24,13 @@
             </tbody>
         </table>
         <script src="assets/js/jquery.js" type="text/javascript"></script>
+        <script src="assets/js/iourl.js" type="text/javascript"></script>
         <script type="text/javascript">
             var p = document.location + "";
             if(p.indexOf("?") != -1) {
                 p = p.substring(p.indexOf("?")+1);
             }
-            $.getJSON("api/json/channeldata?" + p, function(data) {
-                var host = document.location + "";
-                host = host.substring(0, host.indexOf("/widget.html"));
+            $.getJSON(IO_URL+"/api/json/channeldata?"+p+"&callback=?", function(data) {
                 if(data.error) {
                     return;
                 }

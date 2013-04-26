@@ -33,6 +33,7 @@
             </div>
         </form>
         <script src="assets/js/jquery.js" type="text/javascript"></script>
+        <script src="assets/js/iourl.js" type="text/javascript"></script>
         <script type="text/javascript">
             var source;
             var respond = function(e) {
@@ -44,7 +45,7 @@
             window.addEventListener("message", respond, false);
 
             $("#login").click(function() {
-                $.getJSON("api/json/login?name="+$("#username").val()+"&pw="+$("#pw").val(), function(data) {
+                $.getJSON(IO_URL+"/api/json/login?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
                 });
@@ -58,7 +59,7 @@
                     $("#confirm").addClass("text-error");
                     return;
                 }
-                $.getJSON("api/json/register?name="+$("#username").val()+"&pw="+$("#pw").val(), function(data) {
+                $.getJSON(IO_URL+"/api/json/register?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
                     console.log(data);
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);

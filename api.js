@@ -47,6 +47,7 @@ function handle(path, req, res) {
     }
 
     if(parts[0] == "json") {
+        res.callback = params.callback || false;
         if(!(parts[1] in jsonHandlers)) {
             res.end(JSON.stringify({
                 error: "Unknown endpoint: " + parts[1]
@@ -63,6 +64,9 @@ exports.handle = handle;
 
 function sendJSON(res, obj) {
     var response = JSON.stringify(obj, null, 4);
+    if(res.callback) {
+        response = res.callback + "(" + response + ")";
+    }
     var len = unescape(encodeURIComponent(response)).length;
 
     res.setHeader("Content-Type", "application/json");
