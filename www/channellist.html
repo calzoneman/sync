@@ -47,17 +47,18 @@
         <script type="text/javascript">
             var session = readCookie("sync_session") || "";
             var uname = readCookie("sync_uname") || "";
+            var p = "";
             if(uname && session) {
                 $.getJSON(IO_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
                     if(data.success) {
                         $(".loginform").remove();
                         createCookie("sync_uname", uname, 7);
                         createCookie("sync_session", session, 7);
+                        p = "name=" + uname + "&session=" + session;
                     }
                 });
             }
             var q = "";
-            var p = "";
             $("#login").click(function() {
                 uname =  $("#name").val();
                 q = "name=" + $("#name").val() + "&pw=" + $("#pw").val();
