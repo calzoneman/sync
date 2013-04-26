@@ -845,6 +845,7 @@ function newPollMenu() {
 }
 
 function showLoginFrame() {
+    $("#ytapiplayer").hide();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -908,6 +909,7 @@ function showLoginFrame() {
     }
     var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
     modal.on("hidden", function() {
+        $("#ytapiplayer").show();
         modal.remove();
     });
     modal.modal();
