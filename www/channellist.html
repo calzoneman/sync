@@ -51,8 +51,8 @@
                 $.getJSON(IO_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
                     if(data.success) {
                         $(".loginform").remove();
-                        setCookie("sync_uname", uname, 7);
-                        setCookie("sync_session", session, 7);
+                        createCookie("sync_uname", uname, 7);
+                        createCookie("sync_session", session, 7);
                     }
                 });
             }
