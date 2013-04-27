@@ -461,6 +461,33 @@ function largeLayout() {
     $("#userlist").css("width", "200px");
 }
 
+function singleColumnLayout() {
+    $("#videodiv").removeClass().addClass("span12");
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    VHEIGHT = parseInt(VWIDTH) * 9 / 16;
+    $("#ytapiplayer").attr("width", VWIDTH).attr("height", VHEIGHT);
+    var chat = $("#chatdiv").detach();
+    $("#layoutrow").remove();
+    var r = $("<div />").addClass("row").insertAfter($("#videodiv").parent());
+    r.attr("id", "layoutrow");
+    chat.removeClass().addClass("span12").appendTo(r);
+    chat.css("height", "200px");
+    $("#messagebuffer").css("height", "100%");
+    $("#userlist").css("height", "100%");
+    $("#chatline").removeClass().addClass("span12");
+    $("#userlist").css("width", "200px");
+
+    var r2d2 = $("<div/>").addClass("row").insertBefore($("#queuerow"));
+    r2d2.css("margin-top", "60px");
+    var librow = $("#queuerow").attr("id", "");
+    librow.css("margin-top", "5px");
+    r2d2.attr("id", "queuerow");
+    $("#pollcontainer").detach().appendTo(r2d2).removeClass().addClass("span12");
+    $("#queuediv").detach().appendTo(r2d2).removeClass().addClass("span12");
+    $(librow.find(".span5")[0]).removeClass().addClass("span12");
+
+}
+
 function hugeLayout() {
     $("#videodiv").removeClass().addClass("span12");
     VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//1170
