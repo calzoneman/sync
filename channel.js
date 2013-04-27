@@ -48,7 +48,8 @@ var Channel = function(name) {
         voteskip_ratio: 0.5,
         pagetitle: this.name,
         customcss: "",
-        customjs: ""
+        customjs: "",
+        chat_antiflood: false
     };
     this.filters = [
         [/`([^`]+)`/g          , "<code>$1</code>"    , true],
@@ -112,6 +113,7 @@ Channel.prototype.loadDump = function() {
             for(var key in data.opts) {
                 this.opts[key] = data.opts[key];
             }
+            this.broadcastOpts();
             if(data.filters) {
                 this.filters = new Array(data.filters.length);
                 for(var i = 0; i < data.filters.length; i++) {
@@ -686,8 +688,10 @@ Channel.prototype.tryQueue = function(user, data) {
             !this.opts.qopen_allow_qnext) {
         return;
     }
-    
-    if(user.noflood("queue", 1.5)) {
+
+    if(user.rank < Rank.Moderator
+            && this.leader  != user
+            && user.noflood("queue", 1.5)) {
         return;
     }
 
@@ -1132,6 +1136,9 @@ Channel.prototype.tryChat = function(user, data) {
     }
 
     var msg = data.msg;
+    if(this.opts.chat_antiflood && user.noflood("chat", 2.0)) {
+        return;
+    }
 
     if(msg.indexOf("/") == 0)
         ChatCommand.handle(this, user, msg);
