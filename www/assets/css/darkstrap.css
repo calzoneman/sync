@@ -954,3 +954,36 @@ li.alert-info {
     border: 1px solid #ff9900;
     color: #ff9900;
 }
+
+.btn, .btn:hover {
+    text-shadow: none;
+    color: #aaaaaa;
+    background-image: none;
+    background-color: #000000;
+    border: 1px solid #aaaaaa;
+}
+
+.btn:hover, .btn:focus {
+    background-color: #333333;
+    color: #ffffff;
+}
+
+.btn-danger, .btn-danger:focus {
+    background-color: #880000;
+}
+
+.btn-danger:hover {
+    background-color: #aa0000;
+}
+
+.btn-success, .btn-success:focus {
+    background-color: #008800;
+}
+
+.btn-success:hover {
+    background-color: #00aa00;
+}
+
+.nick-highlight {
+    background-color: #0000aa;
+}
