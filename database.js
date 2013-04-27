@@ -1,11 +1,11 @@
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -14,7 +14,7 @@ var Config = require("./config.js");
 var Logger = require("./logger.js");
 var Rank = require("./rank.js");
 var Media = require("./media.js").Media;
-var Server = require("./server.js");
+//var Server = require("./server.js");
 
 var initialized = false;
 
@@ -27,6 +27,18 @@ exports.getConnection = function() {
         return false;
     }
     return db;
+}
+
+function sqlEscape(data) {
+    if(data == null || data == undefined)
+        return "NULL";
+    else if(typeof data == "number")
+        return data;
+    else if(typeof data == "object")
+        return "(object)";
+    else if(typeof data == "string") {
+        return data.replace("'", "\\'");
+    }
 }
 
 exports.init = function() {
@@ -93,7 +105,7 @@ exports.loadChannel = function(chan) {
 
     // Load library
     var query = "SELECT * FROM chan_{}_library"
-        .replace("{}", chan.name);
+        .replace("{}", sqlEscape(chan.name));
     var results = db.querySync(query);
     if(!results) {
         Logger.errlog.log("Channel.loadMysql: failed to load library for " + chan.name);
@@ -106,7 +118,7 @@ exports.loadChannel = function(chan) {
 
     // Load bans
     var query = "SELECT * FROM chan_{}_bans"
-        .replace("{}", chan.name);
+        .replace("{}", sqlEscape(chan.name));
     var results = db.querySync(query);
     if(!results) {
         Logger.errlog.log("Channel.loadMysql: failed to load banlist for " + chan.name);
@@ -166,7 +178,7 @@ exports.registerChannel = function(chan) {
 
     // Insert into global channel table
     var query = "INSERT INTO channels (`id`, `name`) VALUES (NULL, '{}')"
-        .replace("{}", chan.name);
+        .replace("{}", sqlEscape(chan.name));
     results = db.querySync(query) || results;
     db.closeSync();
     return results;
@@ -179,8 +191,8 @@ exports.lookupChannelRank = function(channame, username) {
         return Rank.Guest;
     }
     var query = "SELECT * FROM chan_{1}_ranks WHERE name='{2}'"
-        .replace("{1}", channame)
-        .replace("{2}", username);
+        .replace("{1}", sqlEscape(channame))
+        .replace("{2}", sqlEscape(username));
     var results = db.querySync(query);
     if(!results) {
         return Rank.Guest;
@@ -201,16 +213,16 @@ exports.saveChannelRank = function(channame, user) {
         return false;
     }
     var query = "UPDATE chan_{1}_ranks SET rank='{2}' WHERE name='{3}'"
-        .replace("{1}", channame)
-        .replace("{2}", user.rank)
-        .replace("{3}", user.name);
+        .replace("{1}", sqlEscape(channame))
+        .replace("{2}", sqlEscape(user.rank))
+        .replace("{3}", sqlEscape(user.name));
     var results = db.querySync(query);
     // Gonna have to insert a new one, bugger
     if(!results.fetchAllSync) {
         var query = "INSERT INTO chan_{1}_ranks (`name`, `rank`) VALUES ('{2}', '{3}')"
-            .replace("{1}", channame)
-            .replace("{2}", user.name)
-            .replace("{3}", user.rank);
+            .replace("{1}", sqlEscape(channame))
+            .replace("{2}", sqlEscape(user.name))
+            .replace("{3}", sqlEscape(user.rank));
         results = db.querySync(query);
     }
     db.closeSync();
@@ -224,12 +236,26 @@ exports.cacheMedia = function(channame, media) {
         return false;
     }
     var query = "INSERT INTO chan_{1}_library VALUES ('{2}', '{3}', {4}, '{5}', '{6}')"
-        .replace("{1}", channame)
-        .replace("{2}", media.id)
-        .replace("{3}", media.title)
-        .replace("{4}", media.seconds)
-        .replace("{5}", media.duration)
-        .replace("{6}", media.type);
+        .replace("{1}", sqlEscape(channame))
+        .replace("{2}", sqlEscape(media.id))
+        .replace("{3}", sqlEscape(media.title))
+        .replace("{4}", sqlEscape(media.seconds))
+        .replace("{5}", sqlEscape(media.duration))
+        .replace("{6}", sqlEscape(media.type));
+    var results = db.querySync(query);
+    db.closeSync();
+    return results;
+}
+
+exports.uncacheMedia = function(channame, id) {
+    var db = exports.getConnection();
+    if(!db) {
+        Logger.errlog.log("database.uncacheMedia: DB connection failed");
+        return false;
+    }
+    var query = "DELETE FROM chan_{1}_library WHERE id='{2}'"
+        .replace("{1}", sqlEscape(channame))
+        .replace("{2}", sqlEscape(id))
     var results = db.querySync(query);
     db.closeSync();
     return results;
@@ -242,10 +268,10 @@ exports.addChannelBan = function(channame, actor, receiver) {
         return false;
     }
     var query = "INSERT INTO chan_{1}_bans (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
-        .replace("{1}", channame)
-        .replace("{2}", receiver.ip)
-        .replace("{3}", receiver.name)
-        .replace("{4}", actor.name);
+        .replace("{1}", sqlEscape(channame))
+        .replace("{2}", sqlEscape(receiver.ip))
+        .replace("{3}", sqlEscape(receiver.name))
+        .replace("{4}", sqlEscape(actor.name));
     results = db.querySync(query);
     db.closeSync();
     return results;
@@ -258,8 +284,8 @@ exports.removeChannelBan = function(channame, ip) {
         return false;
     }
     var query = "DELETE FROM chan_{1}_bans WHERE `ip` = '{2}'"
-        .replace("{1}", channame)
-        .replace("{2}", ip);
+        .replace("{1}", sqlEscale(channame))
+        .replace("{2}", sqlEscape(ip));
     results = db.querySync(query);
     db.closeSync();
     return results;
@@ -272,7 +298,7 @@ exports.getChannelRanks = function(channame) {
     }
 
     var query = "SELECT * FROM chan_{}_ranks WHERE 1"
-        .replace("{}", channame);
+        .replace("{}", sqlEscape(channame));
 
     var results = db.querySync(query);
     if(results) {

@@ -338,35 +338,43 @@ function rebuildPlaylist() {
 function addLibraryButtons(li, id, yt) {
     var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
+    if(RANK >= Rank.Moderator || LEADER || (OPENQUEUE && CHANNELOPTS.qopen_allow_qnext)) {
+        var btnNext =  $("<button />").addClass("btn qe_btn")
+            .text("Next")
+            .appendTo(btnstrip);
+        btnNext.click(function() {
+            if(yt) {
+                socket.emit("queue", {
+                    id: id,
+                    pos: "next",
+                    type: "yt"
+                });
+            }
+            else {
+                socket.emit("queue", {
+                    id: id,
+                    pos: "next"
+                });
+            }
+        });
+    }
 
-    var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
-    //$("<i />").attr("class", "icon-play").appendTo(btnNext);
-    btnNext.text("Next");
-    if(!CHANNELOPTS.qopen_allow_qnext && RANK < Rank.Moderator && !LEADER)
-        btnNext.attr("disabled", true);
+    var btnEnd =  $("<button />").addClass("btn qe_btn").text("End").appendTo(btnstrip);
 
-    var btnEnd =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
-    //$("<i />").attr("class", "icon-fast-forward").appendTo(btnEnd);
-    btnEnd.text("End");
-
-    // Callback time
-    $(btnNext).click(function() {
-        if(yt) {
-            socket.emit("queue", {
-                id: id,
-                pos: "next",
-                type: "yt"
+    if(RANK >= Rank.Moderator) {
+        var btnDelete = $("<button/>").addClass("btn qe_btn btn-danger").appendTo(btnstrip);
+        $("<i/>").addClass("icon-remove").appendTo(btnDelete);
+        btnDelete.click(function() {
+            socket.emit("uncache", {
+                id: id
             });
-        }
-        else {
-            socket.emit("queue", {
-                id: id,
-                pos: "next"
+            $(li).hide("blind", function() {
+                $(li).remove();
             });
-        }
-    });
+        });
+    }
 
-    $(btnEnd).click(function() {
+    btnEnd.click(function() {
         if(yt) {
             socket.emit("queue", {
                 id: id,
@@ -381,6 +389,7 @@ function addLibraryButtons(li, id, yt) {
             });
         }
     });
+
 }
 
 // Rearranges the queue

@@ -170,6 +170,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("uncache", function(data) {
+        if(this.channel != null) {
+            this.channel.tryUncache(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("moveMedia", function(data) {
         if(this.channel != null) {
             this.channel.tryMove(this, data);

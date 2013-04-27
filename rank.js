@@ -34,6 +34,7 @@ var permissions = {
     updateMotd      : exports.Moderator,
     drink           : exports.Moderator,
     seeVoteskip     : exports.Moderator,
+    uncache         : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };

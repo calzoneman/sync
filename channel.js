@@ -733,6 +733,18 @@ Channel.prototype.tryDequeue = function(user, data) {
      this.dequeue(data);
 }
 
+Channel.prototype.tryUncache = function(user, data) {
+    if(!Rank.hasPermission(user, "uncache")) {
+        return;
+    }
+    if(typeof data.id != "string") {
+        return;
+    }
+    if(Database.uncacheMedia(this.name, data.id)) {
+        delete this.library[data.id];
+    }
+}
+
 Channel.prototype.playNext = function() {
     // Nothing to play
     if(this.queue.length == 0) {
