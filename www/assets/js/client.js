@@ -196,6 +196,19 @@ $("#qlockbtn").click(function() {
 
 $("#login").click(showLoginFrame);
 
+function guestLogin() {
+    uname = $("#guestname").val();
+    socket.emit("login", {
+        name: $("#guestname").val()
+    });
+}
+$("#guestlogin").click(guestLogin);
+$("#guestname").keydown(function(ev) {
+    if(ev.keyCode == 13) {
+        guestLogin();
+    }
+});
+
 $("#logout").click(function() {
     eraseCookie("sync_uname");
     eraseCookie("sync_session");

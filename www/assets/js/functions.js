@@ -751,7 +751,9 @@ function handleRankChange() {
         for(var i = 0; i < users.length; i++) {
             addUserDropdown(users[i], users[i].children[1].innerHTML);
         }
-
+        $("#getplaylist").css("width", "34%");
+        $("#clearplaylist").css("display", "");
+        $("#shuffleplaylist").css("display", "");
         $("#modnav").show();
         $("#chancontrols").show();
     }
@@ -773,6 +775,11 @@ function handleRankChange() {
         $("#pollcontainer .active").each(function() {
             $(this).find(".btn-danger").remove();
         });
+    }
+    if(RANK < Rank.Moderator) {
+        $("#getplaylist").css("width", "100%");
+        $("#clearplaylist").css("display", "none");
+        $("#shuffleplaylist").css("display", "none");
     }
 }
 

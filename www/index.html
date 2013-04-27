@@ -29,6 +29,8 @@
               <li><a href="help.html">Help</a></li>
             </ul>
             <div class="navbar-form pull-right" id="loginform">
+                <input type="text" id="guestname" placeholder="Name">
+                <button class="btn" id="guestlogin">Guest Login</button>
                 <button class="btn" id="login">Login/Register</button>
             </div>
             <div class="navbar-form pull-right" id="logoutform" style="display: none;">
@@ -111,9 +113,9 @@
                     </div>
                     <button class="btn btn-danger btn-block" id="qlockbtn" style="display:none;">Unlock Queue</button>
                     <div class="span12 btn-group" style="margin: 0">
-                        <button class="btn" id="getplaylist" style="width: 34%">Get Playlist URLs</button>
-                        <button class="btn" id="clearplaylist" style="width: 33%">Clear Playlist</button>
-                        <button class="btn" id="shuffleplaylist" style="width: 33%">Shuffle Playlist</button>
+                        <button class="btn" id="getplaylist" style="width: 100%">Get Playlist URLs</button>
+                        <button class="btn" id="clearplaylist" style="width: 33%; display: none;">Clear Playlist</button>
+                        <button class="btn" id="shuffleplaylist" style="width: 33%; display: none;">Shuffle Playlist</button>
                     </div>
                 </div>
             </div>
