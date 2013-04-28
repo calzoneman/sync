@@ -136,7 +136,7 @@ function initCallbacks() {
     });
 
     socket.on("login", function(data) {
-        if(!data.success)
+        if(!data.success && data.error != "Invalid session")
             alert(data.error);
         else {
             $("#welcome")[0].innerHTML = "Welcome, " + uname;

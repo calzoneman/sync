@@ -97,14 +97,14 @@ exports.checkGlobalBan = function(ip) {
     if(new Date().getTime() > gbanTime + 300000) {
         var db = exports.getConnection();
         if(!db) {
-            return [];
+            return false;
         }
         // Check if channel exists
         var query = "SELECT * FROM global_bans WHERE 1";
         var results = db.querySync(query);
         if(!results) {
             Logger.errlog.log("loadGlobalBans: query failed");
-            return [];
+            return false;
         }
         var rows = results.fetchAllSync();
         gbans = {};

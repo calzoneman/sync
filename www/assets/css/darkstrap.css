@@ -987,3 +987,7 @@ li.alert-info {
 .nick-highlight {
     background-color: #0000aa;
 }
+
+#footer {
+    background-color: #111111;
+}
