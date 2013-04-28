@@ -31,12 +31,22 @@ var IGNORED = [];
 var KICKED = false;
 var uname = readCookie("sync_uname");
 var session = readCookie("sync_session");
+
+function parseBool(x) {
+    if(typeof x == "boolean")
+        return x;
+    else if(x == "true")
+        return true;
+    else if(x == "false")
+        return false;
+    else return Boolean(x);
+}
 var USEROPTS = {
     theme: readCookie("cytube_theme") || "default",
     css: readCookie("cytube_css") || "",
     layout: readCookie("cytube_layout") || "default",
-    synch: (readCookie("cytube_synch") || true) != "false",
-    modhat: (readCookie("cytube_modhat") || false) != "false"
+    synch: parseBool(readCookie("cytube_synch")) || true,
+    modhat: parseBool(readCookie("cytube_modhat")) || false
 };
 applyOpts();
 $("#optlink").click(showUserOpts);
