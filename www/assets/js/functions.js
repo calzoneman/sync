@@ -973,8 +973,13 @@ function showUserOpts() {
         .appendTo(layoutselect);
     $("<option/>").attr("value", "single").text("Single Column")
         .appendTo(layoutselect);
+    $("<option/>").attr("value", "synchtube").text("Synchtube")
+        .appendTo(layoutselect);
     layoutselect.val(USEROPTS.layout);
     addOption("Layout", layoutselect);
+    var warn = $("<p/>").addClass("text-error")
+        .text("Changing layouts may require a refresh")
+    addOption("", warn);
 
     var synchcontainer = $("<label/>").addClass("checkbox")
         .text("Synchronize Media");
@@ -1050,6 +1055,9 @@ function applyOpts() {
             break;
         case "single":
             singleColumnLayout();
+            break;
+        case "synchtube":
+            synchtubeLayout();
             break;
         default:
             break;

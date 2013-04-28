@@ -78,7 +78,7 @@
                     <div class="span12" id="pollcontainer">
                     </div>
                     <div class="span7" style="margin-left: 0;">
-                        <input type="text" id="library_query" class="input-block-level">
+                        <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
                     </div>
                     <div class="span5 btn-group">
                         <button class="btn" id="library_search">Library</button>
@@ -91,10 +91,13 @@
                 </div>
             </div>
             <div class="span7" id="queuediv">
+                <div class="row-fluid" id="qclear">
+                    <div class="span12"></div>
+                </div>
                 <div id="playlist_controls"style="display: none;">
                     <div class="row-fluid">
                         <div class="span8">
-                            <input type="text" id="mediaurl" class="input-block-level">
+                            <input type="text" id="mediaurl" class="input-block-level" placeholder="Media URL">
                         </div>
                         <div class="span4 btn-group">
                             <button class="btn" id="queue_next">Next</button>
@@ -238,16 +241,6 @@
                         <th>Control</th>
                     </thead>
                 </table>
-            </div>
-        </div>
-        <div class="row" id="layout_buttons">
-            <div class="span4 offset3">
-                <div class="btn-group" style="width: 100%">
-                    <button id="largelayout" class="btn">Large Layout</button>
-                    <button id="hugelayout" class="btn">Huge Layout</button>
-                    <button id="narrowlayout" class="btn">Narrow Layout</button>
-                    <button id="stlayout" class="btn">Synchtube Layout</button>
-                </div>
             </div>
         </div>
     </div> <!-- /container -->

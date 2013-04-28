@@ -532,6 +532,7 @@ function narrowLayout() {
 
 function synchtubeLayout() {
     $("#videodiv").detach().insertBefore($("#chatdiv"));
+    $("#queuediv").detach().prependTo($("#queuerow"));
 }
 
 function onYouTubeIframeAPIReady() {
