@@ -207,6 +207,9 @@ function formatChatMessage(data) {
     $("<strong/>").text("<" + data.username + "> ").appendTo(name);
     var message = $("<span/>").appendTo(div);
     message[0].innerHTML = data.msg;
+    if(data.modflair) {
+        name.addClass(getNameColor(data.modflair));
+    }
     if(data.msgclass == "action") {
         name.remove();
         message.addClass("action");
@@ -218,9 +221,6 @@ function formatChatMessage(data) {
     else if(data.msgclass == "shout") {
         message.addClass("shout");
         name.addClass("shout");
-    }
-    else if(data.modflair) {
-        name.addClass(getNameColor(data.modflair));
     }
     else  {
         message.addClass(data.msgclass);

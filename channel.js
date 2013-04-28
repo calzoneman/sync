@@ -1145,14 +1145,18 @@ Channel.prototype.tryChat = function(user, data) {
         return;
     }
 
+    this.chainMessage(user, msg);
+}
+
+Channel.prototype.chainMessage = function(user, msg, data) {
     if(msg.indexOf("/") == 0)
-        ChatCommand.handle(this, user, msg);
+        ChatCommand.handle(this, user, msg, data);
 
     else if(msg.indexOf(">") == 0)
-        this.sendMessage(user.name, msg, "greentext");
+        this.sendMessage(user.name, msg, "greentext", data);
 
     else
-        this.sendMessage(user.name, msg, "");
+        this.sendMessage(user.name, msg, "", data);
 }
 
 Channel.prototype.filterMessage = function(msg) {

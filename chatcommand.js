@@ -13,14 +13,14 @@ var Rank = require("./rank.js");
 var Poll = require("./poll.js").Poll;
 var Logger = require("./logger.js");
 
-function handle(chan, user, msg) {
+function handle(chan, user, msg, data) {
     if(msg.indexOf("/me ") == 0)
-        chan.sendMessage(user.name, msg.substring(4), "action");
+        chan.sendMessage(user.name, msg.substring(4), "action", data);
     else if(msg.indexOf("/sp ") == 0)
-        chan.sendMessage(user.name, msg.substring(4), "spoiler");
+        chan.sendMessage(user.name, msg.substring(4), "spoiler", data);
     else if(msg.indexOf("/say ") == 0) {
         if(Rank.hasPermission(user, "shout") || chan.leader == user) {
-            chan.sendMessage(user.name, msg.substring(5), "shout");
+            chan.sendMessage(user.name, msg.substring(5), "shout", data);
         }
     }
     else if(msg.indexOf("/afk") == 0) {
@@ -29,9 +29,7 @@ function handle(chan, user, msg) {
     }
     else if(msg.indexOf("/m ") == 0) {
         if(user.rank >= Rank.Moderator) {
-            chan.sendMessage(user.name, msg.substring(3), "modflair", {
-                modflair: user.rank
-            });
+            chan.chainMessage(user, msg.substring(3), {modflair: user.rank})
         }
     }
     else if(msg.indexOf("/kick ") == 0) {
@@ -48,7 +46,7 @@ function handle(chan, user, msg) {
     }
     else if(msg.indexOf("/d") == 0 && msg.length > 2 &&
             msg[2].match(/[-0-9 ]/)) {
-        handleDrink(chan, user, msg.substring(2));
+        handleDrink(chan, user, msg.substring(2), data);
     }
 }
 
@@ -108,7 +106,7 @@ function handlePoll(chan, user, msg) {
     }
 }
 
-function handleDrink(chan, user, msg) {
+function handleDrink(chan, user, msg, data) {
     if(!Rank.hasPermission(user, "drink") && chan.leader != user) {
         return;
     }
@@ -129,7 +127,7 @@ function handleDrink(chan, user, msg) {
     msg = msg + " drink!";
     if(count != 1)
         msg += "  (x" + count + ")";
-    chan.sendMessage(user.name, msg, "drink");
+    chan.sendMessage(user.name, msg, "drink", data);
 }
 
 exports.handle = handle;
