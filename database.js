@@ -74,9 +74,47 @@ exports.init = function() {
         return false;
     }
 
+    var query = "CREATE TABLE IF NOT EXISTS `global_bans` \
+                    (`ip` VARCHAR( 15 ) NOT NULL ,\
+                    `note` VARCHAR( 255 ) NOT NULL ,\
+                    PRIMARY KEY (`ip`)\
+                    ) ENGINE = MYISAM";
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("database.init: global ban table init failed!");
+        return false;
+    }
+
     initialized = true;
     db.closeSync();
     return true;
+}
+
+var gbanTime = 0;
+var gbans = {};
+exports.checkGlobalBan = function(ip) {
+    // Check database at most once per 5 minutes
+    if(new Date().getTime() > gbanTime + 300000) {
+        var db = exports.getConnection();
+        if(!db) {
+            return [];
+        }
+        // Check if channel exists
+        var query = "SELECT * FROM global_bans WHERE 1";
+        var results = db.querySync(query);
+        if(!results) {
+            Logger.errlog.log("loadGlobalBans: query failed");
+            return [];
+        }
+        var rows = results.fetchAllSync();
+        gbans = {};
+        for(var i = 0; i < rows.length; i++) {
+            gbans[rows[i].ip] = true;
+        }
+        db.closeSync();
+        gbanTime = new Date().getTime();
+    }
+    return (ip in gbans);
 }
 
 exports.loadChannel = function(chan) {
