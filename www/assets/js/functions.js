@@ -427,6 +427,10 @@ function parseVideoURL(url){
     url = url.trim()
     if(typeof(url) != "string")
         return null;
+    if(url.indexOf("jw:") == 0) {
+        url = url.substring(3);
+        return [url, "jw"];
+    }
     if(url.indexOf("rtmp://") == 0) {
         return [url, "rt"];
     }

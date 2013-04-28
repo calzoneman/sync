@@ -603,6 +603,13 @@ function mediaUpdate(chan, id) {
     setTimeout(function() { mediaUpdate(chan, id); }, 1000);
 }
 
+function isLive(type) {
+    return type == "li"
+        || type == "tw"
+        || type == "rt"
+        || type == "jw";
+}
+
 Channel.prototype.enqueue = function(data, user) {
     var idx = data.pos == "next" ? this.position + 1 : this.queue.length;
 
@@ -668,9 +675,18 @@ Channel.prototype.enqueue = function(data, user) {
                 });
                 this.broadcastPlaylistMeta();
                 break;
+            case "jw":
+                var media = new Media(data.id, "JWPlayer Stream - " + data.id, "--:--", "jw");
+                media.queueby = user ? user.name : "";
+                this.queue.splice(idx, 0, media);
+                this.sendAll("queue", {
+                    media: media.pack(),
+                    pos: idx
+                });
+                this.broadcastPlaylistMeta();
+                break;
             default:
                 break;
-
         }
     }
 }
@@ -784,9 +800,7 @@ Channel.prototype.playNext = function() {
     });
 
     // If it's not a livestream, enable autolead
-    if(this.leader == null && this.media.type != "tw"
-                           && this.media.type != "li"
-                           && this.media.type != "rt") {
+    if(this.leader == null && !isLive(this.media.type)) {
         this.time = new Date().getTime();
         if(this.media.id != oid) {
             mediaUpdate(this, this.media.id);
@@ -829,9 +843,7 @@ Channel.prototype.jumpTo = function(pos) {
     });
 
     // If it's not a livestream, enable autolead
-    if(this.leader == null && this.media.type != "tw"
-                           && this.media.type != "li"
-                           && this.media.type != "rt") {
+    if(this.leader == null && !isLive(this.media.type)) {
         this.time = new Date().getTime();
         if(this.media.id != oid) {
             mediaUpdate(this, this.media.id);
@@ -908,8 +920,7 @@ Channel.prototype.tryUpdate = function(user, data) {
         return;
     }
 
-    if(this.media.type == "li" || this.media.type == "tw" ||
-                                  this.media.type == "rt") {
+    if(isLive(this.media.type)) {
         return;
     }
 
@@ -1284,9 +1295,7 @@ Channel.prototype.changeLeader = function(name) {
     }
     if(name == "") {
         this.logger.log("*** Resuming autolead");
-        if(this.media != null && this.media.type != "li"
-                              && this.media.type != "tw"
-                              && this.media.type != "rt") {
+        if(this.media != null && !isLive(this.media.type)) {
             this.time = new Date().getTime();
             this.i = 0;
             mediaUpdate(this, this.media.id);

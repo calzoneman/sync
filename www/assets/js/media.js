@@ -25,6 +25,9 @@ var Media = function(data) {
         case "rt":
             this.initRTMP();
             break;
+        case "jw":
+            this.initJWPlayer();
+            break;
         default:
             break;
     }
@@ -267,6 +270,31 @@ Media.prototype.initRTMP = function() {
     this.load = function(data) {
         this.id = data.id;
         this.initTwitch();
+    }
+
+    this.pause = function() { }
+
+    this.play = function() { }
+
+    this.getTime = function() { }
+
+    this.seek = function() { }
+}
+
+Media.prototype.initJWPlayer = function() {
+    this.removeOld();
+
+    jwplayer("ytapiplayer").setup({
+        file: this.id,
+        width: VWIDTH,
+        height: VHEIGHT,
+        autostart: true
+    });
+    setTimeout(function() {$("#ytapiplayer_logo").remove();}, 1000);
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initJWPlayer();
     }
 
     this.pause = function() { }
