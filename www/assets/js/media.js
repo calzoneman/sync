@@ -285,6 +285,9 @@ Media.prototype.update = function(data) {
         }
         this.load(data);
     }
+    if(!USEROPTS.synch) {
+        return;
+    }
     if(data.paused) {
         this.pause();
     }

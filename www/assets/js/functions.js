@@ -930,3 +930,128 @@ function showLoginFrame() {
     });
     modal.modal();
 }
+
+function showUserOpts() {
+    $("#ytapiplayer").hide();
+    var modal = $("<div/>").addClass("modal hide fade")
+        .appendTo($("body"));
+    var head = $("<div/>").addClass("modal-header")
+        .appendTo(modal);
+    $("<button/>").addClass("close")
+        .attr("data-dismiss", "modal")
+        .attr("aria-hidden", "true")
+        .appendTo(head)[0].innerHTML = "&times;";
+    $("<h3/>").text("User Options").appendTo(head);
+    var body = $("<div/>").addClass("modal-body").appendTo(modal);
+    var form = $("<form/>").addClass("form-horizontal")
+        .appendTo(body);
+
+    function addOption(lbl, thing) {
+        var g = $("<div/>").addClass("control-group").appendTo(form);
+        $("<label/>").addClass("control-label").text(lbl).appendTo(g);
+        var c = $("<div/>").addClass("controls").appendTo(g);
+        thing.appendTo(c);
+    }
+
+    var themeselect = $("<select/>");
+    $("<option/>").attr("value", "default").text("Default").appendTo(themeselect);
+    $("<option/>").attr("value", "assets/css/darkstrap.css").text("Dark").appendTo(themeselect);
+    themeselect.val(USEROPTS.theme);
+    addOption("Theme", themeselect);
+
+    var usercss = $("<input/>").attr("type", "text")
+        .attr("placeholder", "Stylesheet URL");
+    usercss.val(USEROPTS.css);
+    addOption("User CSS", usercss);
+
+    var layoutselect = $("<select/>");
+    $("<option/>").attr("value", "default").text("Default")
+        .appendTo(layoutselect);
+    $("<option/>").attr("value", "large").text("Large")
+        .appendTo(layoutselect);
+    $("<option/>").attr("value", "huge").text("Huge")
+        .appendTo(layoutselect);
+    $("<option/>").attr("value", "single").text("Single Column")
+        .appendTo(layoutselect);
+    layoutselect.val(USEROPTS.layout);
+    addOption("Layout", layoutselect);
+
+    var synchcontainer = $("<label/>").addClass("checkbox")
+        .text("Synchronize Media");
+    var synch = $("<input/>").attr("type", "checkbox").appendTo(synchcontainer);
+    synch.prop("checked", USEROPTS.synch);
+    addOption("Synch", synchcontainer);
+
+    if(RANK >= Rank.Moderator) {
+        $("<hr>").appendTo(form);
+        var modhatcontainer = $("<label/>").addClass("checkbox")
+            .text("Show name color");
+        var modhat = $("<input/>").attr("type", "checkbox").appendTo(modhatcontainer);
+        modhat.prop("checked", USEROPTS.modhat);
+        addOption("Modflair", modhatcontainer);
+    }
+
+    var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
+    var submit = $("<button/>").addClass("btn btn-primary pull-right")
+        .text("Save")
+        .appendTo(footer);
+
+    submit.click(function() {
+        USEROPTS.theme  = themeselect.val();
+        USEROPTS.css    = usercss.val();
+        USEROPTS.layout = layoutselect.val();
+        USEROPTS.synch  = synch.prop("checked");
+        if(RANK >= Rank.Moderator) {
+            USEROPTS.modhat = modhat.prop("checked");
+        }
+        saveOpts();
+        applyOpts();
+        modal.modal("hide");
+    });
+
+    modal.on("hidden", function() {
+        $("#ytapiplayer").show();
+        modal.remove();
+    });
+    modal.modal();
+}
+
+function saveOpts() {
+    for(var key in USEROPTS) {
+        createCookie("cytube_"+key, USEROPTS[key], 100);
+    }
+}
+
+function applyOpts() {
+    $("#usertheme").remove();
+    if(USEROPTS.theme != "default") {
+        $("<link/>").attr("rel", "stylesheet")
+            .attr("type", "text/css")
+            .attr("id", "usertheme")
+            .attr("href", USEROPTS.theme)
+            .appendTo($("head"));
+    }
+
+    $("#usercss").remove();
+    if(USEROPTS.css) {
+        $("<link/>").attr("rel", "stylesheet")
+            .attr("type", "text/css")
+            .attr("id", "usertheme")
+            .attr("href", USEROPTS.css)
+            .appendTo($("head"));
+    }
+
+    switch(USEROPTS.layout) {
+        case "large":
+            largeLayout();
+            break;
+        case "huge":
+            hugeLayout();
+            break;
+        case "single":
+            singleColumnLayout();
+            break;
+        default:
+            break;
+    }
+}

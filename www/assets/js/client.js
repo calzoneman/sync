@@ -31,6 +31,15 @@ var IGNORED = [];
 var KICKED = false;
 var uname = readCookie("sync_uname");
 var session = readCookie("sync_session");
+var USEROPTS = {
+    theme: readCookie("cytube_theme") || "default",
+    css: readCookie("cytube_css") || "",
+    layout: readCookie("cytube_layout") || "default",
+    synch: readCookie("cytube_synch") || true,
+    modhat: readCookie("cytube_modhat") || false
+};
+applyOpts();
+$("#optlink").click(showUserOpts);
 
 var Rank = {
     Guest: 0,
@@ -222,8 +231,12 @@ $("#chatline").keydown(function(ev) {
             $("#chatline").val("");
         }
         else {
+            var msg = $("#chatline").val();
+            if(USEROPTS.modhat) {
+                msg = "/m " + msg
+            }
             socket.emit("chatMsg", {
-                msg: $("#chatline").val()
+                msg: msg
             });
         }
         CHATHIST.push($("#chatline").val());

@@ -991,3 +991,8 @@ li.alert-info {
 #footer {
     background-color: #111111;
 }
+
+.modal, .modal-footer, .modal option {
+    background-color: #2f2f2f;
+    border-color: #000000;
+}
