@@ -84,6 +84,7 @@ function handleBan(chan, user, args) {
             args[0] = "";
             var reason = args.join(" ");
             chan.kick(kickee, "(banned) " + reason);
+            chan.banIP(user, kickee);
         }
     }
 }

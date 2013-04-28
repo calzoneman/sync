@@ -218,7 +218,12 @@ Channel.prototype.banIP = function(actor, receiver) {
         return false;
 
     this.ipbans[receiver.ip] = [receiver.name, actor.name];
-    receiver.socket.disconnect(true);
+    try {
+        receiver.socket.disconnect(true);
+    }
+    catch(e) {
+        // Socket already disconnected
+    }
     this.broadcastBanlist();
     this.logger.log(receiver.ip + " (" + receiver.name + ") was banned by " + actor.name);
 

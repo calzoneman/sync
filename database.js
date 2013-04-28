@@ -284,7 +284,7 @@ exports.removeChannelBan = function(channame, ip) {
         return false;
     }
     var query = "DELETE FROM chan_{1}_bans WHERE `ip` = '{2}'"
-        .replace("{1}", sqlEscale(channame))
+        .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(ip));
     results = db.querySync(query);
     db.closeSync();
