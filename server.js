@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-const VERSION = "1.3.5";
+const VERSION = "1.3.6";
 
 var fs = require("fs");
 var Logger = require("./logger.js");
@@ -57,6 +57,7 @@ var Database = require("./database.js");
 Database.init();
 
 exports.channels = {};
+exports.clients = {};
 
 fs.exists("chandump", function(exists) {
     if(!exists) {
@@ -77,10 +78,27 @@ fs.exists("chanlogs", function(exists) {
 });
 
 exports.io.sockets.on("connection", function(socket) {
-    var user = new User(socket, socket.handshake.address.address);
+    var ip = socket.handshake.address.address;
+    if(!(ip in exports.clients)) {
+        exports.clients[ip] = 1;
+    }
+    else {
+        exports.clients[ip]++;
+    }
+    if(exports.clients[ip] > Config.MAX_PER_IP) {
+        socket.emit("kick", {
+            reason: "Too many connections from your IP address"
+        });
+        exports.clients[ip]--;
+        socket.disconnect(true);
+        return;
+    }
+    socket.on("disconnect", function() {
+        exports.clients[ip]--;
+    });
+    var user = new User(socket, ip);
     Logger.syslog.log("Accepted connection from /" + user.ip);
 });
-
 
 process.on("uncaughtException", function(err) {
     Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
