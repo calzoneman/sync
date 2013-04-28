@@ -1135,9 +1135,8 @@ Channel.prototype.tryUpdateMotd = function(user, data) {
         return;
     }
 
-    if(data.motd) {
-        this.updateMotd(data.motd);
-    }
+    data.motd = data.motd || "";
+    this.updateMotd(data.motd);
 }
 
 /* REGION Chat */
