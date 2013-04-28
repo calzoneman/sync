@@ -35,8 +35,8 @@ var USEROPTS = {
     theme: readCookie("cytube_theme") || "default",
     css: readCookie("cytube_css") || "",
     layout: readCookie("cytube_layout") || "default",
-    synch: readCookie("cytube_synch") || true,
-    modhat: readCookie("cytube_modhat") || false
+    synch: (readCookie("cytube_synch") || true) != "false",
+    modhat: (readCookie("cytube_modhat") || false) != "false"
 };
 applyOpts();
 $("#optlink").click(showUserOpts);
