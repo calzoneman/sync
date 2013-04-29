@@ -114,7 +114,10 @@ exports.checkGlobalBan = function(ip) {
         db.closeSync();
         gbanTime = new Date().getTime();
     }
-    return (ip in gbans);
+    var parts = ip.split(".");
+    var slash16 = parts[0] + "." + parts[1];
+    var slash24 = slash16 + "." + parts[2];
+    return (ip in gbans || slash16 in gbans || slash24 in gbans);
 }
 
 exports.loadChannel = function(chan) {
