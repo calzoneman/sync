@@ -242,7 +242,7 @@ $("#chatline").keydown(function(ev) {
         }
         else {
             var msg = $("#chatline").val();
-            if(USEROPTS.modhat) {
+            if(USEROPTS.modhat && RANK >= Rank.Moderator) {
                 msg = "/m " + msg
             }
             socket.emit("chatMsg", {
