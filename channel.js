@@ -21,6 +21,7 @@ var io = require("./server.js").io;
 var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
+var Filter = require("./filter.js").Filter;
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
@@ -52,10 +53,9 @@ var Channel = function(name) {
         chat_antiflood: false
     };
     this.filters = [
-        [/`([^`]+)`/g          , "<code>$1</code>"    , true],
-        [/\*([^\*]+)\*/g       , "<strong>$1</strong>", true],
-        [/(^| )_([^_]+)_/g     , "$1<em>$2</em>"      , true],
-        [/\\\\([-a-zA-Z0-9]+)/g, "[](/$1)"            , true]
+        new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
+        new Filter("bold", "\\*([^\\*]+)\\*", "g", "<strong>$1</strong>"),
+        new Filter("italic", "(^| )_([^_]+)_", "g", "$1<em>$2</em>"),
     ];
     this.motd = {
         motd: "",
@@ -117,9 +117,16 @@ Channel.prototype.loadDump = function() {
             if(data.filters) {
                 this.filters = new Array(data.filters.length);
                 for(var i = 0; i < data.filters.length; i++) {
-                    this.filters[i] = [new RegExp(data.filters[i][0], "g"),
-                                       data.filters[i][1],
-                                       data.filters[i][2]];
+                    var f = data.filters[i];
+                    // Backwards compatibility
+                    if(f[0] != undefined) {
+                        this.filters[i] = new Filter("", f[0], "g", f[1]);
+                        this.filters[i].active = f[2];
+                    }
+                    else {
+                        this.filters[i] = new Filter(f.name, f.source, f.flags, f.replace);
+                        this.filters[i].active = f.active;
+                    }
                 }
             }
             if(data.motd) {
@@ -136,9 +143,7 @@ Channel.prototype.loadDump = function() {
 Channel.prototype.saveDump = function() {
     var filts = new Array(this.filters.length);
     for(var i = 0; i < this.filters.length; i++) {
-        filts[i] = [this.filters[i][0].source,
-                    this.filters[i][1],
-                    this.filters[i][2]];
+        filts[i] = this.filters[i].pack();
     }
     var dump = {
         position: this.position,
@@ -400,7 +405,7 @@ Channel.prototype.sendRankStuff = function(user) {
     if(Rank.hasPermission(user, "chatFilter")) {
         var filts = new Array(this.filters.length);
         for(var i = 0; i < this.filters.length; i++) {
-            filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
+            filts[i] = this.filters[i].pack();
         }
         user.socket.emit("chatFilters", {filters: filts});
     }
@@ -545,7 +550,7 @@ Channel.prototype.broadcastRankTable = function() {
 Channel.prototype.broadcastChatFilters = function() {
     var filts = new Array(this.filters.length);
     for(var i = 0; i < this.filters.length; i++) {
-        filts[i] = [this.filters[i][0].source, this.filters[i][1], this.filters[i][2]];
+        filts[i] = this.filters[i].pack();
     }
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "chatFilter")) {
@@ -1054,10 +1059,10 @@ Channel.prototype.trySetLock = function(user, data) {
 Channel.prototype.updateFilter = function(filter) {
     var found = false;
     for(var i = 0; i < this.filters.length; i++) {
-        if(this.filters[i][0].source == filter[0].source) {
+        if(this.filters[i].name == filter.name
+                && this.filters[i].source == filter.source) {
             found = true;
-            this.filters[i][1] = filter[1];
-            this.filters[i][2] = filter[2];
+            this.filters[i] = filter;
         }
     }
     if(!found) {
@@ -1066,9 +1071,10 @@ Channel.prototype.updateFilter = function(filter) {
     this.broadcastChatFilters();
 }
 
-Channel.prototype.removeFilter = function(regex) {
+Channel.prototype.removeFilter = function(name, source) {
     for(var i = 0; i < this.filters.length; i++) {
-        if(this.filters[i][0].source == regex) {
+        if(this.filters[i].name == name
+                && this.filters[i].source == source) {
             this.filters.splice(i, 1);
             break;
         }
@@ -1086,23 +1092,23 @@ Channel.prototype.tryChangeFilter = function(user, data) {
     }
 
     if(data.cmd == "update") {
-        var re = data.filter[0];
-        var flags = "g";
-        var slash = re.lastIndexOf("/");
-        if(slash > 0 && re[slash-1] != "\\") {
-            flags = re.substring(slash+1);
-            re = re.substring(0, slash);
-        }
+        var re = data.filter.source;
+        var flags = data.filter.flags;
         try {
-            data.filter[0] = new RegExp(re, flags);
+            new RegExp(re, flags);
         }
         catch(e) {
             return;
         }
-        this.updateFilter(data.filter);
+        var f = new Filter(data.filter.name,
+                           data.filter.source,
+                           data.filter.flags,
+                           data.filter.replace);
+        f.active = data.filter.active;
+        this.updateFilter(f);
     }
     else if(data.cmd == "remove") {
-        this.removeFilter(data.filter[0]);
+        this.removeFilter(data.filter.name, data.filter.source);
     }
 }
 
@@ -1182,11 +1188,9 @@ Channel.prototype.filterMessage = function(msg) {
     msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/g, "<a href=\"$1\" target=\"_blank\">$1</a>");
     // Apply other filters
     for(var i = 0; i < this.filters.length; i++) {
-        if(!this.filters[i][2])
+        if(!this.filters[i].active)
             continue;
-        var regex = this.filters[i][0];
-        var replace = this.filters[i][1];
-        msg = msg.replace(regex, replace);
+        msg = this.filters[i].filter(msg);
     }
     return msg;
 }

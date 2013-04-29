@@ -618,24 +618,29 @@ function updateChatFilters(entries) {
         $(tbl.children()[1]).remove();
     }
     for(var i = 0; i < entries.length; i++) {
+        var f = entries[i];
         var tr = $("<tr/>").appendTo(tbl);
         var remove = $("<button/>").addClass("btn btn-mini btn-danger")
             .appendTo($("<td/>").appendTo(tr));
         $("<i/>").addClass("icon-remove-circle").appendTo(remove);
-        var regex = $("<code/>").text(entries[i][0])
+        var name = $("<code/>").text(f.name)
             .appendTo($("<td/>").appendTo(tr));
-        var replace = $("<code/>").text(entries[i][1])
+        var regex = $("<code/>").text(f.source)
+            .appendTo($("<td/>").appendTo(tr));
+        var flags = $("<code/>").text(f.flags)
+            .appendTo($("<td/>").appendTo(tr));
+        var replace = $("<code/>").text(f.replace)
             .appendTo($("<td/>").appendTo(tr));
         var activetd = $("<td/>").appendTo(tr);
         var active = $("<input/>").attr("type", "checkbox")
-            .prop("checked", entries[i][2]).appendTo(activetd);
+            .prop("checked", f.active).appendTo(activetd);
 
         var remcallback = (function(filter) { return function() {
             socket.emit("chatFilter", {
                 cmd: "remove",
                 filter: filter
             });
-        } })(entries[i]);
+        } })(f);
         remove.click(remcallback);
 
         var actcallback = (function(filter) { return function() {
@@ -644,33 +649,33 @@ function updateChatFilters(entries) {
             // changed before this callback
             // [](/amgic)
             var enabled = active.prop("checked");
-            filter[2] = (filter[2] == enabled) ? !enabled : enabled;
+            filter.active = (filter.active == enabled) ? !enabled : enabled;
             socket.emit("chatFilter", {
                 cmd: "update",
                 filter: filter
             });
-        } })(entries[i]);
+        } })(f);
         active.click(actcallback);
     }
 
     var newfilt = $("<tr/>").appendTo(tbl);
     $("<td/>").appendTo(newfilt);
+    var name = $("<input/>").attr("type", "text")
+        .appendTo($("<td/>").appendTo(newfilt));
     var regex = $("<input/>").attr("type", "text")
+        .appendTo($("<td/>").appendTo(newfilt));
+    var flags = $("<input/>").attr("type", "text")
+        .val("g")
         .appendTo($("<td/>").appendTo(newfilt));
     var replace = $("<input/>").attr("type", "text")
         .appendTo($("<td/>").appendTo(newfilt));
     var add = $("<button/>").addClass("btn btn-primary")
         .text("Add Filter")
         .appendTo($("<td/>").appendTo(newfilt));
-    var cback = (function(regex, replace) { return function() {
+    var cback = (function(name, regex, fg, replace) { return function() {
         if(regex.val() && replace.val()) {
             var re = regex.val();
-            var flags = "g";
-            var slash = re.lastIndexOf("/");
-            if(slash > 0 && re[slash-1] != "\\") {
-                flags = re.substring(slash+1);
-                re = re.substring(0, slash);
-            }
+            var flags = fg.val();
             try {
                 var dummy = new RegExp(re, flags);
             }
@@ -679,10 +684,16 @@ function updateChatFilters(entries) {
             }
             socket.emit("chatFilter", {
                 cmd: "update",
-                filter: [regex.val(), replace.val(), true]
+                filter: {
+                    name: name.val(),
+                    source: re,
+                    flags: flags,
+                    replace: replace.val(),
+                    active: true
+                }
             });
         }
-    } })(regex, replace);
+    } })(name, regex, flags, replace);
     add.click(cback);
 }
 

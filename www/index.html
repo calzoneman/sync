@@ -124,7 +124,7 @@
             </div>
         </div>
         <div class="row" style="display: none;" id="modnav">
-            <div class="span10 offset1" id="modtabs">
+            <div class="span12" id="modtabs">
                 <ul class="nav nav-tabs">
                     <li class="active">
                         <a href="javascript:void(0)" id="show_chancontrols">Channel Controls</a>
@@ -145,10 +145,10 @@
             </div>
         </div>
         <div class="row modonly" style="display: none" id="chancontrols">
-            <div class="span10 offset1">
+            <div class="span12">
                 <form action="javascript:void(0)">
                     <fieldset>
-                        <div class="span4">
+                        <div class="span5">
                             <label>When the queue is open:</label>
                             <label class="checkbox">
                                 <input type="checkbox" id="opt_qopen_allow_qnext">
@@ -203,7 +203,7 @@
             </div>
         </div>
         <div class="row modonly" id="banlist" style="display: none;">
-            <div class="span10 offset1">
+            <div class="span12">
                 <table class="table table-striped">
                     <thead>
                         <th></th>
@@ -215,17 +215,19 @@
             </div>
         </div>
         <div class="row modonly" id="motdeditor" style="display: none;">
-            <div class="span10 offset1">
+            <div class="span12">
                 <textarea rows="10" id="motdtext"></textarea>
                 <button class="btn btn-primary" id="updatemotd">Update</button>
             </div>
         </div>
         <div class="row modonly" id="filtereditor" style="display: none;">
-            <div class="span10 offset1">
+            <div class="span12">
                 <table class="table table-striped">
                     <thead>
                         <th></th>
+                        <th>Name</th>
                         <th>Regex</th>
+                        <th>Flags</th>
                         <th>Replacement</th>
                         <th>Active</th>
                     </thead>
@@ -233,7 +235,7 @@
             </div>
         </div>
         <div class="row modonly" id="channelranks" style="display: none;">
-            <div class="span10 offset1">
+            <div class="span12">
                 <table class="table table-striped">
                     <thead>
                         <th>Name</th>
