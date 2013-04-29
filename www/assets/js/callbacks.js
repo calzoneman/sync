@@ -111,6 +111,10 @@ function initCallbacks() {
         updateBanlist(data.entries);
     });
 
+    socket.on("seenlogins", function(data) {
+        updateSeenLogins(data.entries);
+    });
+
     socket.on("acl", updateACL);
 
     socket.on("voteskip", function(data) {

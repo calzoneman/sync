@@ -419,6 +419,16 @@ $("#show_banlist").click(function() {
     $("#banlist").show();
 });
 
+$("#show_loginlog").click(function() {
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
+    $(".modonly").hide();
+    $("#show_loginlog").parent().addClass("active");
+    $("#loginlog").show();
+    socket.emit("requestSeenlogins");
+});
+
 $("#show_motdeditor").click(function() {
     $("#modnav li").each(function() {
         $(this).removeClass("active");

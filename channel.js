@@ -62,6 +62,7 @@ var Channel = function(name) {
         html: ""
     };
     this.ipbans = {};
+    this.logins = {};
     this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
     this.i = 0;
     this.time = new Date().getTime();
@@ -132,6 +133,10 @@ Channel.prototype.loadDump = function() {
             if(data.motd) {
                 this.motd = data.motd;
             }
+            data.logins = data.logins || {};
+            for(var ip in data.logins) {
+                this.logins[ip] = data.logins[ip];
+            }
         }
         catch(e) {
             Logger.errlog.log("Channel dump load failed: ");
@@ -151,7 +156,8 @@ Channel.prototype.saveDump = function() {
         queue: this.queue,
         opts: this.opts,
         filters: filts,
-        motd: this.motd
+        motd: this.motd,
+        logins: this.logins
     };
     var text = JSON.stringify(dump);
     fs.writeFileSync("chandump/" + this.name, text);
@@ -285,8 +291,14 @@ Channel.prototype.search = function(query, callback) {
 /* REGION User interaction */
 
 Channel.prototype.userJoin = function(user) {
+    if(!(user.ip in this.logins)) {
+        this.logins[user.ip] = [];
+    }
+    var parts = user.ip.split(".");
+    var slash24 = parts[0] + "." + parts[1] + "." + parts[2];
     // GTFO
-    if(user.ip in this.ipbans && this.ipbans[user.ip] != null) {
+    if((user.ip in this.ipbans && this.ipbans[user.ip] != null) ||
+       (slash24 in this.ipbans && this.ipbans[slash24] != null)) {
         this.logger.log("--- Kicking " + user.ip + " - banned");
         this.kick(user, "You're banned!");
         user.socket.disconnect(true);
@@ -402,6 +414,16 @@ Channel.prototype.sendRankStuff = function(user) {
         }
         user.socket.emit("banlist", {entries: ents});
     }
+    if(Rank.hasPermission(user, "seenlogins")) {
+        var ents = [];
+        for(var ip in this.logins) {
+            ents.push({
+                ip: ip,
+                name: this.logins[ip].join(",")
+            });
+        }
+        user.socket.emit("seenlogins", {entries: ents});
+    }
     if(Rank.hasPermission(user, "chatFilter")) {
         var filts = new Array(this.filters.length);
         for(var i = 0; i < this.filters.length; i++) {
@@ -484,6 +506,9 @@ Channel.prototype.broadcastUsercount = function() {
 }
 
 Channel.prototype.broadcastNewUser = function(user) {
+    if(this.logins[user.ip].join("").indexOf(user.name) == -1) {
+        this.logins[user.ip].push(user.name);
+    }
     this.sendAll("addUser", {
         name: user.name,
         rank: user.rank,

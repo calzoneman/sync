@@ -303,6 +303,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("requestSeenlogins", function() {
+        if(this.channel != null) {
+            this.channel.sendRankStuff(this);
+        }
+    }.bind(this));
+
     this.socket.on("voteskip", function(data) {
         if(this.channel != null) {
             this.channel.tryVoteskip(this);

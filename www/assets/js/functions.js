@@ -612,6 +612,41 @@ function updateBanlist(entries) {
     }
 }
 
+function updateSeenLogins(entries) {
+    console.log(entries);
+    var tbl = $("#loginlog table");
+    if(tbl.children().length > 1) {
+        $(tbl.children()[1]).remove();
+    }
+    for(var i = 0; i < entries.length; i++) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var bantd = $("<td/>").appendTo(tr);
+        var ban = $("<button/>").addClass("btn btn-mini btn-danger")
+            .text("Ban")
+            .appendTo(bantd);
+        var banrange = $("<button/>").addClass("btn btn-mini btn-danger")
+            .text("Ban Range")
+            .appendTo(bantd);
+        var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
+        var name = $("<td/>").text(entries[i].name).appendTo(tr);
+
+        var callback = (function(ip) { return function() {
+            socket.emit("chatMsg", {
+                msg: "/ipban " + ip
+            });
+        } })(entries[i].ip);
+        ban.click(callback);
+        var callback2 = (function(ip) { return function() {
+            var parts = ip.split(".");
+            var slash24 = parts[0] + "." + parts[1] + "." + parts[2];
+            socket.emit("chatMsg", {
+                msg: "/ipban " + slash24
+            });
+        } })(entries[i].ip);
+        banrange.click(callback2);
+    }
+}
+
 function updateChatFilters(entries) {
     var tbl = $("#filtereditor table");
     if(tbl.children().length > 1) {

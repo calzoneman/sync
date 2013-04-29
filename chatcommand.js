@@ -38,6 +38,9 @@ function handle(chan, user, msg, data) {
     else if(msg.indexOf("/ban ") == 0) {
         handleBan(chan, user, msg.substring(5).split(" "));
     }
+    else if(msg.indexOf("/ipban ") == 0) {
+        handleIpban(chan, user, msg.substring(7).split(" "));
+    }
     else if(msg.indexOf("/unban ") == 0) {
         handleUnban(chan, user, msg.substring(7).split(" "));
     }
@@ -84,6 +87,29 @@ function handleBan(chan, user, args) {
             chan.kick(kickee, "(banned) " + reason);
             chan.banIP(user, kickee);
         }
+    }
+}
+
+function handleIpban(chan, user, args) {
+    if(Rank.hasPermission(user, "ipban") && args.length > 0) {
+        var name = "";
+        for(var ip in chan.logins) {
+            if(ip.indexOf(args[0]) == 0) {
+                var names = chan.logins[ip];
+                for(var i = 0; i < names.length; i++) {
+                    var r = chan.getRank(names[i]);
+                    if(r >= user.rank) {
+                        return;
+                    }
+                }
+                name = names[names.length - 1];
+            }
+        }
+        chan.logger.log("*** " + user.name + " banned " + args[0]);
+        chan.banIP(user, {
+            ip: args[0],
+            name: name
+        });
     }
 }
 

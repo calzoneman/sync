@@ -35,6 +35,7 @@ var permissions = {
     drink           : exports.Moderator,
     seeVoteskip     : exports.Moderator,
     uncache         : exports.Moderator,
+    seenlogins      : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };
