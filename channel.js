@@ -1111,8 +1111,17 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
         return;
     }
 
+    const adminonly = {
+        opt_pagetitle: true,
+        opt_customcss: true,
+        opt_customjs: true
+    };
+
     for(var key in this.opts) {
         if(key in data) {
+            if(key in adminonly && user.rank < Rank.Owner) {
+                continue;
+            }
             this.opts[key] = data[key];
         }
     }

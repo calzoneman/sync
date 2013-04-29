@@ -760,6 +760,15 @@ function handleRankChange() {
         $("#shuffleplaylist").css("display", "");
         $("#modnav").show();
         $("#chancontrols").show();
+        var val =  false;
+        if(RANK < Rank.Owner) {
+            val = "disabled";
+        }
+        $("#opt_pagetitle").attr("disabled", val);
+        $("#opt_customcss").attr("disabled", val);
+        $("#opt_customjs").attr("disabled", val);
+        $("#show_filtereditor").attr("disabled", val);
+        $("#show_acl").attr("disabled", val);
     }
     else if(!LEADER) {
         if(OPENQUEUE) {

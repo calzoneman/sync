@@ -181,6 +181,7 @@ function initCallbacks() {
     socket.on("updateUser", function(data) {
         if(data.name == uname) {
             LEADER = data.leader;
+            RANK = data.rank;
             handleRankChange();
             if(LEADER) {
                 // I'm a leader!  Set up sync function

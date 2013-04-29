@@ -429,22 +429,32 @@ $("#show_motdeditor").click(function() {
 });
 
 $("#show_filtereditor").click(function() {
-    $("#modnav li").each(function() {
-        $(this).removeClass("active");
-    });
-    $(".modonly").hide();
-    $("#show_filtereditor").parent().addClass("active");
-    $("#filtereditor").show();
+    if(RANK >= Rank.Owner) {
+        $("#modnav li").each(function() {
+            $(this).removeClass("active");
+        });
+        $(".modonly").hide();
+        $("#show_filtereditor").parent().addClass("active");
+        $("#filtereditor").show();
+    }
+    else {
+        alert("Only channel administrators can change filters");
+    }
 });
 
 $("#show_acl").click(function() {
-    $("#modnav li").each(function() {
-        $(this).removeClass("active");
-    });
-    $(".modonly").hide();
-    $("#show_acl").parent().addClass("active");
-    $("#channelranks").show();
-    socket.emit("requestAcl");
+    if(RANK >= Rank.Owner) {
+        $("#modnav li").each(function() {
+            $(this).removeClass("active");
+        });
+        $(".modonly").hide();
+        $("#show_acl").parent().addClass("active");
+        $("#channelranks").show();
+        socket.emit("requestAcl");
+    }
+    else {
+        alert("Only channel administrators can use the ACL");
+    }
 });
 
 function searchLibrary() {
