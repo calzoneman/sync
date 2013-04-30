@@ -161,7 +161,7 @@ setInterval(function() {
     sendVideoUpdate();
 }, 5000);
 
-$("#queue_end").click(function() {
+function queueEnd() {
     var urls = $("#mediaurl").val().split(",");
     for(var i = 0; i < urls.length; i++) {
         if(!urls[i].trim())
@@ -177,6 +177,12 @@ $("#queue_end").click(function() {
             pos: "end",
             type: type
         });
+    }
+}
+$("#queue_end").click(queueEnd);
+$("#mediaurl").keydown(function(ev) {
+    if(ev.keyCode == 13) {
+        queueEnd();
     }
 });
 
