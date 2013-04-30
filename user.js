@@ -54,7 +54,8 @@ User.prototype.noflood = function(name, hz) {
     else {
         this.throttle[name].push(time);
         var diff = (time - this.throttle[name][0]) / 1000.0;
-        if(diff > 1.0) {
+        // Twice might be an accident, more than that is probably spam
+        if(this.throttle[name].length > 2) {
             var rate = this.throttle[name].length / diff;
             this.throttle[name] = [time];
             if(rate > hz) {

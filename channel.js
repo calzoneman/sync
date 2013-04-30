@@ -1195,6 +1195,9 @@ Channel.prototype.tryChat = function(user, data) {
     }
 
     var msg = data.msg;
+    if(msg.length > 240) {
+        msg = msg.substring(0, 240);
+    }
     if(this.opts.chat_antiflood && user.noflood("chat", 2.0)) {
         return;
     }
