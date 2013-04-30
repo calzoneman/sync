@@ -467,6 +467,75 @@ $("#show_acl").click(function() {
     }
 });
 
+function splitreEntry(str) {
+    var split = [];
+    var current = [];
+    for(var i = 0; i < str.length; i++) {
+        if(str[i] == "\\" && i+1 < str.length && str[i+1].match(/\s/)) {
+            current.push(str[i+1]);
+            i++;
+            continue;
+        }
+        else if(str[i].match(/\s/)) {
+            split.push(current.join(""));
+            current = [];
+        }
+        else {
+            current.push(str[i]);
+        }
+    }
+    split.push(current.join(""));
+    return split;
+}
+
+$("#multifilter").click(function() {
+    var input = $("#multifiltereditor").val();
+    var lines = input.split("\n");
+    for(var i = 0; i < lines.length; i++) {
+        var fields = splitreEntry(lines[i]);
+        var name = "";
+        var regex = "";
+        var flags = "";
+        var replace = "";
+        if(fields.length < 3) {
+            alert("Minimum of 3 fields per filter: (optional: name), regex, flags, replacement");
+            return;
+        }
+        else if(fields.length == 3) {
+            regex = fields[0];
+            flags = fields[1];
+            replace = fields[2];
+        }
+        else if(fields.length == 4) {
+            name = fields[0];
+            regex = fields[1];
+            flags = fields[2];
+            replace = fields[3];
+        }
+        else {
+            alert("Too many paramters: " + fields.join(" "));
+            return;
+        }
+        try {
+            new RegExp(regex, flags);
+        }
+        catch(e) {
+            alert("Invalid regex: " + e);
+            return;
+        }
+        socket.emit("chatFilter", {
+            cmd: "update",
+            filter: {
+                name: name,
+                source: regex,
+                flags: flags,
+                replace: replace,
+                active: true
+            }
+        });
+    }
+});
+
 function searchLibrary() {
     socket.emit("searchLibrary", {
         query: $("#library_query").val()
