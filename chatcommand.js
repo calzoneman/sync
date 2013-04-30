@@ -87,6 +87,27 @@ function handleBan(chan, user, args) {
             chan.kick(kickee, "(banned) " + reason);
             chan.banIP(user, kickee);
         }
+        else if(!kickee && chan.getRank(args[0]) < user.rank) {
+            for(var ip in chan.logins) {
+                console.log(ip, chan.logins[ip]);
+                if(chan.logins[ip].join("").indexOf(args[0]) != -1) {
+                    for(var i = 0; i < chan.logins[ip].length; i++) {
+                        if(chan.getRank(chan.logins[ip][i]) >= user.rank) {
+                            return;
+                        }
+                    }
+                    if(args.length >= 2 && args[1] == "range") {
+                        var parts = ip.split(".");
+                        ip = parts[0] + "." + parts[1] + "." + parts[2];
+                    }
+                    chan.logger.log("*** " + user.name + " banned " + ip);
+                    chan.banIP(user, {
+                        ip: ip,
+                        name: args[0]
+                    });
+                }
+            }
+        }
     }
 }
 

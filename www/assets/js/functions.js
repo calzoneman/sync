@@ -613,7 +613,6 @@ function updateBanlist(entries) {
 }
 
 function updateSeenLogins(entries) {
-    console.log(entries);
     var tbl = $("#loginlog table");
     if(tbl.children().length > 1) {
         $(tbl.children()[1]).remove();
@@ -630,19 +629,17 @@ function updateSeenLogins(entries) {
         var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
         var name = $("<td/>").text(entries[i].name).appendTo(tr);
 
-        var callback = (function(ip) { return function() {
+        var callback = (function(name) { return function() {
             socket.emit("chatMsg", {
-                msg: "/ipban " + ip
+                msg: "/ban " + name
             });
-        } })(entries[i].ip);
+        } })(entries[i].name.split(",")[0]);
         ban.click(callback);
-        var callback2 = (function(ip) { return function() {
-            var parts = ip.split(".");
-            var slash24 = parts[0] + "." + parts[1] + "." + parts[2];
+        var callback2 = (function(name) { return function() {
             socket.emit("chatMsg", {
-                msg: "/ipban " + slash24
+                msg: "/ban " + name + " range"
             });
-        } })(entries[i].ip);
+        } })(entries[i].name.split(",")[0]);
         banrange.click(callback2);
     }
 }
@@ -900,7 +897,6 @@ function newPollMenu() {
             opts[i - 1] = $(all[i]).val();
         }
 
-        console.log(title, opts);
         socket.emit("newPoll", {
             title: title,
             opts: opts

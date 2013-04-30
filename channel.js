@@ -417,8 +417,12 @@ Channel.prototype.sendRankStuff = function(user) {
     if(Rank.hasPermission(user, "seenlogins")) {
         var ents = [];
         for(var ip in this.logins) {
+            var disp = ip;
+            if(user.rank < Rank.Siteadmin) {
+                disp = "(Masked)";
+            }
             ents.push({
-                ip: ip,
+                ip: disp,
                 name: this.logins[ip].join(",")
             });
         }
