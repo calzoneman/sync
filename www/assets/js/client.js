@@ -50,6 +50,7 @@ var USEROPTS = {
 };
 applyOpts();
 $("#optlink").click(showUserOpts);
+$("#sitefooter").load("footer.html");
 
 var Rank = {
     Guest: 0,
