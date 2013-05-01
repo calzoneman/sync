@@ -622,6 +622,18 @@ function updateSeenLogins(entries) {
     if(tbl.children().length > 1) {
         $(tbl.children()[1]).remove();
     }
+    entries.sort(function(a, b) {
+        var x = a.name.toLowerCase();
+        var y = b.name.toLowerCase();
+        // Force blanknames to the bottom
+        if(x == "") {
+            return 1;
+        }
+        if(y == "") {
+            return -1;
+        }
+        return x == y ? 0 : (x < y ? -1 : 1);
+    });
     for(var i = 0; i < entries.length; i++) {
         var tr = $("<tr/>").appendTo(tbl);
         var bantd = $("<td/>").appendTo(tr);
