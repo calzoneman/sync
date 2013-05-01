@@ -376,7 +376,8 @@ $("#opt_submit").click(function() {
         pagetitle: ptitle,
         customcss: css,
         customjs: $("#opt_customjs").val(),
-        chat_antiflood: $("#opt_chat_antiflood").prop("checked")
+        chat_antiflood: $("#opt_chat_antiflood").prop("checked"),
+        show_public: $("#opt_show_public").prop("checked")
     };
     socket.emit("channelOpts", opts);
 });

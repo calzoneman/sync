@@ -77,6 +77,7 @@ function initCallbacks() {
         $("#opt_customcss").val(opts.customcss);
         $("#opt_customjs").val(opts.customjs);
         $("#opt_chat_antiflood").prop("checked", opts.chat_antiflood);
+        $("#opt_show_public").prop("checked", opts.show_public);
         $("#customCss").remove();
         if(opts.customcss.trim() != "") {
             $("<link/>").attr("rel", "stylesheet")

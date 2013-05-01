@@ -827,6 +827,7 @@ function handleRankChange() {
         $("#opt_pagetitle").attr("disabled", val);
         $("#opt_customcss").attr("disabled", val);
         $("#opt_customjs").attr("disabled", val);
+        $("#opt_show_public").attr("disabled", val);
         $("#show_filtereditor").attr("disabled", val);
         $("#show_acl").attr("disabled", val);
     }

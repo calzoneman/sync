@@ -110,6 +110,15 @@ function handleChannelData(params, req, res) {
 }
 
 function handleChannelList(params, req, res) {
+    if(params.filter == "public") {
+        var clist = [];
+        for(var key in Server.channels) {
+            if(Server.channels[key].opts.show_public) {
+                clist.push(key);
+            }
+        }
+        handleChannelData({channel: clist.join(",")}, req, res);
+    }
     var session = params.session || "";
     var name = params.name || "";
     var pw = params.pw || "";

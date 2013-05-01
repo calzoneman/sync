@@ -50,7 +50,8 @@ var Channel = function(name) {
         pagetitle: this.name,
         customcss: "",
         customjs: "",
-        chat_antiflood: false
+        chat_antiflood: false,
+        show_public: false
     };
     this.filters = [
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
@@ -1147,9 +1148,10 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
     }
 
     const adminonly = {
-        opt_pagetitle: true,
-        opt_customcss: true,
-        opt_customjs: true
+        pagetitle: true,
+        customcss: true,
+        customjs: true,
+        show_public: true
     };
 
     for(var key in this.opts) {

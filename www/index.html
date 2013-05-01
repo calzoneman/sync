@@ -13,6 +13,10 @@
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
+      #channeldata td, #channeldata th {
+          text-align: center;
+          vertical-align: middle;
+      }
     </style>
     <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
   </head>
@@ -49,219 +53,24 @@
                 <h3 id="welcome"></h3>
             </div>
         </div>
-        <div class="row" id="motdrow">
-            <div class="span10 offset1 well">
-                <p id="motd"></p>
-            </div>
-            <div class="span12 drinkbar">
-                <h1 id="drinkcount"></h1>
-            </div>
-        </div>
-        <div class="row" id="main" style="margin-top: 20px;">
-            <div class="span5" id="chatdiv">
-                <p id="usercount"></p>
-                <div id="userlist">
-                </div>
-                <div id="messagebuffer">
-                </div>
-                <input type="text" id="chatline" class="span5">
-            </div>
-            <div class="span7" id="videodiv">
-                <p id="currenttitle">Currently Playing: </p>
-                <div id="ytapiplayer">
-                </div>
-            </div>
-        </div>
-        <div class="row" id="queuerow">
-            <div class="span5">
-                <div class="row-fluid">
-                    <div class="span12" id="pollcontainer">
-                    </div>
-                    <div class="span7" style="margin-left: 0;">
-                        <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
-                    </div>
-                    <div class="span5 btn-group">
-                        <button class="btn" id="library_search">Library</button>
-                        <button class="btn" id="youtube_search">YouTube</button>
-                    </div>
-                    <div class="span12" style="margin-left: 0;">
-                        <ul id="library" class="videolist">
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="span7" id="queuediv">
-                <div class="row-fluid" id="qclear">
-                    <div class="span12"></div>
-                </div>
-                <div id="playlist_controls"style="display: none;">
-                    <div class="row-fluid">
-                        <div class="span8">
-                            <input type="text" id="mediaurl" class="input-block-level" placeholder="Media URL">
-                        </div>
-                        <div class="span4 btn-group">
-                            <button class="btn" id="queue_next">Next</button>
-                            <button class="btn" id="queue_end">End</button>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn btn-block" id="voteskip">Voteskip</button>
-                <div class="row-fluid">
-                    <ul id="queue" class="span12 videolist">
-                    </ul>
-                    <div class="span12 well well-small" id="plmeta">
-                        <span id="plcount"></span>
-                        <span id="pllength"></span>
-                        <div class="clear: both;"></div>
-                    </div>
-                    <button class="btn btn-danger btn-block" id="qlockbtn" style="display:none;">Unlock Queue</button>
-                    <div class="span12 btn-group" style="margin: 0">
-                        <button class="btn" id="getplaylist" style="width: 100%">Get Playlist URLs</button>
-                        <button class="btn" id="clearplaylist" style="width: 33%; display: none;">Clear Playlist</button>
-                        <button class="btn" id="shuffleplaylist" style="width: 33%; display: none;">Shuffle Playlist</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row" style="display: none;" id="modnav">
-            <div class="span12" id="modtabs">
-                <ul class="nav nav-tabs">
-                    <li class="active">
-                        <a href="javascript:void(0)" id="show_chancontrols">Channel Controls</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)" id="show_banlist">Ban List</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)" id="show_loginlog">Connection Log</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)" id="show_motdeditor">MOTD</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)" id="show_filtereditor">Chat Filters</a>
-                    </li>
-                    <li>
-                        <a href="javascript:void(0)" id="show_acl">Channel Ranks</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="row modonly" style="display: none" id="chancontrols">
-            <div class="span12">
-                <form action="javascript:void(0)">
-                    <fieldset>
-                        <div class="span5">
-                            <label>When the queue is open:</label>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_qopen_allow_qnext">
-                                Allow anyone to Queue Next
-                            </label>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_qopen_allow_move">
-                                Allow anyone to move videos
-                            </label>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_qopen_allow_delete">
-                                Allow anyone to delete videos
-                            </label>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_qopen_allow_playnext">
-                                Allow anyone to jump to a video
-                            </label>
-                        </div>
-                        <div class="span5">
-                            <label>Page Title
-                                <input type="text" id="opt_pagetitle" placeholder="Sync" class="pull-right">
-                            </label>
-                            <br>
-                            <label>Custom CSS
-                                <input type="text" id="opt_customcss" class="pull-right">
-                            </label>
-                            <br>
-                            <label>Custom JS<sup class="text-warning">BETA</sup>
-                                <input type="text" id="opt_customjs" class="pull-right">
-                            </label>
-                            <br>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_allow_voteskip">
-                                Allow voteskip
-                            </label>
-                            <br>
-                            <label>Voteskip Ratio
-                                <input type="text" id="opt_voteskip_ratio" class="pull-right">
-                            </label>
-                            <br>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_chat_antiflood">
-                                Prevent chat flood
-                            </label>
-                        </div>
-
-                        <div class="span10">
-                            <button class="btn btn-primary" id="opt_submit">Save</button>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
-        </div>
-        <div class="row modonly" id="banlist" style="display: none;">
-            <div class="span12">
-                <table class="table table-striped">
+        <div class="row">
+            <div class="span8">
+                <h3>Loaded Channels</h3>
+                <table id="channeldata" class="table table-striped table-bordered">
                     <thead>
-                        <th></th>
-                        <th>IP</th>
-                        <th>Name</th>
-                        <th>Banned By</th>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Connected</th>
+                            <th>Playing</th>
+                        </tr>
                     </thead>
+                    <tbody>
+                    </tbody>
                 </table>
             </div>
-        </div>
-        <div class="row modonly" id="loginlog" style="display: none;">
-            <div class="span12">
-                <table class="table table-striped">
-                    <thead>
-                        <th></th>
-                        <th>IP</th>
-                        <th>Names</th>
-                    </thead>
-                </table>
-            </div>
-        </div>
-        <div class="row modonly" id="motdeditor" style="display: none;">
-            <div class="span12">
-                <textarea rows="10" id="motdtext"></textarea>
-                <button class="btn btn-primary" id="updatemotd">Update</button>
-            </div>
-        </div>
-        <div class="row modonly" id="filtereditor" style="display: none;">
-            <div class="span12">
-                <table class="table table-striped">
-                    <thead>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Regex</th>
-                        <th>Flags</th>
-                        <th>Replacement</th>
-                        <th>Active</th>
-                    </thead>
-                </table>
-            </div>
-            <div class="span12">
-                <p>Multiple filters can be added at once below.  They should contain 3-4 fields separated by whitespace: (name) regex flags replacement.<br>If any field contains whitespace, it must be escaped by a backslash, for example "what\ a\ story\ mark"</p>
-                <textarea rows="10" class="input-block-level" id="multifiltereditor"></textarea>
-                <button class="btn btn-primary" id="multifilter">Update Multiple</button>
-            </div>
-        </div>
-        <div class="row modonly" id="channelranks" style="display: none;">
-            <div class="span12">
-                <table class="table table-striped">
-                    <thead>
-                        <th>Name</th>
-                        <th>Rank</th>
-                        <th>Control</th>
-                    </thead>
-                </table>
+            <div class="span4">
+                <h3>Enter Channel</h3>
+                <input type="text" id="channel" placeholder="Channel Name">
             </div>
         </div>
     </div> <!-- /container -->
@@ -278,46 +87,46 @@
     </div>
 
     <!-- Third party -->
+    <script src="./assets/js/jquery.js"></script>
     <script src="./assets/js/bootstrap.js"></script>
     <script src="./assets/js/bootstrap-transition.js"></script>
     <script src="./assets/js/bootstrap-modal.js"></script>
+
     <!-- Mine -->
-    <script src="./assets/js/jquery.js"></script>
+    <script src="./assets/js/iourl.js"></script>
     <script type="text/javascript">
-        var params = {};
-        if(window.location.search) {
-            var parameters = window.location.search.substring(1).split("&");
-            for(var i = 0; i < parameters.length; i++) {
-                var s = parameters[i].split("=");
-                if(s.length != 2)
-                    continue;
-                params[s[0]] = s[1];
-            }
-        }
-        if(params["channel"] && params["channel"].match(/^[a-zA-Z0-9]+$/)) {
-            var host = ""+document.location;
-            host = host.replace("http://", "");
+        var host = document.location+"";
+        host = host.replace("http://", "");
+        if(host.indexOf("/") != -1)
             host = host.substring(0, host.indexOf("/"));
-            document.location = "http://" + host + "/r/" + params["channel"];
-        }
-        else {
-            var main = $($(".container")[1]);
-            var container = $("<div/>").addClass("container").insertBefore(main);
-            var row = $("<div/>").addClass("row").appendTo(container);
-            var div = $("<div/>").addClass("span6").appendTo(row);
-            main.css("display", "none");
-            var label = $("<label/>").text("Enter Channel:").appendTo(div);
-            var entry = $("<input/>").attr("type", "text").appendTo(div);
-            entry.keydown(function(ev) {
-                var host = ""+document.location;
-                host = host.replace("http://", "");
-                host = host.substring(0, host.indexOf("/"));
-                if(ev.keyCode == 13) {
-                    document.location = "http://" + host + "/r/" + entry.val();
+        host = "http://";
+        setInterval(refresh, 10000);
+        refresh();
+        function refresh() {
+            $.getJSON(IO_URL+"/api/json/listloaded?filter=public&callback=?", function(data) {
+                $("#channeldata").find("tbody").remove();
+                data.sort(function(a, b) {
+                    var x = a.usercount;
+                    var y = b.usercount;
+                    if(x == y) {
+                        var c = a.name.toLowerCase();
+                        var d = b.name.toLowerCase();
+                        return c == d ? 0 : (c < d ? -1 : 1);
+                    }
+                    return y - x;
+                });
+                for(var i = 0; i < data.length; i++) {
+                    var d = data[i];
+                    var tr = $("<tr/>").appendTo($("#channeldata"));
+                    var name = $("<td/>").appendTo(tr);
+                    $("<a/>").attr("href", host + "/r/" + d.name)
+                        .text(d.name)
+                        .appendTo(name);
+                    $("<td/>").text(d.usercount || 0).appendTo(tr);
+                    $("<td/>").text(d.title || "-").appendTo(tr);
                 }
             });
         }
     </script>
-
   </body>
 </html>
