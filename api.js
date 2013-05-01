@@ -156,6 +156,7 @@ function handleLogin(params, req, res) {
     }
     else {
         sendJSON(res, {
+            error: "Invalid session",
             success: false
         });
     }

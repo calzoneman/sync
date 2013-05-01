@@ -949,7 +949,13 @@ function showLoginFrame() {
             var data = e.data.substring(e.data.indexOf(":")+1);
             data = JSON.parse(data);
             if(data.error) {
-                alert(data.error);
+                // Since this is the login page, invalid session implies bad credentials
+                if(data.error == "Invalid session") {
+                    alert("Invalid username/password");
+                }
+                else {
+                    alert(data.error);
+                }
             }
             else if(data.success) {
                 session = data.session || "";
