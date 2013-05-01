@@ -91,7 +91,7 @@
         host = host.replace("http://", "");
         if(host.indexOf("/") != -1)
             host = host.substring(0, host.indexOf("/"));
-        host = "http://";
+        host = "http://" + host;
         setInterval(refresh, 10000);
         refresh();
         function refresh() {
@@ -119,6 +119,11 @@
                 }
             });
         }
+        $("#channel").keydown(function(ev) {
+            if(ev.keyCode == 13) {
+                document.location = host + "/r/" + $("#channel").val();
+            }
+        });
     </script>
   </body>
 </html>
