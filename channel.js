@@ -1234,7 +1234,8 @@ Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
     var msgobj = {
         username: username,
         msg: msg,
-        msgclass: msgclass
+        msgclass: msgclass,
+        time: Date.now()
     };
     if(data) {
         for(var key in data) {

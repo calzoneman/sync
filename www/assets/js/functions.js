@@ -203,8 +203,13 @@ function formatChatMessage(data) {
             }
         }
     }
+    if(USEROPTS.show_timestamps) {
+        var time = $("<span/>").addClass("timestamp").appendTo(div);
+        var timestamp = new Date(data.time).toTimeString().split(" ")[0];
+        time.text("["+timestamp+"] ");
+    }
     var name = $("<span/>").appendTo(div);
-    $("<strong/>").text("<" + data.username + "> ").appendTo(name);
+    $("<strong/>").text(data.username + ": ").appendTo(name);
     var message = $("<span/>").appendTo(div);
     message[0].innerHTML = data.msg;
     if(data.modflair) {
@@ -1055,6 +1060,13 @@ function showUserOpts() {
     hidevid.prop("checked", USEROPTS.hidevid);
     addOption("Hide Video", vidcontainer);
 
+
+    var tscontainer = $("<label/>").addClass("checkbox")
+        .text("Show timestamps in chat");
+    var showts = $("<input/>").attr("type", "checkbox").appendTo(tscontainer);
+    showts.prop("checked", USEROPTS.show_timestamps);
+    addOption("Show timestamps", tscontainer);
+
     if(RANK >= Rank.Moderator) {
         $("<hr>").appendTo(form);
         var modhatcontainer = $("<label/>").addClass("checkbox")
@@ -1070,11 +1082,12 @@ function showUserOpts() {
         .appendTo(footer);
 
     submit.click(function() {
-        USEROPTS.theme  = themeselect.val();
-        USEROPTS.css    = usercss.val();
-        USEROPTS.layout = layoutselect.val();
-        USEROPTS.synch  = synch.prop("checked");
-        USEROPTS.hidevid= hidevid.prop("checked");
+        USEROPTS.theme           = themeselect.val();
+        USEROPTS.css             = usercss.val();
+        USEROPTS.layout          = layoutselect.val();
+        USEROPTS.synch           = synch.prop("checked");
+        USEROPTS.hidevid         = hidevid.prop("checked");
+        USEROPTS.show_timestamps = showts.prop("checked");
         if(RANK >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
         }

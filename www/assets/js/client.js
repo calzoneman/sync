@@ -43,12 +43,13 @@ function parseBool(x) {
     else return Boolean(x);
 }
 var USEROPTS = {
-    theme: readCookie("cytube_theme") || "default",
-    css: readCookie("cytube_css") || "",
-    layout: readCookie("cytube_layout") || "default",
-    synch: parseBool(readCookie("cytube_synch")) || true,
-    hidevid: parseBool(readCookie("cytube_hidevid")) || false,
-    modhat: parseBool(readCookie("cytube_modhat")) || false
+    theme           : readCookie("cytube_theme")                      || "default",
+    css             : readCookie("cytube_css")                        || "",
+    layout          : readCookie("cytube_layout")                     || "default",
+    synch           : parseBool(readCookie("cytube_synch"))           || true,
+    hidevid         : parseBool(readCookie("cytube_hidevid"))         || false,
+    show_timestamps : parseBool(readCookie("cytube_show_timestamps")) || false,
+    modhat          : parseBool(readCookie("cytube_modhat"))          || false
 };
 applyOpts();
 $("#optlink").click(showUserOpts);
