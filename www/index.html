@@ -125,5 +125,23 @@
             }
         });
     </script>
+    <script type="text/javascript">
+        var params = {};
+        if(window.location.search) {
+            var parameters = window.location.search.substring(1).split("&");
+            for(var i = 0; i < parameters.length; i++) {
+                var s = parameters[i].split("=");
+                if(s.length != 2)
+                    continue;
+                params[s[0]] = s[1];
+            }
+        }
+        if(params["channel"] && params["channel"].match(/^[a-zA-Z0-9]+$/)) {
+            var host = ""+document.location;
+            host = host.replace("http://", "");
+            host = host.substring(0, host.indexOf("/"));
+            document.location = "http://" + host + "/r/" + params["channel"];
+        }
+    </script>
   </body>
 </html>
