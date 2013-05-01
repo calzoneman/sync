@@ -193,7 +193,7 @@ function formatChatMessage(data) {
     if(uname) {
         if(data.msg.toUpperCase().indexOf(uname.toUpperCase()) != -1) {
             div.addClass("nick-highlight");
-            if(!FOCUSED) {
+            if(!FOCUSED && !TITLE_BLINK) {
                 TITLE_BLINK = setInterval(function() {
                     if(document.title == "*Chat*")
                         document.title = PAGETITLE;
@@ -841,6 +841,7 @@ function handleRankChange() {
 
 function onWindowFocus() {
     clearInterval(TITLE_BLINK);
+    TITLE_BLINK = false;
     document.title = PAGETITLE;
 }
 
@@ -1048,6 +1049,12 @@ function showUserOpts() {
     synch.prop("checked", USEROPTS.synch);
     addOption("Synch", synchcontainer);
 
+    var vidcontainer = $("<label/>").addClass("checkbox")
+        .text("Hide Video");
+    var hidevid = $("<input/>").attr("type", "checkbox").appendTo(vidcontainer);
+    hidevid.prop("checked", USEROPTS.hidevid);
+    addOption("Hide Video", vidcontainer);
+
     if(RANK >= Rank.Moderator) {
         $("<hr>").appendTo(form);
         var modhatcontainer = $("<label/>").addClass("checkbox")
@@ -1067,6 +1074,7 @@ function showUserOpts() {
         USEROPTS.css    = usercss.val();
         USEROPTS.layout = layoutselect.val();
         USEROPTS.synch  = synch.prop("checked");
+        USEROPTS.hidevid= hidevid.prop("checked");
         if(RANK >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
         }
@@ -1122,5 +1130,9 @@ function applyOpts() {
             break;
         default:
             break;
+    }
+
+    if(USEROPTS.hidevid) {
+        $("#videodiv").remove();
     }
 }

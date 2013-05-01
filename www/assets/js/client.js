@@ -29,6 +29,7 @@ var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//670
 var VHEIGHT = "377";
 var IGNORED = [];
 var KICKED = false;
+var CHANNEL = "";
 var uname = readCookie("sync_uname");
 var session = readCookie("sync_session");
 
@@ -46,6 +47,7 @@ var USEROPTS = {
     css: readCookie("cytube_css") || "",
     layout: readCookie("cytube_layout") || "default",
     synch: parseBool(readCookie("cytube_synch")) || true,
+    hidevid: parseBool(readCookie("cytube_hidevid")) || false,
     modhat: parseBool(readCookie("cytube_modhat")) || false
 };
 applyOpts();
@@ -81,60 +83,38 @@ $(window).resize(function() {
     $("#ytapiplayer").attr("width", VWIDTH);
 });
 
-var params = {};
-if(window.location.search) {
-    var parameters = window.location.search.substring(1).split("&");
-    for(var i = 0; i < parameters.length; i++) {
-        var s = parameters[i].split("=");
-        if(s.length != 2)
-            continue;
-        params[s[0]] = s[1];
-    }
+// Match URLs of the form http://site.tld/r/channel
+var loc = document.location+"";
+var m = loc.match(/\/r\/([a-zA-Z0-9]+)$/);
+if(m) {
+    CHANNEL = m[1];
 }
-
-if(params["novideo"] != undefined) {
-    $("#videodiv").remove();
-}
-
-if(params["channel"] == undefined) {
-    // Match URLs of the form http://site.tld/r/channel
-    var loc = document.location+"";
-    var m = loc.match(/\/r\/([a-zA-Z0-9]+)$/);
-    if(m) {
-        socket.emit("joinChannel", {
-            name: m[1]
-        });
-    }
-    else {
-
-        var main = $($(".container")[1]);
-        var container = $("<div/>").addClass("container").insertBefore(main);
-        var row = $("<div/>").addClass("row").appendTo(container);
-        var div = $("<div/>").addClass("span6").appendTo(row);
-        main.css("display", "none");
-        var label = $("<label/>").text("Enter Channel:").appendTo(div);
-        var entry = $("<input/>").attr("type", "text").appendTo(div);
-        entry.keydown(function(ev) {
-            if(ev.keyCode == 13) { document.location = document.location + "?channel=" + entry.val();
-                socket.emit("joinChannel", {
-                    name: entry.val()
-                });
-                container.remove();
-                main.css("display", "");
-            }
-        });
-    }
-}
-else if(!params["channel"].match(/^[a-zA-Z0-9]+$/)) {
-    $("<div/>").addClass("alert alert-error")
-        .insertAfter($(".row")[0])[0]
-        .innerHTML = "<h3>Invalid Channel Name</h3><p>Channel names must conain only numbers and letters</p>";
-
+else {
+    var main = $($(".container")[1]);
+    var container = $("<div/>").addClass("container").insertBefore(main);
+    var row = $("<div/>").addClass("row").appendTo(container);
+    var div = $("<div/>").addClass("span6").appendTo(row);
+    main.css("display", "none");
+    var label = $("<label/>").text("Enter Channel:").appendTo(div);
+    var entry = $("<input/>").attr("type", "text").appendTo(div);
+    entry.keydown(function(ev) {
+        var host = ""+document.location;
+        host = host.replace("http://", "");
+        host = host.substring(0, host.indexOf("/"));
+        if(ev.keyCode == 13) {
+            document.location = "http://" + host + "/r/" + entry.val();
+            socket.emit("joinChannel", {
+                name: entry.val()
+            });
+            container.remove();
+            main.css("display", "");
+        }
+    });
 }
 
 socket.on("connect", function() {
     socket.emit("joinChannel", {
-        name: params["channel"]
+        name: CHANNEL
     });
     if(uname && session) {
         socket.emit("login", {
@@ -146,7 +126,6 @@ socket.on("connect", function() {
         .text("Connected")
         .appendTo($("#messagebuffer"));
     $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
-    setTimeout(function() { $("#reconnect_box").remove(); }, 3000);
 });
 
 
