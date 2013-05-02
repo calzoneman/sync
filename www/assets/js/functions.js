@@ -186,10 +186,14 @@ function addChatMessage(data) {
     }
     if(SCROLLCHAT)
         $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
-}
-
-function formatChatMessage(data) {
-    var div = $("<div/>");
+    if(USEROPTS.blink_title && !FOCUSED && !TITLE_BLINK) {
+        TITLE_BLINK = setInterval(function() {
+            if(document.title == "*Chat*")
+                document.title = PAGETITLE;
+            else
+                document.title = "*Chat*";
+        }, 1000);
+    }
     if(uname) {
         if(data.msg.toUpperCase().indexOf(uname.toUpperCase()) != -1) {
             div.addClass("nick-highlight");
@@ -203,6 +207,10 @@ function formatChatMessage(data) {
             }
         }
     }
+}
+
+function formatChatMessage(data) {
+    var div = $("<div/>");
     if(USEROPTS.show_timestamps) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
@@ -1073,12 +1081,17 @@ function showUserOpts() {
     hidevid.prop("checked", USEROPTS.hidevid);
     addOption("Hide Video", vidcontainer);
 
-
     var tscontainer = $("<label/>").addClass("checkbox")
         .text("Show timestamps in chat");
     var showts = $("<input/>").attr("type", "checkbox").appendTo(tscontainer);
     showts.prop("checked", USEROPTS.show_timestamps);
     addOption("Show timestamps", tscontainer);
+
+    var blinkcontainer = $("<label/>").addClass("checkbox")
+        .text("Flash title on every incoming message");
+    var blink = $("<input/>").attr("type", "checkbox").appendTo(blinkcontainer);
+    blink.prop("checked", USEROPTS.blink_title);
+    addOption("Chat Notice", blinkcontainer);
 
     if(RANK >= Rank.Moderator) {
         $("<hr>").appendTo(form);
@@ -1101,6 +1114,7 @@ function showUserOpts() {
         USEROPTS.synch           = synch.prop("checked");
         USEROPTS.hidevid         = hidevid.prop("checked");
         USEROPTS.show_timestamps = showts.prop("checked");
+        USEROPTS.blink_title     = blink.prop("checked");
         if(RANK >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
         }

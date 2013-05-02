@@ -49,7 +49,8 @@ var USEROPTS = {
     synch           : parseBool(readCookie("cytube_synch"))           || true,
     hidevid         : parseBool(readCookie("cytube_hidevid"))         || false,
     show_timestamps : parseBool(readCookie("cytube_show_timestamps")) || false,
-    modhat          : parseBool(readCookie("cytube_modhat"))          || false
+    modhat          : parseBool(readCookie("cytube_modhat"))          || false,
+    blink_chat      : parseBool(readCookie("cytube_blink_chat"))      || false
 };
 applyOpts();
 $("#optlink").click(showUserOpts);
