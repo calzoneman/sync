@@ -66,6 +66,8 @@ exports.init = function() {
                      `uname` VARCHAR(20) NOT NULL, \
                      `pw` VARCHAR(64) NOT NULL, \
                      `global_rank` INT NOT NULL, \
+                     `session_hash` VARCHAR(64) NOT NULL, \
+                     `expire` BIGINT NOT NULL, \
                      PRIMARY KEY (`id`)) \
                      ENGINE = MyISAM;";
     var results = db.querySync(query);
