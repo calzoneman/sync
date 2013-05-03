@@ -95,29 +95,59 @@ var gbans = {};
 exports.checkGlobalBan = function(ip) {
     // Check database at most once per 5 minutes
     if(new Date().getTime() > gbanTime + 300000) {
-        var db = exports.getConnection();
-        if(!db) {
-            return false;
-        }
-        // Check if channel exists
-        var query = "SELECT * FROM global_bans WHERE 1";
-        var results = db.querySync(query);
-        if(!results) {
-            Logger.errlog.log("loadGlobalBans: query failed");
-            return false;
-        }
-        var rows = results.fetchAllSync();
-        gbans = {};
-        for(var i = 0; i < rows.length; i++) {
-            gbans[rows[i].ip] = true;
-        }
-        db.closeSync();
-        gbanTime = new Date().getTime();
+        exports.refreshGlobalBans();
     }
     var parts = ip.split(".");
     var slash16 = parts[0] + "." + parts[1];
     var slash24 = slash16 + "." + parts[2];
     return (ip in gbans || slash16 in gbans || slash24 in gbans);
+}
+
+exports.refreshGlobalBans = function() {
+    var db = exports.getConnection();
+    if(!db) {
+        return false;
+    }
+    // Check if channel exists
+    var query = "SELECT * FROM global_bans WHERE 1";
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("loadGlobalBans: query failed");
+        return false;
+    }
+    var rows = results.fetchAllSync();
+    gbans = {};
+    for(var i = 0; i < rows.length; i++) {
+        gbans[rows[i].ip] = rows[i].note;
+    }
+    db.closeSync();
+    gbanTime = new Date().getTime();
+    return gbans;
+}
+
+exports.addGlobalBan = function(ip, reason) {
+    var db = exports.getConnection();
+    if(!db) {
+        return false;
+    }
+    var query = "INSERT INTO global_bans VALUES ('{1}', '{2}')"
+        .replace("{1}", sqlEscape(ip))
+        .replace("{2}", sqlEscape(reason));
+    var result = db.querySync(query);
+    db.closeSync();
+    return result;
+}
+
+exports.liftGlobalBan = function(ip) {
+    var db = exports.getConnection();
+    if(!db) {
+        return false;
+    }
+    var query = "DELETE FROM global_bans WHERE ip='{}'"
+        .replace("{}", sqlEscape(ip))
+    var result = db.querySync(query);
+    db.closeSync();
+    return result;
 }
 
 exports.loadChannel = function(chan) {

@@ -13,12 +13,15 @@ var Auth = require("./auth.js");
 var Server = require("./server.js");
 var Logger = require("./logger.js");
 var apilog = new Logger.Logger("api.log");
+var Database = require("./database.js");
 
 var jsonHandlers = {
     "channeldata": handleChannelData,
     "listloaded" : handleChannelList,
     "login"      : handleLogin,
-    "register"   : handleRegister
+    "register"   : handleRegister,
+    "globalbans" : handleGlobalBans,
+    "admreports" : handleAdmReports
 };
 
 function handle(path, req, res) {
@@ -211,4 +214,62 @@ function handleRegister(params, req, res) {
             });
         }
     }
+}
+
+function handleGlobalBans(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+    var session = params.session || "";
+    var row = Auth.login(name, pw, session);
+    if(!row || row.global_rank < 255) {
+        res.send(403);
+        return;
+    }
+
+    var action = params.action || "list";
+    if(action == "list") {
+        var gbans = Database.refreshGlobalBans();
+        sendJSON(res, gbans);
+    }
+    else if(action == "add") {
+        var ip = params.ip || "";
+        var reason = params.reason || "";
+        if(!ip.match(/\d+\.\d+\.(\d+\.(\d+)?)?/)) {
+            sendJSON(res, {
+                error: "Invalid IP address"
+            });
+            return;
+        }
+        var result = Database.addGlobalBan(ip, reason);
+        sendJSON(res, {
+            success: result,
+            ip: ip,
+            reason: reason
+        });
+    }
+    else if(action == "remove") {
+        var ip = params.ip || "";
+        if(!ip.match(/\d+\.\d+\.(\d+\.(\d+)?)?/)) {
+            sendJSON(res, {
+                error: "Invalid IP address"
+            });
+            return;
+        }
+        var result = Database.liftGlobalBan(ip);
+        sendJSON(res, {
+            success: result,
+            ip: ip,
+        });
+    }
+    else {
+        sendJSON(res,  {
+            error: "Invalid action: " + action
+        });
+    }
+}
+
+function handleAdmReports(params, req, res) {
+    sendJSON(res, {
+        error: "Not implemented"
+    });
 }
