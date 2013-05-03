@@ -114,8 +114,6 @@ process.on("uncaughtException", function(err) {
 process.on("exit", shutdown);
 process.on("SIGINT", shutdown);
 
-
-
 function shutdown() {
     Logger.syslog.log("Unloading channels...");
     for(var name in exports.channels) {
@@ -124,4 +122,11 @@ function shutdown() {
     }
     Logger.syslog.log("Shutting Down");
     process.exit(0);
+}
+
+exports.unload = function(chan) {
+    if(chan.registered) {
+        chan.saveDump();
+    }
+    delete exports.channels[chan.name];
 }

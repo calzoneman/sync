@@ -17,7 +17,8 @@ var Media = require("./media.js").Media;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
 var InfoGetter = require("./get-info.js");
-var io = require("./server.js").io;
+var Server = require("./server.js");
+var io = Server.io;
 var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
@@ -389,6 +390,10 @@ Channel.prototype.userLeave = function(user) {
         });
     }
     this.logger.log("--- /" + user.ip + " (" + user.name + ") left");
+    if(this.users.length == 0) {
+        this.logger.log("*** Channel empty, unloading");
+        Server.unload(this);
+    }
 }
 
 Channel.prototype.kick = function(user, reason) {
@@ -618,7 +623,8 @@ function mediaUpdate(chan, id) {
     // Bail cases - video changed, someone's leader, no video playing
     if(chan.media == null ||
            id != chan.media.id ||
-           chan.leader != null) {
+           chan.leader != null ||
+           chan.users.length == 0) {
         return;
     }
 
