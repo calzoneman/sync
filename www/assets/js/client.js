@@ -42,15 +42,24 @@ function parseBool(x) {
         return false;
     else return Boolean(x);
 }
+
+function getOrDefault(cookie, def) {
+    var cook = readCookie(cookie);
+    if(cook === null) {
+        return def;
+    }
+    return cook;
+}
+
 var USEROPTS = {
-    theme           : readCookie("cytube_theme")                      || "default",
-    css             : readCookie("cytube_css")                        || "",
-    layout          : readCookie("cytube_layout")                     || "default",
-    synch           : parseBool(readCookie("cytube_synch"))           || true,
-    hidevid         : parseBool(readCookie("cytube_hidevid"))         || false,
-    show_timestamps : parseBool(readCookie("cytube_show_timestamps")) || false,
-    modhat          : parseBool(readCookie("cytube_modhat"))          || false,
-    blink_chat      : parseBool(readCookie("cytube_blink_chat"))      || false
+    theme           : getOrDefault("cytube_theme", "default"),
+    css             : getOrDefault("cytube_css", ""),
+    layout          : getOrDefault("cytube_layout", "default"),
+    synch           : parseBool(getOrDefault("cytube_synch", true)),
+    hidevid         : parseBool(getOrDefault("cytube_hidevid", false)),
+    show_timestamps : parseBool(getOrDefault("cytube_show_timestamps", false)),
+    modhat          : parseBool(getOrDefault("cytube_modhat", false)),
+    blink_title     : parseBool(getOrDefault("cytube_blink_title", false))
 };
 applyOpts();
 $("#optlink").click(showUserOpts);
