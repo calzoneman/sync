@@ -15,6 +15,7 @@ var Channel = require("./channel.js").Channel;
 var Server = require("./server.js");
 var Database = require("./database.js");
 var Logger = require("./logger.js");
+var Config = require("./config.js");
 
 // Represents a client connected via socket.io
 var User = function(socket, ip) {
@@ -338,6 +339,7 @@ User.prototype.handleAdm = function(data) {
     }
 };
 
+var lastguestlogin = {};
 // Attempt to login
 User.prototype.login = function(name, pw, session) {
     if(this.channel != null && name != "") {
@@ -353,6 +355,19 @@ User.prototype.login = function(name, pw, session) {
     }
     // No password => try guest login
     if(pw == "" && session == "") {
+        if(this.ip in lastguestlogin) {
+            var diff = (Date.now() - lastguestlogin[this.ip])/1000;
+            if(diff < Config.GUEST_LOGIN_DELAY) {
+                this.socket.emit("login", {
+                    success: false,
+                    error: ["Guest logins are restricted to one per ",
+                            Config.GUEST_LOGIN_DELAY + " seconds per IP.  ",
+                            "This restriction does not apply to registered users."
+                            ].join("")
+                });
+                return false;
+            }
+        }
         // Sorry bud, can't take that name
         if(Auth.isRegistered(name)) {
             this.socket.emit("login", {
@@ -369,6 +384,7 @@ User.prototype.login = function(name, pw, session) {
             });
         }
         else {
+            lastguestlogin[this.ip] = Date.now();
             Logger.syslog.log(this.ip + " signed in as " + name);
             this.name = name;
             this.loggedIn = false;
