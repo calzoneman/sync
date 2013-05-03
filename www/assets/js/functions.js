@@ -1150,7 +1150,7 @@ function applyOpts() {
     if(USEROPTS.css) {
         $("<link/>").attr("rel", "stylesheet")
             .attr("type", "text/css")
-            .attr("id", "usertheme")
+            .attr("id", "usercss")
             .attr("href", USEROPTS.css)
             .appendTo($("head"));
     }

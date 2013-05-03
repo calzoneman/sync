@@ -80,10 +80,12 @@ function initCallbacks() {
         $("#opt_show_public").prop("checked", opts.show_public);
         $("#customCss").remove();
         if(opts.customcss.trim() != "") {
-            $("<link/>").attr("rel", "stylesheet")
-                       .attr("href", opts.customcss)
-                       .attr("id", "customCss")
-                       .insertAfter($("link[href='./assets/css/ytsync.css']"));
+            $("#usertheme").remove();
+            $("<link/>")
+                .attr("rel", "stylesheet")
+                .attr("href", opts.customcss)
+                .attr("id", "customCss")
+                .appendTo($("head"));
         }
         $("#opt_allow_voteskip").prop("checked", opts.allow_voteskip);
         $("#opt_voteskip_ratio").val(opts.voteskip_ratio);
