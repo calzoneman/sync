@@ -14,6 +14,11 @@ var Server = require("./server.js");
 var Logger = require("./logger.js");
 var apilog = new Logger.Logger("api.log");
 var Database = require("./database.js");
+var fs = require("fs");
+
+var plainHandlers = {
+    "readlog"    : handleReadLog
+};
 
 var jsonHandlers = {
     "channeldata": handleChannelData,
@@ -58,6 +63,13 @@ function handle(path, req, res) {
             return;
         }
         jsonHandlers[parts[1]](params, req, res);
+    }
+    else if(parts[0] == "plain") {
+        if(!(parts[1] in plainHandlers)) {
+            res.send(404);
+            return;
+        }
+        plainHandlers[parts[1]](params, req, res);
     }
     else {
         res.send(400);
@@ -272,4 +284,53 @@ function handleAdmReports(params, req, res) {
     sendJSON(res, {
         error: "Not implemented"
     });
+}
+
+// Helper function
+function pipeLast(res, file, len) {
+    fs.stat(file, function(err, data) {
+        if(err) {
+            res.send(500);
+            return;
+        }
+        var start = data.size - len;
+        if(start < 0) {
+            start = 0;
+        }
+        var end = data.size - 1;
+        fs.createReadStream(file, {start: start, end: end}).pipe(res);
+    });
+}
+
+function handleReadLog(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+    var session = params.session || "";
+    var row = Auth.login(name, pw, session);
+    if(!row || row.global_rank < 255) {
+        res.send(403);
+        return;
+    }
+
+    var type = params.type || "";
+    if(type == "sys") {
+        pipeLast(res, "sys.log", 1024*1024);
+    }
+    else if(type == "err") {
+        pipeLast(res, "error.log", 1024*1024);
+    }
+    else if(type == "channel") {
+        var chan = params.channel || "";
+        fs.exists("chanlogs/" + chan + ".log", function(exists) {
+            if(exists) {
+                pipeLast(res, "chanlogs/" + chan + ".log", 1024*1024);
+            }
+            else {
+                res.send(404);
+            }
+        });
+    }
+    else {
+        res.send(400);
+    }
 }
