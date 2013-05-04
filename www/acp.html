@@ -76,6 +76,20 @@
                 <pre id="log"></pre>
             </div>
         </div>
+        <div class="row">
+            <div class="span8">
+                <h3>Global Bans</h3>
+                <table id="banlist" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>IP</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
     </div> <!-- /container -->
     <div class="push"></div>
     <div id="sitefooter">
@@ -113,6 +127,7 @@
                     createCookie("sync_uname", uname, 7);
                     createCookie("sync_session", session, 7);
                     p = "name=" + uname + "&session=" + session;
+                    loadBanlist();
                 }
             });
         }
@@ -128,6 +143,7 @@
                     createCookie("sync_uname", uname, 7);
                     createCookie("sync_session", session, 7);
                     p = "name=" + uname + "&session=" + session;
+                    loadBanlist();
                 }
             });
         });
@@ -155,6 +171,64 @@
                 getChanlog();
             }
         });
+        
+        function loadBanlist() {
+            $.getJSON(IO_URL+"/api/json/globalbans?action=list&"+p+"&callback=?", function(data) {
+                handleBanlist(data);
+            });
+        }
+        function handleBanlist(data) {
+            var tbl = $("#banlist");
+            if(tbl.children().length > 1) {
+                $(tbl.children()[1]).remove();
+            }
+            for(var ip in data) {
+                var tr = $("<tr/>").appendTo($("#banlist"));
+                var btntd = $("<td/>").appendTo(tr);
+                var remove = $("<button/>").addClass("btn btn-danger")
+                    .appendTo(btntd);
+                $("<i/>").addClass("icon-minus").appendTo(remove);
+                remove.click(function(ip) { return function() {
+                    var b = "ip=" + ip;
+                    $.getJSON(IO_URL+"/api/json/globalbans?action=remove&"+b+"&"+p+"&callback=?", function(data) {
+                        if(data.error) {
+                            alert(data.error);
+                        }
+                        else if(!data.success) {
+                            alert("Remove ban failed");
+                        }
+                        loadBanlist();
+                    });
+                } }(ip));
+                var iptd = $("<td/>").appendTo(tr);
+                $("<code/>").text(ip).appendTo(iptd);
+                var reason  = $("<td/>").appendTo(tr);
+                $("<code/>").text(data[ip]).appendTo(reason);
+            }
+            // Add new
+            var tr = $("<tr/>").appendTo($("#banlist"));
+            var add = $("<button/>").addClass("btn btn-success")
+                .appendTo($("<td/>").appendTo(tr));
+            $("<i/>").addClass("icon-plus").appendTo(add);
+            var ip = $("<input/>").attr("type", "text")
+                .appendTo($("<td/>").appendTo(tr));
+            var reason = $("<input/>").attr("type", "text")
+                .appendTo($("<td/>").appendTo(tr));
+
+            add.click(function() {
+                var b = "ip=" + ip.val() + "&reason=" + reason.val();
+                $.getJSON(IO_URL+"/api/json/globalbans?action=add&"+b+"&"+p+"&callback=?", function(data) {
+                    if(data.error) {
+                        alert(data.error);
+                    }
+                    else if(!data.success) {
+                        alert("Add ban failed");
+                    }
+                    loadBanlist();
+                });
+            });
+        }
+
         function createCookie(name,value,days) {
             if (days) {
                 var date = new Date();

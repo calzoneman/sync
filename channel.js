@@ -177,10 +177,10 @@ Channel.prototype.saveDump = function() {
 
 // Save channel dumps every 5 minutes, in case of crash
 function incrementalDump(chan) {
-    if(chan && chan.users.length > 0) {
+    if(chan && chan.users && chan.users.length > 0) {
         chan.saveDump();
+        setTimeout(function() { incrementalDump(chan); }, 300000);
     }
-    setTimeout(function() { incrementalDump(chan); }, 300000);
 }
 
 Channel.prototype.tryRegister = function(user) {
