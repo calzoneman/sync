@@ -12,7 +12,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var fs = require("fs");
 
 function getTimeString() {
-    return new Date().toTimeString().split(" ")[0];
+    var d = new Date();
+    return d.toDateString() + " " + d.toTimeString().split(" ")[0];
 }
 
 var Logger = function(filename) {
