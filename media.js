@@ -92,9 +92,10 @@ Media.prototype.fullupdate = function() {
 }
 
 Media.prototype.timeupdate = function() {
-    return {
-        currentTime: this.currentTime
-    };
+    return this.fullupdate();
+    //return {
+    //    currentTime: this.currentTime
+    //};
 }
 
 exports.Media = Media;
