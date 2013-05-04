@@ -36,6 +36,7 @@ var permissions = {
     seeVoteskip     : exports.Moderator,
     uncache         : exports.Moderator,
     seenlogins      : exports.Moderator,
+    settemp         : exports.Moderator,
     search          : exports.Guest,
     chat            : exports.Guest,
 };

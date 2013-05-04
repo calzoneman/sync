@@ -307,7 +307,7 @@ Media.prototype.initJWPlayer = function() {
 }
 
 Media.prototype.update = function(data) {
-    if(data.id != this.id) {
+    if(data.id && data.id != this.id) {
         if(data.currentTime < 0) {
             data.currentTime = 0;
         }

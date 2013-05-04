@@ -46,6 +46,7 @@ var Channel = function(name) {
         qopen_allow_move: false,
         qopen_allow_playnext: false,
         qopen_allow_delete: false,
+        qopen_temp: true,
         allow_voteskip: true,
         voteskip_ratio: 0.5,
         pagetitle: this.name,
@@ -93,6 +94,9 @@ Channel.prototype.loadDump = function() {
                 var m = new Media(e.id, e.title, e.seconds, e.type);
                 m.queueby = data.queue[i].queueby ? data.queue[i].queueby
                                                   : "";
+                if(e.temp !== undefined) {
+                    m.temp = e.temp;
+                }
                 this.queue.push(m);
             }
             this.sendAll("playlist", {
@@ -236,6 +240,9 @@ Channel.prototype.saveRank = function(user) {
 }
 
 Channel.prototype.cacheMedia = function(media) {
+    if(media.temp) {
+        return;
+    }
     this.library[media.id] = media;
     if(this.registered) {
         return Database.cacheMedia(this.name, media);
@@ -479,7 +486,7 @@ Channel.prototype.sendPlaylist = function(user) {
 
 Channel.prototype.sendMediaUpdate = function(user) {
     if(this.media != null) {
-        user.socket.emit("mediaUpdate", this.media.packupdate());
+        user.socket.emit("mediaUpdate", this.media.fullupdate());
     }
 }
 
@@ -649,12 +656,12 @@ function mediaUpdate(chan, id) {
     chan.time = new Date().getTime();
 
     // Show's over, move on to the next thing
-    if(chan.media.currentTime > chan.media.seconds) {
+    if(chan.media.currentTime > chan.media.seconds + 1) {
         chan.playNext();
     }
     // Send updates about every 5 seconds
     else if(chan.i % 5 == 0) {
-        chan.sendAll("mediaUpdate", chan.media.packupdate());
+        chan.sendAll("mediaUpdate", chan.media.timeupdate());
     }
     chan.i++;
 
@@ -680,13 +687,23 @@ Channel.prototype.queueAdd = function(media, idx) {
     }
 }
 
+Channel.prototype.autoTemp = function(media, user) {
+    if(isLive(media.type)) {
+        media.temp = true;
+    }
+    if(user.rank < Rank.Moderator && this.opts.qopen_temp) {
+        media.temp = true;
+    }
+}
+
 Channel.prototype.enqueue = function(data, user) {
     var idx = data.pos == "next" ? this.position + 1 : this.queue.length;
 
     // Prefer cache over looking up new data
     if(data.id in this.library) {
-        var media = this.library[data.id];
+        var media = this.library[data.id].dup();
         media.queueby = user ? user.name : "";
+        this.autoTemp(media, user);
         this.queueAdd(media, idx);
         this.logger.log("*** Queued from cache: id=" + data.id);
     }
@@ -699,6 +716,7 @@ Channel.prototype.enqueue = function(data, user) {
             case "sc":
                 InfoGetter.getMedia(data.id, data.type, function(media) {
                     media.queueby = user ? user.name : "";
+                    this.autoTemp(media, user);
                     this.queueAdd(media, idx);
                     this.cacheMedia(media);
                     if(data.type == "yp")
@@ -708,21 +726,25 @@ Channel.prototype.enqueue = function(data, user) {
             case "li":
                 var media = new Media(data.id, "Livestream - " + data.id, "--:--", "li");
                 media.queueby = user ? user.name : "";
+                this.autoTemp(media, user);
                 this.queueAdd(media, idx);
                 break;
             case "tw":
                 var media = new Media(data.id, "Twitch - " + data.id, "--:--", "tw");
                 media.queueby = user ? user.name : "";
+                this.autoTemp(media, user);
                 this.queueAdd(media, idx);
                 break;
             case "rt":
                 var media = new Media(data.id, "Livestream", "--:--", "rt");
                 media.queueby = user ? user.name : "";
+                this.autoTemp(media, user);
                 this.queueAdd(media, idx);
                 break;
             case "jw":
                 var media = new Media(data.id, "JWPlayer Stream - " + data.id, "--:--", "jw");
                 media.queueby = user ? user.name : "";
+                this.autoTemp(media, user);
                 this.queueAdd(media, idx);
                 break;
             default:
@@ -759,6 +781,38 @@ Channel.prototype.tryQueue = function(user, data) {
     this.enqueue(data, user);
 }
 
+Channel.prototype.setTemp = function(idx, temp) {
+    var med = this.queue[idx];
+    med.temp = temp;
+    this.sendAll("setTemp", {
+        idx: idx,
+        temp: temp
+    });
+
+    if(temp) {
+        if(Database.uncacheMedia(this.name, med.id)) {
+            delete this.library[med.id];
+        }
+    }
+    else {
+        this.cacheMedia(med);
+    }
+}
+
+Channel.prototype.trySetTemp = function(user, data) {
+    if(!Rank.hasPermission(user, "settemp")) {
+        return;
+    }
+    if(typeof data.idx != "number" || typeof data.temp != "boolean") {
+        return;
+    }
+    if(data.idx < 0 || data.idx >= this.queue.length) {
+        return;
+    }
+
+    this.setTemp(data.idx, data.temp);
+}
+
 Channel.prototype.dequeue = function(data) {
     if(data.pos < 0 || data.pos >= this.queue.length) {
         return;
@@ -771,7 +825,7 @@ Channel.prototype.dequeue = function(data) {
     this.broadcastPlaylistMeta();
 
     // If you remove the currently playing video, play the next one
-    if(data.pos == this.position) {
+    if(data.pos == this.position && !data.removeonly) {
         this.position--;
         this.playNext();
         return;
@@ -811,41 +865,8 @@ Channel.prototype.tryUncache = function(user, data) {
 }
 
 Channel.prototype.playNext = function() {
-    // Nothing to play
-    if(this.queue.length == 0) {
-        return;
-    }
-
-    // Reset voteskip
-    this.voteskip = false;
-    this.broadcastVoteskipUpdate();
-    this.drinks = 0;
-    this.broadcastDrinks();
-
-    var old = this.position;
-    // Wrap around if the end is hit
-    if(this.position + 1 >= this.queue.length) {
-        this.position = -1;
-    }
-
-    this.position++;
-    var oid = this.media ? this.media.id : "";
-    this.media = this.queue[this.position];
-    this.media.currentTime = -1;
-
-    this.sendAll("mediaUpdate", this.media.packupdate());
-    this.sendAll("updatePlaylistIdx", {
-        old: old,
-        idx: this.position
-    });
-
-    // If it's not a livestream, enable autolead
-    if(this.leader == null && !isLive(this.media.type)) {
-        this.time = new Date().getTime();
-        if(this.media.id != oid) {
-            mediaUpdate(this, this.media.id);
-        }
-    }
+    var pos = this.position + 1 >= this.queue.length ? 0 : this.position + 1;
+    this.jumpTo(pos);
 }
 
 Channel.prototype.tryPlayNext = function(user) {
@@ -871,12 +892,24 @@ Channel.prototype.jumpTo = function(pos) {
     this.broadcastDrinks();
 
     var old = this.position;
+    if(this.media && this.media.temp && old != pos) {
+        this.dequeue({pos: old, removeonly: true});
+        if(pos > old) {
+            pos--;
+        }
+    }
+    if(pos >= this.queue.length || pos < 0) {
+        return;
+    }
+    if(this.media) {
+        delete this.media["currentTime"];
+    }
     this.position = pos;
     var oid = this.media ? this.media.id : "";
     this.media = this.queue[this.position];
     this.media.currentTime = -1;
 
-    this.sendAll("mediaUpdate", this.media.packupdate());
+    this.sendAll("changeMedia", this.media.fullupdate());
     this.sendAll("updatePlaylistIdx", {
         old: old,
         idx: this.position
@@ -969,7 +1002,7 @@ Channel.prototype.tryUpdate = function(user, data) {
     }
 
     this.media.currentTime = data.currentTime;
-    this.sendAll("mediaUpdate", this.media.packupdate());
+    this.sendAll("mediaUpdate", this.media.timeupdate());
 }
 
 Channel.prototype.move = function(data) {

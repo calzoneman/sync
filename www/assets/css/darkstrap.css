@@ -955,6 +955,15 @@ li.alert-info {
     color: #ff9900;
 }
 
+li.alert-error {
+    border: 1px solid #cc0000;
+    color: #cc0000;
+}
+
+li.alert-error.alert-info {
+    color: #ff9900;
+}
+
 .btn, .btn:hover {
     text-shadow: none;
     color: #aaaaaa;

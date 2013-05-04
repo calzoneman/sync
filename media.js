@@ -52,6 +52,14 @@ var Media = function(id, title, seconds, type) {
     }
     this.type = type;
     this.queueby = "";
+    this.temp = false;
+}
+
+Media.prototype.dup = function() {
+    var m = new Media(this.id, this.title, this.seconds, this.type);
+    m.queueby = this.queueby;
+    m.temp = this.temp;
+    return m;
 }
 
 // Returns an object containing the data in this Media but not the
@@ -63,13 +71,14 @@ Media.prototype.pack = function() {
         seconds: this.seconds,
         duration: this.duration,
         type: this.type,
-        queueby: this.queueby
+        queueby: this.queueby,
+        temp: this.temp
     };
 }
 
 // Same as pack() but includes the currentTime variable set by the channel
 // when the media is being synchronized
-Media.prototype.packupdate = function() {
+Media.prototype.fullupdate = function() {
     return {
         id: this.id,
         title: this.title,
@@ -77,7 +86,14 @@ Media.prototype.packupdate = function() {
         duration: this.duration,
         type: this.type,
         currentTime: this.currentTime,
-        queueby: this.queueby
+        queueby: this.queueby,
+        temp: this.temp
+    };
+}
+
+Media.prototype.timeupdate = function() {
+    return {
+        currentTime: this.currentTime
     };
 }
 

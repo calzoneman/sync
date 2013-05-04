@@ -256,6 +256,9 @@ function makeQueueEntry(video) {
     var time = $("<span />").addClass("qe_time").appendTo(li);
     time.text(video.duration);
     var clear = $("<div />").addClass("qe_clear").appendTo(li);
+    if(video.temp) {
+        li.addClass("alert alert-error");
+    }
     return li;
 }
 
@@ -322,6 +325,25 @@ function addQueueButtons(li) {
             socket.emit("moveMedia", {
                 src: idx,
                 dest: dest
+            });
+        });
+    }
+
+    if(RANK >= Rank.Moderator) {
+        var btnTemp =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
+        var temp = $(li).hasClass("alert-error");
+        if(temp) {
+            btnTemp.text("Untemp");
+        }
+        else {
+            btnTemp.text("Temp");
+        }
+        $(btnTemp).click(function() {
+            temp = $(li).hasClass("alert-error");
+            var idx = $("#queue").children().index(li);
+            socket.emit("setTemp", {
+                idx: idx,
+                temp: !temp
             });
         });
     }

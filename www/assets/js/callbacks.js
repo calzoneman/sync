@@ -71,6 +71,7 @@ function initCallbacks() {
         $("#opt_qopen_allow_move").prop("checked", opts.qopen_allow_move);
         $("#opt_qopen_allow_delete").prop("checked", opts.qopen_allow_delete);
         $("#opt_qopen_allow_playnext").prop("checked", opts.qopen_allow_playnext);
+        $("#opt_qopen_temp").prop("checked", opts.qopen_temp);
         $("#opt_pagetitle").attr("placeholder", opts.pagetitle);
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
@@ -284,6 +285,20 @@ function initCallbacks() {
         $(li).show("blind");
     });
 
+    socket.on("setTemp", function(data) {
+        var li = $("#queue").children()[data.idx];
+        var buttons = $(li).find(".qe_btn");
+        if(buttons.length == 5) {
+            $(buttons[4]).text(data.temp ? "Untemp" : "Temp");
+        }
+        if(data.temp) {
+            $(li).addClass("alert alert-error");
+        }
+        else {
+            $(li).removeClass("alert alert-error");
+        }
+    });
+
     socket.on("unqueue", function(data) {
         var li = $("#queue").children()[data.pos];
         $(li).remove();
@@ -308,7 +323,7 @@ function initCallbacks() {
             $("#voteskip").attr("disabled", false);
     });
 
-    socket.on("mediaUpdate", function(data) {
+    socket.on("changeMedia", function(data) {
         $("#currenttitle").text("Currently Playing: " + data.title);
         if(data.type != "sc" && MEDIATYPE == "sc")
             // [](/goddamnitmango)
@@ -317,7 +332,13 @@ function initCallbacks() {
             MEDIATYPE = data.type;
             PLAYER = new Media(data);
         }
-        else if(PLAYER.update) {
+        if(PLAYER.update) {
+            PLAYER.update(data);
+        }
+    });
+
+    socket.on("mediaUpdate", function(data) {
+        if(PLAYER.update) {
             PLAYER.update(data);
         }
     });

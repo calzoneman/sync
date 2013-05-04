@@ -166,6 +166,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("setTemp", function(data) {
+        if(this.channel != null) {
+            this.channel.trySetTemp(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("unqueue", function(data) {
         if(this.channel != null) {
             this.channel.tryDequeue(this, data);
