@@ -789,12 +789,7 @@ Channel.prototype.setTemp = function(idx, temp) {
         temp: temp
     });
 
-    if(temp) {
-        if(Database.uncacheMedia(this.name, med.id)) {
-            delete this.library[med.id];
-        }
-    }
-    else {
+    if(!temp) {
         this.cacheMedia(med);
     }
 }
