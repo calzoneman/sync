@@ -134,11 +134,18 @@ Channel.prototype.loadDump = function() {
             }
             if(data.motd) {
                 this.motd = data.motd;
+                this.broadcastMotd();
             }
             data.logins = data.logins || {};
             for(var ip in data.logins) {
                 this.logins[ip] = data.logins[ip];
             }
+            this.setLock(!(data.openqueue || false));
+            this.chatbuffer = data.chatbuffer || [];
+            for(var i = 0; i < this.chatbuffer.length; i++) {
+                this.sendAll("chatMsg", this.chatbuffer[i]);
+            }
+            setTimeout(function() { incrementalDump(this); }, 300000);
         }
         catch(e) {
             Logger.errlog.log("Channel dump load failed: ");
@@ -159,11 +166,21 @@ Channel.prototype.saveDump = function() {
         opts: this.opts,
         filters: filts,
         motd: this.motd,
-        logins: this.logins
+        logins: this.logins,
+        openqueue: this.openqueue,
+        chatbuffer: this.chatbuffer
     };
     var text = JSON.stringify(dump);
     fs.writeFileSync("chandump/" + this.name, text);
     this.logger.flush();
+}
+
+// Save channel dumps every 5 minutes, in case of crash
+function incrementalDump(chan) {
+    if(chan && chan.users.length > 0) {
+        chan.saveDump();
+    }
+    setTimeout(function() { incrementalDump(chan); }, 300000);
 }
 
 Channel.prototype.tryRegister = function(user) {
