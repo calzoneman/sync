@@ -89,6 +89,17 @@ function sendJSON(res, obj) {
     res.end(response);
 }
 
+function sendPlain(res, str) {
+    if(res.callback) {
+        str = res.callback + "('" + str + "')";
+    }
+    var len = unescape(encodeURIComponent(str)).length;
+
+    res.setHeader("Content-Type", "text/plain");
+    res.setHeader("Content-Length", len);
+    res.end(response);
+}
+
 function handleChannelData(params, req, res) {
     var clist = params.channel || "";
     clist = clist.split(",");
@@ -311,6 +322,7 @@ function handleReadLog(params, req, res) {
         res.send(403);
         return;
     }
+    res.setHeader("Access-Control-Allow-Origin", "*");
 
     var type = params.type || "";
     if(type == "sys") {
