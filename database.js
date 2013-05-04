@@ -40,6 +40,7 @@ function sqlEscape(data) {
         return data.replace("'", "\\'");
     }
 }
+exports.sqlEscape = sqlEscape;
 
 exports.init = function() {
     if(initialized)

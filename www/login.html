@@ -4,6 +4,17 @@
         <meta charset="utf-8">
         <title>CyTube - Login</title>
         <link rel="stylesheet" href="assets/css/bootstrap.css">
+        <style type="text/css">
+            #username, #pw {
+                width: 95%;
+            }
+            #login, #register {
+                width: 49%;
+            }
+            #changepass {
+                width: 99%;
+            }
+        </style>
     </head>
     <body>
         <form class="form-horizontal" action="javascript:void(0)">
@@ -19,6 +30,12 @@
                     <input type="password" id="pw">
                 </div>
             </div>
+            <div class="control-group" style="display: none" id="newpassdiv">
+                <label class="control-label" for="newpass" id="nplabel">New Password</label>
+                <div class="controls">
+                    <input type="password" id="newpass">
+                </div>
+            </div>
             <div class="control-group" style="display: none" id="pw2div">
                 <label class="control-label" for="pw2" id="confirm">Confirm Password</label>
                 <div class="controls">
@@ -29,6 +46,11 @@
                 <div class="controls">
                     <button class="btn" id="login">Login</button>
                     <button class="btn" id="register">Register</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button class="btn" id="changepass">Change Password</button>
                 </div>
             </div>
         </form>
@@ -63,6 +85,24 @@
                     console.log(data);
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
+                });
+            });
+            $("#changepass").click(function() {
+                if($("#newpassdiv").css("display") == "none") {
+                    $("#newpassdiv").css("display", "");
+                    $("#pw2div").css("display", "");
+                    return false;
+                }
+                else if($("#newpass").val() != $("#pw2").val()) {
+                    $("#confirm").addClass("text-error");
+                    return;
+                }
+                $.getJSON(IO_URL+"/api/json/changepass?name="+$("#username").val()+"&oldpw="+$("#pw").val()+"&newpw="+$("#newpass").val()+"&callback=?", function(data) {
+                    if(data.success) {
+                        $("#newpassdiv").css("display", "none");
+                        $("#pw2div").css("display", "none");
+                    }
+                    source.postMessage("cytube-changepass:"+JSON.stringify(data), document.location);
                 });
             });
         </script>

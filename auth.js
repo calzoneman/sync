@@ -10,6 +10,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 var mysql = require("mysql-libmysqlclient");
+var Database = require("./database.js");
 var Config = require("./config.js");
 var bcrypt = require("bcrypt");
 var hashlib = require("node_hash");
@@ -184,6 +185,22 @@ function sessionSalt() {
         salt.push(chars[parseInt(Math.random()*chars.length)]);
     }
     return salt.join('');
+}
+
+exports.setUserPassword = function(name, pw) {
+    var db = mysql.createConnectionSync();
+    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
+                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    if(!db.connectedSync()) {
+        Logger.errlog.log("Auth.setUserPassword: DB connection failed");
+        return false;
+    }
+    var hash = bcrypt.hashSync(pw, 10);
+    var query = "UPDATE registrations SET pw='{1}' WHERE uname='{2}'"
+        .replace("{1}", Database.sqlEscape(hash))
+        .replace("{2}", Database.sqlEscape(name));
+    var result = db.querySync(query);
+    return result;
 }
 
 exports.getGlobalRank = function(name) {

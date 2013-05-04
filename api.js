@@ -25,6 +25,7 @@ var jsonHandlers = {
     "listloaded" : handleChannelList,
     "login"      : handleLogin,
     "register"   : handleRegister,
+    "changepass" : handlePasswordChange,
     "globalbans" : handleGlobalBans,
     "admreports" : handleAdmReports
 };
@@ -193,6 +194,33 @@ function handleLogin(params, req, res) {
         sendJSON(res, {
             error: "Invalid session",
             success: false
+        });
+    }
+}
+
+function handlePasswordChange(params, req, res) {
+    var name = params.name || "";
+    var oldpw = params.oldpw || "";
+    var newpw = params.newpw || "";
+    if(oldpw == "" || newpw == "") {
+        sendJSON(res, {
+            success: false,
+            error: "Old password and new password cannot be empty"
+        });
+        return;
+    }
+    var row = Auth.login(name, oldpw);
+    if(row) {
+        var success = Auth.setUserPassword(name, newpw);
+        sendJSON(res, {
+            success: success,
+            error: success ? "" : "Change password failed"
+        });
+    }
+    else {
+        sendJSON(res, {
+            success: false,
+            error: "Invalid username or password"
         });
     }
 }

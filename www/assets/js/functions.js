@@ -1002,6 +1002,16 @@ function showLoginFrame() {
                 modal.modal("hide");
             }
         }
+        else if(e.data.substring(0, e.data.indexOf(":")) == "cytube-changepass") {
+            var data = e.data.substring(e.data.indexOf(":")+1);
+            data = JSON.parse(data);
+            if(data.error) {
+                alert(data.error);
+            }
+            else if(data.success) {
+                alert("Password changed");
+            }
+        }
     }
     if(window.addEventListener) {
         window.addEventListener("message", respond, false);
