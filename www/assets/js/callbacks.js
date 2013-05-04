@@ -149,7 +149,7 @@ function initCallbacks() {
             }
         }
         else {
-            $("#welcome")[0].innerHTML = "Welcome, " + uname;
+            $("#welcome").text("Logged in as " + uname);
             $("#loginform").css("display", "none");
             $("#logoutform").css("display", "");
             $("#loggedin").css("display", "");
