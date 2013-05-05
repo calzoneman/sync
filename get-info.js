@@ -92,11 +92,11 @@ exports.searchYT = function(terms, callback) {
     for(var i = 0; i < terms.length; i++) {
         terms[i] = escape(terms[i]);
     }
-    var query = terms.join("/");
+    var query = terms.join("+");
     getJSON({
         host: "gdata.youtube.com",
         port: 80,
-        path: "/feeds/api/videos/-/" + query + "?v=2&alt=json",
+        path: "/feeds/api/videos/?q=" + query + "&v=2&alt=json",
         method: "GET",
         dataType: "jsonp",
         timeout: 1000}, callback);
@@ -110,7 +110,9 @@ exports.getYTSearchResults = function(query, callback) {
 
         var vids = [];
         try {
-
+            if(data.feed.entry.length === undefined) {
+                return;
+            }
             for(var i = 0; i < data.feed.entry.length; i++) {
                 try {
                     var item = data.feed.entry[i];
