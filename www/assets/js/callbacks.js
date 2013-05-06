@@ -91,7 +91,10 @@ function initCallbacks() {
         $("#opt_allow_voteskip").prop("checked", opts.allow_voteskip);
         $("#opt_voteskip_ratio").val(opts.voteskip_ratio);
         if(opts.customjs.trim() != "") {
-            $.getScript(opts.customjs);
+            if(opts.customjs != CUSTOMJS) {
+                $.getScript(opts.customjs);
+                CUSTOMJS = opts.customjs;
+            }
         }
 
         CHANNELOPTS = opts;

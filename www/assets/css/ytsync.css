@@ -97,6 +97,7 @@ html, body {
 
 #messagebuffer {
     overflow-y: scroll;
+    overflow-x: hidden;
     height: 347px;
     border: 1px solid #aaaaaa; // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa
     border-left: 0;

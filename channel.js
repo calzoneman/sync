@@ -135,6 +135,7 @@ Channel.prototype.loadDump = function() {
                         this.filters[i].active = f.active;
                     }
                 }
+                this.broadcastChatFilters();
             }
             if(data.motd) {
                 this.motd = data.motd;
@@ -889,7 +890,7 @@ Channel.prototype.jumpTo = function(pos) {
     var old = this.position;
     if(this.media && this.media.temp && old != pos) {
         this.dequeue({pos: old, removeonly: true});
-        if(pos > old) {
+        if(pos > old && pos > 0) {
             pos--;
         }
     }

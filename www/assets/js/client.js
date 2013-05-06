@@ -30,6 +30,7 @@ var VHEIGHT = "377";
 var IGNORED = [];
 var KICKED = false;
 var CHANNEL = "";
+var CUSTOMJS = "";
 var uname = readCookie("sync_uname");
 var session = readCookie("sync_session");
 
