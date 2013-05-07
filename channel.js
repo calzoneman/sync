@@ -487,7 +487,7 @@ Channel.prototype.sendPlaylist = function(user) {
 
 Channel.prototype.sendMediaUpdate = function(user) {
     if(this.media != null) {
-        user.socket.emit("mediaUpdate", this.media.fullupdate());
+        user.socket.emit("changeMedia", this.media.fullupdate());
     }
 }
 
