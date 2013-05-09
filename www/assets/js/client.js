@@ -23,6 +23,8 @@ var CHATHIST = [];
 var CHATHISTIDX = 0;
 var FOCUSED = true;
 var SCROLLCHAT = true;
+var LASTCHATNAME = "";
+var LASTCHATTIME = 0;
 var PAGETITLE = "Sync";
 var TITLE_BLINK;
 var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//670

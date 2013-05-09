@@ -182,13 +182,25 @@ function addChatMessage(data) {
 }
 
 function formatChatMessage(data) {
+    var skip = data.username == LASTCHATNAME;
+    if(Date.now() > LASTCHATTIME + 60000) {
+        skip = false;
+    }
+    if(data.msgclass == "drink" || data.msgclass == "shout") {
+        skip = false;
+    }
+    LASTCHATNAME = data.username;
+    LASTCHATTIME = data.time;
     var div = $("<div/>");
-    if(USEROPTS.show_timestamps) {
+    if(USEROPTS.show_timestamps && !skip) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
         time.text("["+timestamp+"] ");
     }
-    var name = $("<span/>").appendTo(div);
+    var name = $("<span/>");
+    if(!skip) {
+        name.appendTo(div);
+    }
     $("<strong/>").text(data.username + ": ").appendTo(name);
     var message = $("<span/>").appendTo(div);
     message[0].innerHTML = data.msg;
