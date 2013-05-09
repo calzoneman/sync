@@ -1,72 +1,176 @@
-/*
-The MIT License (MIT)
-Copyright (c) 2013 Calvin Montgomery
+Callbacks = {
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
-// Wrapped in a function so I can ensure that the socket
-// is defined before these statements are run
-function initCallbacks() {
-    /* REGION Globals */
-
-    socket.on("disconnect", function() {
-        handleDisconnect();
-    });
-
-    socket.on("announcement", function(data) {
-        showAnnouncement(data.title, data.text);
-    });
-
-    /* REGION Channel Meta */
-    socket.on("kick", function(data) {
-        KICKED = true;
-        $("<div/>")
-            .addClass("server-msg-disconnect")
-            .text("Kicked: " + data.reason)
+    connect: function() {
+        socket.emit("joinChannel", {
+            name: CHANNEL
+        });
+        if(uname && session) {
+            socket.emit("login", {
+                name: uname,
+                session: session
+            });
+        }
+        $("<div/>").addClass("server-msg-reconnect")
+            .text("Connected")
             .appendTo($("#messagebuffer"));
         $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
-    });
+    },
 
-    socket.on("noflood", function(data) {
+    disconnect: function() {
+        if(KICKED)
+            return;
+        $("<div/>")
+            .addClass("server-msg-disconnect")
+            .text("Disconnected from server.  Attempting reconnection...")
+            .appendTo($("#messagebuffer"));
+        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+    },
+
+    announcement: function(data) {
+        var div = $("<div/>").addClass("alert")
+            .insertAfter($(".row")[0]);
+        $("<button/>").addClass("close pull-right").data.text("×")
+            .appendTo(div)
+            .click(function() { div.remove(); });
+        $("<h3/>").data.text(data.title).appendTo(div);
+        $("<p/>").html(data.text).appendTo(div);
+    },
+
+    kick: function(data) {
+        KICKED = true;
+        $("<div/>").addClass("server-msg-disconnect")
+            .text("Kicked: " + data.msg)
+            .appendTo($("#messagebuffer"));
+        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollheight"));
+    },
+
+    noflood: function(data) {
         $("<div/>")
             .addClass("server-msg-disconnect")
             .text(data.action + ": " + data.msg)
             .appendTo($("#messagebuffer"));
         $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
-    });
+    },
 
-    socket.on("channelNotRegistered", function() {
-        showChannelRegistration();
-    });
+    channelNotRegistered: function() {
+        var div = $("<div/>").addClass("alert alert-info").attr("id", "chregnotice")
+            .insertAfter($(".row")[0]);
+        $("<button/>").addClass("close pull-right").text("×")
+            .appendTo(div)
+            .click(function() { div.remove(); });
+        $("<h3/>").text("This channel isn't registered").appendTo(div);
+        $("<button/>").addClass("btn btn-primary").text("Register it")
+            .appendTo(div)
+            .click(function() {
+                socket.emit("registerChannel");
+            });
+    },
 
-    socket.on("registerChannel", function(data) {
+    registerChannel: function(data) {
         if(data.success) {
             $("#chregnotice").remove();
         }
         else {
             alert(data.error);
         }
-    });
+    },
 
-    socket.on("updateMotd", function(data) {
+    updateMotd: function(data) {
         $("#motdtext").val(data.motd);
         if(data.motd != "")
             $("#motd").parent().css("display", "");
         else
             $("#motd").parent().css("display", "none");
         $("#motd")[0].innerHTML = data.html;
-    });
+    },
 
-    socket.on("chatFilters", function(data) {
-        updateChatFilters(data.filters);
-    });
+    chatFilters: function(data) {
+        var entries = data.filters;
+        var tbl = $("#filtereditor table");
+        if(tbl.children().length > 1) {
+            $(tbl.children()[1]).remove();
+        }
+        for(var i = 0; i < entries.length; i++) {
+            var f = entries[i];
+            var tr = $("<tr/>").appendTo(tbl);
+            var remove = $("<button/>").addClass("btn btn-mini btn-danger")
+                .appendTo($("<td/>").appendTo(tr));
+            $("<i/>").addClass("icon-remove-circle").appendTo(remove);
+            var name = $("<code/>").text(f.name)
+                .appendTo($("<td/>").appendTo(tr));
+            var regex = $("<code/>").text(f.source)
+                .appendTo($("<td/>").appendTo(tr));
+            var flags = $("<code/>").text(f.flags)
+                .appendTo($("<td/>").appendTo(tr));
+            var replace = $("<code/>").text(f.replace)
+                .appendTo($("<td/>").appendTo(tr));
+            var activetd = $("<td/>").appendTo(tr);
+            var active = $("<input/>").attr("type", "checkbox")
+                .prop("checked", f.active).appendTo(activetd);
 
-    socket.on("channelOpts", function(opts) {
+            var remcallback = (function(filter) { return function() {
+                socket.emit("chatFilter", {
+                    cmd: "remove",
+                    filter: filter
+                });
+            } })(f);
+            remove.click(remcallback);
+
+            var actcallback = (function(filter) { return function() {
+                // Apparently when you check a checkbox, its value is changed
+                // before this callback.  When you uncheck it, its value is not
+                // changed before this callback
+                // [](/amgic)
+                var enabled = active.prop("checked");
+                filter.active = (filter.active == enabled) ? !enabled : enabled;
+                socket.emit("chatFilter", {
+                    cmd: "update",
+                    filter: filter
+                });
+            } })(f);
+            active.click(actcallback);
+        }
+
+        var newfilt = $("<tr/>").appendTo(tbl);
+        $("<td/>").appendTo(newfilt);
+        var name = $("<input/>").attr("type", "text")
+            .appendTo($("<td/>").appendTo(newfilt));
+        var regex = $("<input/>").attr("type", "text")
+            .appendTo($("<td/>").appendTo(newfilt));
+        var flags = $("<input/>").attr("type", "text")
+            .val("g")
+            .appendTo($("<td/>").appendTo(newfilt));
+        var replace = $("<input/>").attr("type", "text")
+            .appendTo($("<td/>").appendTo(newfilt));
+        var add = $("<button/>").addClass("btn btn-primary")
+            .text("Add Filter")
+            .appendTo($("<td/>").appendTo(newfilt));
+        var cback = (function(name, regex, fg, replace) { return function() {
+            if(regex.val() && replace.val()) {
+                var re = regex.val();
+                var flags = fg.val();
+                try {
+                    var dummy = new RegExp(re, flags);
+                }
+                catch(e) {
+                    alert("Invalid regex: " + e);
+                }
+                socket.emit("chatFilter", {
+                    cmd: "update",
+                    filter: {
+                        name: name.val(),
+                        source: re,
+                        flags: flags,
+                        replace: replace.val(),
+                        active: true
+                    }
+                });
+            }
+        } })(name, regex, flags, replace);
+        add.click(cback);
+    },
+
+    channelOpts: function(opts) {
         $("#opt_qopen_allow_qnext").prop("checked", opts.qopen_allow_qnext);
         $("#opt_qopen_allow_move").prop("checked", opts.qopen_allow_move);
         $("#opt_qopen_allow_delete").prop("checked", opts.qopen_allow_delete);
@@ -112,41 +216,145 @@ function initCallbacks() {
         else
             $("#voteskip").attr("disabled", true);
         rebuildPlaylist();
-    });
+    },
 
-    socket.on("banlist", function(data) {
-        updateBanlist(data.entries);
-    });
+    banlist: function(data) {
+        var entries = data.entries;
+        var tbl = $("#banlist table");
+        if(tbl.children().length > 1) {
+            $(tbl.children()[1]).remove();
+        }
+        for(var i = 0; i < entries.length; i++) {
+            var tr = $("<tr/>").appendTo(tbl);
+            var remove = $("<button/>").addClass("btn btn-mini btn-danger")
+                .appendTo($("<td/>").appendTo(tr));
+            $("<i/>").addClass("icon-remove-circle").appendTo(remove);
+            var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
+            var name = $("<td/>").text(entries[i].name).appendTo(tr);
+            var banner = $("<td/>").text(entries[i].banner).appendTo(tr);
 
-    socket.on("seenlogins", function(data) {
-        updateSeenLogins(data.entries);
-    });
+            var callback = (function(ip) { return function() {
+                socket.emit("chatMsg", {
+                    msg: "/unban " + ip
+                });
+            } })(entries[i].ip);
+            remove.click(callback);
+        }
+    },
 
-    socket.on("acl", updateACL);
+    seenlogins: function(data) {
+        var entries = data.entries;
+        var tbl = $("#loginlog table");
+        if(tbl.children().length > 1) {
+            $(tbl.children()[1]).remove();
+        }
+        entries.sort(function(a, b) {
+            var x = a.name.toLowerCase();
+            var y = b.name.toLowerCase();
+            // Force blanknames to the bottom
+            if(x == "") {
+                return 1;
+            }
+            if(y == "") {
+                return -1;
+            }
+            return x == y ? 0 : (x < y ? -1 : 1);
+        });
+        for(var i = 0; i < entries.length; i++) {
+            var tr = $("<tr/>").appendTo(tbl);
+            var bantd = $("<td/>").appendTo(tr);
+            var ban = $("<button/>").addClass("btn btn-mini btn-danger")
+                .text("Ban")
+                .appendTo(bantd);
+            var banrange = $("<button/>").addClass("btn btn-mini btn-danger")
+                .text("Ban Range")
+                .appendTo(bantd);
+            var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
+            var name = $("<td/>").text(entries[i].name).appendTo(tr);
 
-    socket.on("voteskip", function(data) {
+            var callback = (function(name) { return function() {
+                socket.emit("chatMsg", {
+                    msg: "/ban " + name
+                });
+            } })(entries[i].name.split(",")[0]);
+            ban.click(callback);
+            var callback2 = (function(name) { return function() {
+                socket.emit("chatMsg", {
+                    msg: "/ban " + name + " range"
+                });
+            } })(entries[i].name.split(",")[0]);
+            banrange.click(callback2);
+        }
+    },
+
+    acl: function(entries) {
+        entries.sort(function(a, b) {
+            var x = a.name.toLowerCase();
+            var y = b.name.toLowerCase();
+            return y == x ? 0 : (x < y ? -1 : 1);
+        });
+        var tbl = $("#channelranks table");
+        if(tbl.children().length > 1) {
+            $(tbl.children()[1]).remove();
+        }
+        for(var i = 0; i < entries.length; i++) {
+            var tr = $("<tr/>").appendTo(tbl);
+            var name = $("<td/>").text(entries[i].name).appendTo(tr);
+            name.addClass(getNameColor(entries[i].rank));
+            var rank = $("<td/>").text(entries[i].rank).appendTo(tr);
+            var control = $("<td/>").appendTo(tr);
+            var up = $("<button/>").addClass("btn btn-mini btn-success")
+                .appendTo(control);
+            $("<i/>").addClass("icon-plus").appendTo(up);
+            var down = $("<button/>").addClass("btn btn-mini btn-danger")
+                .appendTo(control);
+            $("<i/>").addClass("icon-minus").appendTo(down);
+            if(entries[i].rank + 1 >= RANK) {
+                up.attr("disabled", true);
+            }
+            else {
+                up.click(function(name) { return function() {
+                    socket.emit("promote", {
+                        name: name
+                    });
+                }}(entries[i].name));
+            }
+            if(entries[i].rank >= RANK) {
+                down.attr("disabled", true);
+            }
+            else {
+                down.click(function(name) { return function() {
+                    socket.emit("demote", {
+                        name: name
+                    });
+                }}(entries[i].name));
+            }
+        }
+    },
+
+    voteskip: function(data) {
         if(data.count > 0) {
             $("#voteskip").text("Voteskip ("+data.count+"/"+data.need+")");
         }
         else {
             $("#voteskip").text("Voteskip");
         }
-    });
+    },
 
     /* REGION Rank Stuff */
 
-    socket.on("rank", function(data) {
+    rank: function(data) {
         RANK = data.rank;
         handleRankChange();
-    });
+    },
 
-    socket.on("register", function(data) {
+    register: function(data) {
         if(data.error) {
             alert(data.error);
         }
-    });
+    },
 
-    socket.on("login", function(data) {
+    login: function(data) {
         if(!data.success) {
             if(data.error != "Invalid session") {
                 alert(data.error);
@@ -161,35 +369,46 @@ function initCallbacks() {
             createCookie("sync_uname", uname, 7);
             createCookie("sync_session", session, 7);
         }
-    });
-
+    },
 
     /* REGION Chat */
-
-    socket.on("usercount", function(data) {
+    usercount: function(data) {
         var text = data.count + " connected user";
         if(data.count != 1) {
             text += "s";
         }
         $("#usercount").text(text);
-    });
+    },
 
-    socket.on("chatMsg", function(data) {
+    chatMsg: function(data) {
         addChatMessage(data);
-    });
+    },
 
-    socket.on("userlist", function(data) {
+    userlist: function(data) {
         $(".userlist_item").each(function() { $(this).remove(); });
         for(var i = 0; i < data.length; i++) {
-            addUser(data[i]);
+            Callbacks.addUser(data[i]);
         }
-    });
+    },
 
-    socket.on("addUser", function(data) {
-        addUser(data);
-    });
+    addUser: function(data) {
+        var div = $("<div/>").attr("class", "userlist_item");
+        var flair = $("<span/>").appendTo(div);
+        var nametag = $("<span/>").text(data.name).appendTo(div);
+        formatUserlistItem(div[0], data);
+        addUserDropdown(div, data.name);
+        var users = $("#userlist").children();
+        for(var i = 0; i < users.length; i++) {
+            var othername = users[i].children[1].innerHTML;
+            if(othername.toLowerCase() > data.name.toLowerCase()) {
+                div.insertBefore(users[i]);
+                return;
+            }
+        }
+        div.appendTo($("#userlist"));
+    },
 
-    socket.on("updateUser", function(data) {
+    updateUser: function(data) {
         if(data.name == uname) {
             LEADER = data.leader;
             RANK = data.rank;
@@ -221,9 +440,9 @@ function initCallbacks() {
                 formatUserlistItem(users[i], data);
             }
         }
-    });
+    },
 
-    socket.on("userLeave", function(data) {
+    userLeave: function(data) {
         var users = $("#userlist").children();
         for(var i = 0; i < users.length; i++) {
             var name = users[i].children[1].innerHTML;
@@ -231,9 +450,9 @@ function initCallbacks() {
                 $("#userlist")[0].removeChild(users[i]);
             }
         }
-    });
+    },
 
-    socket.on("drinkCount", function(data) {
+    drinkCount: function(data) {
         if(data.count != 0) {
             var text = data.count + " drink";
             if(data.count != 1) {
@@ -245,11 +464,10 @@ function initCallbacks() {
         else {
             $(".drinkbar").hide();
         }
-    });
+    },
 
     /* REGION Playlist Stuff */
-
-    socket.on("playlist", function(data) {
+    playlist: function(data) {
         // Clear the playlist first
         var ul = $("#queue")[0];
         var n = ul.children.length;
@@ -265,14 +483,14 @@ function initCallbacks() {
                                 : "Added by: Unknown");
             $(li).appendTo(ul);
         }
-    });
+    },
 
-    socket.on("updatePlaylistMeta", function(data) {
+    updatePlaylistMeta: function(data) {
         $("#plcount").text(data.count + " items");
         $("#pllength").text(data.time);
-    });
+    },
 
-    socket.on("queue", function(data) {
+    queue: function(data) {
         var li = makeQueueEntry(data.media);
         if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
             addQueueButtons(li);
@@ -286,9 +504,9 @@ function initCallbacks() {
         if(idx < ul.children.length - 1)
             moveVideo(ul.children.length - 1, idx);
         $(li).show("blind");
-    });
+    },
 
-    socket.on("setTemp", function(data) {
+    setTemp: function(data) {
         var li = $("#queue").children()[data.idx];
         var buttons = $(li).find(".qe_btn");
         if(buttons.length == 5) {
@@ -300,18 +518,19 @@ function initCallbacks() {
         else {
             $(li).removeClass("alert alert-error");
         }
-    });
+    },
 
-    socket.on("unqueue", function(data) {
+    unqueue: function(data) {
         var li = $("#queue").children()[data.pos];
         $(li).remove();
-    });
+    },
 
-    socket.on("moveVideo", function(data) {
+    moveVideo: function(data) {
+        // Not recursive
         moveVideo(data.src, data.dest);
-    });
+    },
 
-    socket.on("updatePlaylistIdx", function(data) {
+    updatePlaylistIdx: function(data) {
         if(data.old != undefined) {
             var liold = $("#queue").children()[data.old];
             $(liold).removeClass("alert alert-info");
@@ -324,9 +543,9 @@ function initCallbacks() {
         POSITION = data.idx;
         if(CHANNELOPTS.allow_voteskip)
             $("#voteskip").attr("disabled", false);
-    });
+    },
 
-    socket.on("changeMedia", function(data) {
+    changeMedia: function(data) {
         $("#currenttitle").text("Currently Playing: " + data.title);
         if(data.type != "sc" && MEDIATYPE == "sc")
             // [](/goddamnitmango)
@@ -338,15 +557,15 @@ function initCallbacks() {
         if(PLAYER.update) {
             PLAYER.update(data);
         }
-    });
+    },
 
-    socket.on("mediaUpdate", function(data) {
+    mediaUpdate: function(data) {
         if(PLAYER.update) {
             PLAYER.update(data);
         }
-    });
+    },
 
-    socket.on("queueLock", function(data) {
+    queueLock: function(data) {
         OPENQUEUE = !data.locked;
         if(OPENQUEUE) {
             $("#playlist_controls").css("display", "");
@@ -373,9 +592,9 @@ function initCallbacks() {
                 .addClass("btn-danger")
                 .text("Unlock Queue");
         }
-    });
+    },
 
-    socket.on("librarySearchResults", function(data) {
+    librarySearchResults: function(data) {
         var n = $("#library").children().length;
         for(var i = 0; i < n; i++) {
             $("#library")[0].removeChild($("#library").children()[0]);
@@ -391,22 +610,55 @@ function initCallbacks() {
             }
             $(li).appendTo(ul);
         }
-    });
+    },
 
-    /* REGION Poll */
-
-    socket.on("newPoll", function(data) {
-        addPoll(data);
-        if(SCROLLCHAT) {
-            $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
-        }
-    });
-
-    socket.on("updatePoll", function(data) {
-        updatePoll(data);
-    });
-
-    socket.on("closePoll", function() {
+    /* REGION Polls */
+    newPoll: function(data) {
         closePoll();
-    });
+        var pollMsg = $("<div/>").addClass("poll-notify")
+            .text(data.initiator + " opened a poll: \"" + data.title + "\"")
+            .appendTo($("#messagebuffer"));
+        var poll = $("<div/>").addClass("well active").prependTo($("#pollcontainer"));
+        $("<button/>").addClass("close pull-right").text("×")
+            .appendTo(poll)
+            .click(function() { poll.remove(); });
+        if(RANK >= Rank.Moderator || LEADER) {
+            $("<button/>").addClass("btn btn-danger pull-right").text("End Poll")
+                .appendTo(poll)
+                .click(function() {
+                    socket.emit("closePoll")
+                });
+        }
+
+        $("<h3/>").text(data.title).appendTo(poll);
+        for(var i = 0; i < data.options.length; i++) {
+            var callback = (function(i) { return function() {
+                    socket.emit("vote", {
+                        option: i
+                    });
+                    poll.find(".option button").each(function() {
+                        $(this).attr("disabled", "disabled");
+                    });
+            } })(i);
+            $("<button/>").addClass("btn").text(data.counts[i])
+                .prependTo($("<div/>").addClass("option").text(data.options[i])
+                        .appendTo(poll))
+                .click(callback);
+
+        }
+    },
+
+    updatePoll: function(data) {
+        var poll = $("#pollcontainer .active");
+        var i = 0;
+        poll.find(".option button").each(function() {
+            $(this).text(data.counts[i]);
+            i++;
+        });
+    },
+
+    closePoll: function() {
+        // Not recursive
+        closePoll();
+    }
 }

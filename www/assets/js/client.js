@@ -76,10 +76,12 @@ var Rank = {
 
 try {
     var socket = io.connect(IO_URL);
-    initCallbacks();
+    for(var key in Callbacks) {
+        socket.on(key, Callbacks[key]);
+    }
 }
 catch(e) {
-    handleDisconnect();
+    Callbacks.disconnect();
 }
 
 $(window).focus(function() {
@@ -124,21 +126,21 @@ else {
     });
 }
 
-socket.on("connect", function() {
-    socket.emit("joinChannel", {
-        name: CHANNEL
-    });
-    if(uname && session) {
-        socket.emit("login", {
-            name: uname,
-            session: session
-        });
-    }
-    $("<div/>").addClass("server-msg-reconnect")
-        .text("Connected")
-        .appendTo($("#messagebuffer"));
-    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
-});
+//socket.on("connect", function() {
+//    socket.emit("joinChannel", {
+//        name: CHANNEL
+//    });
+//    if(uname && session) {
+//        socket.emit("login", {
+//            name: uname,
+//            session: session
+//        });
+//    }
+//    $("<div/>").addClass("server-msg-reconnect")
+//        .text("Connected")
+//        .appendTo($("#messagebuffer"));
+//    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+//});
 
 
 // Load the youtube iframe API
