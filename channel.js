@@ -59,6 +59,7 @@ var Channel = function(name) {
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
         new Filter("bold", "\\*([^\\*]+)\\*", "g", "<strong>$1</strong>"),
         new Filter("italic", "(^| )_([^_]+)_", "g", "$1<em>$2</em>"),
+        new Filter("inline spoiler", "\\[spoiler\\](.*)\\[\\/spoiler\\]", "ig", "<span class=\"spoiler\">$1</span>")
     ];
     this.motd = {
         motd: "",
@@ -122,17 +123,18 @@ Channel.prototype.loadDump = function() {
             }
             this.broadcastOpts();
             if(data.filters) {
-                this.filters = new Array(data.filters.length);
                 for(var i = 0; i < data.filters.length; i++) {
                     var f = data.filters[i];
                     // Backwards compatibility
                     if(f[0] != undefined) {
-                        this.filters[i] = new Filter("", f[0], "g", f[1]);
-                        this.filters[i].active = f[2];
+                        var filt = new Filter("", f[0], "g", f[1]);
+                        filt.active = f[2];
+                        this.updateFilter(filt);
                     }
                     else {
-                        this.filters[i] = new Filter(f.name, f.source, f.flags, f.replace);
-                        this.filters[i].active = f.active;
+                        var filt = new Filter(f.name, f.source, f.flags, f.replace);
+                        filt.active = f.active;
+                        this.updateFilter(filt);
                     }
                 }
                 this.broadcastChatFilters();
