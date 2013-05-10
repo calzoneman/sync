@@ -326,12 +326,12 @@ Media.prototype.update = function(data) {
         var time = data.currentTime;
         var diff = time - seconds || time;
 
-        var a = SYNC_THRESHOLD + 1;
+        var a = USEROPTS.sync_accuracy + 1;
         // If 2 updates in a row have lag, compensate for buffering
-        if(diff >= a && diff <= 6 && this.diff >= a && this.diff <= 6) {
+        if(diff >= a && diff <= a*3 && this.diff >= a && this.diff <= a*3) {
             this.seek(time + diff);
         }
-        else if(diff < -2 || diff >= SYNC_THRESHOLD) {
+        else if(diff < -USEROPTS.sync_accuracy || diff >= USEROPTS.sync_accuracy) {
             if(diff < 0) {
                 this.seek(time + 0.5);
             }

@@ -817,6 +817,11 @@ function showUserOpts() {
     synch.prop("checked", USEROPTS.synch);
     addOption("Synch", synchcontainer);
 
+    var syncacc = $("<input/>").attr("type", "text")
+        .attr("placeholder", "Seconds");
+    syncacc.val(USEROPTS.sync_accuracy);
+    addOption("Synch Accuracy", syncacc);
+
     var vidcontainer = $("<label/>").addClass("checkbox")
         .text("Hide Video");
     var hidevid = $("<input/>").attr("type", "checkbox").appendTo(vidcontainer);
@@ -854,6 +859,7 @@ function showUserOpts() {
         USEROPTS.css             = usercss.val();
         USEROPTS.layout          = layoutselect.val();
         USEROPTS.synch           = synch.prop("checked");
+        USEROPTS.sync_accuracy   = parseFloat(syncacc.val()) || 2;
         USEROPTS.hidevid         = hidevid.prop("checked");
         USEROPTS.show_timestamps = showts.prop("checked");
         USEROPTS.blink_title     = blink.prop("checked");
