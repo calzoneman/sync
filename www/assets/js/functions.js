@@ -611,6 +611,7 @@ function onWindowFocus() {
 }
 
 function newPollMenu() {
+    $("#ytapiplayer").hide();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -669,6 +670,7 @@ function newPollMenu() {
         .appendTo(footer)
         .click(submit);
     modal.on("hidden", function() {
+        $("#ytapiplayer").show();
         modal.remove();
     });
     modal.modal();
