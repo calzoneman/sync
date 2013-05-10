@@ -183,16 +183,13 @@ function addChatMessage(data) {
 
 function formatChatMessage(data) {
     var skip = data.username == LASTCHATNAME;
-    if(Date.now() > LASTCHATTIME + 60000) {
-        skip = false;
-    }
     if(data.msgclass == "drink" || data.msgclass == "shout") {
         skip = false;
     }
     LASTCHATNAME = data.username;
     LASTCHATTIME = data.time;
     var div = $("<div/>");
-    if(USEROPTS.show_timestamps && !skip) {
+    if(USEROPTS.show_timestamps) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
         time.text("["+timestamp+"] ");
