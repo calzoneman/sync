@@ -98,6 +98,7 @@
                         }
                         return y - x;
                     });
+                    var total = 0;
                     for(var i = 0; i < data.length; i++) {
                         var d = data[i];
                         var tr = $("<tr/>").appendTo($("#channeldata"));
@@ -106,8 +107,15 @@
                             .text(d.name)
                             .appendTo(name);
                         $("<td/>").text(d.usercount || 0).appendTo(tr);
+                        total += (d.usercount || 0);
                         $("<td/>").text(d.title || "-").appendTo(tr);
                     }
+
+                    var tr = $("<tr/>").appendTo($("#channeldata"));
+                    $("<td/>").text("Total").appendTo(tr);
+                    $("<td/>").text(total).appendTo(tr);
+                    $("<td/>").appendTo(tr);
+
                 });
             }
             function createCookie(name,value,days) {
