@@ -1005,3 +1005,11 @@ li.alert-error.alert-info {
     background-color: #2f2f2f;
     border-color: #000000;
 }
+
+.nick-hover {
+    background-color: #660066;
+}
+
+.userlist_owner {
+    color: #ff9900;
+}

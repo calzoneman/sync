@@ -151,7 +151,21 @@ function addChatMessage(data) {
         return;
     }
     var div = formatChatMessage(data);
+    div.data("sender", data.username);
     div.appendTo($("#messagebuffer"));
+    div.mouseover(function() {
+        $("#messagebuffer").children().each(function() {
+            var name = $(this).data("sender");
+            if(name == data.username) {
+                $(this).addClass("nick-hover");
+            }
+        });
+    });
+    div.mouseleave(function() {
+        $("#messagebuffer").children().each(function() {
+            $(this).removeClass("nick-hover");
+        });
+    });
     // Cap chatbox at most recent 100 messages
     if($("#messagebuffer").children().length > 100) {
         $($("#messagebuffer").children()[0]).remove();
@@ -198,7 +212,7 @@ function formatChatMessage(data) {
     if(!skip) {
         name.appendTo(div);
     }
-    $("<strong/>").text(data.username + ": ").appendTo(name);
+    $("<strong/>").addClass("username").text(data.username + ": ").appendTo(name);
     var message = $("<span/>").appendTo(div);
     message[0].innerHTML = data.msg;
     if(data.modflair) {
