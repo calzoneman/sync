@@ -510,7 +510,8 @@ Callbacks = {
         var li = $("#queue").children()[data.idx];
         var buttons = $(li).find(".qe_btn");
         if(buttons.length == 5) {
-            $(buttons[4]).text(data.temp ? "Untemp" : "Temp");
+            $(buttons[4]).removeClass("btn-danger btn-success");
+            $(buttons[4]).addClass(data.temp ? "btn-success" : "btn-danger");
         }
         if(data.temp) {
             $(li).addClass("alert alert-error");

@@ -313,7 +313,7 @@ function addQueueButtons(li) {
 
     if(CHANNELOPTS.qopen_allow_qnext || fullperms) {
         var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
-        btnNext.text("Next");
+        $("<i/>").addClass("icon-share-alt").appendTo(btnNext);
         $(btnNext).click(function() {
             var idx = $("#queue").children().index(li);
             var dest = idx < POSITION ? POSITION : POSITION + 1;
@@ -327,11 +327,12 @@ function addQueueButtons(li) {
     if(RANK >= Rank.Moderator) {
         var btnTemp =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
         var temp = $(li).hasClass("alert-error");
+        $("<i/>").addClass("icon-flag").appendTo(btnTemp);
         if(temp) {
-            btnTemp.text("Untemp");
+            btnTemp.addClass("btn-success");
         }
         else {
-            btnTemp.text("Temp");
+            btnTemp.addClass("btn-danger");
         }
         $(btnTemp).click(function() {
             temp = $(li).hasClass("alert-error");

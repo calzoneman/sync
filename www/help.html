@@ -119,7 +119,7 @@
 
                 <a name="queuecontrols"></a>
                 <a href="#queuecontrols"><h1>Queue Controls</h1></a>
-                <p>Queue Controls are only visible to moderators by default.  A moderator can unlock the queue to make the controls visible to everyone.<br> Below is an example of the queue controls.  On your channel, simply paste a link of one of the following accepted formats and press "Queue Next" to add it after the current video, or "Queue @ End" to add it at the end of the playlist.  If Voteskip is enabled in <a href="#channeloptions">Channel Options</a>, then pressing voteskip indicates you would like to skip the current video.  If a majority of connected users does this, the video will be skipped.</br>
+                <p>Queue Controls are only visible to moderators by default.  A moderator can unlock the queue to make the controls visible to everyone.<br> Below is an example of the queue controls.  On your channel, simply paste a link of one of the following accepted formats and press "Next" to add it after the current video, or "End" to add it at the end of the playlist.  If Voteskip is enabled in <a href="#channeloptions">Channel Options</a>, then pressing voteskip indicates you would like to skip the current video.  If a majority of connected users does this, the video will be skipped.</br>
                 </p>
                 <strong>Acceptable URLs</strong>
                 <ul>
@@ -142,7 +142,7 @@
                     </div>
                     <button class="btn btn-block">Voteskip</button>
                 </div>
-                <p>Below is an example of an entry in the playlist.  Please note the control buttons only appear if you are a moderator or if the queue is unlocked.  The button with vertical arrows is for moving videos in the playlist.  Click and hold the button and drag the mouse up and down to move the video in the playlist.  The red "X" button will remove the video from the playlist.  The green play button will jump the playlist to that video.  The "Next" button will move the video so that it plays after the current video.
+                <p>Below is an example of an entry in the playlist.  Please note the control buttons only appear if you are a moderator or if the queue is unlocked.  The button with vertical arrows is for moving videos in the playlist.  Click and hold the button and drag the mouse up and down to move the video in the playlist.  The red "X" button will remove the video from the playlist.  The green play button will jump the playlist to that video.  The arrow button will move the video to the next position after the currently playing video.  The flag button will toggle whether the video is temporary (temporary videos are auto-removed after playing once).
                 </p>
                 <ul class="videolist">
                     <li class="well">
@@ -150,7 +150,8 @@
                             <button class="btn qe_btn"><i class="icon-resize-vertical"></i></button>
                             <button class="btn btn-danger qe_btn"><i class="icon-remove"></i></button>
                             <button class="btn btn-success qe_btn"><i class="icon-play"></i></button>
-                            <button class="btn qe_btn">Next</button>
+                            <button class="btn qe_btn"><i class="icon-share-alt"></i></button>
+                            <button class="btn qe_btn btn-danger"><i class="icon-flag"></i></button>
                         </div>
                         <div class="qe_title">Title</div>
                         <div class="qe_time">00:00</div>
@@ -232,11 +233,13 @@
                 <a name="chatfilters"></a>
                 <a href="#chatfilters"><h1>Chat Filters</h1></a>
                 <p>
-                Moderators can apply various filters to chat messages using Regular Expressions.  The first column contains a button to remove filters.  The second is the regular expression to match in the message.  The third is the replacement text, and the last is a checkbox for toggling the filter on/off.  Regular Expressions are given in Javascript syntax, and by default have the "g" flag set.  You can set custom flags by adding them at the end of the regex after a slash; for example <code>js/ig</code> matches "js", "JS", "jS", and "Js".  The following example replaces money amounts of the form "$amount" to "amount dollars":</p><br>
+                Moderators can apply various filters to chat messages using Regular Expressions.  The first column contains a button to remove filters.  The second is a name to identify the filter.  The third is the regular expression to match in the message.  The fourth is the regular expression flags (g = replace all, i = not case sensitive, gi is the combination of the two, etc).  The fifth is the replacement text, and the last is a checkbox for toggling the filter on/off.  Regular Expressions are given in Javascript syntax.  The following example replaces money amounts of the form "$amount" to "amount dollars":</p><br>
                 <table class="table table-striped">
                     <thead>
                         <th></th>
+                        <th>Name</th>
                         <th>Regex</th>
+                        <th>Flags</th>
                         <th>Replacement</th>
                         <th>Active</th>
                     </thead>
@@ -248,7 +251,13 @@
                                 </button>
                             </td>
                             <td>
+                                <code>The dollar filter</code>
+                            </td>
+                            <td>
                                 <code>\$([0-9\.]+)</code>
+                            </td>
+                            <td>
+                                <code>g</code>
                             </td>
                             <td>
                                 <code>$1 dollars</code>
@@ -283,7 +292,11 @@
                     </tr>
                     <tr>
                         <td>User</td>
-                        <td>0-1</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td class="userlist_guest">Guest</td>
+                        <td>0</td>
                     </tr>
                 </table>
             </div>
