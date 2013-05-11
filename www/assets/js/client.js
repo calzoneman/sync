@@ -101,7 +101,7 @@ $(window).resize(function() {
 
 // Match URLs of the form http://site.tld/r/channel
 var loc = document.location+"";
-var m = loc.match(/\/r\/([a-zA-Z0-9]+)$/);
+var m = loc.match(/\/r\/([a-zA-Z0-9-_]+)$/);
 if(m) {
     CHANNEL = m[1];
 }

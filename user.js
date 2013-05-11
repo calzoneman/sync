@@ -81,7 +81,7 @@ User.prototype.initCallbacks = function() {
     this.socket.on("joinChannel", function(data) {
         if(data.name == undefined)
             return;
-        if(!data.name.match(/^[a-zA-Z0-9]+$/))
+        if(!data.name.match(/^[a-zA-Z0-9-_]+$/))
             return;
         if(data.name.length > 100)
             return;

@@ -178,7 +178,7 @@ exports.loadChannel = function(chan) {
     chan.registered = true;
 
     // Load library
-    var query = "SELECT * FROM chan_{}_library"
+    var query = "SELECT * FROM `chan_{}_library`"
         .replace("{}", sqlEscape(chan.name));
     var results = db.querySync(query);
     if(!results) {
@@ -191,7 +191,7 @@ exports.loadChannel = function(chan) {
     }
 
     // Load bans
-    var query = "SELECT * FROM chan_{}_bans"
+    var query = "SELECT * FROM `chan_{}_bans`"
         .replace("{}", sqlEscape(chan.name));
     var results = db.querySync(query);
     if(!results) {
@@ -264,7 +264,7 @@ exports.lookupChannelRank = function(channame, username) {
         Logger.errlog.log("database.lookupChannelRank: DB connection failed");
         return Rank.Guest;
     }
-    var query = "SELECT * FROM chan_{1}_ranks WHERE name='{2}'"
+    var query = "SELECT * FROM `chan_{1}_ranks` WHERE name='{2}'"
         .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(username));
     var results = db.querySync(query);
@@ -286,14 +286,14 @@ exports.saveChannelRank = function(channame, user) {
         Logger.errlog.log("database.saveChannelRank: DB connection failed");
         return false;
     }
-    var query = "UPDATE chan_{1}_ranks SET rank='{2}' WHERE name='{3}'"
+    var query = "UPDATE `chan_{1}_ranks` SET rank='{2}' WHERE name='{3}'"
         .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(user.rank))
         .replace("{3}", sqlEscape(user.name));
     var results = db.querySync(query);
     // Gonna have to insert a new one, bugger
     if(!results.fetchAllSync) {
-        var query = "INSERT INTO chan_{1}_ranks (`name`, `rank`) VALUES ('{2}', '{3}')"
+        var query = "INSERT INTO `chan_{1}_ranks` (`name`, `rank`) VALUES ('{2}', '{3}')"
             .replace("{1}", sqlEscape(channame))
             .replace("{2}", sqlEscape(user.name))
             .replace("{3}", sqlEscape(user.rank));
@@ -309,7 +309,7 @@ exports.cacheMedia = function(channame, media) {
         Logger.errlog.log("database.cacheMedia: DB connection failed");
         return false;
     }
-    var query = "INSERT INTO chan_{1}_library VALUES ('{2}', '{3}', {4}, '{5}', '{6}')"
+    var query = "INSERT INTO `chan_{1}_library` VALUES ('{2}', '{3}', {4}, '{5}', '{6}')"
         .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(media.id))
         .replace("{3}", sqlEscape(media.title))
@@ -327,7 +327,7 @@ exports.uncacheMedia = function(channame, id) {
         Logger.errlog.log("database.uncacheMedia: DB connection failed");
         return false;
     }
-    var query = "DELETE FROM chan_{1}_library WHERE id='{2}'"
+    var query = "DELETE FROM `chan_{1}_library` WHERE id='{2}'"
         .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(id))
     var results = db.querySync(query);
@@ -341,7 +341,7 @@ exports.addChannelBan = function(channame, actor, receiver) {
         Logger.errlog.log("exports.addChannelBan: DB connection failed");
         return false;
     }
-    var query = "INSERT INTO chan_{1}_bans (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
+    var query = "INSERT INTO `chan_{1}_bans` (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
         .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(receiver.ip))
         .replace("{3}", sqlEscape(receiver.name))
@@ -357,7 +357,7 @@ exports.removeChannelBan = function(channame, ip) {
         Logger.errlog.log("exports.removeChannelBan: DB connection failed");
         return false;
     }
-    var query = "DELETE FROM chan_{1}_bans WHERE `ip` = '{2}'"
+    var query = "DELETE FROM `chan_{1}_bans` WHERE `ip` = '{2}'"
         .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(ip));
     results = db.querySync(query);
@@ -371,7 +371,7 @@ exports.getChannelRanks = function(channame) {
         return false;
     }
 
-    var query = "SELECT * FROM chan_{}_ranks WHERE 1"
+    var query = "SELECT * FROM `chan_{}_ranks` WHERE 1"
         .replace("{}", sqlEscape(channame));
 
     var results = db.querySync(query);
