@@ -16,6 +16,26 @@ function formatUserlistItem(div, data) {
     $(name).css("font-style", "");
     $(name).addClass(getNameColor(data.rank));
 
+    var profile;
+    $(name).mouseenter(function(ev) {
+        profile = $("<div/>")
+            .addClass("profile-box")
+            .css("top", (ev.pageY + 5) + "px")
+            .css("left", ev.pageX + "px")
+            .appendTo($("body"));
+        $("<img/>").addClass("profile-image")
+            .attr("src", "http://i.imgur.com/P8MIHkc.jpg")
+            .appendTo(profile);
+        $("<p/>").text("I'm calzoneman, the developer of this site.  Feel free to contact me with queries, comments, or praise about the site.").appendTo(profile);
+    });
+    $(name).mousemove(function(ev) {
+        profile.css("top", (ev.pageY + 5) + "px")
+            .css("left", ev.pageX + "px")
+    });
+    $(name).mouseleave(function() {
+        profile.remove();
+    });
+
     var flair = div.children[0];
     flair.innerHTML = "";
     // denote current leader with a star
@@ -143,6 +163,7 @@ function addUserDropdown(entry, name) {
             ul.css("display", "none");
         }
     });
+
     return ul;
 }
 
@@ -829,6 +850,7 @@ function showUserOpts() {
     var warn = $("<p/>").addClass("text-error")
         .text("Changing layouts may require a refresh")
     addOption("", warn);
+    $("<hr>").appendTo(form);
 
     var synchcontainer = $("<label/>").addClass("checkbox")
         .text("Synchronize Media");
@@ -846,6 +868,7 @@ function showUserOpts() {
     var hidevid = $("<input/>").attr("type", "checkbox").appendTo(vidcontainer);
     hidevid.prop("checked", USEROPTS.hidevid);
     addOption("Hide Video", vidcontainer);
+    $("<hr>").appendTo(form);
 
     var tscontainer = $("<label/>").addClass("checkbox")
         .text("Show timestamps in chat");
@@ -858,6 +881,15 @@ function showUserOpts() {
     var blink = $("<input/>").attr("type", "checkbox").appendTo(blinkcontainer);
     blink.prop("checked", USEROPTS.blink_title);
     addOption("Chat Notice", blinkcontainer);
+
+    var profimg = $("<input/>").attr("type", "text")
+    profimg.val(PROFILE.image);
+    addOption("Profile Image", profimg);
+
+    var profbio = $("<textarea/>");
+    profbio.attr("rows", 5);
+    profbio.val(PROFILE.bio);
+    addOption("Profile Bio", profbio);
 
     if(RANK >= Rank.Moderator) {
         $("<hr>").appendTo(form);
@@ -942,6 +974,32 @@ function applyOpts() {
     if(USEROPTS.hidevid) {
         $("#videodiv").remove();
     }
+}
+
+function showProfileModal(data) {
+    $("#ytapiplayer").hide();
+    var modal = $("<div/>").addClass("modal hide fade")
+        .appendTo($("body"));
+    var head = $("<div/>").addClass("modal-header")
+        .appendTo(modal);
+    $("<button/>").addClass("close")
+        .attr("data-dismiss", "modal")
+        .attr("aria-hidden", "true")
+        .appendTo(head)[0].innerHTML = "&times;";
+    $("<h3/>").text(data.name).appendTo(head);
+    var body = $("<div/>").addClass("modal-body").appendTo(modal);
+    $("<img/>").attr("src", data.image)
+        .css("width", "80px")
+        .css("height", "80px")
+        .appendTo(body)
+    $("<p/>").addClass("profile-text").appendTo(body).text(data.text);
+    //var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
+
+    modal.on("hidden", function() {
+        $("#ytapiplayer").show();
+        modal.remove();
+    });
+    modal.modal();
 }
 
 function idToURL(data) {

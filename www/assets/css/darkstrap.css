@@ -1013,3 +1013,7 @@ li.alert-error.alert-info {
 .userlist_owner {
     color: #ff9900;
 }
+
+.profile-box {
+    background-color: #2f2f2f;
+}

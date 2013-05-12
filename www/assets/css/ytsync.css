@@ -224,3 +224,20 @@ html, body {
 .timestamp {
     font-size: 8pt;
 }
+
+.profile-box {
+    z-index: 9999;
+    position: absolute;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+    background-color: #ffffff;
+    max-width: 200px;
+    padding: 5px;
+}
+
+.profile-image {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+}

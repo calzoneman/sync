@@ -34,6 +34,10 @@ var CHANNEL = "";
 var CUSTOMJS = "";
 var uname = readCookie("sync_uname");
 var session = readCookie("sync_session");
+var PROFILE = {
+    image: "",
+    bio: ""
+};
 
 function parseBool(x) {
     if(typeof x == "boolean")
