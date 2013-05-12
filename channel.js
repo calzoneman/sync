@@ -1204,7 +1204,7 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
 
 Channel.prototype.updateMotd = function(motd) {
     var html = motd.replace(/\n/g, "<br>");
-    html = this.filterMessage(html);
+    //html = this.filterMessage(html);
     this.motd = {
         motd: motd,
         html: html
