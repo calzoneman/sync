@@ -73,11 +73,40 @@
                         p = "name=" + uname + "&session=" + session;
                     }
                 });
-                
                 refresh();
                 setInterval(refresh, 5000);
             });
 
+            function idToURL(data) {
+                var entry = "";
+                switch(data.type) {
+                    case "yt":
+                        entry = "http://youtube.com/watch?v="+data.id;
+                        break;
+                    case "vi":
+                        entry = "http://vimeo.com/"+data.id;
+                        break;
+                    case "dm":
+                        entry = "http://dailymotion.com/video/"+data.id;
+                        break;
+                    case "sc":
+                        entry = data.id;
+                        break;
+                    case "li":
+                        entry = "http://livestream.com/"+data.id;
+                        break;
+                    case "tw":
+                        entry = "http://twitch.tv/"+data.id;
+                        break;
+                    case "rt":
+                    case "jw":
+                        entry = data.id;
+                        break;
+                    default:
+                        break;
+                }
+                return entry;
+            }
             function refresh() {
                 $.getJSON(IO_URL+"/api/json/listloaded?"+p+"&callback=?", function(data) {
                     var host = document.location + "";
@@ -107,8 +136,17 @@
                             .text(d.name)
                             .appendTo(name);
                         $("<td/>").text(d.usercount || 0).appendTo(tr);
+                        var title = $("<td/>").appendTo(tr);
+                        if(d.media.id) {
+                            $("<a/>").appendTo(title)
+                                .text(d.media.title)
+                                .attr("href", idToURL(d.media))
+                                .attr("target", "_blank");
+                        }
+                        else {
+                            title.text("-");
+                        }
                         total += (d.usercount || 0);
-                        $("<td/>").text(d.title || "-").appendTo(tr);
                     }
 
                     var tr = $("<tr/>").appendTo($("#channeldata"));

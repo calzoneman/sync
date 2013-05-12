@@ -246,8 +246,10 @@ function makeQueueEntry(video) {
             .css("clear", "both")
             .appendTo(li);
     }
-    var title = $("<span />").addClass("qe_title").appendTo(li);
-    title.text(video.title);
+    var title = $("<a/>").addClass("qe_title").appendTo(li)
+        .text(video.title)
+        .attr("href", idToURL(video))
+        .attr("target", "_blank");
     var time = $("<span />").addClass("qe_time").appendTo(li);
     time.text(video.duration);
     var clear = $("<div />").addClass("qe_clear").appendTo(li);
@@ -940,4 +942,35 @@ function applyOpts() {
     if(USEROPTS.hidevid) {
         $("#videodiv").remove();
     }
+}
+
+function idToURL(data) {
+    var entry = "";
+    switch(data.type) {
+        case "yt":
+            entry = "http://youtube.com/watch?v="+data.id;
+            break;
+        case "vi":
+            entry = "http://vimeo.com/"+data.id;
+            break;
+        case "dm":
+            entry = "http://dailymotion.com/video/"+data.id;
+            break;
+        case "sc":
+            entry = data.id;
+            break;
+        case "li":
+            entry = "http://livestream.com/"+data.id;
+            break;
+        case "tw":
+            entry = "http://twitch.tv/"+data.id;
+            break;
+        case "rt":
+        case "jw":
+            entry = data.id;
+            break;
+        default:
+            break;
+    }
+    return entry;
 }

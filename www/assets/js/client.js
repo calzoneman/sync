@@ -322,32 +322,7 @@ $("#getplaylist").click(function() {
             socket.listeners("playlist").indexOf(callback));
         var list = [];
         for(var i = 0; i < data.pl.length; i++) {
-            var entry;
-            switch(data.pl[i].type) {
-                case "yt":
-                    entry = "http://youtube.com/watch?v="+data.pl[i].id;
-                    break;
-                case "vi":
-                    entry = "http://vimeo.com/"+data.pl[i].id;
-                    break;
-                case "dm":
-                    entry = "http://dailymotion.com/video/"+data.pl[i].id;
-                    break;
-                case "sc":
-                    entry = data.pl[i].id;
-                    break;
-                case "li":
-                    entry = "http://livestream.com/"+data.pl[i].id;
-                    break;
-                case "tw":
-                    entry = "http://twitch.tv/"+data.pl[i].id;
-                    break;
-                case "rt":
-                    entry = data.pl[i].id;
-                    break;
-                default:
-                    break;
-            }
+            var entry = idToURL(data.pl[i]);
             list.push(entry);
         }
         var urls = list.join(",");
