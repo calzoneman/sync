@@ -117,6 +117,7 @@ function handleChannelData(params, req, res) {
 
         if(d.loaded) {
             var chan = Server.channels[cname];
+            d.pagetitle = chan.opts.pagetitle;
             d.media = chan.media ? chan.media.pack() : {};
             d.usercount = chan.users.length;
             d.users = [];
