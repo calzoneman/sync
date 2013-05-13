@@ -543,11 +543,6 @@ $("#youtube_search").click(function() {
     });
 });
 
-$("#largelayout").click(largeLayout);
-$("#hugelayout").click(hugeLayout);
-$("#narrowlayout").click(narrowLayout);
-$("#stlayout").click(synchtubeLayout);
-
 function fluidLayout() {
     $(".row").each(function() {
         $(this).removeClass("row").addClass("row-fluid");
@@ -642,6 +637,9 @@ function synchtubeLayout() {
 function onYouTubeIframeAPIReady() {
     if(!PLAYER)
         PLAYER = new Media({id: "", type: "yt"});
+    if(USEROPTS.layout == "fluid") {
+        fluidLayout();
+    }
 }
 
 function createCookie(name,value,days) {
