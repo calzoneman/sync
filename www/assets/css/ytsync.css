@@ -195,7 +195,8 @@ html, body {
     border: 2px solid #0000cc;
 }
 
-.drinkbar {
+#drinkbar {
+    margin-left: 0;
     background-color: #000000;
     color: #ffffff;
     text-align: center;

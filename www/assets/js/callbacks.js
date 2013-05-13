@@ -466,10 +466,10 @@ Callbacks = {
                 text += "s";
             }
             $("#drinkcount").text(text);
-            $(".drinkbar").show();
+            $("#drinkbar").show();
         }
         else {
-            $(".drinkbar").hide();
+            $("#drinkbar").hide();
         }
     },
 
