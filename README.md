@@ -9,7 +9,7 @@ and administration for an arbitrary number of channels.
 I began developing this as a hobby project, and when Synchtube announced their closure, I
 began polishing it and readying it for the public.
 
-I am hosting a CyTube server at http://cytube.calzoneman.net
+I am hosting a CyTube server at http://cytu.be
 
 The serverside is written in JavaScript and runs on Node.JS.  It makes use
 of a MySQL database to store user registrations, cached media metadata, and
@@ -31,6 +31,8 @@ The following media sources are currently supported:
 
 Installing
 ----------
+
+Installation instructions for specific distributions are available here: https://github.com/calzoneman/sync/wiki/Installing
 
 This assumes you have Node.JS installed.
 I'm using v0.10, please feel free to report which versions do/do not work.
