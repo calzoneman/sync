@@ -86,6 +86,7 @@ Media.prototype.fullupdate = function() {
         duration: this.duration,
         type: this.type,
         currentTime: this.currentTime,
+        paused: this.paused,
         queueby: this.queueby,
         temp: this.temp
     };

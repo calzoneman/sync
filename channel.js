@@ -912,11 +912,13 @@ Channel.prototype.jumpTo = function(pos) {
     }
     if(this.media) {
         delete this.media["currentTime"];
+        delete this.media["paused"];
     }
     this.position = pos;
     var oid = this.media ? this.media.id : "";
     this.media = this.queue[this.position];
     this.media.currentTime = -1;
+    this.media.paused = false;
 
     this.sendAll("changeMedia", this.media.fullupdate());
     this.sendAll("updatePlaylistIdx", {

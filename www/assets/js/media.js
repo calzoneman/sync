@@ -48,8 +48,13 @@ Media.prototype.initYouTube = function() {
                 socket.emit("playerReady");
             },
             onStateChange: function(ev) {
-                PLAYER.paused = (ev.data == YT.PlayerState.PAUSED);
-                if(PLAYER.paused) {
+                if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED
+                    || !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
+                    PLAYER.paused = (ev.data == YT.PlayerState.PAUSED);
+                    sendVideoUpdate();
+                }
+                else {
+                    PLAYER.paused = (ev.data == YT.PlayerState.PAUSED);
                 }
                 if(LEADER && ev.data == YT.PlayerState.ENDED) {
                     socket.emit("playNext");
@@ -109,10 +114,12 @@ Media.prototype.initVimeo = function() {
 
         this.player.addEvent("pause", function() {
             PLAYER.paused = true;
+            sendVideoUpdate();
         });
 
         this.player.addEvent("play", function() {
             PLAYER.paused = false;
+            sendVideoUpdate();
         });
     }.bind(this));
 
@@ -130,7 +137,10 @@ Media.prototype.initVimeo = function() {
     }
 
     this.getTime = function(callback) {
-        this.player.api("getCurrentTime", callback);
+        // Vimeo api returns time as a string because fuck logic
+        this.player.api("getCurrentTime", function(time) {
+            callback(parseFloat(time));
+        });
     }
 
     this.seek = function(time) {
@@ -157,10 +167,12 @@ Media.prototype.initDailymotion = function() {
 
         this.player.addEventListener("pause", function(e) {
             PLAYER.paused = true;
+            sendVideoUpdate();
         });
 
         this.player.addEventListener("playing", function(e) {
             PLAYER.paused = false;
+            sendVideoUpdate();
         });
     }.bind(this));
 
@@ -205,10 +217,12 @@ Media.prototype.initSoundcloud = function() {
 
         this.player.bind(SC.Widget.Events.PAUSE, function() {
             PLAYER.paused = true;
+            sendVideoUpdate();
         });
 
         this.player.bind(SC.Widget.Events.PLAY, function() {
             PLAYER.paused = false;
+            sendVideoUpdate();
         });
 
         this.player.bind(SC.Widget.Events.FINISH, function() {
@@ -353,9 +367,10 @@ Media.prototype.update = function(data) {
         return;
     }
     if(data.paused) {
+        this.seek(data.currentTime);
         this.pause();
     }
-    else if(!this.paused) {
+    else {
         this.play();
     }
     if(LEADER) {
@@ -364,6 +379,7 @@ Media.prototype.update = function(data) {
     this.getTime(function(seconds) {
         var time = data.currentTime;
         var diff = time - seconds || time;
+        console.log(this);
 
         if(diff > USEROPTS.sync_accuracy) {
             this.seek(time);
