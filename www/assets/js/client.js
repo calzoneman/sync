@@ -558,7 +558,7 @@ function fluidLayout() {
         $(this).removeClass("container").addClass("container-fluid");
     });
     VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
-    var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
     $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
     $("#userlist").css("height", (VHEIGHT - 31) + "px");
     $("#ytapiplayer").attr("width", VWIDTH);
