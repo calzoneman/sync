@@ -406,6 +406,11 @@ Callbacks = {
             }
         }
         div.appendTo($("#userlist"));
+
+        if(data.name == uname) {
+            PROFILE.image = data.profile.image;
+            PROFILE.text = data.profile.text;
+        }
     },
 
     updateUser: function(data) {

@@ -36,7 +36,7 @@ var uname = readCookie("sync_uname");
 var session = readCookie("sync_session");
 var PROFILE = {
     image: "",
-    bio: ""
+    text: ""
 };
 
 function parseBool(x) {

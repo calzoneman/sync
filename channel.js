@@ -502,7 +502,8 @@ Channel.prototype.sendUserlist = function(user) {
                 name: this.users[i].name,
                 rank: this.users[i].rank,
                 leader: this.users[i] == this.leader,
-                meta: this.users[i].meta
+                meta: this.users[i].meta,
+                profile: this.users[i].profile
             });
         }
     }
@@ -550,7 +551,8 @@ Channel.prototype.broadcastNewUser = function(user) {
         name: user.name,
         rank: user.rank,
         leader: this.leader == user,
-        meta: user.meta
+        meta: user.meta,
+        profile: user.profile
     });
     this.sendRankStuff(user);
     if(user.rank > Rank.Guest) {
@@ -558,12 +560,13 @@ Channel.prototype.broadcastNewUser = function(user) {
     }
 }
 
-Channel.prototype.broadcastRankUpdate = function(user) {
+Channel.prototype.broadcastUserUpdate = function(user) {
     this.sendAll("updateUser", {
         name: user.name,
         rank: user.rank,
         leader: this.leader == user,
-        meta: user.meta
+        meta: user.meta,
+        profile: user.profile
     });
     this.sendRankStuff(user);
 }
@@ -1317,7 +1320,7 @@ Channel.prototype.tryPromoteUser = function(actor, data) {
             if(receiver.loggedIn) {
                 this.saveRank(receiver);
             }
-            this.broadcastRankUpdate(receiver);
+            this.broadcastUserUpdate(receiver);
         }
         else {
             Database.saveChannelRank(this.name, {
@@ -1357,7 +1360,7 @@ Channel.prototype.tryDemoteUser = function(actor, data) {
             if(receiver.loggedIn) {
                 this.saveRank(receiver);
             }
-            this.broadcastRankUpdate(receiver);
+            this.broadcastUserUpdate(receiver);
         }
         else {
             Database.saveChannelRank(this.name, {
@@ -1374,7 +1377,7 @@ Channel.prototype.changeLeader = function(name) {
     if(this.leader != null) {
         var old = this.leader;
         this.leader = null;
-        this.broadcastRankUpdate(old);
+        this.broadcastUserUpdate(old);
     }
     if(name == "") {
         this.logger.log("*** Resuming autolead");
@@ -1389,7 +1392,7 @@ Channel.prototype.changeLeader = function(name) {
         if(this.users[i].name == name) {
             this.logger.log("*** Assigned leader: " + name);
             this.leader = this.users[i];
-            this.broadcastRankUpdate(this.leader);
+            this.broadcastUserUpdate(this.leader);
         }
     }
 }

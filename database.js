@@ -69,6 +69,8 @@ exports.init = function() {
                      `global_rank` INT NOT NULL, \
                      `session_hash` VARCHAR(64) NOT NULL, \
                      `expire` BIGINT NOT NULL, \
+                     `profile_image` VARCHAR( 255 ) NOT NULL , \
+                     `profile_text` TEXT NOT NULL, \
                      PRIMARY KEY (`id`)) \
                      ENGINE = MyISAM;";
     var results = db.querySync(query);
@@ -383,4 +385,20 @@ exports.getChannelRanks = function(channame) {
     else {
         return [];
     }
+}
+
+exports.setProfile = function(name, data) {
+    var db = exports.getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = "UPDATE registrations SET profile_image='{1}',profile_text='{2}' WHERE uname='{3}'"
+        .replace("{1}", sqlEscape(data.image))
+        .replace("{2}", sqlEscape(data.text))
+        .replace("{3}", sqlEscape(name));
+
+    var results = db.querySync(query);
+    db.closeSync();
+    return results;
 }

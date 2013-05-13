@@ -31,6 +31,10 @@ var User = function(socket, ip) {
     };
     this.throttle = {};
     this.flooded = {};
+    this.profile = {
+        image: "",
+        text: ""
+    };
 
     this.initCallbacks();
     if(Server.announcement != null) {
@@ -322,6 +326,23 @@ User.prototype.initCallbacks = function() {
             this.channel.tryVoteskip(this);
         }
     }.bind(this));
+
+    this.socket.on("setProfile", function(data) {
+        if(!this.name) {
+            return;
+        }
+        data.image = data.image || "";
+        data.text = data.text || "";
+        if(data.text.length > 4000) {
+            data.text = data.text.substring(0, 4000);
+        }
+        if(Database.setProfile(this.name, data)) {
+            this.profile = data;
+            if(this.channel != null) {
+                this.channel.broadcastUserUpdate(this);
+            }
+        }
+    }.bind(this));
 }
 
 // Handle administration
@@ -415,6 +436,10 @@ User.prototype.login = function(name, pw, session) {
                 session: row.session_hash
             });
             Logger.syslog.log(this.ip + " logged in as " + name);
+            this.profile = {
+                image: row.profile_image,
+                text: row.profile_text
+            };
             var chanrank = (this.channel != null) ? this.channel.getRank(name)
                                                   : Rank.Guest;
             var rank = (chanrank > row.global_rank) ? chanrank

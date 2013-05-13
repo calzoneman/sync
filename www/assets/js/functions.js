@@ -15,6 +15,7 @@ function formatUserlistItem(div, data) {
     $(name).removeClass();
     $(name).css("font-style", "");
     $(name).addClass(getNameColor(data.rank));
+    $(div).find(".profile-box").remove();
 
     var profile;
     $(name).mouseenter(function(ev) {
@@ -22,11 +23,14 @@ function formatUserlistItem(div, data) {
             .addClass("profile-box")
             .css("top", (ev.pageY + 5) + "px")
             .css("left", ev.pageX + "px")
-            .appendTo($("body"));
-        $("<img/>").addClass("profile-image")
-            .attr("src", "http://i.imgur.com/P8MIHkc.jpg")
-            .appendTo(profile);
-        $("<p/>").text("I'm calzoneman, the developer of this site.  Feel free to contact me with queries, comments, or praise about the site.").appendTo(profile);
+            .appendTo(div);
+        if(data.profile.image) {
+            $("<img/>").addClass("profile-image")
+                .attr("src", data.profile.image)
+                .appendTo(profile);
+        }
+        $("<strong/>").text(data.name).appendTo(profile);
+        $("<p/>").text(data.profile.text).appendTo(profile);
     });
     $(name).mousemove(function(ev) {
         profile.css("top", (ev.pageY + 5) + "px")
@@ -649,7 +653,7 @@ function onWindowFocus() {
 }
 
 function newPollMenu() {
-    $("#ytapiplayer").hide();
+    var vid = $("#ytapiplayer").detach();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -708,14 +712,14 @@ function newPollMenu() {
         .appendTo(footer)
         .click(submit);
     modal.on("hidden", function() {
-        $("#ytapiplayer").show();
+        vid.appendTo($("#videodiv"));
         modal.remove();
     });
     modal.modal();
 }
 
 function showLoginFrame() {
-    $("#ytapiplayer").hide();
+    var vid = $("#ytapiplayer").detach();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -795,14 +799,14 @@ function showLoginFrame() {
     }
     var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
     modal.on("hidden", function() {
-        $("#ytapiplayer").show();
+        vid.appendTo($("#videodiv"));
         modal.remove();
     });
     modal.modal();
 }
 
 function showUserOpts() {
-    $("#ytapiplayer").hide();
+    var vid = $("#ytapiplayer").detach();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -888,8 +892,8 @@ function showUserOpts() {
 
     var profbio = $("<textarea/>");
     profbio.attr("rows", 5);
-    profbio.val(PROFILE.bio);
-    addOption("Profile Bio", profbio);
+    profbio.val(PROFILE.text);
+    addOption("Profile Text", profbio);
 
     if(RANK >= Rank.Moderator) {
         $("<hr>").appendTo(form);
@@ -906,6 +910,10 @@ function showUserOpts() {
         .appendTo(footer);
 
     submit.click(function() {
+        socket.emit("setProfile", {
+            image: profimg.val(),
+            text: profbio.val()
+        });
         USEROPTS.theme           = themeselect.val();
         USEROPTS.css             = usercss.val();
         USEROPTS.layout          = layoutselect.val();
@@ -923,7 +931,7 @@ function showUserOpts() {
     });
 
     modal.on("hidden", function() {
-        $("#ytapiplayer").show();
+        vid.appendTo($("#videodiv"));
         modal.remove();
     });
     modal.modal();
@@ -974,32 +982,6 @@ function applyOpts() {
     if(USEROPTS.hidevid) {
         $("#videodiv").remove();
     }
-}
-
-function showProfileModal(data) {
-    $("#ytapiplayer").hide();
-    var modal = $("<div/>").addClass("modal hide fade")
-        .appendTo($("body"));
-    var head = $("<div/>").addClass("modal-header")
-        .appendTo(modal);
-    $("<button/>").addClass("close")
-        .attr("data-dismiss", "modal")
-        .attr("aria-hidden", "true")
-        .appendTo(head)[0].innerHTML = "&times;";
-    $("<h3/>").text(data.name).appendTo(head);
-    var body = $("<div/>").addClass("modal-body").appendTo(modal);
-    $("<img/>").attr("src", data.image)
-        .css("width", "80px")
-        .css("height", "80px")
-        .appendTo(body)
-    $("<p/>").addClass("profile-text").appendTo(body).text(data.text);
-    //var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
-
-    modal.on("hidden", function() {
-        $("#ytapiplayer").show();
-        modal.remove();
-    });
-    modal.modal();
 }
 
 function idToURL(data) {
