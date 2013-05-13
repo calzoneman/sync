@@ -349,3 +349,21 @@ Media.prototype.removeOld = function() {
     old.remove();
     placeholder.attr("id", "ytapiplayer");
 }
+
+Media.prototype.hide = function() {
+    this.getTime(function(seconds) {
+        this.time = seconds;
+        this.hidden = $("#ytapiplayer").detach();
+    }.bind(this));
+}
+
+Media.prototype.unhide = function() {
+    this.hidden.appendTo($("#videodiv"));
+    var data = {
+        id: this.id,
+        currentTime: this.time
+    };
+    setTimeout(function() { this.load(data); }.bind(this), 1000);
+    delete this.hidden;
+    delete this.time;
+}

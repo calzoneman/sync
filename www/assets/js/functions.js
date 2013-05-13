@@ -806,7 +806,7 @@ function showLoginFrame() {
 }
 
 function showUserOpts() {
-    var vid = $("#ytapiplayer").detach();
+    PLAYER.hide();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -932,7 +932,7 @@ function showUserOpts() {
     });
 
     modal.on("hidden", function() {
-        vid.appendTo($("#videodiv"));
+        PLAYER.unhide();
         applyOpts();
         modal.remove();
     });
