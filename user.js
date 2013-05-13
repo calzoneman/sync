@@ -272,6 +272,35 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("unregisterChannel", function() {
+        if(this.channel == null) {
+            return;
+        }
+        if(!this.channel.registered) {
+            this.socket.emit("unregisterChannel", {
+                success: false,
+                error: "This channel is already unregistered"
+            });
+        }
+        else if(this.rank < 10) {
+            this.socket.emit("unregisterChannel", {
+                success: false,
+                error: "You don't have permission to unregister"
+            });
+        }
+        else if(this.channel.unregister()) {
+            this.socket.emit("unregisterChannel", {
+                success: true
+            });
+        }
+        else {
+            this.socket.emit("unregisterChannel", {
+                success: false,
+                error: "Unregistration failed.  Please see a site admin if this continues."
+            });
+        }
+    }.bind(this));
+
     this.socket.on("adm", function(data) {
         if(Rank.hasPermission(this, "acp")) {
             this.handleAdm(data);

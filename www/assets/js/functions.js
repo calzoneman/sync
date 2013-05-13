@@ -644,6 +644,9 @@ function handleRankChange() {
         $("#clearplaylist").css("display", "none");
         $("#shuffleplaylist").css("display", "none");
     }
+    if(RANK >= 10) {
+        $("#drop_channel").parent().css("display", "");
+    }
 }
 
 function onWindowFocus() {

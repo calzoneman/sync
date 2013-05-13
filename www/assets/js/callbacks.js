@@ -75,6 +75,15 @@ Callbacks = {
         }
     },
 
+    unregisterChannel: function(data) {
+        if(data.success) {
+            alert("Channel unregistered");
+        }
+        else {
+            alert(data.error);
+        }
+    },
+
     updateMotd: function(data) {
         $("#motdtext").val(data.motd);
         if(data.motd != "")

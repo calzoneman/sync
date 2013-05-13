@@ -456,6 +456,13 @@ $("#show_acl").click(function() {
     }
 });
 
+$("#drop_channel").click(function() {
+    var res = confirm("You are about to unregister your channel.  This will PERMANENTLY delete your channel data, including ranks, bans, and library videos.  This cannot be undone.  Are you sure you want to continue?");
+    if(res) {
+        socket.emit("unregisterChannel");
+    }
+});
+
 function splitreEntry(str) {
     var split = [];
     var current = [];

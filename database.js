@@ -260,6 +260,27 @@ exports.registerChannel = function(chan) {
     return results;
 }
 
+exports.unregisterChannel = function(channame) {
+    var db = exports.getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = "DROP TABLE `chan_{}_bans`, `chan_{}_ranks`, `chan_{}_library`"
+        .replace(/\{\}/g, sqlEscape(channame));
+
+    var results = db.querySync(query);
+    if(!results) {
+        return false;
+    }
+
+    query = "DELETE FROM channels WHERE name='{}'"
+        .replace("{}", sqlEscape(channame));
+    results = db.querySync(query);
+    db.closeSync();
+    return results;
+}
+
 exports.lookupChannelRank = function(channame, username) {
     var db = exports.getConnection();
     if(!db) {

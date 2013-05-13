@@ -229,6 +229,14 @@ Channel.prototype.tryRegister = function(user) {
     }
 }
 
+Channel.prototype.unregister = function() {
+    if(Database.unregisterChannel(this.name)) {
+        this.registered = false;
+        return true;
+    }
+    return false;
+}
+
 Channel.prototype.getRank = function(name) {
     var global = Auth.getGlobalRank(name);
     if(!this.registered) {
