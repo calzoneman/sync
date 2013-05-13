@@ -162,6 +162,10 @@
         }
         $("#channel").keydown(function(ev) {
             if(ev.keyCode == 13) {
+                if(!$("#channel").val().match(/^[a-zA-Z0-9-_]+$/)) {
+                    alert("Invalid channel names.  Channel names may contain alphanumeric characters, underscores, and hyphens");
+                    return;
+                }
                 document.location = host + "/r/" + $("#channel").val();
             }
         });
