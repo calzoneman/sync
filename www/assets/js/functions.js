@@ -653,7 +653,7 @@ function onWindowFocus() {
 }
 
 function newPollMenu() {
-    var vid = $("#ytapiplayer").detach();
+    PLAYER.hide();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -712,14 +712,14 @@ function newPollMenu() {
         .appendTo(footer)
         .click(submit);
     modal.on("hidden", function() {
-        vid.appendTo($("#videodiv"));
+        PLAYER.unhide();
         modal.remove();
     });
     modal.modal();
 }
 
 function showLoginFrame() {
-    var vid = $("#ytapiplayer").detach();
+    PLAYER.hide();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -799,7 +799,7 @@ function showLoginFrame() {
     }
     var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
     modal.on("hidden", function() {
-        vid.appendTo($("#videodiv"));
+        PLAYER.unhide();
         modal.remove();
     });
     modal.modal();
