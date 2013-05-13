@@ -1011,6 +1011,7 @@ Channel.prototype.tryUpdate = function(user, data) {
     }
 
     this.media.currentTime = data.currentTime;
+    this.media.paused = data.paused;
     this.sendAll("mediaUpdate", this.media.timeupdate());
 }
 

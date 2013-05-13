@@ -48,6 +48,9 @@ Media.prototype.initYouTube = function() {
                 socket.emit("playerReady");
             },
             onStateChange: function(ev) {
+                PLAYER.paused = (ev.data == YT.PlayerState.PAUSED);
+                if(PLAYER.paused) {
+                }
                 if(LEADER && ev.data == YT.PlayerState.ENDED) {
                     socket.emit("playNext");
                 }
@@ -94,6 +97,7 @@ Media.prototype.initVimeo = function() {
 
     this.player = $f(iframe[0]);
     $f(iframe[0]).addEvent("ready", function() {
+        socket.emit("playerReady");
         this.player = $f(iframe[0]);
         this.player.api("play");
 
@@ -101,6 +105,14 @@ Media.prototype.initVimeo = function() {
             if(LEADER) {
                 socket.emit("playNext");
             }
+        });
+
+        this.player.addEvent("pause", function() {
+            PLAYER.paused = true;
+        });
+
+        this.player.addEvent("play", function() {
+            PLAYER.paused = false;
         });
     }.bind(this));
 
@@ -135,11 +147,23 @@ Media.prototype.initDailymotion = function() {
         params: {autoplay: 1}
     });
 
-    this.player.addEventListener("ended", function(e) {
-        if(LEADER) {
-            socket.emit("playNext");
-        }
-    });
+    this.player.addEventListener("apiready", function(e) {
+        socket.emit("playerReady");
+        this.player.addEventListener("ended", function(e) {
+            if(LEADER) {
+                socket.emit("playNext");
+            }
+        });
+
+        this.player.addEventListener("pause", function(e) {
+            PLAYER.paused = true;
+        });
+
+        this.player.addEventListener("playing", function(e) {
+            PLAYER.paused = false;
+        });
+    }.bind(this));
+
 
     this.load = function(data) {
         this.id = data.id;
@@ -174,13 +198,25 @@ Media.prototype.initSoundcloud = function() {
     iframe.css("border", "none");
 
     this.player = SC.Widget("ytapiplayer");
-    this.player.load(this.id, {auto_play: true});
 
-    this.player.bind(SC.Widget.Events.FINISH, function() {
-        if(LEADER) {
-            socket.emit("playNext");
-        }
-    });
+    this.player.bind(SC.Widget.Events.READY, function() {
+        socket.emit("playerReady");
+        this.player.load(this.id, {auto_play: true});
+
+        this.player.bind(SC.Widget.Events.PAUSE, function() {
+            PLAYER.paused = true;
+        });
+
+        this.player.bind(SC.Widget.Events.PLAY, function() {
+            PLAYER.paused = false;
+        });
+
+        this.player.bind(SC.Widget.Events.FINISH, function() {
+            if(LEADER) {
+                socket.emit("playNext");
+            }
+        });
+    }.bind(this));
 
     this.load = function(data) {
         this.id = data.id;
@@ -319,6 +355,9 @@ Media.prototype.update = function(data) {
     if(data.paused) {
         this.pause();
     }
+    else if(!this.paused) {
+        this.play();
+    }
     if(LEADER) {
         return;
     }
@@ -326,20 +365,12 @@ Media.prototype.update = function(data) {
         var time = data.currentTime;
         var diff = time - seconds || time;
 
-        var a = USEROPTS.sync_accuracy + 1;
-        // If 2 updates in a row have lag, compensate for buffering
-        if(diff >= a && diff <= a*3 && this.diff >= a && this.diff <= a*3) {
-            this.seek(time + diff);
+        if(diff > USEROPTS.sync_accuracy) {
+            this.seek(time);
         }
-        else if(diff < -USEROPTS.sync_accuracy || diff >= USEROPTS.sync_accuracy) {
-            if(diff < 0) {
-                this.seek(time + 0.5);
-            }
-            else {
-                this.seek(time);
-            }
+        else if(diff < -USEROPTS.sync_accuracy) {
+            this.seek(time + 1);
         }
-        this.diff = diff;
     }.bind(this));
 }
 

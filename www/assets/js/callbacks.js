@@ -436,7 +436,7 @@ Callbacks = {
                         socket.emit("mediaUpdate", {
                             id: PLAYER.id,
                             currentTime: seconds,
-                            paused: false,
+                            paused: PLAYER.paused,
                             type: PLAYER.type
                         });
                     });
