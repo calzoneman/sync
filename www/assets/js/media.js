@@ -379,7 +379,6 @@ Media.prototype.update = function(data) {
     this.getTime(function(seconds) {
         var time = data.currentTime;
         var diff = time - seconds || time;
-        console.log(this);
 
         if(diff > USEROPTS.sync_accuracy) {
             this.seek(time);

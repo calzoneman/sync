@@ -1269,14 +1269,21 @@ Channel.prototype.chainMessage = function(user, msg, data) {
 }
 
 Channel.prototype.filterMessage = function(msg) {
-    msg = msg.replace(/(((https?)|(ftp))(:\/\/[0-9a-zA-Z\.]+(:[0-9]+)?[^\s$]+))/g, "<a href=\"$1\" target=\"_blank\">$1</a>");
+    const link = /((?:(?:https?)|(?:ftp))(?::\/\/[0-9a-zA-Z\.]+(?::[0-9]+)?[^\s$]+))/g;
+    var subs = msg.split(link);
     // Apply other filters
-    for(var i = 0; i < this.filters.length; i++) {
-        if(!this.filters[i].active)
+    for(var j = 0; j < subs.length; j++) {
+        if(subs[j].match(link)) {
+            subs[j] = subs[j].replace(link, "<a href=\"$1\" target=\"blank\">$1</a>");
             continue;
-        msg = this.filters[i].filter(msg);
+        }
+        for(var i = 0; i < this.filters.length; i++) {
+            if(!this.filters[i].active)
+                continue;
+            subs[j] = this.filters[i].filter(subs[j]);
+        }
     }
-    return msg;
+    return subs.join("");
 }
 
 Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
