@@ -415,6 +415,8 @@ Callbacks = {
 
     updateUser: function(data) {
         if(data.name == uname) {
+            PROFILE.text = data.profile.text;
+            PROFILE.image = data.profile.image;
             LEADER = data.leader;
             RANK = data.rank;
             handleRankChange();

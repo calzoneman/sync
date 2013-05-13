@@ -27,7 +27,9 @@ var LASTCHATTIME = 0;
 var PAGETITLE = "Sync";
 var TITLE_BLINK;
 var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");//670
-var VHEIGHT = "377";
+var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+$("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
+$("#userlist").css("height", (VHEIGHT - 31) + "px");
 var IGNORED = [];
 var KICKED = false;
 var CHANNEL = "";
@@ -100,7 +102,11 @@ $(window).focus(function() {
 
 $(window).resize(function() {
     VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
+    $("#userlist").css("height", (VHEIGHT - 31) + "px");
     $("#ytapiplayer").attr("width", VWIDTH);
+    $("#ytapiplayer").attr("height", VHEIGHT);
 });
 
 // Match URLs of the form http://site.tld/r/channel
@@ -541,6 +547,22 @@ $("#largelayout").click(largeLayout);
 $("#hugelayout").click(hugeLayout);
 $("#narrowlayout").click(narrowLayout);
 $("#stlayout").click(synchtubeLayout);
+
+function fluidLayout() {
+    $(".row").each(function() {
+        $(this).removeClass("row").addClass("row-fluid");
+    });
+    $(".container").each(function() {
+        $(this).removeClass("container").addClass("container-fluid");
+    });
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
+    $("#userlist").css("height", (VHEIGHT - 31) + "px");
+    $("#ytapiplayer").attr("width", VWIDTH);
+    $("#ytapiplayer").attr("height", VHEIGHT);
+    $("#chatline").removeClass().addClass("span12");
+}
 
 function largeLayout() {
     $("#videodiv").removeClass().addClass("span8 offset2");

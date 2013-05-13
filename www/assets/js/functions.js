@@ -849,6 +849,8 @@ function showUserOpts() {
         .appendTo(layoutselect);
     $("<option/>").attr("value", "synchtube").text("Synchtube")
         .appendTo(layoutselect);
+    $("<option/>").attr("value", "fluid").text("Fluid")
+        .appendTo(layoutselect);
     layoutselect.val(USEROPTS.layout);
     addOption("Layout", layoutselect);
     var warn = $("<p/>").addClass("text-error")
@@ -926,12 +928,12 @@ function showUserOpts() {
             USEROPTS.modhat = modhat.prop("checked");
         }
         saveOpts();
-        applyOpts();
         modal.modal("hide");
     });
 
     modal.on("hidden", function() {
         vid.appendTo($("#videodiv"));
+        applyOpts();
         modal.remove();
     });
     modal.modal();
@@ -974,6 +976,9 @@ function applyOpts() {
             break;
         case "synchtube":
             synchtubeLayout();
+            break;
+        case "fluid":
+            fluidLayout();
             break;
         default:
             break;
