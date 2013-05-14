@@ -51,6 +51,7 @@ Media.prototype.nullPlayer = function() {
 
 Media.prototype.initYouTube = function() {
     this.removeOld();
+    console.log("init YouTube");
     this.player = new YT.Player("ytapiplayer", {
         height: VHEIGHT,
         width: VWIDTH,
@@ -60,7 +61,7 @@ Media.prototype.initYouTube = function() {
             "controls": 1,
         },
         events: {
-            onPlayerReady: function() {
+            onReady: function() {
                 socket.emit("playerReady");
             },
             onStateChange: function(ev) {

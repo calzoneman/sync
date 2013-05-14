@@ -628,7 +628,7 @@ function synchtubeLayout() {
 }
 
 function onYouTubeIframeAPIReady() {
-    if(!PLAYER)
+    if(PLAYER.type == "null")
         PLAYER = new Media({id: "", type: "yt"});
     if(USEROPTS.layout == "fluid") {
         fluidLayout();

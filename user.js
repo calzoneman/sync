@@ -24,7 +24,6 @@ var User = function(socket, ip) {
     this.loggedIn = false;
     this.rank = Rank.Guest;
     this.channel = null;
-    this.playerReady = false;
     this.name = "";
     this.meta = {
         afk: false
@@ -155,7 +154,6 @@ User.prototype.initCallbacks = function() {
         if(this.channel != null) {
             this.channel.sendMediaUpdate(this);
         }
-        this.playerReady = true;
     }.bind(this));
 
     this.socket.on("requestPlaylist", function() {
