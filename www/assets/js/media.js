@@ -1,4 +1,10 @@
 var Media = function(data) {
+    if(!data) {
+        data = {
+            id: "",
+            type: "null"
+        };
+    }
     this.id = data.id;
     this.type = data.type;
     this.diff = 0;
@@ -29,8 +35,18 @@ var Media = function(data) {
             this.initJWPlayer();
             break;
         default:
+            this.nullPlayer();
             break;
     }
+}
+
+Media.prototype.nullPlayer = function() {
+    this.player = null;
+    this.load = function(data) { }
+    this.play = function() { }
+    this.pause = function() { }
+    this.getTime = function(callback) { }
+    this.seek = function(time) { }
 }
 
 Media.prototype.initYouTube = function() {
@@ -397,6 +413,9 @@ Media.prototype.removeOld = function() {
 }
 
 Media.prototype.hide = function() {
+    if(this.type == "null") {
+        return;
+    }
     this.getTime(function(seconds) {
         this.time = seconds;
         this.hidden = $("#ytapiplayer").detach();
@@ -404,6 +423,9 @@ Media.prototype.hide = function() {
 }
 
 Media.prototype.unhide = function() {
+    if(this.type == "null") {
+        return;
+    }
     this.hidden.appendTo($("#videodiv"));
     var data = {
         id: this.id,

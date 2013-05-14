@@ -10,8 +10,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 var LEADER = false;
-var PLAYER = false;
-var MEDIATYPE = "yt";
+var PLAYER = new Media();
+var MEDIATYPE = "null";
 var POSITION = -1;
 var RANK = 0;
 var OPENQUEUE = false;
@@ -138,28 +138,14 @@ else {
     });
 }
 
-//socket.on("connect", function() {
-//    socket.emit("joinChannel", {
-//        name: CHANNEL
-//    });
-//    if(uname && session) {
-//        socket.emit("login", {
-//            name: uname,
-//            session: session
-//        });
-//    }
-//    $("<div/>").addClass("server-msg-reconnect")
-//        .text("Connected")
-//        .appendTo($("#messagebuffer"));
-//    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
-//});
-
 
 // Load the youtube iframe API
-var tag = document.createElement("script");
-tag.src = "http://www.youtube.com/iframe_api";
-var firstScriptTag = document.getElementsByTagName("script")[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+if(!USEROPTS.hidevid) {
+    var tag = document.createElement("script");
+    tag.src = "http://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
 
 var sendVideoUpdate = function() { }
 setInterval(function() {
