@@ -635,6 +635,7 @@ Callbacks = {
         var pollMsg = $("<div/>").addClass("poll-notify")
             .text(data.initiator + " opened a poll: \"" + data.title + "\"")
             .appendTo($("#messagebuffer"));
+        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
         var poll = $("<div/>").addClass("well active").prependTo($("#pollcontainer"));
         $("<button/>").addClass("close pull-right").text("×")
             .appendTo(poll)
