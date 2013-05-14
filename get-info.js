@@ -29,8 +29,7 @@ function getJSON(options, callback) {
             }
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
-                return;
-            }
+                return; }
             callback(res.statusCode, data);
         });
     });
@@ -188,6 +187,37 @@ exports.getDMInfo = function(id, callback) {
         method: "GET",
         dataType: "jsonp",
         timeout: 1000}, callback);
+}
+
+// Ustream requires a developer key for their API, and on top of that
+// I couldn't figure out how to use it.
+// I'm regexing the stream ID out of the HTML
+// So sue me
+exports.getUstream = function(name, callback) {
+    var opts = {
+        host: "www.ustream.tv",
+        port: 80,
+        path: "/" + name
+    };
+    http.get(opts, function(res) {
+        var html = "";
+        res.on("data", function(cnk) {
+            html += cnk;
+        });
+        res.on("end", function() {
+            var lines = html.split("\n");
+            const re = /cid":([0-9]+)/;
+            for(var i = 0; i < lines.length; i++) {
+                var m = lines[i].match(re);
+                if(m) {
+                    callback(m[1]);
+                    return;
+                }
+            }
+        });
+    }).on("error", function(err) {
+        Logger.errlog.log(err.message);
+    });
 }
 
 exports.getMedia = function(id, type, callback) {

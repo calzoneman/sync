@@ -34,6 +34,9 @@ var Media = function(data) {
         case "jw":
             this.initJWPlayer();
             break;
+        case "us":
+            this.initUstream();
+            break;
         default:
             this.nullPlayer();
             break;
@@ -362,6 +365,31 @@ Media.prototype.initJWPlayer = function() {
     this.load = function(data) {
         this.id = data.id;
         this.initJWPlayer();
+    }
+
+    this.pause = function() { }
+
+    this.play = function() { }
+
+    this.getTime = function() { }
+
+    this.seek = function() { }
+}
+
+Media.prototype.initUstream = function() {
+    var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
+    $("#ytapiplayer").remove();
+    iframe.attr("id", "ytapiplayer");
+    iframe.attr("width", VWIDTH);
+    iframe.attr("height", VHEIGHT);
+    iframe.attr("src", "http://www.ustream.tv/embed/"+this.id+"?v=3&wmode=direct");
+    iframe.attr("frameborder", "0");
+    iframe.attr("scrolling", "no");
+    iframe.css("border", "none");
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initUstream();
     }
 
     this.pause = function() { }

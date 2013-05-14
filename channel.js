@@ -686,7 +686,8 @@ function isLive(type) {
     return type == "li"
         || type == "tw"
         || type == "rt"
-        || type == "jw";
+        || type == "jw"
+        || type == "us";
 }
 
 Channel.prototype.queueAdd = function(media, idx) {
@@ -748,6 +749,14 @@ Channel.prototype.enqueue = function(data, user) {
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
+                break;
+            case "us":
+                InfoGetter.getUstream(data.id, function(id) {
+                    var media = new Media(id, "Ustream - " + data.id, "--:--", "us");
+                    media.queueby = user ? user.name : "";
+                    this.autoTemp(media, user);
+                    this.queueAdd(media, idx);
+                }.bind(this));
                 break;
             case "rt":
                 var media = new Media(data.id, "Livestream", "--:--", "rt");

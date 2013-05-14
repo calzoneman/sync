@@ -502,6 +502,8 @@ function parseVideoURL(url){
         return [parseTwitch(url), "tw"];
     else if(url.indexOf("livestream.com") != -1)
         return [parseLivestream(url), "li"];
+    else if(url.indexOf("ustream.tv") != -1)
+        return [parseUstream(url), "us"];
     else if(url.indexOf("soundcloud.com") != -1)
         return [url, "sc"];
     else if(url.indexOf("vimeo.com") != -1)
@@ -544,6 +546,14 @@ function parseTwitch(url) {
 
 function parseLivestream(url) {
     var m = url.match(/livestream\.com\/([a-zA-Z0-9]+)/);
+    if(m) {
+        return m[1];
+    }
+    return null;
+}
+
+function parseUstream(url) {
+    var m = url.match(/ustream\.tv\/([a-zA-Z0-9-]+)/);
     if(m) {
         return m[1];
     }
