@@ -654,6 +654,14 @@ function handleRankChange() {
         $("#clearplaylist").css("display", "none");
         $("#shuffleplaylist").css("display", "none");
     }
+    if(RANK >= Rank.Owner) {
+        $("#show_jseditor").parent().css("display", "");
+        $("#show_csseditor").parent().css("display", "");
+    }
+    else {
+        $("#show_jseditor").parent().css("display", "none");
+        $("#show_csseditor").parent().css("display", "none");
+    }
     if(RANK >= 10) {
         $("#drop_channel").parent().css("display", "");
     }

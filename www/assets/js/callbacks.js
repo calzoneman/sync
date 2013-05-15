@@ -227,6 +227,29 @@ Callbacks = {
         rebuildPlaylist();
     },
 
+    channelCSSJS: function(data) {
+        console.log("recv cssjs", data);
+        $("#chancss").remove();
+        $("#chanjs").remove();
+
+        $("#csstext").val(data.css);
+        $("#jstext").val(data.js);
+
+        if(data.css) {
+            $("<style/>").attr("type", "text/css")
+                .attr("id", "chancss")
+                .text(data.css)
+                .appendTo($("head"));
+        }
+
+        if(data.js) {
+            $("<script/>").attr("type", "text/javascript")
+                .attr("id", "chanjs")
+                .text(data.js)
+                .appendTo($("body"));
+        }
+    },
+
     banlist: function(data) {
         var entries = data.entries;
         var tbl = $("#banlist table");

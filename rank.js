@@ -21,6 +21,8 @@ var permissions = {
     registerChannel : exports.Owner,
     acl             : exports.Owner,
     chatFilter      : exports.Owner,
+    setcss          : exports.Owner,
+    setjs           : exports.Owner,
     queue           : exports.Moderator,
     assignLeader    : exports.Moderator,
     kick            : exports.Moderator,

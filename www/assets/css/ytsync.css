@@ -202,8 +202,12 @@ html, body {
     text-align: center;
 }
 
-#motdtext {
+#motdtext, #csstext, #jstext {
     width: 100%;
+}
+
+#csstext, #jstext {
+    font-family: Monospace;
 }
 
 #queue_next, #queue_end, #library_search, #youtube_search {

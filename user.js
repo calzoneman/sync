@@ -323,6 +323,18 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("setChannelCSS", function(data) {
+        if(this.channel != null) {
+            this.channel.trySetCSS(this, data);
+        }
+    }.bind(this));
+
+    this.socket.on("setChannelJS", function(data) {
+        if(this.channel != null) {
+            this.channel.trySetJS(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("chatFilter", function(data) {
         if(this.channel != null) {
             this.channel.tryChangeFilter(this, data);

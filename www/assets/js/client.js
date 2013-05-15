@@ -413,6 +413,36 @@ $("#show_motdeditor").click(function() {
     $("#motdeditor").show();
 });
 
+$("#show_csseditor").click(function() {
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
+    $(".modonly").hide();
+    $("#show_csseditor").parent().addClass("active");
+    $("#csseditor").show();
+});
+
+$("#updatecss").click(function() {
+    socket.emit("setChannelCSS", {
+        css: $("#csstext").val()
+    });
+});
+
+$("#show_jseditor").click(function() {
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
+    $(".modonly").hide();
+    $("#show_jseditor").parent().addClass("active");
+    $("#jseditor").show();
+});
+
+$("#updatejs").click(function() {
+    socket.emit("setChannelJS", {
+        js: $("#jstext").val()
+    });
+});
+
 $("#show_filtereditor").click(function() {
     if(RANK >= Rank.Owner) {
         $("#modnav li").each(function() {

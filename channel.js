@@ -75,6 +75,9 @@ var Channel = function(name) {
         time: "00:00"
     };
 
+    this.css = "";
+    this.js = "";
+
     Database.loadChannel(this);
     if(this.registered) {
         this.loadDump();
@@ -152,6 +155,9 @@ Channel.prototype.loadDump = function() {
             for(var i = 0; i < this.chatbuffer.length; i++) {
                 this.sendAll("chatMsg", this.chatbuffer[i]);
             }
+            this.css = data.css || "";
+            this.js = data.js || "";
+            this.sendAll("channelCSSJS", {css: this.css, js: this.js});
             setTimeout(function() { incrementalDump(this); }, 300000);
         }
         catch(e) {
@@ -175,7 +181,9 @@ Channel.prototype.saveDump = function() {
         motd: this.motd,
         logins: this.logins,
         openqueue: this.openqueue,
-        chatbuffer: this.chatbuffer
+        chatbuffer: this.chatbuffer,
+        css: this.css,
+        js: this.js
     };
     var text = JSON.stringify(dump);
     fs.writeFileSync("chandump/" + this.name, text);
@@ -378,6 +386,7 @@ Channel.prototype.userJoin = function(user) {
     user.socket.emit("queueLock", {locked: !this.openqueue});
     this.sendUserlist(user);
     this.sendRecentChat(user);
+    user.socket.emit("channelCSSJS", {css: this.css, js: this.js});
     if(this.poll) {
         user.socket.emit("newPoll", this.poll.packUpdate());
     }
@@ -1223,6 +1232,38 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
     }
 
     this.broadcastOpts();
+}
+
+Channel.prototype.trySetCSS = function(user, data) {
+    if(!Rank.hasPermission(user, "setcss")) {
+        return;
+    }
+
+    var css = data.css || "";
+    if(css.length > 20000) {
+        css = css.substring(0, 20000);
+    }
+    this.css = css;
+    this.sendAll("channelCSSJS", {
+        css: this.css,
+        js: this.js
+    });
+}
+
+Channel.prototype.trySetJS = function(user, data) {
+    if(!Rank.hasPermission(user, "setjs")) {
+        return;
+    }
+
+    var js = data.js || "";
+    if(js.length > 20000) {
+        js = js.substring(0, 20000);
+    }
+    this.js = js;
+    this.sendAll("channelCSSJS", {
+        css: this.css,
+        js: this.js
+    });
 }
 
 Channel.prototype.updateMotd = function(motd) {

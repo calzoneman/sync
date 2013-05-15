@@ -134,6 +134,12 @@
                     <li>
                         <a href="javascript:void(0)" id="show_motdeditor">MOTD</a>
                     </li>
+                    <li style="display: none">
+                        <a href="javascript:void(0)" id="show_csseditor">CSS Editor</a>
+                    </li>
+                    <li style="display: none">
+                        <a href="javascript:void(0)" id="show_jseditor">JS Editor</a>
+                    </li>
                     <li>
                         <a href="javascript:void(0)" id="show_filtereditor">Chat Filters</a>
                     </li>
@@ -240,6 +246,20 @@
             <div class="span12">
                 <textarea rows="10" id="motdtext"></textarea>
                 <button class="btn btn-primary" id="updatemotd">Update</button>
+            </div>
+        </div>
+        <div class="row modonly" id="csseditor" style="display: none;">
+            <div class="span12">
+                <p>Max 20KB.  If you need more CSS, host the file somewhere and use the External CSS channel option</p>
+                <textarea rows="10" id="csstext"></textarea>
+                <button class="btn btn-primary" id="updatecss">Update</button>
+            </div>
+        </div>
+        <div class="row modonly" id="jseditor" style="display: none;">
+            <div class="span12">
+                <p>Max 20KB.  If you need more JS, host the file somewhere and use the External JS channel option</p>
+                <textarea rows="10" id="jstext"></textarea>
+                <button class="btn btn-primary" id="updatejs">Update</button>
             </div>
         </div>
         <div class="row modonly" id="filtereditor" style="display: none;">
