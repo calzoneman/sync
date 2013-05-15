@@ -32,7 +32,7 @@ Callbacks = {
         $("<button/>").addClass("close pull-right").text("×")
             .appendTo(div)
             .click(function() { div.remove(); });
-        $("<h3/>").data.text(data.title).appendTo(div);
+        $("<h3/>").text(data.title).appendTo(div);
         $("<p/>").html(data.text).appendTo(div);
     },
 
