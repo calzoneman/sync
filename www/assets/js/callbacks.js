@@ -27,8 +27,10 @@ Callbacks = {
     },
 
     announcement: function(data) {
+        $("#announcerow").html("");
+        $("#announcerow").css("display", "");
         var div = $("<div/>").addClass("alert")
-            .insertAfter($(".row")[0]);
+            .appendTo($("#announcerow"));
         $("<button/>").addClass("close pull-right").text("×")
             .appendTo(div)
             .click(function() { div.remove(); });

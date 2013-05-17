@@ -59,7 +59,7 @@ var Channel = function(name) {
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
         new Filter("bold", "(.)\\*([^\\*]+)\\*", "g", "$1<strong>$2</strong>"),
         new Filter("italic", "(^| )_([^_]+)_", "g", "$1<em>$2</em>"),
-        new Filter("inline spoiler", "\\[spoiler\\](.*)\\[\\/spoiler\\]", "ig", "<span class=\"spoiler\">$1</span>")
+        new Filter("inline spoiler", "\\[spoiler\\](.*)\\[\\/spoiler\\]", "ig", "<span class=\"spoiler\">$1</span>"),
     ];
     this.motd = {
         motd: "",
