@@ -909,6 +909,12 @@ function showUserOpts() {
     blink.prop("checked", USEROPTS.blink_title);
     addOption("Chat Notice", blinkcontainer);
 
+    var sendbtncontainer = $("<label/>").addClass("checkbox")
+        .text("Add a send button to the chatbox");
+    var sendbtn = $("<input/>").attr("type", "checkbox").appendTo(sendbtncontainer);
+    sendbtn.prop("checked", USEROPTS.chatbtn);
+    addOption("Send Button", sendbtncontainer);
+
     var profimg = $("<input/>").attr("type", "text")
     profimg.val(PROFILE.image);
     addOption("Profile Image", profimg);
@@ -945,6 +951,7 @@ function showUserOpts() {
         USEROPTS.hidevid         = hidevid.prop("checked");
         USEROPTS.show_timestamps = showts.prop("checked");
         USEROPTS.blink_title     = blink.prop("checked");
+        USEROPTS.chatbtn         = sendbtn.prop("checked");
         if(RANK >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
         }
@@ -1007,6 +1014,22 @@ function applyOpts() {
 
     if(USEROPTS.hidevid) {
         $("#videodiv").remove();
+    }
+
+    if(USEROPTS.chatbtn) {
+        $("#chatline").removeClass("span5").addClass("span4")
+            .css("float", "left");
+        var btn = $("<button/>").addClass("btn span1")
+            .text("Send")
+            .appendTo($("#chatdiv"));
+        btn.click(function() {
+            if($("#chatline").val().trim()) {
+                socket.emit("chatMsg", {
+                    msg: $("#chatline").val()
+                });
+                $("#chatline").val("");
+            }
+        });
     }
 }
 

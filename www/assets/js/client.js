@@ -68,7 +68,8 @@ var USEROPTS = {
     show_timestamps : parseBool(getOrDefault("cytube_show_timestamps", false)),
     modhat          : parseBool(getOrDefault("cytube_modhat", false)),
     blink_title     : parseBool(getOrDefault("cytube_blink_title", false)),
-    sync_accuracy   : parseFloat(getOrDefault("cytube_sync_accuracy", 2)) || 2
+    sync_accuracy   : parseFloat(getOrDefault("cytube_sync_accuracy", 2)) || 2,
+    chatbtn         : parseBool(getOrDefault("cytube_chatbtn", false))
 };
 applyOpts();
 $("#optlink").click(showUserOpts);

@@ -193,7 +193,6 @@ Channel.prototype.saveDump = function() {
 // Save channel dumps every 5 minutes, in case of crash
 function incrementalDump(chan) {
     if(chan && chan.users && chan.users.length > 0) {
-        console.log("dumping " + chan.name);
         chan.saveDump();
         setTimeout(function() { incrementalDump(chan); }, 300000);
     }
