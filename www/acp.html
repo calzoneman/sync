@@ -121,7 +121,7 @@
         var uname = readCookie("sync_uname") || "";
         var p = "";
         if(uname && session) {
-            $.getJSON(IO_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
+            $.getJSON(WEB_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
                 if(data.success) {
                     $(".loginform").remove();
                     createCookie("sync_uname", uname, 7);
@@ -135,7 +135,7 @@
         $("#login").click(function() {
             uname =  $("#name").val();
             q = "name=" + $("#name").val() + "&pw=" + $("#pw").val();
-            $.getJSON(IO_URL+"/api/json/login?"+q+"&callback=?", function(data) {
+            $.getJSON(WEB_URL+"/api/json/login?"+q+"&callback=?", function(data) {
                 console.log(data);
                 if(data.success) {
                     $(".loginform").remove();
@@ -148,20 +148,20 @@
             });
         });
         function getSyslog() {
-            $.ajax(IO_URL+"/api/plain/readlog?type=sys&"+p).done(function(data) {
+            $.ajax(WEB_URL+"/api/plain/readlog?type=sys&"+p).done(function(data) {
                 $("#log").text(data);
             });
         }
         $("#syslog").click(getSyslog);
         function getErrlog() {
-            $.ajax(IO_URL+"/api/plain/readlog?type=err&"+p).done(function(data) {
+            $.ajax(WEB_URL+"/api/plain/readlog?type=err&"+p).done(function(data) {
                 $("#log").text(data);
             });
         }
         $("#errlog").click(getErrlog);
         function getChanlog() {
             var chan = $("#channame").val();
-            $.ajax(IO_URL+"/api/plain/readlog?type=channel&channel="+chan+"&"+p).done(function(data) {
+            $.ajax(WEB_URL+"/api/plain/readlog?type=channel&channel="+chan+"&"+p).done(function(data) {
                 $("#log").text(data);
             });
         }
@@ -173,7 +173,7 @@
         });
         
         function loadBanlist() {
-            $.getJSON(IO_URL+"/api/json/globalbans?action=list&"+p+"&callback=?", function(data) {
+            $.getJSON(WEB_URL+"/api/json/globalbans?action=list&"+p+"&callback=?", function(data) {
                 handleBanlist(data);
             });
         }
@@ -190,7 +190,7 @@
                 $("<i/>").addClass("icon-minus").appendTo(remove);
                 remove.click(function(ip) { return function() {
                     var b = "ip=" + ip;
-                    $.getJSON(IO_URL+"/api/json/globalbans?action=remove&"+b+"&"+p+"&callback=?", function(data) {
+                    $.getJSON(WEB_URL+"/api/json/globalbans?action=remove&"+b+"&"+p+"&callback=?", function(data) {
                         if(data.error) {
                             alert(data.error);
                         }
@@ -217,7 +217,7 @@
 
             add.click(function() {
                 var b = "ip=" + ip.val() + "&reason=" + reason.val();
-                $.getJSON(IO_URL+"/api/json/globalbans?action=add&"+b+"&"+p+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/globalbans?action=add&"+b+"&"+p+"&callback=?", function(data) {
                     if(data.error) {
                         alert(data.error);
                     }
