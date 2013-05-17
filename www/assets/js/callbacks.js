@@ -228,7 +228,6 @@ Callbacks = {
     },
 
     channelCSSJS: function(data) {
-        console.log("recv cssjs", data);
         $("#chancss").remove();
         $("#chanjs").remove();
 
@@ -236,6 +235,7 @@ Callbacks = {
         $("#jstext").val(data.js);
 
         if(data.css) {
+            $("#usertheme").remove();
             $("<style/>").attr("type", "text/css")
                 .attr("id", "chancss")
                 .text(data.css)
