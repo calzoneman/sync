@@ -158,7 +158,7 @@ Channel.prototype.loadDump = function() {
             this.css = data.css || "";
             this.js = data.js || "";
             this.sendAll("channelCSSJS", {css: this.css, js: this.js});
-            setTimeout(function() { incrementalDump(this); }, 300000);
+            setTimeout(function() { incrementalDump(this); }.bind(this), 300000);
         }
         catch(e) {
             Logger.errlog.log("Channel dump load failed: ");
@@ -193,6 +193,7 @@ Channel.prototype.saveDump = function() {
 // Save channel dumps every 5 minutes, in case of crash
 function incrementalDump(chan) {
     if(chan && chan.users && chan.users.length > 0) {
+        console.log("dumping " + chan.name);
         chan.saveDump();
         setTimeout(function() { incrementalDump(chan); }, 300000);
     }
