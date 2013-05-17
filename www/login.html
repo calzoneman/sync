@@ -86,7 +86,7 @@
             window.addEventListener("message", respond, false);
 
             $("#login").click(function() {
-                $.getJSON(IO_URL+"/api/json/login?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/login?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
                 });
@@ -100,7 +100,7 @@
                     $("#confirm").addClass("text-error");
                     return;
                 }
-                $.getJSON(IO_URL+"/api/json/register?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/register?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
                     console.log(data);
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
@@ -116,7 +116,7 @@
                     $("#confirm").addClass("text-error");
                     return;
                 }
-                $.getJSON(IO_URL+"/api/json/changepass?name="+$("#username").val()+"&oldpw="+$("#pw").val()+"&newpw="+$("#newpass").val()+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/changepass?name="+$("#username").val()+"&oldpw="+$("#pw").val()+"&newpw="+$("#newpass").val()+"&callback=?", function(data) {
                     if(data.success) {
                         $("#newpassdiv").css("display", "none");
                         $("#pw2div").css("display", "none");

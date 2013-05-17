@@ -126,7 +126,7 @@
             return entry;
         }
         function refresh() {
-            $.getJSON(IO_URL+"/api/json/listloaded?filter=public&callback=?", function(data) {
+            $.getJSON(WEB_URL+"/api/json/listloaded?filter=public&callback=?", function(data) {
                 $("#channeldata").find("tbody").remove();
                 data.sort(function(a, b) {
                     var x = a.usercount;

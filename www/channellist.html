@@ -50,7 +50,7 @@
             var uname = readCookie("sync_uname") || "";
             var p = "";
             if(uname && session) {
-                $.getJSON(IO_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
                     if(data.success) {
                         $(".loginform").remove();
                         createCookie("sync_uname", uname, 7);
@@ -65,7 +65,7 @@
             $("#login").click(function() {
                 uname =  $("#name").val();
                 q = "name=" + $("#name").val() + "&pw=" + $("#pw").val();
-                $.getJSON(IO_URL+"/api/json/login?"+q+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/login?"+q+"&callback=?", function(data) {
                     if(data.success) {
                         $(".loginform").remove();
                         session = data.session;
@@ -109,7 +109,7 @@
                 return entry;
             }
             function refresh() {
-                $.getJSON(IO_URL+"/api/json/listloaded?"+p+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/listloaded?"+p+"&callback=?", function(data) {
                     var host = document.location + "";
                     host = host.substring(0, host.indexOf("/widget.html"));
                     if(data.error) {

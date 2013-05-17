@@ -53,7 +53,7 @@ Then, follow these instructions to install CyTube:
 3. Install your distribution's `libmysqlclient` package.
 3. Install dependencies: `npm install`
 4. Edit `config.js` and input your database details and connection port
-5. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`
+5. Edit `www/assets/js/iourl.js` and change the value of `IO_URL` to `yourhostname:port` where `port` is the port defined in `config.js`.  Also change `WEB_URL` to `yourhostname:web_port` where `web_port` is the websocket port you defined in `config.js`
 
 Running
 -------
