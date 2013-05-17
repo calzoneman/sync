@@ -92,14 +92,19 @@ User.prototype.initCallbacks = function() {
         // Channel already loaded
         if(data.name in Server.channels) {
             this.channel = Server.channels[data.name];
-            this.channel.userJoin(this);
         }
         // Channel not loaded
         else {
             Server.channels[data.name] = new Channel(data.name);
             this.channel = Server.channels[data.name];
-            this.channel.userJoin(this);
         }
+        if(this.loggedIn) {
+            var chanrank = this.channel.getRank(this.name);
+            if(chanrank > this.rank) {
+                this.rank = chanrank;
+            }
+        }
+        this.channel.userJoin(this);
     }.bind(this));
 
     this.socket.on("login", function(data) {
