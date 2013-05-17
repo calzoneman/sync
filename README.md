@@ -27,6 +27,7 @@ The following media sources are currently supported:
 - Soundcloud
 - Livestream.com
 - Twitch.tv
+- Justin.tv
 - Ustream
 - RTMP livestreams
 

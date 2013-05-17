@@ -28,6 +28,9 @@ var Media = function(data) {
         case "tw":
             this.initTwitch();
             break;
+        case "jt":
+            this.initJustinTV();
+            break;
         case "rt":
             this.initRTMP();
             break;
@@ -305,6 +308,33 @@ Media.prototype.initTwitch = function() {
         movie:"http://www.twitch.tv/widgets/live_embed_player.swf",
         id: "live_embed_player_flash",
         flashvars:"hostname=www.twitch.tv&channel="+this.id+"&auto_play=true&start_volume=100"
+    };
+    swfobject.embedSWF( url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initTwitch();
+    }
+
+    this.pause = function() { }
+
+    this.play = function() { }
+
+    this.getTime = function() { }
+
+    this.seek = function() { }
+}
+
+Media.prototype.initJustinTV = function() {
+    this.removeOld();
+    var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+this.id;
+    var params = {
+        allowFullScreen:"true",
+        allowScriptAccess:"always",
+        allowNetworking:"all",
+        movie:"http://www.justin.tv/widgets/live_embed_player.swf",
+        id: "live_embed_player_flash",
+        flashvars:"hostname=www.justin.tv&channel="+this.id+"&auto_play=true&start_volume=100"
     };
     swfobject.embedSWF( url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
 

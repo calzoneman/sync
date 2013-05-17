@@ -500,6 +500,8 @@ function parseVideoURL(url){
     }
     else if(url.indexOf("twitch.tv") != -1)
         return [parseTwitch(url), "tw"];
+    else if(url.indexOf("justin.tv") != -1)
+        return [parseJustinTV(url), "jt"];
     else if(url.indexOf("livestream.com") != -1)
         return [parseLivestream(url), "li"];
     else if(url.indexOf("ustream.tv") != -1)
@@ -538,6 +540,14 @@ function parseYTPlaylist(url) {
 
 function parseTwitch(url) {
     var m = url.match(/twitch\.tv\/([a-zA-Z0-9]+)/);
+    if(m) {
+        return m[1];
+    }
+    return null;
+}
+
+function parseJustinTV(url) {
+    var m = url.match(/justin\.tv\/([a-zA-Z0-9]+)/);
     if(m) {
         return m[1];
     }

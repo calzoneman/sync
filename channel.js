@@ -694,6 +694,7 @@ function mediaUpdate(chan, id) {
 function isLive(type) {
     return type == "li"
         || type == "tw"
+        || type == "jt"
         || type == "rt"
         || type == "jw"
         || type == "us";
@@ -755,6 +756,12 @@ Channel.prototype.enqueue = function(data, user) {
                 break;
             case "tw":
                 var media = new Media(data.id, "Twitch - " + data.id, "--:--", "tw");
+                media.queueby = user ? user.name : "";
+                this.autoTemp(media, user);
+                this.queueAdd(media, idx);
+                break;
+            case "jt":
+                var media = new Media(data.id, "JustinTV - " + data.id, "--:--", "jt");
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
