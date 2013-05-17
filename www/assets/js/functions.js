@@ -1016,11 +1016,11 @@ function applyOpts() {
         $("#videodiv").remove();
     }
 
+    $("#chatbtn").remove();
     if(USEROPTS.chatbtn) {
-        $("#chatline").removeClass("span5").addClass("span4")
-            .css("float", "left");
-        var btn = $("<button/>").addClass("btn span1")
+        var btn = $("<button/>").addClass("btn btn-block")
             .text("Send")
+            .attr("id", "chatbtn")
             .appendTo($("#chatdiv"));
         btn.click(function() {
             if($("#chatline").val().trim()) {
