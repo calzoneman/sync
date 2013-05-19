@@ -182,6 +182,8 @@ Callbacks = {
     },
 
     channelOpts: function(opts) {
+        $("#opt_qopen_allow_anon").prop("checked", opts.qopen_allow_anon);
+        $("#opt_qopen_allow_guest").prop("checked", opts.qopen_allow_guest);
         $("#opt_qopen_allow_qnext").prop("checked", opts.qopen_allow_qnext);
         $("#opt_qopen_allow_move").prop("checked", opts.qopen_allow_move);
         $("#opt_qopen_allow_delete").prop("checked", opts.qopen_allow_delete);
@@ -226,7 +228,7 @@ Callbacks = {
             $("#voteskip").attr("disabled", false);
         else
             $("#voteskip").attr("disabled", true);
-        rebuildPlaylist();
+        handleRankChange();
     },
 
     channelCSSJS: function(data) {

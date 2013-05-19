@@ -387,7 +387,7 @@ function addQueueButtons(li) {
 function rebuildPlaylist() {
     $("#queue li").each(function() {
         $(this).find(".btn-group").remove();
-        if(RANK >= Rank.Moderator || LEADER || OPENQUEUE)
+        if(RANK >= Rank.Moderator || LEADER || canQueue())
             addQueueButtons(this);
     });
 }
@@ -599,24 +599,28 @@ function closePoll() {
     }
 }
 
+function canQueue() {
+    var anon = !uname;
+    var guest = (uname && !session);
+    var canqueue = (!guest && !anon) ||
+                   (guest && CHANNELOPTS.qopen_allow_guest) ||
+                   (anon && CHANNELOPTS.qopen_allow_anon);
+    canqueue = canqueue && OPENQUEUE;
+    return canqueue;
+}
+
 function handleRankChange() {
     rebuildPlaylist();
-    if(RANK >= Rank.Moderator || LEADER) {
-        $("#playlist_controls").css("display", "block");
-        $("#playlist_controls button").each(function() {
-            $(this).attr("disabled", false);
-        });
-        $("#pollcontainer .active").each(function() {
-            var btns = $(this).find(".btn-danger");
-            if(btns.length == 0) {
-                $("<button/>").addClass("btn btn-danger pull-right")
-                    .text("End Poll")
-                    .insertAfter($(this).find(".close"))
-                    .click(function() {
-                        socket.emit("closePoll")
-                    });
-            }
-        });
+    if(RANK >= 10) {
+        $("#drop_channel").parent().css("display", "");
+    }
+    if(RANK >= Rank.Owner) {
+        $("#show_jseditor").parent().css("display", "");
+        $("#show_csseditor").parent().css("display", "");
+    }
+    else {
+        $("#show_jseditor").parent().css("display", "none");
+        $("#show_csseditor").parent().css("display", "none");
     }
     if(RANK >= Rank.Moderator) {
         $("#qlockbtn").css("display", "block");
@@ -640,40 +644,47 @@ function handleRankChange() {
         $("#show_filtereditor").attr("disabled", val);
         $("#show_acl").attr("disabled", val);
     }
-    else if(!LEADER) {
-        if(OPENQUEUE) {
-            if(CHANNELOPTS.qopen_allow_qnext)
-                $("#queue_next").attr("disabled", false);
-            else
-                $("#queue_next").attr("disabled", true);
-            if(CHANNELOPTS.qopen_allow_playnext)
-                $("#play_next").attr("disabled", false);
-            else
-                $("#play_next").attr("disabled", true);
-        }
-        else {
-            $("#playlist_controls").css("display", "none");
-        }
+    else {
+        if(!LEADER) {
+            if(canQueue()) {
+                $("#playlist_controls").css("display", "");
+                if(CHANNELOPTS.qopen_allow_qnext)
+                    $("#queue_next").attr("disabled", false);
+                else
+                    $("#queue_next").attr("disabled", true);
+                if(CHANNELOPTS.qopen_allow_playnext)
+                    $("#play_next").attr("disabled", false);
+                else
+                    $("#play_next").attr("disabled", true);
+            }
+            else {
+                $("#playlist_controls").css("display", "none");
+            }
 
-        $("#pollcontainer .active").each(function() {
-            $(this).find(".btn-danger").remove();
-        });
-    }
-    if(RANK < Rank.Moderator) {
+            $("#pollcontainer .active").each(function() {
+                $(this).find(".btn-danger").remove();
+            });
+        }
         $("#getplaylist").css("width", "100%");
         $("#clearplaylist").css("display", "none");
         $("#shuffleplaylist").css("display", "none");
     }
-    if(RANK >= Rank.Owner) {
-        $("#show_jseditor").parent().css("display", "");
-        $("#show_csseditor").parent().css("display", "");
-    }
-    else {
-        $("#show_jseditor").parent().css("display", "none");
-        $("#show_csseditor").parent().css("display", "none");
-    }
-    if(RANK >= 10) {
-        $("#drop_channel").parent().css("display", "");
+    if(RANK >= Rank.Moderator || LEADER) {
+        $("#playlist_controls").css("display", "block");
+        $("#playlist_controls button").each(function() {
+            $(this).attr("disabled", false);
+        });
+        $("#pollcontainer .active").each(function() {
+            var btns = $(this).find(".btn-danger");
+            if(btns.length == 0) {
+                $("<button/>").addClass("btn btn-danger pull-right")
+                    .text("End Poll")
+                    .insertAfter($(this).find(".close"))
+                    .click(function() {
+                        socket.emit("closePoll")
+                    });
+            }
+        });
     }
 }
 

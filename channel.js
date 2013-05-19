@@ -42,6 +42,8 @@ var Channel = function(name) {
     this.poll = false;
     this.voteskip = false;
     this.opts = {
+        qopen_allow_anon: false,
+        qopen_allow_guest: true,
         qopen_allow_qnext: false,
         qopen_allow_move: false,
         qopen_allow_playnext: false,
@@ -793,9 +795,14 @@ Channel.prototype.enqueue = function(data, user) {
 }
 
 Channel.prototype.tryQueue = function(user, data) {
-    if(!Rank.hasPermission(user, "queue") &&
-            this.leader != user &&
-            !this.openqueue) {
+    var anon = (user.name == "");
+    var guest = (user.name != "" && !user.loggedIn);
+    var canqueue = (anon && this.opts.qopen_allow_anon) ||
+                   (guest && this.opts.qopen_allow_guest) ||
+                   (!anon && !guest);
+    canqueue = canqueue && this.openqueue;
+    canqueue = canqueue || this.leader == user || Rank.hasPermission(user, "queue");
+    if(!canqueue) {
         return;
     }
     if(data.pos == undefined || data.id == undefined) {

@@ -346,6 +346,8 @@ $("#opt_submit").click(function() {
     var css = $("#opt_customcss").val();
     var ratio = +$("#opt_voteskip_ratio").val() || 0.5;
     opts = {
+        qopen_allow_anon: $("#opt_qopen_allow_anon").prop("checked"),
+        qopen_allow_guest: $("#opt_qopen_allow_guest").prop("checked"),
         qopen_allow_qnext: $("#opt_qopen_allow_qnext").prop("checked"),
         qopen_allow_move: $("#opt_qopen_allow_move").prop("checked"),
         qopen_allow_delete: $("#opt_qopen_allow_delete").prop("checked"),
