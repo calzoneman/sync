@@ -90,8 +90,9 @@
     <script type="text/javascript">
         var host = document.location+"";
         host = host.replace("http://", "");
-        if(host.indexOf("/") != -1)
-            host = host.substring(0, host.indexOf("/"));
+        var parts = host.split("/");
+        parts[parts.length - 1] = "";
+        host = parts.join("/");
         host = "http://" + host;
         setInterval(refresh, 10000);
         refresh();
@@ -142,7 +143,7 @@
                     var d = data[i];
                     var tr = $("<tr/>").appendTo($("#channeldata"));
                     var name = $("<td/>").appendTo(tr);
-                    $("<a/>").attr("href", host + "/r/" + d.name)
+                    $("<a/>").attr("href", host + "r/" + d.name)
                         .text(d.name)
                         .appendTo(name);
                     $("<td/>").text(d.pagetitle).appendTo(tr);
@@ -166,7 +167,7 @@
                     alert("Invalid channel names.  Channel names may contain alphanumeric characters, underscores, and hyphens");
                     return;
                 }
-                document.location = host + "/r/" + $("#channel").val();
+                document.location = host + "r/" + $("#channel").val();
             }
         });
     </script>
