@@ -741,7 +741,11 @@ Channel.prototype.enqueue = function(data, user) {
             case "vi":
             case "dm":
             case "sc":
-                InfoGetter.getMedia(data.id, data.type, function(media) {
+                InfoGetter.getMedia(data.id, data.type, function(err, media) {
+                    if(err) {
+                        user.socket.emit("queueFail");
+                        return;
+                    }
                     media.queueby = user ? user.name : "";
                     this.autoTemp(media, user);
                     this.queueAdd(media, idx);

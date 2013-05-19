@@ -549,6 +549,10 @@ Callbacks = {
         $(li).show("blind");
     },
 
+    queueFail: function() {
+        alert("Queue failed.  Double check your link to make sure the video exists.");
+    },
+
     setTemp: function(data) {
         var li = $("#queue").children()[data.idx];
         var buttons = $(li).find(".qe_btn");

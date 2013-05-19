@@ -29,8 +29,10 @@ function getJSON(options, callback) {
             }
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
-                return; }
-            callback(res.statusCode, data);
+                callback(true, res.statusCode, null);
+                return;
+            }
+            callback(false, res.statusCode, data);
         });
     });
 
@@ -51,9 +53,10 @@ function getJSONHTTPS(options, callback) {
             }
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
+                callback(true, res.statusCode, null);
                 return;
             }
-            callback(res.statusCode, data);
+            callback(false, res.statusCode, data);
         });
     });
 
@@ -102,8 +105,9 @@ exports.searchYT = function(terms, callback) {
 }
 
 exports.getYTSearchResults = function(query, callback) {
-    var cback = function(res, data) {
-        if(res != 200) {
+    var cback = function(err, res, data) {
+        if(err || res != 200) {
+            callback(true, null);
             return;
         }
 
@@ -134,7 +138,7 @@ exports.getYTSearchResults = function(query, callback) {
             Logger.errlog.log("getYTSearchResults failed: ");
             Logger.errlog.log(e);
         }
-        callback(vids);
+        callback(false, vids);
     }
 
     exports.searchYT(query.split(" "), cback);
@@ -223,8 +227,9 @@ exports.getUstream = function(name, callback) {
 exports.getMedia = function(id, type, callback) {
     switch(type) {
         case "yt":
-            exports.getYTInfo(id, function(res, data) {
-                if(res != 200) {
+            exports.getYTInfo(id, function(err, res, data) {
+                if(err || res != 200) {
+                    callback(true, null);
                     return;
                 }
 
@@ -233,17 +238,19 @@ exports.getMedia = function(id, type, callback) {
                     var seconds = data.entry.media$group.yt$duration.seconds;
                     var title = data.entry.title.$t;
                     var media = new Media(id, title, seconds, "yt");
-                    callback(media);
+                    callback(false, media);
                 }
                 catch(e) {
                     Logger.errlog.log("getMedia failed: ");
                     Logger.errlog.log(e);
+                    callback(true, null);
                 }
             });
             break;
         case "vi":
-            exports.getVIInfo(id, function(res, data) {
-                if(res != 200) {
+            exports.getVIInfo(id, function(err, res, data) {
+                if(err || res != 200) {
+                    callback(true, null);
                     return;
                 }
 
@@ -252,17 +259,19 @@ exports.getMedia = function(id, type, callback) {
                     var seconds = data.duration;
                     var title = data.title;
                     var media = new Media(id, title, seconds, "vi");
-                    callback(media);
+                    callback(false, media);
                 }
                 catch(e) {
                     Logger.errlog.log("getMedia failed: ");
                     Logger.errlog.log(e);
+                    callback(true, null);
                 }
             });
             break;
         case "dm":
-            exports.getDMInfo(id, function(res, data) {
-                if(res != 200) {
+            exports.getDMInfo(id, function(err, res, data) {
+                if(err || res != 200) {
+                    callback(true, null);
                     return;
                 }
 
@@ -270,17 +279,19 @@ exports.getMedia = function(id, type, callback) {
                     var seconds = data.duration;
                     var title = data.title;
                     var media = new Media(id, title, seconds, "dm");
-                    callback(media);
+                    callback(false, media);
                 }
                 catch(e) {
                     Logger.errlog.log("getMedia failed: ");
                     Logger.errlog.log(e);
+                    callback(true, null);
                 }
             });
             break;
         case "sc":
-            exports.getSCInfo(id, function(res, data) {
-                if(res != 200) {
+            exports.getSCInfo(id, function(err, res, data) {
+                if(err || res != 200) {
+                    callback(true, null);
                     return;
                 }
 
@@ -289,17 +300,19 @@ exports.getMedia = function(id, type, callback) {
                     var seconds = data.duration / 1000;
                     var title = data.title;
                     var media = new Media(id, title, seconds, "sc");
-                    callback(media);
+                    callback(false, media);
                 }
                 catch(e) {
                     Logger.errlog.log("getMedia failed: ");
                     Logger.errlog.log(e);
+                    callback(true, null);
                 }
             });
             break;
         case "yp":
-            var cback = function(res, data) {
-                if(res != 200) {
+            var cback = function(err, res, data) {
+                if(err || res != 200) {
+                    callback(true, null);
                     return;
                 }
 
@@ -313,7 +326,7 @@ exports.getMedia = function(id, type, callback) {
                             var title = item.title.$t;
                             var seconds = item.media$group.yt$duration.seconds;
                             var media = new Media(id, title, seconds, "yt");
-                            callback(media);
+                            callback(false, media);
                         }
                         catch(e) {
                             Logger.errlog.log("getMedia failed: ");
@@ -331,6 +344,7 @@ exports.getMedia = function(id, type, callback) {
                 catch(e) {
                     Logger.errlog.log("getMedia failed: ");
                     Logger.errlog.log(e);
+                    callback(true, null);
                 }
             }
             exports.getYTPlaylist(id, cback);
