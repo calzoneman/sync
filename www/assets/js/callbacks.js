@@ -41,7 +41,7 @@ Callbacks = {
     kick: function(data) {
         KICKED = true;
         $("<div/>").addClass("server-msg-disconnect")
-            .text("Kicked: " + data.msg)
+            .text("Kicked: " + data.reason)
             .appendTo($("#messagebuffer"));
         $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollheight"));
     },

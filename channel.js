@@ -260,6 +260,25 @@ Channel.prototype.saveRank = function(user) {
     return Database.saveChannelRank(this.name, user);
 }
 
+Channel.prototype.getIPRank = function(ip) {
+    var rank = 0;
+    for(var i = 0; i < this.logins[ip].length; i++) {
+        var r = this.getRank(this.logins[ip][i]);
+        rank = (r > rank) ? r : rank;
+    }
+    return rank;
+}
+
+Channel.prototype.seen = function(ip, name) {
+    name = name.toLowerCase();
+    for(var i = 0; i < this.logins[ip].length; i++) {
+        if(this.logins[ip][i].toLowerCase() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 Channel.prototype.cacheMedia = function(media) {
     if(media.temp) {
         return;
@@ -348,7 +367,6 @@ Channel.prototype.userJoin = function(user) {
        (slash24 in this.ipbans && this.ipbans[slash24] != null)) {
         this.logger.log("--- Kicking " + user.ip + " - banned");
         this.kick(user, "You're banned!");
-        user.socket.disconnect(true);
         return;
     }
 
@@ -358,7 +376,7 @@ Channel.prototype.userJoin = function(user) {
     // Prevent duplicate login
     if(user.name != "") {
         for(var i = 0; i < this.users.length; i++) {
-            if(this.users[i].name == user.name) {
+            if(this.users[i].name.toLowerCase() == user.name.toLowerCase()) {
                 user.name = "";
                 user.loggedIn = false;
                 user.socket.emit("login", {
@@ -457,9 +475,16 @@ Channel.prototype.sendRankStuff = function(user) {
         var ents = [];
         for(var ip in this.ipbans) {
             if(this.ipbans[ip] != null) {
+                var name;
+                if(ip in this.logins) {
+                    name = this.logins[ip].join(", ");
+                }
+                else {
+                    name = this.ipbans[ip][0];
+                }
                 ents.push({
                     ip: ip,
-                    name: this.ipbans[ip][0],
+                    name: name,
                     banner: this.ipbans[ip][1]
                 });
             }
@@ -563,7 +588,7 @@ Channel.prototype.broadcastUsercount = function() {
 }
 
 Channel.prototype.broadcastNewUser = function(user) {
-    if(this.logins[user.ip].join("").indexOf(user.name) == -1) {
+    if(!this.seen(user.ip, user.name)) {
         this.logins[user.ip].push(user.name);
     }
     this.sendAll("addUser", {
@@ -610,9 +635,16 @@ Channel.prototype.broadcastBanlist = function() {
     var ents = [];
     for(var ip in this.ipbans) {
         if(this.ipbans[ip] != null) {
+            var name;
+            if(ip in this.logins) {
+                name = this.logins[ip].join(", ");
+            }
+            else {
+                name = this.ipbans[ip][0];
+            }
             ents.push({
                 ip: ip,
-                name: this.ipbans[ip][0],
+                name: name,
                 banner: this.ipbans[ip][1]
             });
         }
