@@ -26,6 +26,10 @@ Callbacks = {
         $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
     },
 
+    errorMsg: function(data) {
+        alert(data.msg);
+    },
+
     announcement: function(data) {
         $("#announcerow").html("");
         $("#announcerow").css("display", "");
@@ -269,11 +273,12 @@ Callbacks = {
             var name = $("<td/>").text(entries[i].name).appendTo(tr);
             var banner = $("<td/>").text(entries[i].banner).appendTo(tr);
 
-            var callback = (function(ip) { return function() {
-                socket.emit("chatMsg", {
-                    msg: "/unban " + ip
+            var callback = (function(id, name) { return function() {
+                socket.emit("unban", {
+                    id: id,
+                    name: name
                 });
-            } })(entries[i].ip);
+            } })(entries[i].id, entries[i].name);
             remove.click(callback);
         }
     },
@@ -299,27 +304,69 @@ Callbacks = {
         for(var i = 0; i < entries.length; i++) {
             var tr = $("<tr/>").appendTo(tbl);
             var bantd = $("<td/>").appendTo(tr);
-            var ban = $("<button/>").addClass("btn btn-mini btn-danger")
-                .text("Ban")
-                .appendTo(bantd);
-            var banrange = $("<button/>").addClass("btn btn-mini btn-danger")
-                .text("Ban Range")
-                .appendTo(bantd);
+            if(entries[i].banned) {
+                bantd.text("Banned");
+                tr.addClass("alert alert-error");
+            }
+            else {
+                var ban = $("<button/>").addClass("btn btn-mini btn-danger")
+                    .text("Ban IP")
+                    .appendTo(bantd);
+                var banrange = $("<button/>").addClass("btn btn-mini btn-danger")
+                    .text("Ban IP Range")
+                    .appendTo(bantd);
+                var callback = (function(id, name) { return function() {
+                    console.log(id, name);
+                    socket.emit("banIP", {
+                        id: id,
+                        name: name,
+                        range: false
+                    });
+                    return false;
+                } })(entries[i].id, entries[i].names[0]);
+                ban.click(callback);
+                var callback2 = (function(id, name) { return function() {
+                    console.log(id, name);
+                    socket.emit("banIP", {
+                        id: id,
+                        name: name,
+                        range: true
+                    });
+                    return false;
+                } })(entries[i].id, entries[i].names[0]);
+                banrange.click(callback2);
+            }
             var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
-            var name = $("<td/>").text(entries[i].name).appendTo(tr);
-
-            var callback = (function(name) { return function() {
-                socket.emit("chatMsg", {
-                    msg: "/ban " + name
-                });
-            } })(entries[i].name.split(",")[0]);
-            ban.click(callback);
-            var callback2 = (function(name) { return function() {
-                socket.emit("chatMsg", {
-                    msg: "/ban " + name + " range"
-                });
-            } })(entries[i].name.split(",")[0]);
-            banrange.click(callback2);
+            var name = $("<td/>").text(entries[i].names).appendTo(tr);
+            tr.data("names", entries[i].names);
+            tr.data("banned", entries[i].banned);
+            tr.click(function(ev) {
+                tbl.find(".name-detail").remove();
+                if(this.data("namesopen")) {
+                    this.data("namesopen", false);
+                    return;
+                }
+                var names = this.data("names") || [];
+                for(var i = names.length-1; i >= 0; i--) {
+                    var detail = $("<tr/>").insertAfter(this);
+                    detail.addClass("name-detail");
+                    if(this.data("banned")) {
+                        detail.addClass("alert alert-error");
+                    }
+                    var buttontd = $("<td/>").appendTo(detail);
+                    $("<button/>").addClass("btn btn-mini btn-danger")
+                        .text("Ban Name")
+                        .appendTo(buttontd)
+                        .click(function() {
+                            socket.emit("banName", {
+                                name: this
+                            });
+                        }.bind(names[i]));
+                    $("<td/>").text("\"").appendTo(detail);
+                    $("<td/>").text(names[i]).appendTo(detail);
+                }
+                this.data("namesopen", true);
+            }.bind(tr));
         }
     },
 

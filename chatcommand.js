@@ -38,9 +38,6 @@ function handle(chan, user, msg, data) {
     else if(msg.indexOf("/ban ") == 0) {
         handleBan(chan, user, msg.substring(5).split(" "));
     }
-    else if(msg.indexOf("/ipban ") == 0) {
-        handleIpban(chan, user, msg.substring(7).split(" "));
-    }
     else if(msg.indexOf("/unban ") == 0) {
         handleUnban(chan, user, msg.substring(7).split(" "));
     }
@@ -89,45 +86,6 @@ function handleBan(chan, user, args) {
             chan.kick(kickee, "(banned) " + reason);
             chan.banIP(user, kickee);
         }
-        else if(!kickee && chan.getRank(args[0]) < user.rank) {
-            for(var ip in chan.logins) {
-                if(chan.getIPRank(ip) >= user.rank) {
-                    return;
-                }
-                if(!chan.seen(ip, args[0])) {
-                    continue;
-                }
-                if(args.length >= 2 && args[1] == "range") {
-                    var parts = ip.split(".");
-                    ip = parts[0] + "." + parts[1] + "." + parts[2];
-                }
-                chan.logger.log("*** " + user.name + " banned " + ip);
-                chan.banIP(user, {
-                    ip: ip,
-                    name: args[0]
-                });
-            }
-        }
-    }
-}
-
-function handleIpban(chan, user, args) {
-    if(Rank.hasPermission(user, "ipban") && args.length > 0) {
-        var name = "";
-        for(var ip in chan.logins) {
-            if(ip.indexOf(args[0]) == 0) {
-                if(chan.getIPRank(ip) >= user.rank) {
-                    return;
-                }
-                var names = chan.logins[ip];
-                name = names[names.length - 1];
-            }
-        }
-        chan.logger.log("*** " + user.name + " banned " + args[0]);
-        chan.banIP(user, {
-            ip: args[0],
-            name: name
-        });
     }
 }
 

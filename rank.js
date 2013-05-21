@@ -27,6 +27,7 @@ var permissions = {
     assignLeader    : exports.Moderator,
     kick            : exports.Moderator,
     ipban           : exports.Moderator,
+    ban             : exports.Moderator,
     promote         : exports.Moderator,
     qlock           : exports.Moderator,
     poll            : exports.Moderator,

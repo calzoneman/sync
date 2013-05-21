@@ -132,6 +132,15 @@ function addUserDropdown(entry, name) {
             });
         });
 
+        var nameban = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(nameban);
+        a.text("Name Ban");
+        a.click(function() {
+            socket.emit("banName", {
+                name: name
+            });
+        });
+
         $("<li />").addClass("divider").appendTo(ul);
 
         var promote = $("<li />").appendTo(ul);

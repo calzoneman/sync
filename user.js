@@ -143,6 +143,24 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("banName", function(data) {
+        if(this.channel != null) {
+            this.channel.banName(this, data.name || "");
+        }
+    }.bind(this));
+
+    this.socket.on("banIP", function(data) {
+        if(this.channel != null) {
+            this.channel.tryIPBan(this, data);
+        }
+    }.bind(this));
+
+    this.socket.on("unban", function(data) {
+        if(this.channel != null) {
+            this.channel.tryUnban(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("chatMsg", function(data) {
         if(this.channel != null) {
             this.channel.tryChat(this, data);

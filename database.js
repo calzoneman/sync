@@ -202,7 +202,13 @@ exports.loadChannel = function(chan) {
     }
     var rows = results.fetchAllSync();
     for(var i = 0; i < rows.length; i++) {
-        chan.ipbans[rows[i].ip] = [rows[i].name, rows[i].banner];
+        // Name ban
+        if(rows[i].ip == "*") {
+            chan.namebans[rows[i].name] = rows[i].banner;
+        }
+        else {
+            chan.ipbans[rows[i].ip] = [rows[i].name, rows[i].banner];
+        }
     }
 
     chan.logger.log("*** Loaded channel from database");
@@ -383,6 +389,19 @@ exports.removeChannelBan = function(channame, ip) {
     var query = "DELETE FROM `chan_{1}_bans` WHERE `ip` = '{2}'"
         .replace("{1}", sqlEscape(channame))
         .replace("{2}", sqlEscape(ip));
+    results = db.querySync(query);
+    db.closeSync();
+    return results;
+}
+
+exports.removeNameBan = function(channame, name) {
+    var db = exports.getConnection();
+    if(!db) {
+        return false;
+    }
+    var query = "DELETE FROM `chan_{1}_bans` WHERE `ip` = '*' AND `name`='{2}'"
+        .replace("{1}", sqlEscape(channame))
+        .replace("{2}", sqlEscape(name));
     results = db.querySync(query);
     db.closeSync();
     return results;
