@@ -447,8 +447,10 @@ Channel.prototype.search = function(query, callback) {
         if(query.trim() == "") {
             return;
         }
-        InfoGetter.getYTSearchResults(query, function(vids) {
-            callback(vids);
+        InfoGetter.getYTSearchResults(query, function(err, vids) {
+            if(!err) {
+                callback(vids);
+            }
         });
         return;
     }
