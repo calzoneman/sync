@@ -290,8 +290,8 @@ Callbacks = {
             $(tbl.children()[1]).remove();
         }
         entries.sort(function(a, b) {
-            var x = a.name.toLowerCase();
-            var y = b.name.toLowerCase();
+            var x = a.names.join(",").toLowerCase();
+            var y = b.names.join(",").toLowerCase();
             // Force blanknames to the bottom
             if(x == "") {
                 return 1;
