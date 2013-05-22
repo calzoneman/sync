@@ -41,14 +41,31 @@ var Channel = function(name) {
     this.openqueue = false;
     this.poll = false;
     this.voteskip = false;
+    this.permissions = {
+        oplaylistadd: -1,
+        oplaylistnext: 1.5,
+        oplaylistmove: 1.5,
+        oplaylistdelete: 2,
+        oplaylistjump: 1.5,
+        playlistadd: 1.5,
+        playlistnext: 1.5,
+        playlistmove: 1.5,
+        playlistdelete: 2,
+        playlistjump: 1.5,
+        addnontemp: 2,
+        settemp: 2,
+        playlistgeturl: 1.5,
+        playlistshuffle: 2,
+        playlistclear: 2,
+        pollctl: 1.5,
+        pollvote: -1,
+        kick: 1.5,
+        ban: 2,
+        motdedit: 3,
+        filteredit: 3,
+        drink: 1.5
+    };
     this.opts = {
-        qopen_allow_anon: false,
-        qopen_allow_guest: true,
-        qopen_allow_qnext: false,
-        qopen_allow_move: false,
-        qopen_allow_playnext: false,
-        qopen_allow_delete: false,
-        qopen_temp: true,
         allow_voteskip: true,
         voteskip_ratio: 0.5,
         pagetitle: this.name,
@@ -61,6 +78,7 @@ var Channel = function(name) {
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
         new Filter("bold", "(.)\\*([^\\*]+)\\*", "g", "$1<strong>$2</strong>"),
         new Filter("italic", "(^| )_([^_]+)_", "g", "$1<em>$2</em>"),
+        new Filter("strikethrough", "~~([^~]+)~~", "g", "<s>$1</s>"),
         new Filter("inline spoiler", "\\[spoiler\\](.*)\\[\\/spoiler\\]", "ig", "<span class=\"spoiler\">$1</span>"),
     ];
     this.motd = {
@@ -90,6 +108,23 @@ var Channel = function(name) {
     if(this.registered) {
         this.loadDump();
     }
+}
+
+/* REGION Permissions */
+Channel.prototype.hasPermission = function(user, key) {
+    if(key.indexOf("playlist") == 0 && this.openqueue) {
+        var key2 = "o" + key;
+        var v = this.permissions[key2];
+        if(typeof v != "number") {
+            return false;
+        }
+        return user.rank >= v;
+    }
+    var v = this.permissions[key];
+    if(typeof v != "number") {
+        return false;
+    }
+    return user.rank >= v;
 }
 
 /* REGION Channel data */
@@ -131,6 +166,9 @@ Channel.prototype.loadDump = function() {
             }
             for(var key in data.opts) {
                 this.opts[key] = data.opts[key];
+            }
+            for(var key in data.permissions) {
+                this.permissions[key] = data.permissions[key];
             }
             this.broadcastOpts();
             if(data.filters) {
@@ -185,6 +223,7 @@ Channel.prototype.saveDump = function() {
         currentTime: this.media ? this.media.currentTime : 0,
         queue: this.queue,
         opts: this.opts,
+        permissions: this.permissions,
         filters: filts,
         motd: this.motd,
         logins: this.logins,
@@ -297,7 +336,7 @@ Channel.prototype.cacheMedia = function(media) {
 }
 
 Channel.prototype.banName = function(actor, name) {
-    if(!Rank.hasPermission(actor, "ban")) {
+    if(!this.hasPermission(actor, "ban")) {
         return false;
     }
 
@@ -334,7 +373,7 @@ Channel.prototype.banName = function(actor, name) {
 }
 
 Channel.prototype.unbanName = function(actor, name) {
-    if(!Rank.hasPermission(actor, "ban")) {
+    if(!this.hasPermission(actor, "ban")) {
         return false;
     }
 
@@ -347,7 +386,7 @@ Channel.prototype.unbanName = function(actor, name) {
 }
 
 Channel.prototype.tryIPBan = function(actor, data) {
-    if(!Rank.hasPermission(actor, "ipban")) {
+    if(!this.hasPermission(actor, "ban")) {
         return false;
     }
     if(typeof data.id != "string" || data.id.length != 15) {
@@ -393,7 +432,7 @@ Channel.prototype.tryIPBan = function(actor, data) {
 }
 
 Channel.prototype.banIP = function(actor, receiver) {
-    if(!Rank.hasPermission(actor, "ipban"))
+    if(!this.hasPermission(actor, "ban"))
         return false;
 
     this.ipbans[receiver.ip] = [receiver.name, actor.name];
@@ -414,12 +453,8 @@ Channel.prototype.banIP = function(actor, receiver) {
 }
 
 Channel.prototype.unbanIP = function(actor, ip) {
-    if(!Rank.hasPermission(actor, "ipban"))
+    if(!this.hasPermission(actor, "ban"))
         return false;
-
-    if(this.getIPRank(ip) >= actor.rank) {
-        return false;
-    }
 
     this.ipbans[ip] = null;
 
@@ -513,7 +548,7 @@ Channel.prototype.userJoin = function(user) {
     // If the channel is empty and isn't registered, the first person
     // gets ownership of the channel (temporarily)
     if(this.users.length == 0 && !this.registered) {
-        user.rank = (user.rank < Rank.Owner) ? Rank.Owner + 7 : user.rank;
+        user.rank = (user.rank < Rank.Owner) ? 10 : user.rank;
         user.socket.emit("channelNotRegistered");
     }
     this.users.push(user);
@@ -534,6 +569,7 @@ Channel.prototype.userJoin = function(user) {
         user.socket.emit("newPoll", this.poll.packUpdate());
     }
     user.socket.emit("channelOpts", this.opts);
+    user.socket.emit("setPermissions", this.permissions);
     user.socket.emit("updateMotd", this.motd);
     user.socket.emit("drinkCount", {count: this.drinks});
 
@@ -609,7 +645,7 @@ Channel.prototype.hideIP = function(ip) {
 }
 
 Channel.prototype.sendRankStuff = function(user) {
-    if(Rank.hasPermission(user, "ipban")) {
+    if(this.hasPermission(user, "ban")) {
         var ents = [];
         for(var ip in this.ipbans) {
             if(this.ipbans[ip] != null) {
@@ -651,16 +687,19 @@ Channel.prototype.sendRankStuff = function(user) {
             if(user.rank < Rank.Siteadmin) {
                 disp = "(Hidden)";
             }
+            var banned = (ip in this.ipbans && this.ipbans[ip] != null);
+            var range = ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3");
+            banned = banned || (range in this.ipbans && this.ipbans[range] != null);
             ents.push({
                 ip: disp,
                 id: this.hideIP(ip),
                 names: this.logins[ip],
-                banned: (ip in this.ipbans && this.ipbans[ip] != null)
+                banned: banned
             });
         }
         user.socket.emit("seenlogins", {entries: ents});
     }
-    if(Rank.hasPermission(user, "chatFilter")) {
+    if(this.hasPermission(user, "filteredit")) {
         var filts = new Array(this.filters.length);
         for(var i = 0; i < this.filters.length; i++) {
             filts[i] = this.filters[i].pack();
@@ -833,7 +872,7 @@ Channel.prototype.broadcastBanlist = function() {
         }
     }
     for(var i = 0; i < this.users.length; i++) {
-        if(Rank.hasPermission(this.users[i], "ipban")) {
+        if(this.hasPermission(this.users[i], "ban")) {
             if(this.users[i].rank >= Rank.Siteadmin) {
                 this.users[i].socket.emit("banlist", {entries: adminents});
             }
@@ -857,7 +896,7 @@ Channel.prototype.broadcastChatFilters = function() {
         filts[i] = this.filters[i].pack();
     }
     for(var i = 0; i < this.users.length; i++) {
-        if(Rank.hasPermission(this.users[i], "chatFilter")) {
+        if(this.hasPermission(this.users[i], "filteredit")) {
             this.users[i].socket.emit("chatFilters", {filters: filts});
         }
     }
@@ -938,7 +977,7 @@ Channel.prototype.autoTemp = function(media, user) {
     if(isLive(media.type)) {
         media.temp = true;
     }
-    if(user.rank < Rank.Moderator && this.opts.qopen_temp) {
+    if(!this.hasPermission(user, "addnontemp")) {
         media.temp = true;
     }
 }
@@ -1019,14 +1058,7 @@ Channel.prototype.enqueue = function(data, user) {
 }
 
 Channel.prototype.tryQueue = function(user, data) {
-    var anon = (user.name == "");
-    var guest = (user.name != "" && !user.loggedIn);
-    var canqueue = (anon && this.opts.qopen_allow_anon) ||
-                   (guest && this.opts.qopen_allow_guest) ||
-                   (!anon && !guest);
-    canqueue = canqueue && this.openqueue;
-    canqueue = canqueue || this.leader == user || Rank.hasPermission(user, "queue");
-    if(!canqueue) {
+    if(!this.hasPermission(user, "playlistadd")) {
         return;
     }
     if(data.pos == undefined || data.id == undefined) {
@@ -1036,14 +1068,12 @@ Channel.prototype.tryQueue = function(user, data) {
         return;
     }
 
-    if(data.pos == "next" && !Rank.hasPermission(user, "queue") &&
-            this.leader != user &&
-            !this.opts.qopen_allow_qnext) {
+    if(data.pos == "next" && !this.hasPermission(user, "playlistnext")) {
         return;
     }
 
     if(user.rank < Rank.Moderator
-            && this.leader  != user
+            && this.leader != user
             && user.noflood("queue", 1.5)) {
         return;
     }
@@ -1065,7 +1095,7 @@ Channel.prototype.setTemp = function(idx, temp) {
 }
 
 Channel.prototype.trySetTemp = function(user, data) {
-    if(!Rank.hasPermission(user, "settemp")) {
+    if(!this.hasPermission(user, "settemp")) {
         return;
     }
     if(typeof data.idx != "number" || typeof data.temp != "boolean") {
@@ -1103,14 +1133,11 @@ Channel.prototype.dequeue = function(data) {
 }
 
 Channel.prototype.tryDequeue = function(user, data) {
-    if(!Rank.hasPermission(user, "queue") &&
-            this.leader != user &&
-            (!this.openqueue ||
-             this.openqueue && !this.opts.qopen_allow_delete)) {
+    if(!this.hasPermission(user, "playlistdelete")) {
         return;
      }
 
-     if(data.pos == undefined) {
+     if(data.pos === undefined) {
          return;
      }
 
@@ -1135,10 +1162,7 @@ Channel.prototype.playNext = function() {
 }
 
 Channel.prototype.tryPlayNext = function(user) {
-    if(!Rank.hasPermission(user, "queue") &&
-            this.leader != user &&
-            (!this.openqueue ||
-             this.openqueue && !this.opts.qopen_allow_playnext)) {
+    if(!this.hasPermission(user, "playlistjump")) {
          return;
      }
 
@@ -1192,14 +1216,11 @@ Channel.prototype.jumpTo = function(pos) {
 }
 
 Channel.prototype.tryJumpTo = function(user, data) {
-    if(!Rank.hasPermission(user, "queue") &&
-            this.leader != user &&
-            (!this.openqueue ||
-             this.openqueue && !this.opts.qopen_allow_playnext)) {
+    if(!this.hasPermission(user, "playlistjump")) {
          return;
     }
 
-    if(data.pos == undefined) {
+    if(data.pos === undefined) {
         return;
     }
 
@@ -1215,7 +1236,7 @@ Channel.prototype.clearqueue = function() {
 }
 
 Channel.prototype.tryClearqueue = function(user) {
-    if(!Rank.hasPermission(user, "queue")) {
+    if(!this.hasPermission(user, "playlistclear")) {
         return;
     }
     this.clearqueue();
@@ -1240,7 +1261,7 @@ Channel.prototype.shufflequeue = function() {
 }
 
 Channel.prototype.tryShufflequeue = function(user) {
-    if(!Rank.hasPermission(user, "queue")) {
+    if(!this.hasPermission(user, "playlistshuffle")) {
         return;
     }
     this.shufflequeue();
@@ -1305,12 +1326,9 @@ Channel.prototype.move = function(data) {
 }
 
 Channel.prototype.tryMove = function(user, data) {
-    if(!Rank.hasPermission(user, "queue") &&
-            this.leader != user &&
-            (!this.openqueue ||
-             this.openqueue && !this.opts.qopen_allow_move)) {
+    if(!this.hasPermission(user, "playlistmove")) {
          return;
-     }
+    }
 
      if(data.src == undefined || data.dest == undefined) {
          return;
@@ -1322,7 +1340,7 @@ Channel.prototype.tryMove = function(user, data) {
 /* REGION Polls */
 
 Channel.prototype.tryOpenPoll = function(user, data) {
-    if(!Rank.hasPermission(user, "poll") && this.leader != user) {
+    if(!this.hasPermission(user, "pollctl") && this.leader != user) {
         return;
     }
 
@@ -1337,7 +1355,7 @@ Channel.prototype.tryOpenPoll = function(user, data) {
 }
 
 Channel.prototype.tryClosePoll = function(user) {
-    if(!Rank.hasPermission(user, "poll") && this.leader != user) {
+    if(!this.hasPermission(user, "pollctl")) {
         return;
     }
 
@@ -1348,6 +1366,10 @@ Channel.prototype.tryClosePoll = function(user) {
 }
 
 Channel.prototype.tryVote = function(user, data) {
+
+    if(!this.hasPermission(user, "pollvote")) {
+        return;
+    }
     if(data.option == undefined) {
         return;
     }
@@ -1419,7 +1441,7 @@ Channel.prototype.removeFilter = function(name, source) {
 }
 
 Channel.prototype.tryChangeFilter = function(user, data) {
-    if(!Rank.hasPermission(user, "chatFilter")) {
+    if(!this.hasPermission(user, "filteredit")) {
         return;
     }
 
@@ -1446,6 +1468,16 @@ Channel.prototype.tryChangeFilter = function(user, data) {
     else if(data.cmd == "remove") {
         this.removeFilter(data.filter.name, data.filter.source);
     }
+}
+
+Channel.prototype.tryUpdatePermissions = function(user, perms) {
+    if(!Rank.hasPermission(user, "channelperms")) {
+        return;
+    }
+    for(var key in perms) {
+        this.permissions[key] = perms[key];
+    }
+    this.sendAll("setPermissions", this.permissions);
 }
 
 Channel.prototype.tryUpdateOptions = function(user, data) {
@@ -1515,7 +1547,7 @@ Channel.prototype.updateMotd = function(motd) {
 }
 
 Channel.prototype.tryUpdateMotd = function(user, data) {
-    if(!Rank.hasPermission(user, "updateMotd")) {
+    if(!this.hasPermission(user, "motdedit")) {
         return;
     }
 
@@ -1683,6 +1715,9 @@ Channel.prototype.changeLeader = function(name) {
     if(this.leader != null) {
         var old = this.leader;
         this.leader = null;
+        if(old.rank == 1.5) {
+            old.rank = old.oldrank;
+        }
         this.broadcastUserUpdate(old);
     }
     if(name == "") {
@@ -1698,6 +1733,10 @@ Channel.prototype.changeLeader = function(name) {
         if(this.users[i].name == name) {
             this.logger.log("*** Assigned leader: " + name);
             this.leader = this.users[i];
+            if(this.users[i].rank < 1.5) {
+                this.users[i].oldrank = this.users[i].rank;
+                this.users[i].rank = 1.5;
+            }
             this.broadcastUserUpdate(this.leader);
         }
     }

@@ -22,7 +22,7 @@ var User = function(socket, ip) {
     this.ip = ip;
     this.socket = socket;
     this.loggedIn = false;
-    this.rank = Rank.Guest;
+    this.rank = Rank.Anonymous;
     this.channel = null;
     this.name = "";
     this.meta = {
@@ -346,6 +346,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("setPermissions", function(data) {
+        if(this.channel != null) {
+            this.channel.tryUpdatePermissions(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("setChannelCSS", function(data) {
         if(this.channel != null) {
             this.channel.trySetCSS(this, data);
@@ -474,6 +480,7 @@ User.prototype.login = function(name, pw, session) {
         }
         else {
             lastguestlogin[this.ip] = Date.now();
+            this.rank = Rank.Guest;
             Logger.syslog.log(this.ip + " signed in as " + name);
             this.name = name;
             this.loggedIn = false;

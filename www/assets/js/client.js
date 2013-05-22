@@ -14,9 +14,10 @@ var LEADER = false;
 var PLAYER = new Media();
 var MEDIATYPE = "null";
 var POSITION = -1;
-var RANK = 0;
+var RANK = -1;
 var OPENQUEUE = false;
 var CHANNELOPTS = {};
+var CHANPERMS = {};
 var GRABBEDLI = null;
 var OLDINDEX = -1;
 var CHATHIST = [];
@@ -346,13 +347,6 @@ $("#opt_submit").click(function() {
     var css = $("#opt_customcss").val();
     var ratio = +$("#opt_voteskip_ratio").val() || 0.5;
     opts = {
-        qopen_allow_anon: $("#opt_qopen_allow_anon").prop("checked"),
-        qopen_allow_guest: $("#opt_qopen_allow_guest").prop("checked"),
-        qopen_allow_qnext: $("#opt_qopen_allow_qnext").prop("checked"),
-        qopen_allow_move: $("#opt_qopen_allow_move").prop("checked"),
-        qopen_allow_delete: $("#opt_qopen_allow_delete").prop("checked"),
-        qopen_allow_playnext: $("#opt_qopen_allow_playnext").prop("checked"),
-        qopen_temp: $("#opt_qopen_temp").prop("checked"),
         allow_voteskip: $("#opt_allow_voteskip").prop("checked"),
         voteskip_ratio: ratio,
         pagetitle: ptitle,
@@ -378,6 +372,15 @@ $("#show_chancontrols").click(function() {
     $(".modonly").hide();
     $("#show_chancontrols").parent().addClass("active");
     $("#chancontrols").show();
+});
+
+$("#show_chanperms").click(function() {
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
+    $(".modonly").hide();
+    $("#show_chanperms").parent().addClass("active");
+    $("#chanperms").show();
 });
 
 $("#show_banlist").click(function() {
@@ -439,17 +442,12 @@ $("#updatejs").click(function() {
 });
 
 $("#show_filtereditor").click(function() {
-    if(RANK >= Rank.Owner) {
-        $("#modnav li").each(function() {
-            $(this).removeClass("active");
-        });
-        $(".modonly").hide();
-        $("#show_filtereditor").parent().addClass("active");
-        $("#filtereditor").show();
-    }
-    else {
-        alert("Only channel administrators can change filters");
-    }
+    $("#modnav li").each(function() {
+        $(this).removeClass("active");
+    });
+    $(".modonly").hide();
+    $("#show_filtereditor").parent().addClass("active");
+    $("#filtereditor").show();
 });
 
 $("#show_acl").click(function() {

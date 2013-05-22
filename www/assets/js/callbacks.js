@@ -232,7 +232,13 @@ Callbacks = {
             $("#voteskip").attr("disabled", false);
         else
             $("#voteskip").attr("disabled", true);
-        handleRankChange();
+        handlePermissionChange();
+    },
+
+    setPermissions: function(perms) {
+        CHANPERMS = perms;
+        genPermissionsEditor();
+        handlePermissionChange();
     },
 
     channelCSSJS: function(data) {
@@ -428,7 +434,7 @@ Callbacks = {
 
     rank: function(data) {
         RANK = data.rank;
-        handleRankChange();
+        handlePermissionChange();
     },
 
     register: function(data) {
@@ -502,7 +508,7 @@ Callbacks = {
             PROFILE.image = data.profile.image;
             LEADER = data.leader;
             RANK = data.rank;
-            handleRankChange();
+            handlePermissionChange();
             if(LEADER) {
                 // I'm a leader!  Set up sync function
                 sendVideoUpdate = function() {

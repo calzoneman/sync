@@ -93,6 +93,17 @@ function addUserDropdown(entry, name) {
         }
     }.bind(a));
 
+    if(hasPermission("kick")) {
+        var kick = $("<li />").appendTo(ul);
+        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(kick);
+        a.text("Kick");
+        a.click(function() {
+            socket.emit("chatMsg", {
+                msg: "/kick " + name
+            });
+        });
+    }
+
     if(RANK >= Rank.Moderator) {
         $("<li />").addClass("divider").appendTo(ul);
 
@@ -111,15 +122,6 @@ function addUserDropdown(entry, name) {
         a.click(function() {
             socket.emit("assignLeader", {
                 name: ""
-            });
-        });
-
-        var kick = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(kick);
-        a.text("Kick");
-        a.click(function() {
-            socket.emit("chatMsg", {
-                msg: "/kick " + name
             });
         });
 
@@ -295,19 +297,9 @@ function makeQueueEntry(video) {
 
 // Add buttons to a queue list entry
 function addQueueButtons(li) {
-    if(RANK < Rank.Moderator && !LEADER) {
-        if(!CHANNELOPTS.qopen_allow_delete
-                && !CHANNELOPTS.qopen_allow_move
-                && !CHANNELOPTS.qopen_allow_qnext) {
-
-            return;
-        }
-    }
-    var fullperms = LEADER || RANK >= Rank.Moderator;
-
     var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
-    if(CHANNELOPTS.qopen_allow_move || fullperms) {
+    if(hasPermission("playlistmove")) {
         var btnMove = $("<button />").addClass("btn qe_btn").appendTo(btnstrip);
         $("<i />").addClass("icon-resize-vertical").appendTo(btnMove);
         // Callback time
@@ -326,7 +318,7 @@ function addQueueButtons(li) {
         });
     }
 
-    if(CHANNELOPTS.qopen_allow_delete || fullperms) {
+    if(hasPermission("playlistdelete")) {
         var btnRemove =  $("<button />").attr("class", "btn btn-danger qe_btn").appendTo(btnstrip);
         $("<i />").attr("class", "icon-remove").appendTo(btnRemove);
         $(btnRemove).click(function() {
@@ -336,7 +328,7 @@ function addQueueButtons(li) {
         });
     }
 
-    if(CHANNELOPTS.qopen_allow_playnext || fullperms) {
+    if(hasPermission("playlistjump")) {
         var btnPlay =  $("<button />").attr("class", "btn btn-success qe_btn").appendTo(btnstrip);
         $("<i />").attr("class", "icon-play").appendTo(btnPlay);
         $(btnPlay).click(function() {
@@ -347,7 +339,7 @@ function addQueueButtons(li) {
         });
     }
 
-    if(CHANNELOPTS.qopen_allow_qnext || fullperms) {
+    if(hasPermission("playlistnext")) {
         var btnNext =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
         $("<i/>").addClass("icon-share-alt").appendTo(btnNext);
         $(btnNext).click(function() {
@@ -360,7 +352,7 @@ function addQueueButtons(li) {
         });
     }
 
-    if(RANK >= Rank.Moderator) {
+    if(hasPermission("settemp")) {
         var btnTemp =  $("<button />").attr("class", "btn qe_btn").appendTo(btnstrip);
         var temp = $(li).hasClass("alert-error");
         $("<i/>").addClass("icon-flag").appendTo(btnTemp);
@@ -396,8 +388,7 @@ function addQueueButtons(li) {
 function rebuildPlaylist() {
     $("#queue li").each(function() {
         $(this).find(".btn-group").remove();
-        if(RANK >= Rank.Moderator || LEADER || canQueue())
-            addQueueButtons(this);
+        addQueueButtons(this);
     });
 }
 
@@ -405,7 +396,7 @@ function rebuildPlaylist() {
 function addLibraryButtons(li, id, yt) {
     var btnstrip = $("<div />").attr("class", "btn-group qe_buttons").prependTo(li);
 
-    if(RANK >= Rank.Moderator || LEADER || (OPENQUEUE && CHANNELOPTS.qopen_allow_qnext)) {
+    if(hasPermission("playlistnext")) {
         var btnNext =  $("<button />").addClass("btn qe_btn")
             .text("Next")
             .appendTo(btnstrip);
@@ -427,20 +418,6 @@ function addLibraryButtons(li, id, yt) {
     }
 
     var btnEnd =  $("<button />").addClass("btn qe_btn").text("End").appendTo(btnstrip);
-
-    if(RANK >= Rank.Moderator) {
-        var btnDelete = $("<button/>").addClass("btn qe_btn btn-danger").appendTo(btnstrip);
-        $("<i/>").addClass("icon-remove").appendTo(btnDelete);
-        btnDelete.click(function() {
-            socket.emit("uncache", {
-                id: id
-            });
-            $(li).hide("blind", function() {
-                $(li).remove();
-            });
-        });
-    }
-
     btnEnd.click(function() {
         if(yt) {
             socket.emit("queue", {
@@ -457,6 +434,18 @@ function addLibraryButtons(li, id, yt) {
         }
     });
 
+    if(RANK >= Rank.Moderator) {
+        var btnDelete = $("<button/>").addClass("btn qe_btn btn-danger").appendTo(btnstrip);
+        $("<i/>").addClass("icon-remove").appendTo(btnDelete);
+        btnDelete.click(function() {
+            socket.emit("uncache", {
+                id: id
+            });
+            $(li).hide("blind", function() {
+                $(li).remove();
+            });
+        });
+    }
 }
 
 // Rearranges the queue
@@ -618,84 +607,58 @@ function canQueue() {
     return canqueue;
 }
 
-function handleRankChange() {
-    rebuildPlaylist();
-    if(RANK >= 10) {
-        $("#drop_channel").parent().css("display", "");
+function handlePermissionChange() {
+    function setVisible(selector, bool) {
+        var disp = bool ? "" : "none";
+        $(selector).css("display", disp);
     }
-    if(RANK >= Rank.Owner) {
-        $("#show_jseditor").parent().css("display", "");
-        $("#show_csseditor").parent().css("display", "");
-    }
-    else {
-        $("#show_jseditor").parent().css("display", "none");
-        $("#show_csseditor").parent().css("display", "none");
-    }
-    if(RANK >= Rank.Moderator) {
-        $("#qlockbtn").css("display", "block");
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            addUserDropdown(users[i], users[i].children[1].innerHTML);
-        }
-        $("#getplaylist").css("width", "34%");
-        $("#clearplaylist").css("display", "");
-        $("#shuffleplaylist").css("display", "");
-        $("#modnav").show();
-        $("#chancontrols").show();
-        var val =  false;
-        if(RANK < Rank.Owner) {
-            val = "disabled";
-        }
-        $("#opt_pagetitle").attr("disabled", val);
-        $("#opt_customcss").attr("disabled", val);
-        $("#opt_customjs").attr("disabled", val);
-        $("#opt_show_public").attr("disabled", val);
-        $("#show_filtereditor").attr("disabled", val);
-        $("#show_acl").attr("disabled", val);
-    }
-    else {
-        if(!LEADER) {
-            if(canQueue()) {
-                $("#playlist_controls").css("display", "");
-                if(CHANNELOPTS.qopen_allow_qnext)
-                    $("#queue_next").attr("disabled", false);
-                else
-                    $("#queue_next").attr("disabled", true);
-                if(CHANNELOPTS.qopen_allow_playnext)
-                    $("#play_next").attr("disabled", false);
-                else
-                    $("#play_next").attr("disabled", true);
-            }
-            else {
-                $("#playlist_controls").css("display", "none");
-            }
 
-            $("#pollcontainer .active").each(function() {
-                $(this).find(".btn-danger").remove();
-            });
+    if(RANK < 2) {
+        $(".modonly").hide();
+    }
+
+    setVisible("#playlist_controls", hasPermission("playlistadd"));
+    $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
+    setVisible("#qlockbtn", RANK >= 2);
+
+    setVisible("#getplaylist", hasPermission("playlistgeturl"));
+    setVisible("#clearplaylist", hasPermission("playlistclear"));
+    setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
+
+    setVisible("#modnav", RANK >= 2);
+    setVisible("#chanperms_tab", RANK >= 3);
+    setVisible("#banlist_tab", hasPermission("ban"));
+    setVisible("#motdeditor_tab", hasPermission("motdedit"));
+    setVisible("#csseditor_tab", RANK >= 3);
+    setVisible("#jseditor_tab", RANK >= 3);
+    setVisible("#filtereditor_tab", hasPermission("filteredit"));
+    setVisible("#acl_tab", RANK >= 3);
+    setVisible("#dropchannel_tab", RANK >= 10);
+
+    $("#pollcontainer .active").find(".btn-danger").remove();
+    if(hasPermission("pollctl")) {
+        var poll = $("#pollcontainer .active");
+        if(poll.length > 0) {
+            $("<button/>").addClass("btn btn-danger pull-right")
+                .text("End Poll")
+                .insertAfter(poll.find(".close"))
+                .click(function() {
+                    socket.emit("closePoll");
+                });
         }
-        $("#getplaylist").css("width", "100%");
-        $("#clearplaylist").css("display", "none");
-        $("#shuffleplaylist").css("display", "none");
     }
-    if(RANK >= Rank.Moderator || LEADER) {
-        $("#playlist_controls").css("display", "block");
-        $("#playlist_controls button").each(function() {
-            $(this).attr("disabled", false);
-        });
-        $("#pollcontainer .active").each(function() {
-            var btns = $(this).find(".btn-danger");
-            if(btns.length == 0) {
-                $("<button/>").addClass("btn btn-danger pull-right")
-                    .text("End Poll")
-                    .insertAfter($(this).find(".close"))
-                    .click(function() {
-                        socket.emit("closePoll")
-                    });
-            }
-        });
+    var poll = $("#pollcontainer .active");
+    if(poll.length > 0) {
+        poll.find(".btn").attr("disabled", hasPermission("pollvote"));
     }
+    var users = $("#userlist").children();
+    for(var i = 0; i < users.length; i++) {
+        addUserDropdown(users[i], users[i].children[1].innerHTML);
+    }
+    rebuildPlaylist();
 }
+
+
 
 function onWindowFocus() {
     clearInterval(TITLE_BLINK);
@@ -1092,4 +1055,113 @@ function idToURL(data) {
             break;
     }
     return entry;
+}
+
+function genPermissionsEditor() {
+    $("#chanperms").html("");
+    var form = $("<form/>").addClass("form-horizontal")
+        .attr("action", "javascript:void(0)")
+        .appendTo($("#chanperms"));
+    var fs = $("<fieldset/>").appendTo(form);
+
+    function makeOption(text, key, permset, defval) {
+        var group = $("<div/>").addClass("control-group")
+            .appendTo(fs);
+        $("<label/>").addClass("control-label")
+            .text(text)
+            .appendTo(group);
+        var controls = $("<div/>").addClass("controls")
+            .appendTo(group);
+        var select = $("<select/>").appendTo(controls);
+        select.data("key", key);
+        for(var i = 0; i < permset.length; i++) {
+            $("<option/>").attr("value", permset[i][1])
+                .text(permset[i][0])
+                .attr("selected", defval == permset[i][1])
+                .appendTo(select);
+        }
+    }
+
+    function addDivider(text) {
+        $("<hr/>").appendTo(fs);
+        $("<h3/>").text(text).appendTo(fs);
+    }
+
+    var standard = [
+        ["Anonymous"    , "-1"],
+        ["Guest"        , "0"],
+        ["Registered"   , "1"],
+        ["Leader"       , "1.5"],
+        ["Moderator"    , "2"],
+        ["Channel Admin", "3"]
+    ];
+
+    var modleader = [
+        ["Leader"       , "1.5"],
+        ["Moderator"    , "2"],
+        ["Channel Admin", "3"]
+    ];
+
+    var modplus = [
+        ["Moderator"    , "2"],
+        ["Channel Admin", "3"]
+    ];
+
+    addDivider("Open playlist permissions");
+    makeOption("Add to playlist", "oplaylistadd", standard, CHANPERMS.oplaylistadd+"");
+    makeOption("Add/move to next", "oplaylistnext", standard, CHANPERMS.oplaylistnext+"");
+    makeOption("Move playlist items", "oplaylistmove", standard, CHANPERMS.oplaylistmove+"");
+    makeOption("Delete playlist items", "oplaylistdelete", standard, CHANPERMS.oplaylistdelete+"");
+    makeOption("Jump to video", "oplaylistjump", standard, CHANPERMS.oplaylistjump+"");
+
+    addDivider("General playlist permissions");
+    makeOption("Add to playlist", "playlistadd", standard, CHANPERMS.playlistadd+"");
+    makeOption("Add/move to next", "playlistnext", standard, CHANPERMS.playlistnext+"");
+    makeOption("Move playlist items", "playlistmove", standard, CHANPERMS.playlistmove+"");
+    makeOption("Delete playlist items", "playlistdelete", standard, CHANPERMS.playlistdelete+"");
+    makeOption("Jump to video", "playlistjump", standard, CHANPERMS.playlistjump+"");
+    makeOption("Add nontemporary media", "addnontemp", standard, CHANPERMS.addnontemp+"");
+    makeOption("Temp/untemp playlist item", "settemp", standard, CHANPERMS.settemp+"");
+    makeOption("Retrieve playlist URLs", "playlistgeturl", standard, CHANPERMS.playlistgeturl+"");
+    makeOption("Shuffle playlist", "playlistshuffle", standard, CHANPERMS.playlistshuffle+"");
+    makeOption("Clear playlist", "playlistclear", standard, CHANPERMS.playlistclear+"");
+
+    addDivider("Polls");
+    makeOption("Open/Close poll", "pollctl", modleader, CHANPERMS.pollctl+"");
+    makeOption("Vote", "pollvote", standard, CHANPERMS.pollvote+"");
+
+    addDivider("Moderation");
+    makeOption("Kick users", "kick", modleader, CHANPERMS.kick+"");
+    makeOption("Ban users", "ban", modplus, CHANPERMS.ban+"");
+    makeOption("Edit MOTD", "motdedit", modplus, CHANPERMS.motdedit+"");
+    makeOption("Edit chat filters", "filteredit", modplus, CHANPERMS.filteredit+"");
+
+    addDivider("Misc");
+    makeOption("Drink calls", "drink", modleader, CHANPERMS.drink+"");
+
+    var submit = $("<button/>").addClass("btn btn-primary").appendTo(fs);
+    submit.text("Save");
+    submit.click(function() {
+        var perms = {};
+        fs.find("select").each(function() {
+            perms[$(this).data("key")] = parseFloat($(this).val());
+        });
+        socket.emit("setPermissions", perms);
+    });
+}
+
+function hasPermission(key) {
+    if(key.indexOf("playlist") == 0 && OPENQUEUE) {
+        var key2 = "o" + key;
+        var v = CHANPERMS[key2];
+        if(typeof v != "number") {
+            return false;
+        }
+        return RANK >= v;
+    }
+    var v = CHANPERMS[key];
+    if(typeof v != "number") {
+        return false;
+    }
+    return RANK >= v;
 }

@@ -38,6 +38,9 @@ function handle(chan, user, msg, data) {
     else if(msg.indexOf("/ban ") == 0) {
         handleBan(chan, user, msg.substring(5).split(" "));
     }
+    else if(msg.indexOf("/ipban ") == 0) {
+        handleIPBan(chan, user, msg.substring(5).split(" "));
+    }
     else if(msg.indexOf("/unban ") == 0) {
         handleUnban(chan, user, msg.substring(7).split(" "));
     }
@@ -51,7 +54,7 @@ function handle(chan, user, msg, data) {
 }
 
 function handleKick(chan, user, args) {
-    if(Rank.hasPermission(user, "kick") && args.length > 0) {
+    if(chan.hasPermission(user, "kick") && args.length > 0) {
         args[0] = args[0].toLowerCase();
         var kickee;
         for(var i = 0; i < chan.users.length; i++) {
@@ -69,8 +72,8 @@ function handleKick(chan, user, args) {
     }
 }
 
-function handleBan(chan, user, args) {
-    if(Rank.hasPermission(user, "ipban") && args.length > 0) {
+function handleIPBan(chan, user, args) {
+    if(chan.hasPermission(user, "ban") && args.length > 0) {
         args[0] = args[0].toLowerCase();
         var kickee;
         for(var i = 0; i < chan.users.length; i++) {
@@ -89,15 +92,27 @@ function handleBan(chan, user, args) {
     }
 }
 
+function handleBan(chan, user, args) {
+    if(chan.hasPermission(user, "ban") && args.length > 0) {
+        args[0] = args[0].toLowerCase();
+        chan.banName(user, args[0]);
+    }
+}
+
 function handleUnban(chan, user, args) {
-    if(Rank.hasPermission(user, "ipban") && args.length > 0) {
+    if(chan.hasPermission(user, "ban") && args.length > 0) {
         chan.logger.log("*** " + user.name + " unbanned " + args[0]);
-        chan.unbanIP(user, args[0]);
+        if(args[0].match(/(\d+)\.(\d+)\.(\d+)\.(\d+)/)) {
+            chan.unbanIP(user, args[0]);
+        }
+        else {
+            chan.unbanName(user, args[0]);
+        }
     }
 }
 
 function handlePoll(chan, user, msg) {
-    if(Rank.hasPermission(user, "poll") || chan.leader == user) {
+    if(chan.hasPermission(user, "poll")) {
         var args = msg.split(",");
         var title = args[0];
         args.splice(0, 1);
@@ -109,7 +124,7 @@ function handlePoll(chan, user, msg) {
 }
 
 function handleDrink(chan, user, msg, data) {
-    if(!Rank.hasPermission(user, "drink") && chan.leader != user) {
+    if(!chan.hasPermission(user, "drink")) {
         return;
     }
 
