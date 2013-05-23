@@ -90,12 +90,17 @@
                     <tr>
                         <td><pre>/ban username</pre></td>
                         <td>Moderators</td>
+                        <td>(username is banned from the room)</td>
+                    </tr>
+                    <tr>
+                        <td><pre>/ipban username</pre></td>
+                        <td>Moderators</td>
                         <td>(username is IP banned from the room)</td>
                     </tr>
                     <tr>
-                        <td><pre>/unban ip_address</pre></td>
+                        <td><pre>/unban name|ip_address</pre></td>
                         <td>Moderators</td>
-                        <td>(The IP address is unbanned from the room)</td>
+                        <td>(The user is unbanned from the room)</td>
                     </tr>
                     <tr>
                         <td><pre>/poll Title,Option 1,Option 2,etc</pre></td>
@@ -124,6 +129,11 @@
                         <td><pre>/poll</pre> (no parameters)</td>
                         <td>Moderators</td>
                         <td>A poll editor is popped up allowing for easy creation of the poll, and allowing commas in the poll title and options</td>
+                    </tr>
+                    <tr>
+                        <td><pre>/clear</pre></td>
+                        <td>Moderators</td>
+                        <td>The chat buffer is cleared</td>
                     </tr>
                 </table>
                 <p>There are also some other chat features.  When your name appears in a message, <span class="nick-highlight">the message will be highlighted.</span>  If you type the beginning of someone's name in chat, pressing tab will attempt to autocomplete the name.</p>
