@@ -51,6 +51,9 @@ function handle(chan, user, msg, data) {
             msg[2].match(/[-0-9 ]/)) {
         handleDrink(chan, user, msg.substring(2), data);
     }
+    else if(msg.indexOf("/clear") == 0) {
+        handleClear(chan, user);
+    }
 }
 
 function handleKick(chan, user, args) {
@@ -145,6 +148,15 @@ function handleDrink(chan, user, msg, data) {
     if(count != 1)
         msg += "  (x" + count + ")";
     chan.sendMessage(user.name, msg, "drink", data);
+}
+
+function handleClear(chan, user) {
+    if(user.rank < Rank.Moderator) {
+        return;
+    }
+
+    chan.chatbuffer = [];
+    chan.sendAll("clearchat");
 }
 
 exports.handle = handle;

@@ -1154,10 +1154,9 @@ function hasPermission(key) {
     if(key.indexOf("playlist") == 0 && OPENQUEUE) {
         var key2 = "o" + key;
         var v = CHANPERMS[key2];
-        if(typeof v != "number") {
-            return false;
+        if(typeof v == "number" && RANK >= v) {
+            return true;
         }
-        return RANK >= v;
     }
     var v = CHANPERMS[key];
     if(typeof v != "number") {

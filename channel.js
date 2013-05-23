@@ -115,10 +115,9 @@ Channel.prototype.hasPermission = function(user, key) {
     if(key.indexOf("playlist") == 0 && this.openqueue) {
         var key2 = "o" + key;
         var v = this.permissions[key2];
-        if(typeof v != "number") {
-            return false;
+        if(typeof v == "number" && user.rank >= v) {
+            return true;
         }
-        return user.rank >= v;
     }
     var v = this.permissions[key];
     if(typeof v != "number") {
@@ -1723,6 +1722,7 @@ Channel.prototype.changeLeader = function(name) {
     if(name == "") {
         this.logger.log("*** Resuming autolead");
         if(this.media != null && !isLive(this.media.type)) {
+            this.media.paused = false;
             this.time = new Date().getTime();
             this.i = 0;
             mediaUpdate(this, this.media.id);

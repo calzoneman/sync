@@ -186,13 +186,6 @@ Callbacks = {
     },
 
     channelOpts: function(opts) {
-        $("#opt_qopen_allow_anon").prop("checked", opts.qopen_allow_anon);
-        $("#opt_qopen_allow_guest").prop("checked", opts.qopen_allow_guest);
-        $("#opt_qopen_allow_qnext").prop("checked", opts.qopen_allow_qnext);
-        $("#opt_qopen_allow_move").prop("checked", opts.qopen_allow_move);
-        $("#opt_qopen_allow_delete").prop("checked", opts.qopen_allow_delete);
-        $("#opt_qopen_allow_playnext").prop("checked", opts.qopen_allow_playnext);
-        $("#opt_qopen_temp").prop("checked", opts.qopen_temp);
         $("#opt_pagetitle").attr("placeholder", opts.pagetitle);
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
@@ -471,6 +464,10 @@ Callbacks = {
 
     chatMsg: function(data) {
         addChatMessage(data);
+    },
+
+    clearchat: function() {
+        $("#messagebuffer").html("");
     },
 
     userlist: function(data) {
