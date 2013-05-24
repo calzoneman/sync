@@ -35,7 +35,6 @@
             <thead>
                 <tr>
                     <th>Channel</th>
-                    <th>Title</th>
                     <th>Connected</th>
                     <th>Playing</th>
                 </tr>
@@ -134,9 +133,8 @@
                         var tr = $("<tr/>").appendTo($("#channeldata"));
                         var name = $("<td/>").appendTo(tr);
                         $("<a/>").attr("href", host + "/r/" + d.name)
-                            .text(d.name)
+                            .text(d.pagetitle + " (" + d.name + ")")
                             .appendTo(name);
-                        $("<td/>").text(d.pagetitle).appendTo(tr);
                         $("<td/>").text(d.usercount || 0).appendTo(tr);
                         var title = $("<td/>").appendTo(tr);
                         if(d.media.id) {
@@ -154,7 +152,6 @@
                     var tr = $("<tr/>").appendTo($("#channeldata"));
                     $("<td/>").text("Total").appendTo(tr);
                     $("<td/>").text(total).appendTo(tr);
-                    $("<td/>").appendTo(tr);
                     $("<td/>").appendTo(tr);
 
                 });
