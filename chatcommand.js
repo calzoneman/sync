@@ -115,7 +115,7 @@ function handleUnban(chan, user, args) {
 }
 
 function handlePoll(chan, user, msg) {
-    if(chan.hasPermission(user, "poll")) {
+    if(chan.hasPermission(user, "pollctl")) {
         var args = msg.split(",");
         var title = args[0];
         args.splice(0, 1);
