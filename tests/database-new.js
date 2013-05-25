@@ -26,6 +26,31 @@ Database.globalUnbanIP("192.167");
 Database.refreshGlobalBans();
 assert(!Database.checkGlobalBan("192.168.1.12"));
 assert(!Database.checkGlobalBan("192.167.5.54"));
-
 console.log("[PASS] Global Bans");
+
+// Test channel registration
+assert(Database.registerChannel("test"));
+assert(Database.deleteChannel("test"));
+console.log("[PASS] Channel registration");
+
+// Test channel ranks
+Database.registerChannel("test");
+assert(Database.setChannelRank("test", "a_user", 10));
+assert(Database.getChannelRank("test", "a_user") == 10);
+assert(Database.listChannelRanks("test").length == 1);
+console.log("[PASS] Channel ranks");
+
+// Test library caching
+assert(Database.addToLibrary("test", {
+    id: "abc",
+    seconds: 123,
+    title: "Testing",
+    type: "yt"
+}));
+assert(db.querySync("SELECT * FROM `chan_test_library` WHERE id='abc'"));
+assert(Database.removeFromLibrary("test", "abc"));
+assert(db.querySync("SELECT * FROM `chan_test_library` WHERE id='abc'").fetchAllSync().length == 0);
+console.log("[PASS] Channel library");
+
+db.closeSync();
 process.exit(0);

@@ -304,7 +304,7 @@ function loadChannel(chan) {
 }
 
 function deleteChannel(name) {
-    if(!name.test(/[a-zA-Z0-9-_]+/)) {
+    if(!/[a-zA-Z0-9-_]+/.test(name)) {
         return false;
     }
 
@@ -314,7 +314,7 @@ function deleteChannel(name) {
     }
 
     var query = "DROP TABLE `chan_?_bans`, `chan_?_ranks`, `chan_?_library`"
-        .replace("?", name);
+        .replace(/\?/g, name);
 
     var results = db.querySync(query);
     if(!results) {
@@ -385,11 +385,36 @@ function setChannelRank(chan, name, rank) {
     }
 
     var query = createQuery(
-        "INSERT INTO `?` VALUES (?, ?) ON DUPLICATE KEY UPDATE",
-        ["chan_"+chan+"_ranks", rank, name]
+        ["INSERT INTO `?` ",
+            "(`name`, `rank`) ",
+         "VALUES ",
+            "(?, ?) ",
+         "ON DUPLICATE KEY UPDATE ",
+            "`rank`=?"].join(""),
+        ["chan_"+chan+"_ranks", name, rank, rank]
     );
 
     return db.querySync(query);
+}
+
+function listChannelRanks(chan) {
+    var db = getConnection();
+    if(!db) {
+        return [];
+    }
+
+    var query = createQuery(
+        "SELECT * FROM `?` WHERE 1",
+        ["chan_"+chan+"_ranks"]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to list ranks: " + chan);
+        return [];
+    }
+
+    return results.fetchAllSync();
 }
 
 function addToLibrary(chan, media) {
@@ -423,6 +448,70 @@ function removeFromLibrary(chan, id) {
     return db.querySync(query);
 }
 
+function channelBan(chan, ip, name, banby) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        ["INSERT INTO `?` ",
+            "(`ip`, `name`, `banner`) ",
+         "VALUES ",
+            "(?, ?, ?)"].join(""),
+        ["chan_"+chan+"_bans", ip, name, banby]
+    );
+
+    return db.querySync(query);
+}
+
+function channelUnbanIP(chan, ip) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "DELETE FROM `?` WHERE `ip`=?",
+        ["chan_"+chan+"_bans", ip]
+    );
+
+    return db.querySync(query);
+}
+
+function channelUnbanName(chan, name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "DELETE FROM `?` WHERE `ip`='*' AND `name`=?",
+        ["chan_"+chan+"_bans", name]
+    );
+
+    return db.querySync(query);
+}
+
+/* REGION Users */
+
+function setProfile(name, data) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        ["UPDATE `registrations` SET ",
+            "`profile_image`=?,",
+            "`profile_text`=? ",
+         "WHERE uname=?"].join(""),
+        [data.image, data.text, name]
+    );
+
+    return db.querySync(query);
+}
+
 exports.setup = setup;
 exports.getConnection = getConnection;
 exports.createQuery = createQuery;
@@ -436,5 +525,10 @@ exports.loadChannel = loadChannel;
 exports.deleteChannel = deleteChannel;
 exports.getChannelRank = getChannelRank;
 exports.setChannelRank = setChannelRank;
+exports.listChannelRanks = listChannelRanks;
 exports.addToLibrary = addToLibrary;
 exports.removeFromLibrary = removeFromLibrary;
+exports.channelBan = channelBan;
+exports.channelUnbanIP = channelUnbanIP;
+exports.channelUnbanName = channelUnbanName;
+exports.setProfile = setProfile;
