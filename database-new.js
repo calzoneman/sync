@@ -1,24 +1,35 @@
 var mysql = require("mysql-libmysqlclient");
-var Config = require("./config");
 var Logger = require("./logger");
 var db = false;
+var SERVER = "";
+var USER = "";
+var DATABASE = "";
+var PASSWORD = "";
+var CONFIG = {};
+
+function setup(cfg) {
+    SERVER = cfg.MYSQL_SERVER;
+    USER = cfg.MYSQL_USER;
+    DATABASE = cfg.MYSQL_DB;
+    PASSWORD = cfg.MYSQL_PASSWORD;
+    CONFIG = cfg;
+}
 
 function getConnection() {
     if(db && db.connectedSync()) {
         return db;
     }
     db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+    db.connectSync(SERVER, USER, PASSWORD, DATABASE);
     if(!db.connectedSync()) {
         //Logger.errlog.log("DB connection failed");
         return false;
     }
-    if(Config.DEBUG) {
+    if(CONFIG.DEBUG) {
         db._querySync = db.querySync;
         db.querySync = function(q) {
             Logger.syslog.log("DEBUG: " + q);
-            this._querySync(q);
+            return this._querySync(q);
         }
     }
     return db;
@@ -114,11 +125,12 @@ function refreshGlobalBans() {
     if(!results) {
         Logger.errlog.log("! Failed to load global bans");
     }
-
-    var rows = results.fetchAllSync();
-    global_bans = {};
-    for(var i = 0; i < rows.length; i++) {
-        global_bans[rows[i].ip] = rows[i].note;
+    else {
+        var rows = results.fetchAllSync();
+        global_bans = {};
+        for(var i = 0; i < rows.length; i++) {
+            global_bans[rows[i].ip] = rows[i].note;
+        }
     }
 }
 
@@ -153,8 +165,7 @@ function globalUnbanIP(ip) {
 
 function registerChannel(name) {
     var db = getConnection();
-    if(!db) {
-        return false;
+    if(!db) { return false;
     }
 
     // Library table
@@ -367,11 +378,63 @@ function getChannelRank(chan, name) {
     return rows[0].rank;
 }
 
-function test() {
+function setChannelRank(chan, name, rank) {
     var db = getConnection();
-    var q = createQuery("INSERT INTO `?` VALUES (?, ?, ?, ?, ?, ?, ?, ?)", ["registrations", null, "bob2", "asdf", 1, "",  0, "", ""]);
-    console.log(q);
-    //console.log(db.querySync(q));
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "INSERT INTO `?` VALUES (?, ?) ON DUPLICATE KEY UPDATE",
+        ["chan_"+chan+"_ranks", rank, name]
+    );
+
+    return db.querySync(query);
 }
 
-test();
+function addToLibrary(chan, media) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        ["INSERT INTO `?` ",
+            "(`id`, `title`, `seconds`, `type`) ",
+         "VALUES ",
+            "(?, ?, ?, ?)"].join(""),
+        ["chan_"+chan+"_library", media.id, media.title, media.seconds, media.type]
+    );
+
+    return db.querySync(query);
+}
+
+function removeFromLibrary(chan, id) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "DELETE FROM `?` WHERE id=?",
+        ["chan_"+chan+"_library", id]
+    );
+
+    return db.querySync(query);
+}
+
+exports.setup = setup;
+exports.getConnection = getConnection;
+exports.createQuery = createQuery;
+exports.init = init;
+exports.checkGlobalBan = checkGlobalBan;
+exports.refreshGlobalBans = refreshGlobalBans;
+exports.globalBanIP = globalBanIP;
+exports.globalUnbanIP = globalUnbanIP;
+exports.registerChannel = registerChannel;
+exports.loadChannel = loadChannel;
+exports.deleteChannel = deleteChannel;
+exports.getChannelRank = getChannelRank;
+exports.setChannelRank = setChannelRank;
+exports.addToLibrary = addToLibrary;
+exports.removeFromLibrary = removeFromLibrary;
