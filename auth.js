@@ -18,18 +18,20 @@ var Logger = require("./logger.js");
 
 // Check if a name is taken
 exports.isRegistered = function(name) {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Auth.isRegistered: DB connection failed");
+    var db = Database.getConnection();
+    if(!db) {
         return true;
     }
-    var query = "SELECT * FROM registrations WHERE uname='{}'"
-        .replace(/\{\}/, name);
+    var query = Database.createQuery(
+        "SELECT * FROM `registrations` WHERE uname=?",
+        [name]
+    );
     var results = db.querySync(query);
+    if(!results) {
+        return true;
+    }
+
     var rows = results.fetchAllSync();
-    db.closeSync();
     return rows.length > 0;
 }
 
@@ -48,19 +50,18 @@ exports.register = function(name, pw) {
         return false;
     if(exports.isRegistered(name))
         return false;
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Auth.register: DB connection failed");
+    var db = Database.getConnection();
+    if(!db) {
         return false;
     }
+
     var hash = bcrypt.hashSync(pw, 10);
-    var query = "INSERT INTO registrations VALUES (NULL, '{1}', '{2}', 1, '', 0, '', '')"
-        .replace(/\{1\}/, name)
-        .replace(/\{2\}/, hash);
+    var query = Database.createQuery(
+        ["INSERT INTO `registrations` VALUES ",
+            "(NULL, ?, ?, 1, '', 0, '', '')"].join(""),
+        [name, hash]
+    );
     var results = db.querySync(query);
-    db.closeSync();
     if(results) {
         return exports.createSession(name);
     }
@@ -84,23 +85,25 @@ exports.login = function(name, pw, session) {
         return row;
     }
 }
+
 // Try to login
 exports.loginPassword = function(name, pw) {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Auth.login: DB connection failed");
+    var db = Database.getConnection();
+    if(!db) {
         return false;
     }
-    var query = "SELECT * FROM registrations WHERE uname='{1}'"
-        .replace(/\{1\}/, name)
+    var query = Database.createQuery(
+        "SELECT * FROM `registrations` WHERE uname=?",
+        [name]
+    );
     var results = db.querySync(query);
+    if(!results) {
+        return false;
+    }
     var rows = results.fetchAllSync();
     if(rows.length > 0) {
         try {
             if(bcrypt.compareSync(pw, rows[0].pw)) {
-                db.closeSync();
                 return rows[0];
             }
             else {
@@ -109,11 +112,12 @@ exports.loginPassword = function(name, pw) {
                 var sha256 = hashlib.sha256(pw);
                 if(sha256 == rows[0].pw) {
                     var newhash = bcrypt.hashSync(pw, 10);
-                    var query = "UPDATE registrations SET pw='{1}' WHERE uname='{2}'"
-                        .replace(/\{1\}/, newhash)
-                        .replace(/\{2\}/, name);
+                    var query = Database.createQuery(
+                        ["UPDATE `registrations` SET pw=?",
+                         "WHERE uname=?"].join(""),
+                        [newhash, name]
+                    );
                     var results = db.querySync(query);
-                    db.closeSync();
                     if(!results) {
                         Logger.errlog.log("Failed to migrate password! user=" + name);
                         return false;
@@ -134,33 +138,34 @@ exports.loginPassword = function(name, pw) {
 exports.createSession = function(name) {
     var salt = sessionSalt();
     var hash = hashlib.sha256(salt + name);
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
+    var db = Database.getConnection();
+    if(!db) {
         return false;
     }
-    var query = ["UPDATE registrations SET ",
-                 "session_hash='{1}',",
-                 "expire={2} ",
-                 "WHERE uname='{3}'"].join("")
-        .replace(/\{1\}/, hash)
-        .replace(/\{2\}/, new Date().getTime() + 604800000)
-        .replace(/\{3\}/, name)
+    var query = Database.createQuery(
+        ["UPDATE `registrations` SET ",
+            "`session_hash`=?,",
+            "`expire`=? ",
+         "WHERE uname=?"].join(""),
+        [hash, Date.now() + 604800000, name]
+    );
     var results = db.querySync(query);
     return results ? hash : false;
 }
 
 exports.loginSession = function(name, hash) {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
+    var db = Database.getConnection();
+    if(!db) {
         return false;
     }
-    var query = "SELECT * FROM registrations WHERE uname='{1}'"
-        .replace(/\{1\}/, name)
+    var query = Database.createQuery(
+        "SELECT * FROM `registrations` WHERE `uname`=?",
+        [name]
+    );
     var results = db.querySync(query);
+    if(!results) {
+        return false;
+    }
     var rows = results.fetchAllSync();
     if(rows.length != 1) {
         return false;
@@ -188,32 +193,32 @@ function sessionSalt() {
 }
 
 exports.setUserPassword = function(name, pw) {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Auth.setUserPassword: DB connection failed");
+    var db = Database.getConnection();
+    if(!db) {
         return false;
     }
     var hash = bcrypt.hashSync(pw, 10);
-    var query = "UPDATE registrations SET pw='{1}' WHERE uname='{2}'"
-        .replace("{1}", Database.sqlEscape(hash))
-        .replace("{2}", Database.sqlEscape(name));
+    var query = Database.createQuery(
+        "UPDATE `registrations` SET `pw`=? WHERE `uname`=?",
+        [hash, name]
+    );
     var result = db.querySync(query);
     return result;
 }
 
 exports.getGlobalRank = function(name) {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
-    if(!db.connectedSync()) {
-        Logger.errlog.log("Auth.getGlobalRank: DB connection failed");
+    var db = Database.getConnection();
+    if(!db) {
         return false;
     }
-    var query = "SELECT * FROM registrations WHERE uname='{1}'"
-        .replace(/\{1\}/, name)
+    var query = Database.createQuery(
+        "SELECT * FROM `registrations` WHERE `uname`=?",
+        [name]
+    );
     var results = db.querySync(query);
+    if(!results) {
+        return 0;
+    }
     var rows = results.fetchAllSync();
     if(rows.length > 0) {
         return rows[0].global_rank;

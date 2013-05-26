@@ -1,444 +1,549 @@
-/*
-The MIT License (MIT)
-Copyright (c) 2013 Calvin Montgomery
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-
 var mysql = require("mysql-libmysqlclient");
-var Config = require("./config.js");
-var Logger = require("./logger.js");
-var Rank = require("./rank.js");
-var Media = require("./media.js").Media;
-//var Server = require("./server.js");
+var Logger = require("./logger");
+var Media = require("./media").Media;
 
-var initialized = false;
+var db = false;
+var SERVER = "";
+var USER = "";
+var DATABASE = "";
+var PASSWORD = "";
+var CONFIG = {};
 
-exports.getConnection = function() {
-    var db = mysql.createConnectionSync();
-    db.connectSync(Config.MYSQL_SERVER, Config.MYSQL_USER,
-                   Config.MYSQL_PASSWORD, Config.MYSQL_DB);
+function setup(cfg) {
+    SERVER = cfg.MYSQL_SERVER;
+    USER = cfg.MYSQL_USER;
+    DATABASE = cfg.MYSQL_DB;
+    PASSWORD = cfg.MYSQL_PASSWORD;
+    CONFIG = cfg;
+}
+
+function getConnection() {
+    if(db && db.connectedSync()) {
+        return db;
+    }
+    db = mysql.createConnectionSync();
+    db.connectSync(SERVER, USER, PASSWORD, DATABASE);
     if(!db.connectedSync()) {
-        Logger.errlog.log("database.getConnection: DB connection failed");
+        //Logger.errlog.log("DB connection failed");
         return false;
+    }
+    if(CONFIG.DEBUG) {
+        db._querySync = db.querySync;
+        db.querySync = function(q) {
+            Logger.syslog.log("DEBUG: " + q);
+            return this._querySync(q);
+        }
     }
     return db;
 }
 
-function sqlEscape(data) {
-    if(data == null || data == undefined)
-        return "NULL";
-    else if(typeof data == "number")
-        return data;
-    else if(typeof data == "object")
-        return "(object)";
-    else if(typeof data == "string") {
-        return data.replace("'", "\\'");
+function createQuery(template, args) {
+    var last = -1;
+    while(template.indexOf("?", last) >= 0) {
+        var idx = template.indexOf("?", last);
+        var arg = args.shift();
+        if(typeof arg == "string") {
+            arg = arg.replace(/([\'])/g, "\\$1");
+            if(idx == 0 || template[idx-1] != "`") {
+                arg = "'" + arg + "'";
+            }
+        }
+        if(arg === null || arg === undefined) {
+            arg = "NULL";
+        }
+        var first = template.substring(0, idx);
+        template = first + template.substring(idx).replace("?", arg);
+        last = idx + (arg+"").length;
+    }
+    return template;
+}
+
+function init() {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    // Create channel table
+    var query = ["CREATE TABLE IF NOT EXISTS `channels` (",
+                    "`id` INT NOT NULL AUTO_INCREMENT,",
+                    "`name` VARCHAR(255) NOT NULL,",
+                    "PRIMARY KEY(`id`))",
+                 "ENGINE = MyISAM;"].join("");
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create channels table");
+    }
+
+    // Create registration table
+    query = ["CREATE TABLE IF NOT EXISTS `registrations` (",
+                "`id` INT NOT NULL AUTO_INCREMENT,",
+                "`uname` VARCHAR(20) NOT NULL,",
+                "`pw` VARCHAR(64) NOT NULL,",
+                "`global_rank` INT NOT NULL,",
+                "`session_hash` VARCHAR(64) NOT NULL,",
+                "`expire` BIGINT NOT NULL,",
+                "`profile_image` VARCHAR(255) NOT NULL,",
+                "`profile_text` TEXT NOT NULL,",
+                "PRIMARY KEY (`id`))",
+             "ENGINE = MyISAM;"].join("");
+
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create registrations table");
+    }
+
+    // Create global bans table
+    query = ["CREATE TABLE IF NOT EXISTS `global_bans` (",
+                "`ip` VARCHAR(15) NOT NULL,",
+                "`note` VARCHAR(255) NOT NULL,",
+                "PRIMARY KEY (`ip`))",
+             "ENGINE = MyISAM;"].join("");
+
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create global ban table");
+    }
+
+    refreshGlobalBans();
+}
+
+/* REGION Global Bans */
+
+function checkGlobalBan(ip) {
+    const re = /(\d+)\.(\d+)\.(\d+)\.(\d+)/;
+    var s16 = ip.replace(re, "$1.$2");
+    var s24 = ip.replace(re, "$1.$2.$3");
+    return (ip in global_bans ||
+            s16 in global_bans ||
+            s24 in global_bans);
+}
+
+function refreshGlobalBans() {
+    var db = getConnection();
+    if(!db) {
+        return;
+    }
+
+    var query = "SELECT * FROM `global_bans` WHERE 1";
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to load global bans");
+    }
+    else {
+        var rows = results.fetchAllSync();
+        global_bans = {};
+        for(var i = 0; i < rows.length; i++) {
+            global_bans[rows[i].ip] = rows[i].note;
+        }
     }
 }
-exports.sqlEscape = sqlEscape;
 
-exports.init = function() {
-    if(initialized)
-        return;
-
-    var db = exports.getConnection();
+function globalBanIP(ip, reason) {
+    var db = getConnection();
     if(!db) {
-        Logger.errlog.log("database.init: DB conection failed");
         return;
     }
-    var query = "CREATE TABLE IF NOT EXISTS `channels` \
-                    (`id` INT NOT NULL AUTO_INCREMENT, \
-                     `name` VARCHAR(255) NOT NULL, \
-                     PRIMARY KEY (`id`)) \
-                     ENGINE = MyISAM;";
+
+    var query = createQuery(
+        "INSERT INTO `global_bans` VALUES (?, ?)",
+        [ip, reason]
+    );
+    return db.querySync(query);
+}
+
+function globalUnbanIP(ip) {
+    var db = getConnection();
+    if(!db) {
+        return;
+    }
+
+    var query = createQuery(
+        "DELETE FROM `global_bans` WHERE ip=?",
+        [ip]
+    );
+
+    return db.querySync(query);
+}
+
+/* REGION Channel Registration/Loading */
+
+function registerChannel(name) {
+    var db = getConnection();
+    if(!db) { return false;
+    }
+
+    // Library table
+    var query = ["CREATE TABLE `?` (",
+                    "`id` VARCHAR(255) NOT NULL,",
+                    "`title` VARCHAR(255) NOT NULL,",
+                    "`seconds` INT NOT NULL,",
+                    "`type` VARCHAR(2) NOT NULL,",
+                    "PRIMARY KEY (`id`))",
+                 "ENGINE = MyISAM;"].join("");
+    query = createQuery(query, ["chan_" + name + "_library"]);
+
     var results = db.querySync(query);
     if(!results) {
-        Logger.errlog.log("database.init: channel table init failed!");
+        Logger.errlog.log("! Failed to create table: chan_"+name+"_library");
         return false;
     }
 
-    var query = "CREATE TABLE IF NOT EXISTS `registrations` \
-                    (`id` INT NOT NULL AUTO_INCREMENT, \
-                     `uname` VARCHAR(20) NOT NULL, \
-                     `pw` VARCHAR(64) NOT NULL, \
-                     `global_rank` INT NOT NULL, \
-                     `session_hash` VARCHAR(64) NOT NULL, \
-                     `expire` BIGINT NOT NULL, \
-                     `profile_image` VARCHAR( 255 ) NOT NULL , \
-                     `profile_text` TEXT NOT NULL, \
-                     PRIMARY KEY (`id`)) \
-                     ENGINE = MyISAM;";
-    var results = db.querySync(query);
+    // Rank table
+    query = ["CREATE TABLE `?` (",
+                    "`name` VARCHAR(32) NOT NULL,",
+                    "`rank` INT NOT NULL,",
+                    "UNIQUE (`name`))",
+                 "ENGINE = MyISAM;"].join("");
+    query = createQuery(query, ["chan_" + name + "_ranks"]);
+
+    results = db.querySync(query);
     if(!results) {
-        Logger.errlog.log("database.init: registration table init failed!");
+        Logger.errlog.log("! Failed to create table: chan_"+name+"_ranks");
         return false;
     }
 
-    var query = "CREATE TABLE IF NOT EXISTS `global_bans` \
-                    (`ip` VARCHAR( 15 ) NOT NULL ,\
-                    `note` VARCHAR( 255 ) NOT NULL ,\
-                    PRIMARY KEY (`ip`)\
-                    ) ENGINE = MYISAM";
-    var results = db.querySync(query);
+    // Ban table
+    query = ["CREATE TABLE `?` (",
+                    "`ip` VARCHAR(15) NOT NULL,",
+                    "`name` VARCHAR(32) NOT NULL,",
+                    "`banner` VARCHAR(32) NOT NULL,",
+                    "PRIMARY KEY (`ip`))",
+                 "ENGINE = MyISAM;"].join("");
+    query = createQuery(query, ["chan_" + name + "_bans"]);
+
+    results = db.querySync(query);
     if(!results) {
-        Logger.errlog.log("database.init: global ban table init failed!");
+        Logger.errlog.log("! Failed to create table: chan_"+name+"_bans");
         return false;
     }
 
-    initialized = true;
-    db.closeSync();
+    // Insert into channel table
+    query = createQuery(
+        "INSERT INTO `channels` VALUES (NULL, ?)",
+        [name]
+    );
+
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to insert into channel table: " + name);
+        return false;
+    }
+
     return true;
 }
 
-var gbanTime = 0;
-var gbans = {};
-exports.checkGlobalBan = function(ip) {
-    // Check database at most once per 5 minutes
-    if(new Date().getTime() > gbanTime + 300000) {
-        exports.refreshGlobalBans();
-    }
-    var parts = ip.split(".");
-    var slash16 = parts[0] + "." + parts[1];
-    var slash24 = slash16 + "." + parts[2];
-    return (ip in gbans || slash16 in gbans || slash24 in gbans);
-}
-
-exports.refreshGlobalBans = function() {
-    var db = exports.getConnection();
+function loadChannel(chan) {
+    var db = getConnection();
     if(!db) {
-        return false;
+        return;
     }
-    // Check if channel exists
-    var query = "SELECT * FROM global_bans WHERE 1";
+
+    var query = createQuery(
+        "SELECT * FROM `channels` WHERE name=?",
+        [chan.name]
+    );
+
     var results = db.querySync(query);
     if(!results) {
-        Logger.errlog.log("loadGlobalBans: query failed");
-        return false;
+        Logger.errlog.log("! Failed to query channel table");
     }
-    var rows = results.fetchAllSync();
-    gbans = {};
-    for(var i = 0; i < rows.length; i++) {
-        gbans[rows[i].ip] = rows[i].note;
-    }
-    db.closeSync();
-    gbanTime = new Date().getTime();
-    return gbans;
-}
-
-exports.addGlobalBan = function(ip, reason) {
-    var db = exports.getConnection();
-    if(!db) {
-        return false;
-    }
-    var query = "INSERT INTO global_bans VALUES ('{1}', '{2}')"
-        .replace("{1}", sqlEscape(ip))
-        .replace("{2}", sqlEscape(reason));
-    var result = db.querySync(query);
-    db.closeSync();
-    return result;
-}
-
-exports.liftGlobalBan = function(ip) {
-    var db = exports.getConnection();
-    if(!db) {
-        return false;
-    }
-    var query = "DELETE FROM global_bans WHERE ip='{}'"
-        .replace("{}", sqlEscape(ip))
-    var result = db.querySync(query);
-    db.closeSync();
-    return result;
-}
-
-exports.loadChannel = function(chan) {
-    var db = exports.getConnection();
-    if(!db) {
-        chan.logger.log("!!! Could not connect to database");
-        return;
-    }
-    // Check if channel exists
-    var query = "SELECT * FROM channels WHERE name='{}'"
-        .replace("{}", chan.name);
-    var results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.loadMysql: Channel query failed");
-        return;
-    }
-    var rows = results.fetchAllSync();
-    if(rows.length == 0) {
-        Logger.syslog.log("Channel " + chan.name + " is unregistered.");
-        return;
-    }
-    else if(rows[0].name != chan.name) {
-        chan.name = rows[0].name;
-    }
-    chan.registered = true;
-
-    // Load library
-    var query = "SELECT * FROM `chan_{}_library`"
-        .replace("{}", sqlEscape(chan.name));
-    var results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.loadMysql: failed to load library for " + chan.name);
-        return;
-    }
-    var rows = results.fetchAllSync();
-    for(var i = 0; i < rows.length; i++) {
-        chan.library[rows[i].id] = new Media(rows[i].id, rows[i].title, rows[i].seconds, rows[i].type);
-    }
-
-    // Load bans
-    var query = "SELECT * FROM `chan_{}_bans`"
-        .replace("{}", sqlEscape(chan.name));
-    var results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("Channel.loadMysql: failed to load banlist for " + chan.name);
-        return;
-    }
-    var rows = results.fetchAllSync();
-    for(var i = 0; i < rows.length; i++) {
-        // Name ban
-        if(rows[i].ip == "*") {
-            chan.namebans[rows[i].name] = rows[i].banner;
+    else {
+        var rows = results.fetchAllSync();
+        if(rows.length == 0) {
+            // Unregistered
+            Logger.syslog.log("Channel " + chan.name + " is unregistered");
+            return;
         }
-        else {
-            chan.ipbans[rows[i].ip] = [rows[i].name, rows[i].banner];
+        // Database is case insensitive
+        else if(rows[0].name != chan.name) {
+            chan.name = rows[0].name;
+        }
+        chan.registered = true;
+    }
+
+    // Load channel library
+    query = createQuery(
+        "SELECT * FROM `?`",
+        ["chan_" + chan.name + "_library"]
+    );
+
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to load channel library: " + chan.name);
+    }
+    else {
+        var rows = results.fetchAllSync();
+        for(var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            var m = new Media(r.id, r.title, r.seconds, r.type);
+            chan.library[r.id] = m;
+        }
+    }
+
+    // Load channel bans
+    query = createQuery(
+        "SELECT * FROM `?`",
+        ["chan_" + chan.name + "_bans"]
+    );
+
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to load channel bans: " + chan.name);
+    }
+    else {
+        var rows = results.fetchAllSync();
+        for(var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            if(r.ip == "*") {
+                chan.nameban[r.name] = r.banner;
+            }
+            else {
+                chan.ipbans[r.ip] = [r.name, r.banner];
+            }
         }
     }
 
     chan.logger.log("*** Loaded channel from database");
     Logger.syslog.log("Loaded channel " + chan.name + " from database");
-    db.closeSync();
-
 }
 
-exports.registerChannel = function(chan) {
-    var db = exports.getConnection();
-    if(!db) {
-        chan.logger.log("!!! Could not connect to database");
+function deleteChannel(name) {
+    if(!/[a-zA-Z0-9-_]+/.test(name)) {
         return false;
     }
-    // Create library table
-    var query= "CREATE TABLE `chan_{}_library` \
-                    (`id` VARCHAR(255) NOT NULL, \
-                    `title` VARCHAR(255) NOT NULL, \
-                    `seconds` INT NOT NULL, \
-                    `playtime` VARCHAR(8) NOT NULL, \
-                    `type` VARCHAR(2) NOT NULL, \
-                    PRIMARY KEY (`id`)) \
-                    ENGINE = MyISAM;"
-        .replace("{}", chan.name);
-    var results = db.querySync(query);
 
-    // Create rank table
-    var query = "CREATE TABLE  `chan_{}_ranks` (\
-                    `name` VARCHAR( 32 ) NOT NULL ,\
-                    `rank` INT NOT NULL ,\
-                    UNIQUE (\
-                    `name`\
-                    )\
-                    ) ENGINE = MYISAM"
-        .replace("{}", chan.name);
-    results = db.querySync(query) || results;
-
-    // Create ban table
-    var query = "CREATE TABLE  `chan_{}_bans` (\
-                    `ip` VARCHAR( 15 ) NOT NULL ,\
-                    `name` VARCHAR( 32 ) NOT NULL ,\
-                    `banner` VARCHAR( 32 ) NOT NULL ,\
-                    PRIMARY KEY (\
-                    `ip`\
-                    )\
-                    ) ENGINE = MYISAM"
-        .replace("{}", chan.name);
-    results = db.querySync(query) || results;
-
-    // Insert into global channel table
-    var query = "INSERT INTO channels (`id`, `name`) VALUES (NULL, '{}')"
-        .replace("{}", sqlEscape(chan.name));
-    results = db.querySync(query) || results;
-    db.closeSync();
-    return results;
-}
-
-exports.unregisterChannel = function(channame) {
-    var db = exports.getConnection();
+    var db = getConnection();
     if(!db) {
         return false;
     }
 
-    var query = "DROP TABLE `chan_{}_bans`, `chan_{}_ranks`, `chan_{}_library`"
-        .replace(/\{\}/g, sqlEscape(channame));
+    var query = "DROP TABLE `chan_?_bans`, `chan_?_ranks`, `chan_?_library`"
+        .replace(/\?/g, name);
 
     var results = db.querySync(query);
     if(!results) {
+        Logger.errlog.log("! Failed to delete channel tables for " + name);
         return false;
     }
 
-    query = "DELETE FROM channels WHERE name='{}'"
-        .replace("{}", sqlEscape(channame));
+    query = createQuery(
+        "DELETE FROM `channels` WHERE name=?",
+        [name]
+    );
+
     results = db.querySync(query);
-    db.closeSync();
-    return results;
+    if(!results) {
+        Logger.errlog.log("! Failed to delete row from channel table: " + name);
+        return false;
+    }
+
+    return true;
 }
 
-exports.lookupChannelRank = function(channame, username) {
-    var db = exports.getConnection();
+/* REGION Channel data */
+
+function getChannelRank(chan, name) {
+    var db = getConnection();
     if(!db) {
-        Logger.errlog.log("database.lookupChannelRank: DB connection failed");
-        return Rank.Guest;
-    }
-    var query = "SELECT * FROM `chan_{1}_ranks` WHERE name='{2}'"
-        .replace("{1}", sqlEscape(channame))
-        .replace("{2}", sqlEscape(username));
-    var results = db.querySync(query);
-    if(!results) {
-        return Rank.Guest;
-    }
-    var rows = results.fetchAllSync();
-    if(rows.length == 0) {
-        return Rank.Guest;
+        return 0;
     }
 
-    db.closeSync();
+    var query;
+    if(typeof name == "object") {
+        var n = "(?";
+        for(var i = 1; i < name.length; i++) {
+            n += ",?";
+        }
+        n += ")"
+        name.unshift("chan_" + chan + "_ranks");
+        query = createQuery(
+            "SELECT * FROM `?` WHERE name IN " + n,
+            name
+        );
+    }
+    else {
+        query = createQuery(
+            "SELECT * FROM `?` WHERE name=?",
+            ["chan_"+chan+"_ranks", name]
+        );
+    }
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to lookup chan_"+chan+"_ranks");
+        return 0;
+    }
+
+    var rows = results.fetchAllSync();
+    if(typeof name == "object") {
+        var ranks = [];
+        for(var i = 0; i < rows.length; i++) {
+            ranks.push(rows[i].rank);
+        }
+        while(ranks.length < rows.length) {
+            ranks.push(0);
+        }
+        return ranks;
+    }
+    if(rows.length == 0) {
+        return 0;
+    }
+
     return rows[0].rank;
 }
 
-exports.saveChannelRank = function(channame, user) {
-    var db = exports.getConnection();
+function setChannelRank(chan, name, rank) {
+    var db = getConnection();
     if(!db) {
-        Logger.errlog.log("database.saveChannelRank: DB connection failed");
         return false;
     }
-    var query = "UPDATE `chan_{1}_ranks` SET rank='{2}' WHERE name='{3}'"
-        .replace("{1}", sqlEscape(channame))
-        .replace("{2}", sqlEscape(user.rank))
-        .replace("{3}", sqlEscape(user.name));
-    var results = db.querySync(query);
-    // Gonna have to insert a new one, bugger
-    if(!results.fetchAllSync) {
-        var query = "INSERT INTO `chan_{1}_ranks` (`name`, `rank`) VALUES ('{2}', '{3}')"
-            .replace("{1}", sqlEscape(channame))
-            .replace("{2}", sqlEscape(user.name))
-            .replace("{3}", sqlEscape(user.rank));
-        results = db.querySync(query);
-    }
-    db.closeSync();
-    return results;
+
+    var query = createQuery(
+        ["INSERT INTO `?` ",
+            "(`name`, `rank`) ",
+         "VALUES ",
+            "(?, ?) ",
+         "ON DUPLICATE KEY UPDATE ",
+            "`rank`=?"].join(""),
+        ["chan_"+chan+"_ranks", name, rank, rank]
+    );
+
+    return db.querySync(query);
 }
 
-exports.cacheMedia = function(channame, media) {
-    var db = exports.getConnection();
+function listChannelRanks(chan) {
+    var db = getConnection();
     if(!db) {
-        Logger.errlog.log("database.cacheMedia: DB connection failed");
-        return false;
-    }
-    var query = "INSERT INTO `chan_{1}_library` VALUES ('{2}', '{3}', {4}, '{5}', '{6}')"
-        .replace("{1}", sqlEscape(channame))
-        .replace("{2}", sqlEscape(media.id))
-        .replace("{3}", sqlEscape(media.title))
-        .replace("{4}", sqlEscape(media.seconds))
-        .replace("{5}", sqlEscape(media.duration))
-        .replace("{6}", sqlEscape(media.type));
-    var results = db.querySync(query);
-    db.closeSync();
-    return results;
-}
-
-exports.uncacheMedia = function(channame, id) {
-    var db = exports.getConnection();
-    if(!db) {
-        Logger.errlog.log("database.uncacheMedia: DB connection failed");
-        return false;
-    }
-    var query = "DELETE FROM `chan_{1}_library` WHERE id='{2}'"
-        .replace("{1}", sqlEscape(channame))
-        .replace("{2}", sqlEscape(id))
-    var results = db.querySync(query);
-    db.closeSync();
-    return results;
-}
-
-exports.addChannelBan = function(channame, actor, receiver) {
-    var db = exports.getConnection();
-    if(!db) {
-        Logger.errlog.log("exports.addChannelBan: DB connection failed");
-        return false;
-    }
-    var query = "INSERT INTO `chan_{1}_bans` (`ip`, `name`, `banner`) VALUES ('{2}', '{3}', '{4}')"
-        .replace("{1}", sqlEscape(channame))
-        .replace("{2}", sqlEscape(receiver.ip))
-        .replace("{3}", sqlEscape(receiver.name))
-        .replace("{4}", sqlEscape(actor.name));
-    results = db.querySync(query);
-    db.closeSync();
-    return results;
-}
-
-exports.removeChannelBan = function(channame, ip) {
-    var db = exports.getConnection();
-    if(!db) {
-        Logger.errlog.log("exports.removeChannelBan: DB connection failed");
-        return false;
-    }
-    var query = "DELETE FROM `chan_{1}_bans` WHERE `ip` = '{2}'"
-        .replace("{1}", sqlEscape(channame))
-        .replace("{2}", sqlEscape(ip));
-    results = db.querySync(query);
-    db.closeSync();
-    return results;
-}
-
-exports.removeNameBan = function(channame, name) {
-    var db = exports.getConnection();
-    if(!db) {
-        return false;
-    }
-    var query = "DELETE FROM `chan_{1}_bans` WHERE `ip` = '*' AND `name`='{2}'"
-        .replace("{1}", sqlEscape(channame))
-        .replace("{2}", sqlEscape(name));
-    results = db.querySync(query);
-    db.closeSync();
-    return results;
-}
-
-exports.getChannelRanks = function(channame) {
-    var db = exports.getConnection();
-    if(!db) {
-        return false;
-    }
-
-    var query = "SELECT * FROM `chan_{}_ranks` WHERE 1"
-        .replace("{}", sqlEscape(channame));
-
-    var results = db.querySync(query);
-    if(results) {
-        var rows = results.fetchAllSync();
-        db.closeSync();
-        return rows;
-    }
-    else {
         return [];
     }
+
+    var query = createQuery(
+        "SELECT * FROM `?` WHERE 1",
+        ["chan_"+chan+"_ranks"]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to list ranks: " + chan);
+        return [];
+    }
+
+    return results.fetchAllSync();
 }
 
-exports.setProfile = function(name, data) {
-    var db = exports.getConnection();
+function addToLibrary(chan, media) {
+    var db = getConnection();
     if(!db) {
         return false;
     }
 
-    var query = "UPDATE registrations SET profile_image='{1}',profile_text='{2}' WHERE uname='{3}'"
-        .replace("{1}", sqlEscape(data.image))
-        .replace("{2}", sqlEscape(data.text))
-        .replace("{3}", sqlEscape(name));
+    var query = createQuery(
+        ["INSERT INTO `?` ",
+            "(`id`, `title`, `seconds`, `type`) ",
+         "VALUES ",
+            "(?, ?, ?, ?)"].join(""),
+        ["chan_"+chan+"_library", media.id, media.title, media.seconds, media.type]
+    );
 
-    var results = db.querySync(query);
-    db.closeSync();
-    return results;
+    return db.querySync(query);
 }
+
+function removeFromLibrary(chan, id) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "DELETE FROM `?` WHERE id=?",
+        ["chan_"+chan+"_library", id]
+    );
+
+    return db.querySync(query);
+}
+
+function channelBan(chan, ip, name, banby) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        ["INSERT INTO `?` ",
+            "(`ip`, `name`, `banner`) ",
+         "VALUES ",
+            "(?, ?, ?)"].join(""),
+        ["chan_"+chan+"_bans", ip, name, banby]
+    );
+
+    return db.querySync(query);
+}
+
+function channelUnbanIP(chan, ip) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "DELETE FROM `?` WHERE `ip`=?",
+        ["chan_"+chan+"_bans", ip]
+    );
+
+    return db.querySync(query);
+}
+
+function channelUnbanName(chan, name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "DELETE FROM `?` WHERE `ip`='*' AND `name`=?",
+        ["chan_"+chan+"_bans", name]
+    );
+
+    return db.querySync(query);
+}
+
+/* REGION Users */
+
+function setProfile(name, data) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        ["UPDATE `registrations` SET ",
+            "`profile_image`=?,",
+            "`profile_text`=? ",
+         "WHERE uname=?"].join(""),
+        [data.image, data.text, name]
+    );
+
+    return db.querySync(query);
+}
+
+exports.setup = setup;
+exports.getConnection = getConnection;
+exports.createQuery = createQuery;
+exports.init = init;
+exports.checkGlobalBan = checkGlobalBan;
+exports.refreshGlobalBans = refreshGlobalBans;
+exports.globalBanIP = globalBanIP;
+exports.globalUnbanIP = globalUnbanIP;
+exports.registerChannel = registerChannel;
+exports.loadChannel = loadChannel;
+exports.deleteChannel = deleteChannel;
+exports.getChannelRank = getChannelRank;
+exports.setChannelRank = setChannelRank;
+exports.listChannelRanks = listChannelRanks;
+exports.addToLibrary = addToLibrary;
+exports.removeFromLibrary = removeFromLibrary;
+exports.channelBan = channelBan;
+exports.channelUnbanIP = channelUnbanIP;
+exports.channelUnbanName = channelUnbanName;
+exports.setProfile = setProfile;

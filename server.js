@@ -55,6 +55,7 @@ exports.io = require("socket.io").listen(ioserv);
 exports.io.set("log level", 1);
 var User = require("./user.js").User;
 var Database = require("./database.js");
+Database.setup(Config);
 Database.init();
 
 exports.channels = {};
@@ -108,12 +109,14 @@ exports.io.sockets.on("connection", function(socket) {
     Logger.syslog.log("Accepted connection from /" + user.ip);
 });
 
-process.on("uncaughtException", function(err) {
+if(!Config.DEBUG) {
+    process.on("uncaughtException", function(err) {
     Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
-});
+    });
 
-process.on("exit", shutdown);
-process.on("SIGINT", shutdown);
+    process.on("exit", shutdown);
+    process.on("SIGINT", shutdown);
+}
 
 function shutdown() {
     Logger.syslog.log("Unloading channels...");

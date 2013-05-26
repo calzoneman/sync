@@ -37,7 +37,9 @@ console.log("[PASS] Channel registration");
 Database.registerChannel("test");
 assert(Database.setChannelRank("test", "a_user", 10));
 assert(Database.getChannelRank("test", "a_user") == 10);
-assert(Database.listChannelRanks("test").length == 1);
+assert(Database.setChannelRank("test", "user_2", 4));
+assert(Database.listChannelRanks("test").length == 2);
+assert(Database.getChannelRank("test", ["a_user", "user_2"])+"" == [10, 4]+"");
 console.log("[PASS] Channel ranks");
 
 // Test library caching
@@ -47,7 +49,7 @@ assert(Database.addToLibrary("test", {
     title: "Testing",
     type: "yt"
 }));
-assert(db.querySync("SELECT * FROM `chan_test_library` WHERE id='abc'"));
+assert(db.querySync("SELECT * FROM `chan_test_library` WHERE id='abc'").fetchAllSync().length > 0);
 assert(Database.removeFromLibrary("test", "abc"));
 assert(db.querySync("SELECT * FROM `chan_test_library` WHERE id='abc'").fetchAllSync().length == 0);
 console.log("[PASS] Channel library");
