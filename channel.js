@@ -169,6 +169,7 @@ Channel.prototype.loadDump = function() {
             for(var key in data.permissions) {
                 this.permissions[key] = data.permissions[key];
             }
+            this.sendAll("setPermissions", this.permissions);
             this.broadcastOpts();
             if(data.filters) {
                 for(var i = 0; i < data.filters.length; i++) {
