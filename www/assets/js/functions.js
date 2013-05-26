@@ -537,7 +537,7 @@ function parseYTPlaylist(url) {
 }
 
 function parseTwitch(url) {
-    var m = url.match(/twitch\.tv\/([a-zA-Z0-9]+)/);
+    var m = url.match(/twitch\.tv\/([^#\?\/]+)/);
     if(m) {
         return m[1];
     }
@@ -545,7 +545,7 @@ function parseTwitch(url) {
 }
 
 function parseJustinTV(url) {
-    var m = url.match(/justin\.tv\/([a-zA-Z0-9]+)/);
+    var m = url.match(/justin\.tv\/([^#\?\/]+)/);
     if(m) {
         return m[1];
     }
@@ -553,7 +553,7 @@ function parseJustinTV(url) {
 }
 
 function parseLivestream(url) {
-    var m = url.match(/livestream\.com\/([a-zA-Z0-9]+)/);
+    var m = url.match(/livestream\.com\/([^#\?\/]+)/);
     if(m) {
         return m[1];
     }
@@ -561,7 +561,7 @@ function parseLivestream(url) {
 }
 
 function parseUstream(url) {
-    var m = url.match(/ustream\.tv\/([a-zA-Z0-9-]+)/);
+    var m = url.match(/ustream\.tv\/([^#\?\/]+)/);
     if(m) {
         return m[1];
     }

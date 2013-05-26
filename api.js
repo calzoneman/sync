@@ -107,7 +107,7 @@ function handleChannelData(params, req, res) {
     var data = [];
     for(var j = 0; j < clist.length; j++) {
         var cname = clist[j];
-        if(!cname.match(/^[a-zA-Z0-9]+$/)) {
+        if(!cname.match(/^[a-zA-Z0-9-_]+$/)) {
             continue;
         }
         var d = {

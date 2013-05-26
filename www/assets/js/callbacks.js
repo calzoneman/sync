@@ -60,7 +60,7 @@ Callbacks = {
 
     channelNotRegistered: function() {
         var div = $("<div/>").addClass("alert alert-info").attr("id", "chregnotice")
-            .insertAfter($(".row")[0]);
+            .insertBefore($("#main"));
         $("<button/>").addClass("close pull-right").text("×")
             .appendTo(div)
             .click(function() { div.remove(); });
