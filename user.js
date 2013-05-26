@@ -385,6 +385,9 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("requestSeenlogins", function() {
         if(this.channel != null) {
+            if(this.noflood("requestSeenLogins", 0.25)) {
+                return;
+            }
             this.channel.sendRankStuff(this);
         }
     }.bind(this));
