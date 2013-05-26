@@ -483,6 +483,10 @@ Callbacks = {
         var nametag = $("<span/>").text(data.name).appendTo(div);
         formatUserlistItem(div[0], data);
         addUserDropdown(div, data.name);
+        if(data.name == uname) {
+            PROFILE.image = data.profile.image;
+            PROFILE.text = data.profile.text;
+        }
         var users = $("#userlist").children();
         for(var i = 0; i < users.length; i++) {
             var othername = users[i].children[1].innerHTML;
@@ -492,11 +496,6 @@ Callbacks = {
             }
         }
         div.appendTo($("#userlist"));
-
-        if(data.name == uname) {
-            PROFILE.image = data.profile.image;
-            PROFILE.text = data.profile.text;
-        }
     },
 
     updateUser: function(data) {
