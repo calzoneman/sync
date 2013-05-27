@@ -61,7 +61,8 @@ function handleKick(chan, user, args) {
         args[0] = args[0].toLowerCase();
         var kickee;
         for(var i = 0; i < chan.users.length; i++) {
-            if(chan.users[i].name.toLowerCase() == args[0]) {
+            if(chan.users[i].name.toLowerCase() == args[0] &&
+               chan.getRank(chan.users[i].name) < user.rank) {
                 kickee = chan.users[i];
                 break;
             }
