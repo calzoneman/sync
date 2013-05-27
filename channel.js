@@ -315,7 +315,6 @@ Channel.prototype.getIPRank = function(ip) {
     for(var i = 0; i < ranks.length; i++) {
         rank = (ranks[i] > rank) ? ranks[i] : rank;
     }
-    console.log(ranks, rank);
     return rank;
 }
 
