@@ -288,6 +288,7 @@ Callbacks = {
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
         }
+        $("#loginlog_pagination").remove();
         entries.sort(function(a, b) {
             var x = a.names.join(",").toLowerCase();
             var y = b.names.join(",").toLowerCase();
@@ -300,73 +301,25 @@ Callbacks = {
             }
             return x == y ? 0 : (x < y ? -1 : 1);
         });
-        for(var i = 0; i < entries.length; i++) {
-            var tr = $("<tr/>").appendTo(tbl);
-            var bantd = $("<td/>").appendTo(tr);
-            if(entries[i].banned) {
-                bantd.text("Banned");
-                tr.addClass("alert alert-error");
+        $("#loginlog").data("entries", entries);
+        if(entries.length > 20) {
+            var pag = $("<div/>").addClass("pagination span12")
+                .attr("id", "loginlog_pagination")
+                .prependTo($("#loginlog"));
+            var btns = $("<ul/>").appendTo(pag);
+            for(var i = 0; i < entries.length / 20; i++) {
+                var li = $("<li/>").appendTo(btns);
+                (function(i) {
+                $("<a/>").attr("href", "javascript:void(0)")
+                    .text(i+1)
+                    .click(function() {
+                        loadLoginlogPage(i);
+                    })
+                    .appendTo(li);
+                })(i);
             }
-            else {
-                var ban = $("<button/>").addClass("btn btn-mini btn-danger")
-                    .text("Ban IP")
-                    .appendTo(bantd);
-                var banrange = $("<button/>").addClass("btn btn-mini btn-danger")
-                    .text("Ban IP Range")
-                    .appendTo(bantd);
-                var callback = (function(id, name) { return function() {
-                    console.log(id, name);
-                    socket.emit("banIP", {
-                        id: id,
-                        name: name,
-                        range: false
-                    });
-                    return false;
-                } })(entries[i].id, entries[i].names[0]);
-                ban.click(callback);
-                var callback2 = (function(id, name) { return function() {
-                    console.log(id, name);
-                    socket.emit("banIP", {
-                        id: id,
-                        name: name,
-                        range: true
-                    });
-                    return false;
-                } })(entries[i].id, entries[i].names[0]);
-                banrange.click(callback2);
-            }
-            var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
-            var name = $("<td/>").text(entries[i].names).appendTo(tr);
-            tr.data("names", entries[i].names);
-            tr.data("banned", entries[i].banned);
-            tr.click(function(ev) {
-                tbl.find(".name-detail").remove();
-                if(this.data("namesopen")) {
-                    this.data("namesopen", false);
-                    return;
-                }
-                var names = this.data("names") || [];
-                for(var i = names.length-1; i >= 0; i--) {
-                    var detail = $("<tr/>").insertAfter(this);
-                    detail.addClass("name-detail");
-                    if(this.data("banned")) {
-                        detail.addClass("alert alert-error");
-                    }
-                    var buttontd = $("<td/>").appendTo(detail);
-                    $("<button/>").addClass("btn btn-mini btn-danger")
-                        .text("Ban Name")
-                        .appendTo(buttontd)
-                        .click(function() {
-                            socket.emit("banName", {
-                                name: this
-                            });
-                        }.bind(names[i]));
-                    $("<td/>").text("\"").appendTo(detail);
-                    $("<td/>").text(names[i]).appendTo(detail);
-                }
-                this.data("namesopen", true);
-            }.bind(tr));
         }
+        loadLoginlogPage(0);
     },
 
     acl: function(entries) {
@@ -375,10 +328,31 @@ Callbacks = {
             var y = b.name.toLowerCase();
             return y == x ? 0 : (x < y ? -1 : 1);
         });
+        $("#channelranks").data("entries", entries);
         var tbl = $("#channelranks table");
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
         }
+        $("#acl_pagination").remove();
+        if(entries.length > 20) {
+            var pag = $("<div/>").addClass("pagination span12")
+                .attr("id", "acl_pagination")
+                .prependTo($("#channelranks"));
+            var btns = $("<ul/>").appendTo(pag);
+            for(var i = 0; i < entries.length / 20; i++) {
+                var li = $("<li/>").appendTo(btns);
+                (function(i) {
+                $("<a/>").attr("href", "javascript:void(0)")
+                    .text(i+1)
+                    .click(function() {
+                        loadACLPage(i);
+                    })
+                    .appendTo(li);
+                })(i);
+            }
+        }
+        loadACLPage(0);
+        return;
         for(var i = 0; i < entries.length; i++) {
             var tr = $("<tr/>").appendTo(tbl);
             var name = $("<td/>").text(entries[i].name).appendTo(tr);

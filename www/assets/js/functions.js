@@ -464,11 +464,147 @@ function loadSearchPage(page) {
         }
         $(li).appendTo($("#library"));
     }
+    if($("#search_pagination").length > 0) {
+        $("#search_pagination").find("li").each(function() {
+            $(this).removeClass("active");
+        });
+        $($("#search_pagination").find("li")[page]).addClass("active");
+    }
 }
 
 function clearSearchResults() {
     $("#library").html("");
     $("#search_pagination").remove();
+}
+
+function loadLoginlogPage(page) {
+    var entries = $("#loginlog").data("entries");
+    var start = page * 20;
+    var tbl = $("#loginlog table");
+    if(tbl.children().length > 1) {
+        $(tbl.children()[1]).remove();
+    }
+    for(var i = start; i < start + 20 && i < entries.length; i++) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var bantd = $("<td/>").appendTo(tr);
+        if(entries[i].banned) {
+            bantd.text("Banned");
+            tr.addClass("alert alert-error");
+        }
+        else {
+            var ban = $("<button/>").addClass("btn btn-mini btn-danger")
+                .text("Ban IP")
+                .appendTo(bantd);
+            var banrange = $("<button/>").addClass("btn btn-mini btn-danger")
+                .text("Ban IP Range")
+                .appendTo(bantd);
+            var callback = (function(id, name) { return function() {
+                console.log(id, name);
+                socket.emit("banIP", {
+                    id: id,
+                    name: name,
+                    range: false
+                });
+                return false;
+            } })(entries[i].id, entries[i].names[0]);
+            ban.click(callback);
+            var callback2 = (function(id, name) { return function() {
+                console.log(id, name);
+                socket.emit("banIP", {
+                    id: id,
+                    name: name,
+                    range: true
+                });
+                return false;
+            } })(entries[i].id, entries[i].names[0]);
+            banrange.click(callback2);
+        }
+        var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
+        var name = $("<td/>").text(entries[i].names).appendTo(tr);
+        tr.data("names", entries[i].names);
+        tr.data("banned", entries[i].banned);
+        tr.click(function(ev) {
+            tbl.find(".name-detail").remove();
+            if(this.data("namesopen")) {
+                this.data("namesopen", false);
+                return;
+            }
+            var names = this.data("names") || [];
+            for(var i = names.length-1; i >= 0; i--) {
+                var detail = $("<tr/>").insertAfter(this);
+                detail.addClass("name-detail");
+                if(this.data("banned")) {
+                    detail.addClass("alert alert-error");
+                }
+                var buttontd = $("<td/>").appendTo(detail);
+                $("<button/>").addClass("btn btn-mini btn-danger")
+                    .text("Ban Name")
+                    .appendTo(buttontd)
+                    .click(function() {
+                        socket.emit("banName", {
+                            name: this
+                        });
+                    }.bind(names[i]));
+                $("<td/>").text("\"").appendTo(detail);
+                $("<td/>").text(names[i]).appendTo(detail);
+            }
+            this.data("namesopen", true);
+        }.bind(tr));
+    }
+    if($("#loginlog_pagination").length > 0) {
+        $("#loginlog_pagination").find("li").each(function() {
+            $(this).removeClass("active");
+        });
+        $($("#loginlog_pagination").find("li")[page]).addClass("active");
+    }
+}
+
+function loadACLPage(page) {
+    var entries = $("#channelranks").data("entries");
+    var start = page * 20;
+    var tbl = $("#channelranks table");
+    if(tbl.children().length > 1) {
+        $(tbl.children()[1]).remove();
+    }
+    for(var i = start; i < start + 20 && i < entries.length; i++) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var name = $("<td/>").text(entries[i].name).appendTo(tr);
+        name.addClass(getNameColor(entries[i].rank));
+        var rank = $("<td/>").text(entries[i].rank).appendTo(tr);
+        var control = $("<td/>").appendTo(tr);
+        var up = $("<button/>").addClass("btn btn-mini btn-success")
+            .appendTo(control);
+        $("<i/>").addClass("icon-plus").appendTo(up);
+        var down = $("<button/>").addClass("btn btn-mini btn-danger")
+            .appendTo(control);
+        $("<i/>").addClass("icon-minus").appendTo(down);
+        if(entries[i].rank + 1 >= RANK) {
+            up.attr("disabled", true);
+        }
+        else {
+            up.click(function(name) { return function() {
+                socket.emit("promote", {
+                    name: name
+                });
+            }}(entries[i].name));
+        }
+        if(entries[i].rank >= RANK) {
+            down.attr("disabled", true);
+        }
+        else {
+            down.click(function(name) { return function() {
+                socket.emit("demote", {
+                    name: name
+                });
+            }}(entries[i].name));
+        }
+    }
+    if($("#acl_pagination").length > 0) {
+        $("#acl_pagination").find("li").each(function() {
+            $(this).removeClass("active");
+        });
+        $($("#acl_pagination").find("li")[page]).addClass("active");
+    }
 }
 
 // Rearranges the queue
