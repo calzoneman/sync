@@ -418,6 +418,10 @@ function listChannelRanks(chan) {
         return [];
     }
 
+    if(!chan.registered) {
+        return [];
+    }
+
     var query = createQuery(
         "SELECT * FROM `?` WHERE 1",
         ["chan_"+chan+"_ranks"]
