@@ -1588,12 +1588,12 @@ Channel.prototype.chainMessage = function(user, msg, data) {
 }
 
 Channel.prototype.filterMessage = function(msg) {
-    const link = /((?:(?:https?)|(?:ftp))(?::\/\/[0-9a-zA-Z\.]+(?::[0-9]+)?[^\s$]+))/g;
+    const link = /((?:(?:https?)|(?:ftp))(?::\/\/[0-9a-zA-Z\.]+(?::[0-9]+)?[^\s'"$]+))/g;
     var subs = msg.split(link);
     // Apply other filters
     for(var j = 0; j < subs.length; j++) {
         if(subs[j].match(link)) {
-            subs[j] = subs[j].replace(link, "<a href=\"$1\" target=\"blank\">$1</a>");
+            subs[j] = subs[j].replace(link, "<a href=\"$1\" target=\"_blank\">$1</a>");
             continue;
         }
         for(var i = 0; i < this.filters.length; i++) {
