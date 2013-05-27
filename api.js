@@ -292,7 +292,7 @@ function handleGlobalBans(params, req, res) {
             });
             return;
         }
-        var result = Database.addGlobalBan(ip, reason);
+        var result = Database.globalBanIP(ip, reason);
         sendJSON(res, {
             success: result,
             ip: ip,
@@ -307,7 +307,7 @@ function handleGlobalBans(params, req, res) {
             });
             return;
         }
-        var result = Database.liftGlobalBan(ip);
+        var result = Database.globalUnbanIP(ip);
         sendJSON(res, {
             success: result,
             ip: ip,

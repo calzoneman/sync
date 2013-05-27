@@ -1,4 +1,4 @@
-var Database = require("../database-new");
+var Database = require("../database");
 Database.setup(require("../config-testing"));
 var assert = require("assert");
 var db = Database.getConnection();

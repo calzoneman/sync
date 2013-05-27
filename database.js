@@ -137,6 +137,7 @@ function refreshGlobalBans() {
             global_bans[rows[i].ip] = rows[i].note;
         }
     }
+    return global_bans;
 }
 
 function globalBanIP(ip, reason) {
@@ -169,8 +170,12 @@ function globalUnbanIP(ip) {
 /* REGION Channel Registration/Loading */
 
 function registerChannel(name) {
+    if(!name.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
-    if(!db) { return false;
+    if(!db) {
+        return false;
     }
 
     // Library table
@@ -234,6 +239,9 @@ function registerChannel(name) {
 }
 
 function loadChannel(chan) {
+    if(!name.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return;
@@ -309,7 +317,7 @@ function loadChannel(chan) {
 }
 
 function deleteChannel(name) {
-    if(!/[a-zA-Z0-9-_]+/.test(name)) {
+    if(!name.match(/^[a-zA-Z0-9-_]+$/)) {
         return false;
     }
 
@@ -344,6 +352,9 @@ function deleteChannel(name) {
 /* REGION Channel data */
 
 function getChannelRank(chan, name) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return 0;
@@ -394,6 +405,9 @@ function getChannelRank(chan, name) {
 }
 
 function setChannelRank(chan, name, rank) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return false;
@@ -413,12 +427,11 @@ function setChannelRank(chan, name, rank) {
 }
 
 function listChannelRanks(chan) {
-    var db = getConnection();
-    if(!db) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
         return [];
     }
-
-    if(!chan.registered) {
+    var db = getConnection();
+    if(!db) {
         return [];
     }
 
@@ -429,7 +442,6 @@ function listChannelRanks(chan) {
 
     var results = db.querySync(query);
     if(!results) {
-        Logger.errlog.log("! Failed to list ranks: " + chan);
         return [];
     }
 
@@ -437,6 +449,9 @@ function listChannelRanks(chan) {
 }
 
 function addToLibrary(chan, media) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return false;
@@ -454,6 +469,9 @@ function addToLibrary(chan, media) {
 }
 
 function removeFromLibrary(chan, id) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return false;
@@ -468,6 +486,9 @@ function removeFromLibrary(chan, id) {
 }
 
 function channelBan(chan, ip, name, banby) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return false;
@@ -485,6 +506,9 @@ function channelBan(chan, ip, name, banby) {
 }
 
 function channelUnbanIP(chan, ip) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return false;
@@ -499,6 +523,9 @@ function channelUnbanIP(chan, ip) {
 }
 
 function channelUnbanName(chan, name) {
+    if(!chan.match(/^[a-zA-Z0-9-_]+$/)) {
+        return false;
+    }
     var db = getConnection();
     if(!db) {
         return false;
