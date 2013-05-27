@@ -559,6 +559,10 @@ $("#youtube_search").click(function() {
     });
 });
 
+$("#search_clear").click(function() {
+    clearSearchResults();
+});
+
 function fluidLayout() {
     $(".row").each(function() {
         $(this).removeClass("row").addClass("row-fluid");

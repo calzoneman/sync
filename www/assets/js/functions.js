@@ -448,6 +448,29 @@ function addLibraryButtons(li, id, yt) {
     }
 }
 
+function loadSearchPage(page) {
+    $("#library").html("");
+    var results = $("#library").data("entries");
+    var start = page * 100;
+    for(var i = start; i < start + 100 && i < results.length; i++) {
+        var li = makeQueueEntry(results[i]);
+        if(hasPermission("playlistadd")) {
+            if(results[i].thumb) {
+                addLibraryButtons(li, results[i].id, true);
+            }
+            else {
+                addLibraryButtons(li, results[i].id);
+            }
+        }
+        $(li).appendTo($("#library"));
+    }
+}
+
+function clearSearchResults() {
+    $("#library").html("");
+    $("#search_pagination").remove();
+}
+
 // Rearranges the queue
 function moveVideo(src, dest, noanim) {
     var li = $($("#queue").children()[src]);

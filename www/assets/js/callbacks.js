@@ -692,21 +692,26 @@ Callbacks = {
     },
 
     librarySearchResults: function(data) {
-        var n = $("#library").children().length;
-        for(var i = 0; i < n; i++) {
-            $("#library")[0].removeChild($("#library").children()[0]);
-        }
-        var ul = $("#library")[0];
-        for(var i = 0; i < data.results.length; i++) {
-            var li = makeQueueEntry(data.results[i]);
-            if(RANK >= Rank.Moderator || OPENQUEUE || LEADER) {
-                if(data.results[i].thumb)
-                    addLibraryButtons(li, data.results[i].id, true);
-                else
-                    addLibraryButtons(li, data.results[i].id);
+        clearSearchResults();
+        $("#library").data("entries", data.results);
+        if(data.results.length > 100) {
+            var pag = $("<div/>").addClass("pagination")
+                .attr("id", "search_pagination")
+                .insertAfter($("#library"));
+            var btns = $("<ul/>").appendTo(pag);
+            for(var i = 0; i < data.results.length / 100; i++) {
+                var li = $("<li/>").appendTo(btns);
+                (function(i) {
+                $("<a/>").attr("href", "javascript:void(0)")
+                    .text(i+1)
+                    .click(function() {
+                        loadSearchPage(i);
+                    })
+                    .appendTo(li);
+                })(i);
             }
-            $(li).appendTo(ul);
         }
+        loadSearchPage(0);
     },
 
     /* REGION Polls */
