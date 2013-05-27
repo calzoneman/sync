@@ -617,12 +617,12 @@ Callbacks = {
     },
 
     changeMedia: function(data) {
+        console.log(data);
         $("#currenttitle").text("Currently Playing: " + data.title);
-        if(data.type != "sc" && MEDIATYPE == "sc")
+        if(data.type != "sc" && PLAYER.type == "sc")
             // [](/goddamnitmango)
             fixSoundcloudShit();
-        if(data.type != MEDIATYPE) {
-            MEDIATYPE = data.type;
+        if(data.type != PLAYER.type) {
             PLAYER = new Media(data);
         }
         if(PLAYER.update) {

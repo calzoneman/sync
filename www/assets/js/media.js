@@ -471,25 +471,21 @@ Media.prototype.removeOld = function() {
 }
 
 Media.prototype.hide = function() {
-    if(this.type == "null") {
+    if(!/chrome/ig.test(navigator.userAgent)) {
         return;
     }
-    this.getTime(function(seconds) {
-        this.time = seconds;
-        this.hidden = $("#ytapiplayer").detach();
-    }.bind(this));
+    this.size = {
+        width: $("#ytapiplayer").attr("width"),
+        height: $("#ytapiplayer").attr("height")
+    };
+    $("#ytapiplayer").attr("width", 1)
+        .attr("height", 1);
 }
 
 Media.prototype.unhide = function() {
-    if(this.type == "null") {
+    if(!/chrome/ig.test(navigator.userAgent)) {
         return;
     }
-    this.hidden.appendTo($("#videodiv"));
-    var data = {
-        id: this.id,
-        currentTime: this.time
-    };
-    setTimeout(function() { this.load(data); }.bind(this), 1000);
-    delete this.hidden;
-    delete this.time;
+    $("#ytapiplayer").attr("width", this.size.width)
+        .attr("height", this.size.height);
 }
