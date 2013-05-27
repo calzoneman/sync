@@ -699,7 +699,7 @@ Callbacks = {
         $("<button/>").addClass("close pull-right").text("×")
             .appendTo(poll)
             .click(function() { poll.remove(); });
-        if(RANK >= Rank.Moderator || LEADER) {
+        if(hasPermission("pollctl")) {
             $("<button/>").addClass("btn btn-danger pull-right").text("End Poll")
                 .appendTo(poll)
                 .click(function() {
@@ -723,6 +723,8 @@ Callbacks = {
                 .click(callback);
 
         }
+
+        poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
     },
 
     updatePoll: function(data) {

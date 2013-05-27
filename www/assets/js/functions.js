@@ -808,7 +808,7 @@ function handlePermissionChange() {
     }
     var poll = $("#pollcontainer .active");
     if(poll.length > 0) {
-        poll.find(".btn").attr("disabled", hasPermission("pollvote"));
+        poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
     }
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
