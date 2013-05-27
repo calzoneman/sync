@@ -296,7 +296,7 @@ function loadChannel(chan) {
         for(var i = 0; i < rows.length; i++) {
             var r = rows[i];
             if(r.ip == "*") {
-                chan.nameban[r.name] = r.banner;
+                chan.namebans[r.name] = r.banner;
             }
             else {
                 chan.ipbans[r.ip] = [r.name, r.banner];
