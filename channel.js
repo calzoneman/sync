@@ -266,7 +266,7 @@ Channel.prototype.tryRegister = function(user) {
         });
     }
     else {
-        if(Database.registerChannel(this)) {
+        if(Database.registerChannel(this.name)) {
             this.registered = true;
             this.saveRank(user);
             user.socket.emit("registerChannel", {
