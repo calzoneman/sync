@@ -617,7 +617,6 @@ Callbacks = {
     },
 
     changeMedia: function(data) {
-        console.log(data);
         $("#currenttitle").text("Currently Playing: " + data.title);
         if(data.type != "sc" && PLAYER.type == "sc")
             // [](/goddamnitmango)

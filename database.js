@@ -239,12 +239,12 @@ function registerChannel(name) {
 }
 
 function loadChannel(chan) {
-    if(!name.match(/^[a-zA-Z0-9-_]+$/)) {
+    if(!chan.name.match(/^[a-zA-Z0-9-_]+$/)) {
         return false;
     }
     var db = getConnection();
     if(!db) {
-        return;
+        return false;
     }
 
     var query = createQuery(
