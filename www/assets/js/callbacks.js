@@ -740,3 +740,15 @@ Callbacks = {
         closePoll();
     }
 }
+
+$.getScript(IO_URL+"/socket.io/socket.io.js", function() {
+    try {
+        socket = io.connect(IO_URL);
+        for(var key in Callbacks) {
+            socket.on(key, Callbacks[key]);
+        }
+    }
+    catch(e) {
+        Callbacks.disconnect();
+    }
+});
