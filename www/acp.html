@@ -75,6 +75,15 @@
                 </form>
                 <pre id="log"></pre>
             </div>
+            <div class="span4">
+                <h3>Password Reset</h3>
+                <form class="form-inline" action="javascript:void(0)">
+                    <div class="input-append">
+                        <input type="text" id="reset_uname" placeholder="Username">
+                        <button class="btn" id="reset_pw">Reset</button>
+                    </div>
+                </form>
+            </div>
         </div>
         <div class="row">
             <div class="span8">
@@ -171,7 +180,19 @@
                 getChanlog();
             }
         });
-        
+
+        $("#reset_pw").click(function() {
+            $.getJSON(WEB_URL+"/api/json/pwreset?action=reset&reset_name="+$("#reset_uname").val()+"&"+p+"&callback=?", function(data) {
+                if(data.success) {
+                    alert("Success.  New password: " + data.pw);
+                }
+                else {
+                    alert("Failure.");
+                }
+
+            });
+        });
+
         function loadBanlist() {
             $.getJSON(WEB_URL+"/api/json/globalbans?action=list&"+p+"&callback=?", function(data) {
                 handleBanlist(data);

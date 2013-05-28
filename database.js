@@ -1,6 +1,7 @@
 var mysql = require("mysql-libmysqlclient");
 var Logger = require("./logger");
 var Media = require("./media").Media;
+var bcrypt = require("bcrypt");
 
 var db = false;
 var SERVER = "";
@@ -106,6 +107,21 @@ function init() {
     }
 
     refreshGlobalBans();
+
+    // Create password reset table
+    query = ["CREATE TABLE IF NOT EXISTS `password_reset` (",
+                "`ip` VARCHAR(15) NOT NULL,",
+                "`name` VARCHAR(20) NOT NULL,",
+                "`hash` VARCHAR(64) NOT NULL,",
+                "`email` VARCHAR(255) NOT NULL,",
+                "`expire` BIGINT NOT NULL,",
+                "PRIMARY KEY (`name`))",
+             "ENGINE = MyISAM;"].join("");
+
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create password reset table");
+    }
 }
 
 /* REGION Global Bans */
@@ -558,6 +574,75 @@ function setProfile(name, data) {
     return db.querySync(query);
 }
 
+function generatePasswordReset(ip, name, email) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "SELECT `email` FROM `registrations` WHERE `uname`=?",
+        [name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to retrieve user email");
+        return false;
+    }
+
+    var rows = results.fetchAllSync();
+    if(rows.length == 0) {
+        throw "Provided username does not exist";
+    }
+    if(rows[0].email != email) {
+        throw "Provided email does not match user's email";
+    }
+
+    // Validation complete, now time to reset it
+    var hash = hashlib.sha256(Date.now() + name);
+    query = createQuery(
+        ["INSERT INTO `password_reset` (",
+            "`ip`, `name`, `hash`, `email`, `expire",
+         ") VALUES (",
+            "?, ?, ?, ?, ?",
+         ")"].join(""),
+        [ip, name, hash, email, Date.now() + 24*60*60]
+    );
+
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to insert password reset");
+        return false;
+    }
+
+    return true;
+}
+
+function resetPassword(name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var pw = "";
+    for(var i = 0; i < 10; i++) {
+        pw += "abcdefghijklmnopqrstuvwxyz"[parseInt(Math.random() * 25)];
+    }
+    var hash = bcrypt.hashSync(pw, 10);
+    var query = createQuery(
+        "UPDATE `registrations` SET `pw`=? WHERE `uname`=?",
+        [hash, name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        return false;
+    }
+
+    return pw;
+}
+
 exports.setup = setup;
 exports.getConnection = getConnection;
 exports.createQuery = createQuery;
@@ -578,3 +663,5 @@ exports.channelBan = channelBan;
 exports.channelUnbanIP = channelUnbanIP;
 exports.channelUnbanName = channelUnbanName;
 exports.setProfile = setProfile;
+exports.generatePasswordReset = generatePasswordReset;
+exports.resetPassword = resetPassword;

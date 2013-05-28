@@ -27,7 +27,8 @@ var jsonHandlers = {
     "register"   : handleRegister,
     "changepass" : handlePasswordChange,
     "globalbans" : handleGlobalBans,
-    "admreports" : handleAdmReports
+    "admreports" : handleAdmReports,
+    "pwreset"    : handlePasswordReset
 };
 
 function handle(path, req, res) {
@@ -324,6 +325,45 @@ function handleAdmReports(params, req, res) {
     sendJSON(res, {
         error: "Not implemented"
     });
+}
+
+function handlePasswordReset(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+    var session = params.session || "";
+    var row = Auth.login(name, pw, session);
+    if(!row || row.global_rank < 255) {
+        res.send(403);
+        return;
+    }
+
+    var action = params.action || "";
+    if(action == "reset") {
+        var uname = params.reset_name;
+        if(Auth.getGlobalRank(uname) > row.global_rank) {
+            sendJSON(res, {
+                success: false
+            });
+            return;
+        }
+        var new_pw = Database.resetPassword(uname);
+        if(new_pw) {
+            sendJSON(res, {
+                success: true,
+                pw: new_pw
+            });
+        }
+        else {
+            sendJSON(res, {
+                success: false
+            });
+        }
+    }
+    else {
+        sendJSON(res, {
+            success: false
+        });
+    }
 }
 
 // Helper function
