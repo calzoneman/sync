@@ -40,17 +40,18 @@ function makeTabCallback(tabid, paneid) {
 
 $("#register").click(makeTabCallback("#register", "#registerpane"));
 $("#pwchange").click(makeTabCallback("#pwchange", "#changepwpane"));
+$("#pwreset").click(makeTabCallback("#pwreset", "#pwresetpane"));
 $("#email").click(makeTabCallback("#email", "#changeemailpane"));
 
 $("#registerbtn").click(function() {
     $("#registerpane").find(".alert-error").remove();
     $("#registerpane").find(".error").removeClass("error");
-    var uname = $("#regusername").val();
+    var name = $("#regusername").val();
     var pw = $("#regpw").val();
     var pwc = $("#regpwconfirm").val();
 
     var err = false;
-    if(!uname.match(/^[a-z0-9_]{1,20}$/i)) {
+    if(!name.match(/^[a-z0-9_]{1,20}$/i)) {
         $("<div/>").addClass("alert alert-error")
             .text("Usernames must be 1-20 characters long and contain only a-z, 0-9, and underscores")
             .insertAfter($("#regusername").parent().parent());
@@ -78,6 +79,28 @@ $("#registerbtn").click(function() {
     }
 
     // Input valid, try registering
+    var url = api + "register?" + [
+        "name=" + name,
+        "pw=" + pw
+    ].join("&") + "&callback=?";
+
+    $.getJSON(url, function(data) {
+        if(data.success) {
+            uname = name;
+            session = data.session;
+            onLogin();
+            $("<div/>").addClass("alert alert-success")
+                .text("Registration successful")
+                .insertBefore($("#registerpane form"));
+            $("#regpw").val("");
+            $("#regusername").val("");
+        }
+        else {
+            $("<div/>").addClass("alert alert-error")
+                .text(data.error)
+                .insertBefore($("#registerpane form"));
+        }
+    });
 });
 
 $("#loginbtn").click(function() {
@@ -222,6 +245,32 @@ $("#cebtn").click(function() {
             $("<div/>").addClass("alert alert-error")
                 .text(data.error)
                 .insertBefore($("#changeemailpane form"));
+        }
+    });
+
+});
+
+$("#rpbtn").click(function() {
+    $("#pwresetpane").find(".alert-error").remove();
+    $("#pwresetpane").find(".alert-success").remove();
+    var name = $("#rpusername").val();
+    var email = $("#rpemail").val();
+
+    email = escape(email);
+    var url = api + "resetpass?" + [
+        "name=" + name,
+        "email=" + email
+    ].join("&") + "&callback=?";
+    $.getJSON(url, function(data) {
+        if(data.success) {
+            $("<div/>").addClass("alert alert-success")
+                .text("Password reset link issued.  Check your email.")
+                .insertBefore($("#pwresetpane form"));
+        }
+        else {
+            $("<div/>").addClass("alert alert-error")
+                .text(data.error)
+                .insertBefore($("#pwresetpane form"));
         }
     });
 

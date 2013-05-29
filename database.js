@@ -2,6 +2,7 @@ var mysql = require("mysql-libmysqlclient");
 var Logger = require("./logger");
 var Media = require("./media").Media;
 var bcrypt = require("bcrypt");
+var hashlib = require("node_hash");
 
 var db = false;
 var SERVER = "";
@@ -620,13 +621,14 @@ function generatePasswordReset(ip, name, email) {
 
     // Validation complete, now time to reset it
     var hash = hashlib.sha256(Date.now() + name);
+    var exp = Date.now() + 24*60*60*1000;
     query = createQuery(
         ["INSERT INTO `password_reset` (",
-            "`ip`, `name`, `hash`, `email`, `expire",
+            "`ip`, `name`, `hash`, `email`, `expire`",
          ") VALUES (",
             "?, ?, ?, ?, ?",
-         ")"].join(""),
-        [ip, name, hash, email, Date.now() + 24*60*60]
+         ") ON DUPLICATE KEY UPDATE `expire`=?"].join(""),
+        [ip, name, hash, email, exp, exp]
     );
 
     results = db.querySync(query);
@@ -636,6 +638,45 @@ function generatePasswordReset(ip, name, email) {
     }
 
     return true;
+}
+
+function recoverPassword(hash) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "SELECT * FROM password_reset WHERE hash=?",
+        [hash]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to retrieve from password_reset");
+        throw "Database error.  Contact an administrator";
+    }
+
+    var rows = results.fetchAllSync();
+    if(rows.length == 0) {
+        throw "Invalid password reset link";
+    }
+
+    db.querySync(createQuery(
+        "DELETE FROM password_reset WHERE hash=?",
+        [hash]
+    ));
+
+    if(Date.now() > rows[0].expire) {
+        throw "Link expired.  Password resets are valid for 24 hours";
+    }
+
+    var pw;
+    if(!(pw = resetPassword(rows[0].name))) {
+        throw "Operation failed.  Contact an administrator.";
+    }
+
+    return [rows[0].name, pw];
 }
 
 function resetPassword(name) {
@@ -684,4 +725,5 @@ exports.channelUnbanName = channelUnbanName;
 exports.setProfile = setProfile;
 exports.setUserEmail = setUserEmail;
 exports.generatePasswordReset = generatePasswordReset;
+exports.recoverPassword = recoverPassword;
 exports.resetPassword = resetPassword;

@@ -26,10 +26,12 @@ var jsonHandlers = {
     "login"      : handleLogin,
     "register"   : handleRegister,
     "changepass" : handlePasswordChange,
+    "resetpass"  : handlePasswordReset,
+    "recoverpw"  : handlePasswordRecover,
     "setemail"   : handleEmailChange,
     "globalbans" : handleGlobalBans,
     "admreports" : handleAdmReports,
-    "pwreset"    : handlePasswordReset
+    "acppwreset" : handleAcpPasswordReset
 };
 
 function handle(path, req, res) {
@@ -229,6 +231,50 @@ function handlePasswordChange(params, req, res) {
     }
 }
 
+function handlePasswordReset(params, req, res) {
+    var name = params.name || "";
+    var email = unescape(params.email || "");
+    var ip = req.socket.address().address;
+
+    try {
+        Database.generatePasswordReset(ip, name, email);
+    }
+    catch(e) {
+        sendJSON(res, {
+            success: false,
+            error: e
+        });
+        return;
+    }
+
+    sendJSON(res, {
+        success: true
+    });
+}
+
+function handlePasswordRecover(params, req, res) {
+    var hash = params.hash || "";
+    var ip = req.socket.address().address;
+
+    try {
+        var info = Database.recoverPassword(hash);
+        sendJSON(res, {
+            success: true,
+            name: info[0],
+            pw: info[1]
+        });
+        Logger.syslog.log(ip + " recovered password for " + name);
+        return;
+    }
+    catch(e) {
+        sendJSON(res, {
+            success: false,
+            error: e
+        });
+    }
+
+}
+
 function handleEmailChange(params, req, res) {
     var name = params.name || "";
     var pw = params.pw || "";
@@ -309,7 +355,7 @@ function handleRegister(params, req, res) {
         else {
             sendJSON(res, {
                 success: false,
-                error: "I dunno what went wrong"
+                error: "Registration error.  Contact an admin for assistance."
             });
         }
     }
@@ -373,7 +419,7 @@ function handleAdmReports(params, req, res) {
     });
 }
 
-function handlePasswordReset(params, req, res) {
+function handleAcpPasswordReset(params, req, res) {
     var name = params.name || "";
     var pw = params.pw || "";
     var session = params.session || "";
