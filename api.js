@@ -26,6 +26,7 @@ var jsonHandlers = {
     "login"      : handleLogin,
     "register"   : handleRegister,
     "changepass" : handlePasswordChange,
+    "setemail"   : handleEmailChange,
     "globalbans" : handleGlobalBans,
     "admreports" : handleAdmReports,
     "pwreset"    : handlePasswordReset
@@ -194,7 +195,7 @@ function handleLogin(params, req, res) {
     }
     else {
         sendJSON(res, {
-            error: "Invalid session",
+            error: "Invalid username/password",
             success: false
         });
     }
@@ -216,13 +217,58 @@ function handlePasswordChange(params, req, res) {
         var success = Auth.setUserPassword(name, newpw);
         sendJSON(res, {
             success: success,
-            error: success ? "" : "Change password failed"
+            error: success ? "" : "Change password failed",
+            session: row.session_hash
         });
     }
     else {
         sendJSON(res, {
             success: false,
-            error: "Invalid username or password"
+            error: "Invalid username/password"
+        });
+    }
+}
+
+function handleEmailChange(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+    var email = unescape(params.email) || "";
+    if(!email.match(/^[a-z0-9_\.]+@[a-z0-9_\.]+[a-z]+$/)) {
+        sendJSON(res, {
+            success: false,
+            error: "Invalid email"
+        });
+        return;
+    }
+
+    if(email.match(/.*@(localhost|127\.0\.0\.1)/i)) {
+        sendJSON(res, {
+            success: false,
+            error: "Nice try, but no."
+        });
+        return;
+    }
+
+    if(pw == "") {
+        sendJSON(res, {
+            success: false,
+            error: "Password cannot be empty"
+        });
+        return;
+    }
+    var row = Auth.login(name, pw);
+    if(row) {
+        var success = Database.setUserEmail(name, email);
+        sendJSON(res, {
+            success: success,
+            error: success ? "" : "Email update failed",
+            session: row.session_hash
+        });
+    }
+    else {
+        sendJSON(res, {
+            success: false,
+            error: "Invalid username/password"
         });
     }
 }

@@ -574,6 +574,25 @@ function setProfile(name, data) {
     return db.querySync(query);
 }
 
+function setUserEmail(name, email) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "UPDATE `registrations` SET `email`=? WHERE `uname`=?",
+        [email, name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to set user email");
+        return false;
+    }
+    return true;
+}
+
 function generatePasswordReset(ip, name, email) {
     var db = getConnection();
     if(!db) {
@@ -663,5 +682,6 @@ exports.channelBan = channelBan;
 exports.channelUnbanIP = channelUnbanIP;
 exports.channelUnbanName = channelUnbanName;
 exports.setProfile = setProfile;
+exports.setUserEmail = setUserEmail;
 exports.generatePasswordReset = generatePasswordReset;
 exports.resetPassword = resetPassword;
