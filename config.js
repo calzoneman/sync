@@ -17,3 +17,21 @@ exports.IO_PORT = 1337; // Socket.IO port, DO NOT USE PORT 80.
 exports.WEBSERVER_PORT = 8080; // Webserver port.  Binding port 80 requires root permissions
 exports.MAX_PER_IP = 10;
 exports.GUEST_LOGIN_DELAY = 60; // Seconds
+
+var nodemailer = require("nodemailer");
+exports.MAIL = false;
+/* Example for setting up email:
+exports.MAIL = nodemailer.createTransport("SMTP", {
+    service: "Gmail",
+    auth: {
+        user: "some.user@gmail.com",
+        pass: "supersecretpassword"
+    }
+});
+
+See https://github.com/andris9/Nodemailer
+*/
+exports.MAIL_FROM = "some.user@gmail.com";
+// Domain for password reset link
+// Email sent goes to exports.DOMAIN/reset.html?resethash
+exports.DOMAIN = "http://localhost";

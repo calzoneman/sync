@@ -11,6 +11,7 @@
         "express": ">=3.2",
         "mysql-libmysqlclient": "*",
         "node_hash": "*",
-        "bcrypt": "*"
+        "bcrypt": "*",
+        "nodemailer": "*"
     }
 }

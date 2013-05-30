@@ -267,6 +267,7 @@ $("#cebtn").click(function() {
 });
 
 $("#rpbtn").click(function() {
+    $("#rpbtn").text("Sending...");
     $("#pwresetpane").find(".alert-error").remove();
     $("#pwresetpane").find(".alert-success").remove();
     var name = $("#rpusername").val();
@@ -278,6 +279,7 @@ $("#rpbtn").click(function() {
         "email=" + email
     ].join("&") + "&callback=?";
     $.getJSON(url, function(data) {
+        $("#rpbtn").text("Send Reset");
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
                 .text("Password reset link issued.  Check your email.")

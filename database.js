@@ -655,8 +655,8 @@ function generatePasswordReset(ip, name, email) {
             "`ip`, `name`, `hash`, `email`, `expire`",
          ") VALUES (",
             "?, ?, ?, ?, ?",
-         ") ON DUPLICATE KEY UPDATE `expire`=?"].join(""),
-        [ip, name, hash, email, exp, exp]
+         ") ON DUPLICATE KEY UPDATE `hash`=?,`expire`=?"].join(""),
+        [ip, name, hash, email, exp, hash, exp]
     );
 
     results = db.querySync(query);

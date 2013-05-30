@@ -14,6 +14,7 @@ var Server = require("./server.js");
 var Logger = require("./logger.js");
 var apilog = new Logger.Logger("api.log");
 var Database = require("./database.js");
+var Config = require("./config.js");
 var fs = require("fs");
 
 var plainHandlers = {
@@ -250,9 +251,51 @@ function handlePasswordReset(params, req, res) {
         return;
     }
 
+    if(!Config.MAIL) {
+        sendJSON(res, {
+            success: false,
+            error: "This server does not have email enabled.  Contact an administrator"
+        });
+        return;
+    }
+    var msg = [
+        "A password reset request was issued for your account `",
+        name,
+        "` on ",
+        Config.DOMAIN,
+        ".  This request is valid for 24 hours.  ",
+        "If you did not initiate this, there is no need to take action.  ",
+        "To reset your password, copy and paste the following link into ",
+        "your browser: ",
+        Config.DOMAIN,
+        "/reset.html?",
+        hash
+    ].join("");
 
-    sendJSON(res, {
-        success: true
+    var mail = {
+        from: "CyTube Services <" + Config.MAIL_FROM + ">",
+        to: email,
+        subject: "Password reset request",
+        text: msg
+    };
+
+    Config.MAIL.sendMail(mail, function(err, response) {
+        if(err) {
+            Logger.errlog.log("Mail fail: " + err);
+            sendJSON(res, {
+                success: false,
+                error: "Email failed.  Contact an admin if this persists."
+            });
+        }
+        else {
+            sendJSON(res, {
+                success: true
+            });
+
+            if(Config.DEBUG) {
+                Logger.syslog.log(response);
+            }
+        }
     });
 }
 
