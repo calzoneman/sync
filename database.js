@@ -10,6 +10,7 @@ var USER = "";
 var DATABASE = "";
 var PASSWORD = "";
 var CONFIG = {};
+var global_bans = {};
 
 function setup(cfg) {
     SERVER = cfg.MYSQL_SERVER;
