@@ -366,6 +366,20 @@ function handleProfileChange(params, req, res) {
         success: result,
         error: result ? "" : "Internal error.  Contact an administrator"
     });
+
+    for(var n in Server.channels) {
+        var chan = Server.channels[n];
+        for(var i = 0; i < chan.users.length; i++) {
+            if(chan.users[i].name.toLowerCase() == name) {
+                chan.users[i].profile = {
+                    image: img,
+                    text: text
+                };
+                chan.broadcastUserUpdate(chan.users[i]);
+                break;
+            }
+        }
+    }
 }
 
 function handleEmailChange(params, req, res) {

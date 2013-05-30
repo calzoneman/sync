@@ -8,11 +8,8 @@
             #username, #pw {
                 width: 95%;
             }
-            #login, #register {
-                width: 49%;
-            }
-            #changepass {
-                width: 99%;
+            .btn {
+                width: 45%;
             }
         </style>
     </head>
@@ -30,27 +27,10 @@
                     <input type="password" id="pw">
                 </div>
             </div>
-            <div class="control-group" style="display: none" id="newpassdiv">
-                <label class="control-label" for="newpass" id="nplabel">New Password</label>
-                <div class="controls">
-                    <input type="password" id="newpass">
-                </div>
-            </div>
-            <div class="control-group" style="display: none" id="pw2div">
-                <label class="control-label" for="pw2" id="confirm">Confirm Password</label>
-                <div class="controls">
-                    <input type="password" id="pw2">
-                </div>
-            </div>
             <div class="control-group">
                 <div class="controls">
                     <button class="btn" id="login">Login</button>
-                    <button class="btn" id="register">Register</button>
-                </div>
-            </div>
-            <div class="control-group">
-                <div class="controls">
-                    <button class="btn" id="changepass">Change Password</button>
+                    <a class="btn" id="register" target="_blank" href="account.html">Register</a>
                 </div>
             </div>
         </form>
@@ -89,39 +69,6 @@
                 $.getJSON(WEB_URL+"/api/json/login?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
-                });
-            });
-            $("#register").click(function() {
-                if($("#pw2div").css("display") == "none") {
-                    $("#pw2div").css("display", "");
-                    return false;
-                }
-                else if($("#pw2").val() != $("#pw").val()) {
-                    $("#confirm").addClass("text-error");
-                    return;
-                }
-                $.getJSON(WEB_URL+"/api/json/register?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
-                    console.log(data);
-                    data.uname = $("#username").val();
-                    source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
-                });
-            });
-            $("#changepass").click(function() {
-                if($("#newpassdiv").css("display") == "none") {
-                    $("#newpassdiv").css("display", "");
-                    $("#pw2div").css("display", "");
-                    return false;
-                }
-                else if($("#newpass").val() != $("#pw2").val()) {
-                    $("#confirm").addClass("text-error");
-                    return;
-                }
-                $.getJSON(WEB_URL+"/api/json/changepass?name="+$("#username").val()+"&oldpw="+$("#pw").val()+"&newpw="+$("#newpass").val()+"&callback=?", function(data) {
-                    if(data.success) {
-                        $("#newpassdiv").css("display", "none");
-                        $("#pw2div").css("display", "none");
-                    }
-                    source.postMessage("cytube-changepass:"+JSON.stringify(data), document.location);
                 });
             });
         </script>

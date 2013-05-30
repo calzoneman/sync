@@ -1067,14 +1067,11 @@ function showUserOpts() {
     sendbtn.prop("checked", USEROPTS.chatbtn);
     addOption("Send Button", sendbtncontainer);
 
-    var profimg = $("<input/>").attr("type", "text")
-    profimg.val(PROFILE.image);
-    addOption("Profile Image", profimg);
-
-    var profbio = $("<textarea/>");
-    profbio.attr("rows", 5);
-    profbio.val(PROFILE.text);
-    addOption("Profile Text", profbio);
+    var profile = $("<a/>").attr("target", "_blank")
+        .addClass("btn")
+        .attr("href", "./account.html")
+        .text("Profile has moved to the account page");
+    addOption("Profile", profile);
 
     if(RANK >= Rank.Moderator) {
         $("<hr>").appendTo(form);
@@ -1091,10 +1088,6 @@ function showUserOpts() {
         .appendTo(footer);
 
     submit.click(function() {
-        socket.emit("setProfile", {
-            image: profimg.val(),
-            text: profbio.val()
-        });
         USEROPTS.theme           = themeselect.val();
         USEROPTS.css             = usercss.val();
         USEROPTS.layout          = layoutselect.val();
