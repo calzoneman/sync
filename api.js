@@ -28,6 +28,8 @@ var jsonHandlers = {
     "changepass" : handlePasswordChange,
     "resetpass"  : handlePasswordReset,
     "recoverpw"  : handlePasswordRecover,
+    "setprofile" : handleProfileChange,
+    "getprofile" : handleProfileGet,
     "setemail"   : handleEmailChange,
     "globalbans" : handleGlobalBans,
     "admreports" : handleAdmReports,
@@ -236,8 +238,9 @@ function handlePasswordReset(params, req, res) {
     var email = unescape(params.email || "");
     var ip = req.socket.address().address;
 
+    var hash = false;
     try {
-        Database.generatePasswordReset(ip, name, email);
+        hash = Database.generatePasswordReset(ip, name, email);
     }
     catch(e) {
         sendJSON(res, {
@@ -246,6 +249,7 @@ function handlePasswordReset(params, req, res) {
         });
         return;
     }
+
 
     sendJSON(res, {
         success: true
@@ -273,6 +277,52 @@ function handlePasswordRecover(params, req, res) {
         });
     }
 
+}
+
+function handleProfileGet(params, req, res) {
+    var name = params.name || "";
+
+    try {
+        var prof = Database.getProfile(name);
+        sendJSON(res, {
+            success: true,
+            profile_image: prof.profile_image,
+            profile_text: prof.profile_text
+        });
+    }
+    catch(e) {
+        sendJSON(res, {
+            success: false,
+            error: e
+        });
+    }
+}
+
+function handleProfileChange(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+    var session = params.session || "";
+    var img = unescape(params.profile_image || "");
+    var text = unescape(params.profile_text || "");
+
+    var row = Auth.login(name, pw, session);
+    if(!row) {
+        sendJSON(res, {
+            success: false,
+            error: "Invalid login"
+        });
+        return;
+    }
+
+    var result = Database.setProfile(name, {
+        image: img,
+        text: text
+    });
+
+    sendJSON(res, {
+        success: result,
+        error: result ? "" : "Internal error.  Contact an administrator"
+    });
 }
 
 function handleEmailChange(params, req, res) {

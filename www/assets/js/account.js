@@ -42,6 +42,22 @@ $("#register").click(makeTabCallback("#register", "#registerpane"));
 $("#pwchange").click(makeTabCallback("#pwchange", "#changepwpane"));
 $("#pwreset").click(makeTabCallback("#pwreset", "#pwresetpane"));
 $("#email").click(makeTabCallback("#email", "#changeemailpane"));
+$("#profile").click(makeTabCallback("#profile", "#profilepane"));
+$("#profile").click(function() {
+    if(uname != "") {
+        $.getJSON(api + "getprofile?name=" + uname + "&callback=?", function(data) {
+            if(data.success) {
+                $("#profiletext").val(data.profile_text);
+                $("#profileimg").val(data.profile_image);
+            }
+            else {
+                $("<div/>").addClass("alert alert-error")
+                    .text("Failed to retrieve profile: " + data.error)
+                    .insertBefore($("#profilepane form"));
+            }
+        });
+    }
+});
 
 $("#registerbtn").click(function() {
     $("#registerpane").find(".alert-error").remove();
@@ -274,6 +290,35 @@ $("#rpbtn").click(function() {
         }
     });
 
+});
+
+$("#profilesave").click(function() {
+    $("#profilepane").find(".alert-error").remove();
+    $("#profilepane").find(".alert-success").remove();
+    var img = $("#profileimg").val();
+    img = escape(img).replace(/\//g, "%2F")
+        .replace(/&/g, "%26")
+        .replace(/=/g, "%3D")
+        .replace(/\?/g, "%3F");
+    var url = api + "setprofile?" + [
+        "name=" + uname,
+        "session=" + session,
+        "profile_image=" + img,
+        "profile_text=" + escape($("#profiletext").val())
+    ].join("&") + "&callback=?";
+
+    $.getJSON(url, function(data) {
+        if(data.success) {
+            $("<div/>").addClass("alert alert-success")
+                .text("Profile updated.")
+                .insertBefore($("#profilepane form"));
+        }
+        else {
+            $("<div/>").addClass("alert alert-error")
+                .text(data.error)
+                .insertBefore($("#profilepane form"));
+        }
+    });
 });
 
 $("#login").click(function() {

@@ -558,6 +558,34 @@ function channelUnbanName(chan, name) {
 
 /* REGION Users */
 
+function getProfile(name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "SELECT profile_image,profile_text FROM registrations WHERE uname=?",
+        [name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to retrieve user profile");
+        throw "Database failure.  Contact an administrator.";
+    }
+
+    var rows = results.fetchAllSync();
+    if(rows.length == 0) {
+        throw "User not found";
+    }
+
+    return {
+        profile_image: rows[0].profile_image,
+        profile_text: rows[0].profile_text
+    };
+}
+
 function setProfile(name, data) {
     var db = getConnection();
     if(!db) {
@@ -637,7 +665,7 @@ function generatePasswordReset(ip, name, email) {
         return false;
     }
 
-    return true;
+    return hash;
 }
 
 function recoverPassword(hash) {
@@ -723,6 +751,7 @@ exports.channelBan = channelBan;
 exports.channelUnbanIP = channelUnbanIP;
 exports.channelUnbanName = channelUnbanName;
 exports.setProfile = setProfile;
+exports.getProfile = getProfile;
 exports.setUserEmail = setUserEmail;
 exports.generatePasswordReset = generatePasswordReset;
 exports.recoverPassword = recoverPassword;
