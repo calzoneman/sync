@@ -88,6 +88,7 @@ function init() {
                 "`expire` BIGINT NOT NULL,",
                 "`profile_image` VARCHAR(255) NOT NULL,",
                 "`profile_text` TEXT NOT NULL,",
+                "`email` VARCHAR(255) NOT NULL,",
                 "PRIMARY KEY (`id`))",
              "ENGINE = MyISAM;"].join("");
 
