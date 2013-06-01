@@ -414,6 +414,50 @@ User.prototype.initCallbacks = function() {
             }
         }
     }.bind(this));
+
+    this.socket.on("listPlaylists", function(data) {
+        if(this.name == "" || this.rank < 1) {
+            socket.emit("listPlaylists", {
+                pllist: [],
+                error: "You must be logged in to manage playlists"
+            });
+            return;
+        }
+
+        var list = Database.getUserPlaylists(this.name);
+        socket.emit("listPlaylists", {
+            pllist: list,
+        });
+    }.bind(this));
+
+    this.socket.on("savePlaylist", function(data) {
+        if(this.rank < 1) {
+            socket.emit("savePlaylist", {
+                success: false,
+                error: "You must be logged in to manage playlists"
+            });
+            return;
+        }
+
+        if(this.channel == null) {
+            socket.emit("savePlaylist", {
+                success: false,
+                error: "Not in a channel"
+            });
+            return;
+        }
+
+        if(typeof data.name != "string") {
+            return;
+        }
+
+        var pl = this.channel.queue;
+        var result = Database.saveUserPlaylist(pl, this.name, data.name);
+        this.socket.emit("savePlaylist", {
+            success: result,
+            error: result ? false : "Unknown"
+        });
+    }.bind(this));
 }
 
 // Handle administration

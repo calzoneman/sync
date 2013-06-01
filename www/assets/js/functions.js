@@ -1316,3 +1316,23 @@ function hasPermission(key) {
     }
     return RANK >= v;
 }
+
+function makeAlert(title, text, klass) {
+    if(!klass) {
+        klass = "alert-info";
+    }
+
+    var al = $("<div/>").addClass("alert")
+        .addClass(klass)
+        .text(text);
+    $("<br/>").prependTo(al);
+    $("<strong/>").text(title).prependTo(al);
+    $("<button/>").addClass("close pull-right").html("&times;")
+        .click(function() {
+            al.hide("blind", function() {
+                al.remove();
+            });
+        })
+        .prependTo(al);
+    return al;
+}

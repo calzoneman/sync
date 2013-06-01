@@ -573,7 +573,8 @@ Callbacks = {
     },
 
     queueFail: function() {
-        alert("Queue failed.  Double check your link to make sure the video exists.");
+        makeAlert("Error", "Queue failed.  Check your link to make sure it is valid.", "alert-error")
+            .insertAfter($("#playlist_controls"));
     },
 
     setTemp: function(data) {
@@ -738,7 +739,17 @@ Callbacks = {
     closePoll: function() {
         // Not recursive
         closePoll();
-    }
+    },
+
+    savePlaylist: function(data) {
+        if(data.success) {
+            makeAlert("Success", "Playlist saved.", "alert-success");
+        }
+        else {
+            alert("DBG error " + data.error);
+            makeAlert("Error", data.error, "alert-error");
+        }
+    },
 }
 
 $.getScript(IO_URL+"/socket.io/socket.io.js", function() {

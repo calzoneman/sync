@@ -125,6 +125,18 @@ function init() {
     if(!results) {
         Logger.errlog.log("! Failed to create password reset table");
     }
+
+    // Create user playlist table
+    query = ["CREATE TABLE IF NOT EXISTS `user_playlists` (",
+                "`user` VARCHAR(20) NOT NULL,",
+                "`name` VARCHAR(255) NOT NULL,",
+                "`contents` MEDIUMTEXT NOT NULL,",
+                "PRIMARY KEY (`name`))",
+             "ENGINE = MyISAM;"].join("");
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create playlist table");
+    }
 }
 
 /* REGION Global Bans */
@@ -733,6 +745,88 @@ function resetPassword(name) {
     return pw;
 }
 
+/* REGION User Playlists */
+function getUserPlaylists(user) {
+    var db = getConnection();
+    if(!db) {
+        [];
+    }
+
+    var query = createQuery(
+        "SELECT name FROM user_playlists WHERE user=?",
+        [user]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to query user playlists");
+        return [];
+    }
+
+    return results.fetchAllSync();
+}
+
+function loadUserPlaylist(user, name) {
+    var db = getConnection();
+    if(!db) {
+        [];
+    }
+
+    var query = createQuery(
+        "SELECT contents FROM user_playlists WHERE user=? AND name=?",
+        [user, name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to query playlists");
+        return [];
+    }
+
+    var row = results.fetchAllSync()[0];
+    var pl;
+    try {
+        pl = JSON.parse(row.contents);
+    }
+    catch(e) {
+        Logger.errlog.log("! Failed to load playlist "+user+"."+name);
+        return [];
+    }
+
+    return pl;
+}
+
+function saveUserPlaylist(pl, user, name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    // Strip out unnecessary data
+    var pl2 = [];
+    for(var i = 0; i < pl.length; i++) {
+        var e = {
+            id: pl[i].id,
+            type: pl[i].type
+        };
+        pl2.push(e);
+    }
+    var plstr = JSON.stringify(pl2);
+
+    var query = createQuery(
+        "INSERT INTO user_playlists VALUES (?, ?, ?)",
+        [user, name, plstr]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to insert into playlists");
+        return false;
+    }
+
+    return true;
+}
+
 exports.setup = setup;
 exports.getConnection = getConnection;
 exports.createQuery = createQuery;
@@ -758,3 +852,6 @@ exports.setUserEmail = setUserEmail;
 exports.generatePasswordReset = generatePasswordReset;
 exports.recoverPassword = recoverPassword;
 exports.resetPassword = resetPassword;
+exports.getUserPlaylists = getUserPlaylists;
+exports.loadUserPlaylist = loadUserPlaylist;
+exports.saveUserPlaylist = saveUserPlaylist;
