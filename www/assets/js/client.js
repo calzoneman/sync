@@ -552,6 +552,55 @@ $("#library_query").keydown(function(ev) {
         searchLibrary();
 });
 
+function savePlaylist() {
+    if($("#userpl_name").val().trim() == "") {
+        makeAlert("Invalid Name", "Playlist name cannot be empty", "alert-error")
+            .addClass("span12")
+            .css("margin-left", "0")
+            .insertAfter($("#userpl_save").parent());
+        return;
+    }
+    socket.emit("savePlaylist", {
+        name: $("#userpl_name").val()
+    });
+}
+
+$("#userpl_save").click(savePlaylist);
+$("#userpl_name").keydown(function(ev) {
+    if(ev.keyCode == 13) {
+        savePlaylist();
+    }
+});
+
+$("#userpl_queuenext").click(function() {
+    socket.emit("queuePlaylist", {
+        name: $("#userpl_dropdown").val(),
+        pos: "next"
+    });
+});
+
+$("#userpl_queueend").click(function() {
+    socket.emit("queuePlaylist", {
+        name: $("#userpl_dropdown").val(),
+        pos: "end"
+    });
+});
+
+$("#show_userpl").click(function() {
+    $("#show_library").parent().removeClass("active");
+    $("#show_userpl").parent().addClass("active");
+    $("#libcontainer").hide();
+    $("#userplcontainer").show();
+    socket.emit("listPlaylists");
+});
+
+$("#show_library").click(function() {
+    $("#show_userpl").parent().removeClass("active");
+    $("#show_library").parent().addClass("active");
+    $("#userplcontainer").hide();
+    $("#libcontainer").show();
+});
+
 $("#youtube_search").click(function() {
     socket.emit("searchLibrary", {
         query: $("#library_query").val(),

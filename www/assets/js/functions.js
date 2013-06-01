@@ -784,6 +784,9 @@ function handlePermissionChange() {
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
 
+    $("#userpl_queueend").attr("disabled", !hasPermission("playlistadd"));
+    $("#userpl_queuenext").attr("disabled", !hasPermission("playlistnext"));
+
     setVisible("#modnav", RANK >= 2);
     setVisible("#chanperms_tab", RANK >= 3);
     setVisible("#banlist_tab", hasPermission("ban"));

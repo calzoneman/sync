@@ -417,7 +417,7 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("listPlaylists", function(data) {
         if(this.name == "" || this.rank < 1) {
-            socket.emit("listPlaylists", {
+            this.socket.emit("listPlaylists", {
                 pllist: [],
                 error: "You must be logged in to manage playlists"
             });
@@ -425,7 +425,7 @@ User.prototype.initCallbacks = function() {
         }
 
         var list = Database.getUserPlaylists(this.name);
-        socket.emit("listPlaylists", {
+        this.socket.emit("listPlaylists", {
             pllist: list,
         });
     }.bind(this));
@@ -457,6 +457,12 @@ User.prototype.initCallbacks = function() {
             success: result,
             error: result ? false : "Unknown"
         });
+    }.bind(this));
+
+    this.socket.on("queuePlaylist", function(data) {
+        if(this.channel != null) {
+            this.channel.tryQueuePlaylist(this, data);
+        }
     }.bind(this));
 }
 

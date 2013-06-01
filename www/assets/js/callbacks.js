@@ -750,6 +750,24 @@ Callbacks = {
             makeAlert("Error", data.error, "alert-error");
         }
     },
+
+    listPlaylists: function(data) {
+        if(data.error) {
+            makeAlert("Error", data.error, "alert-error")
+                .addClass("span12")
+                .css("margin-left", "0")
+                .insertBefore($("#userpl_name").parent());
+        }
+        else {
+            var pls = data.pllist;
+            $("#userpl_dropdown").html("");
+            for(var i = 0; i < pls.length; i++) {
+                $("<option/>").attr("value", pls[i].name)
+                    .text(pls[i].name)
+                    .appendTo($("#userpl_dropdown"));
+            }
+        }
+    }
 }
 
 $.getScript(IO_URL+"/socket.io/socket.io.js", function() {

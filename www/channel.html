@@ -76,17 +76,40 @@
                 <div class="row-fluid">
                     <div class="span12" id="pollcontainer">
                     </div>
-                    <div class="span7" style="margin-left: 0;">
-                        <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
+                    <div class="span12" id="leftpanetabs" style="margin-left: 0">
+                        <ul class="nav nav-pills">
+                            <li class="active"><a href="javascript:void(0)" id="show_library">Library/YouTube Search</a></li>
+                            <li><a href="javascript:void(0)" id="show_userpl">User Playlists</a></li>
                     </div>
-                    <div class="span5 btn-group">
-                        <button class="btn" id="library_search">Library</button>
-                        <button class="btn" id="youtube_search">YouTube</button>
+                    <div id="userplcontainer" style="display: none">
+                        <div class="span7" style="margin-left: 0;">
+                            <input type="text" id="userpl_name" class="input-block-level" placeholder="Playlist Name">
+                        </div>
+                        <div class="span5">
+                            <button class="btn btn-block" id="userpl_save">Save Playlist</button>
+                        </div>
+                        <div class="span7" style="margin-left: 0;">
+                            <select id="userpl_dropdown" class="input-block-level">
+                            </select>
+                        </div>
+                        <div class="span5 btn-group">
+                            <button class="btn btn-block" id="userpl_queuenext">Queue Next</button>
+                            <button class="btn btn-block" id="userpl_queueend">Queue End</button>
+                        </div>
                     </div>
-                    <div class="span12" style="margin-left: 0;">
-                        <ul id="library" class="videolist">
-                        </ul>
-                        <button class="btn btn-block" id="search_clear">Clear Results</button>
+                    <div id="libcontainer">
+                        <div class="span7" style="margin-left: 0;">
+                            <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
+                        </div>
+                        <div class="span5 btn-group">
+                            <button class="btn" id="library_search">Library</button>
+                            <button class="btn" id="youtube_search">YouTube</button>
+                        </div>
+                        <div class="span12" style="margin-left: 0;">
+                            <ul id="library" class="videolist">
+                            </ul>
+                            <button class="btn btn-block" id="search_clear">Clear Results</button>
+                        </div>
                     </div>
                 </div>
             </div>

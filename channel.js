@@ -1079,6 +1079,36 @@ Channel.prototype.tryQueue = function(user, data) {
     this.enqueue(data, user);
 }
 
+Channel.prototype.tryQueuePlaylist = function(user, data) {
+    if(!this.hasPermission(user, "playlistadd")) {
+        return;
+    }
+
+    if(typeof data.name != "string" ||
+       typeof data.pos != "string") {
+        return;
+    }
+
+    if(data.pos == "next" && !this.hasPermission(user, "playlistnext")) {
+        return;
+    }
+
+    var pl = Database.loadUserPlaylist(user.name, data.name);
+    // Queue in reverse order for qnext
+    if(data.pos == "next") {
+        for(var i = pl.length - 1; i >= 0; i--) {
+            pl[i].pos = "next";
+            this.enqueue(pl[i], user);
+        }
+    }
+    else {
+        for(var i = 0; i < pl.length; i++) {
+            pl[i].pos = "end";
+            this.enqueue(pl[i], user);
+        }
+    }
+}
+
 Channel.prototype.setTemp = function(idx, temp) {
     var med = this.queue[idx];
     med.temp = temp;
