@@ -457,12 +457,28 @@ User.prototype.initCallbacks = function() {
             success: result,
             error: result ? false : "Unknown"
         });
+        var list = Database.getUserPlaylists(this.name);
+        this.socket.emit("listPlaylists", {
+            pllist: list,
+        });
     }.bind(this));
 
     this.socket.on("queuePlaylist", function(data) {
         if(this.channel != null) {
             this.channel.tryQueuePlaylist(this, data);
         }
+    }.bind(this));
+
+    this.socket.on("deletePlaylist", function(data) {
+        if(typeof data.name != "string") {
+            return;
+        }
+
+        Database.deleteUserPlaylist(this.name, data.name);
+        var list = Database.getUserPlaylists(this.name);
+        this.socket.emit("listPlaylists", {
+            pllist: list,
+        });
     }.bind(this));
 }
 

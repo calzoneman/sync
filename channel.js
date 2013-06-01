@@ -47,11 +47,14 @@ var Channel = function(name) {
         oplaylistmove: 1.5,
         oplaylistdelete: 2,
         oplaylistjump: 1.5,
+        oplaylistaddlist: 1.5,
         playlistadd: 1.5,
         playlistnext: 1.5,
         playlistmove: 1.5,
         playlistdelete: 2,
         playlistjump: 1.5,
+        playlistaddlist: 1.5,
+        playlistadd: 1.5,
         addnontemp: 2,
         settemp: 2,
         playlistgeturl: 1.5,
@@ -1080,7 +1083,7 @@ Channel.prototype.tryQueue = function(user, data) {
 }
 
 Channel.prototype.tryQueuePlaylist = function(user, data) {
-    if(!this.hasPermission(user, "playlistadd")) {
+    if(!this.hasPermission(user, "playlistaddlist")) {
         return;
     }
 

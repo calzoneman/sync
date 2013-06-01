@@ -760,11 +760,62 @@ Callbacks = {
         }
         else {
             var pls = data.pllist;
-            $("#userpl_dropdown").html("");
+            pls.sort(function(a, b) {
+                var x = a.name.toLowerCase();
+                var y = b.name.toLowerCase();
+                if(x < y) return -1;
+                if(x > y) return 1;
+                return 0;
+            });
+            $("#userpl_list").html("");
             for(var i = 0; i < pls.length; i++) {
-                $("<option/>").attr("value", pls[i].name)
-                    .text(pls[i].name)
-                    .appendTo($("#userpl_dropdown"));
+                var li = $("<li/>").appendTo($("#userpl_list"))
+                    .addClass("well");
+                li.data("pl-name", pls[i].name);
+                $("<div/>").text(pls[i].name).appendTo(li)
+                    .css("float", "left")
+                    .css("margin-left", "1em");
+                var bg = $("<div/>").addClass("btn-group")
+                    .css("float", "left")
+                    .prependTo(li);
+                var del = $("<button/>")
+                    .addClass("btn btn-mini btn-danger")
+                    .prependTo(bg);
+                $("<i/>").addClass("icon-trash").appendTo(del);
+                (function(li) {
+                del.click(function() {
+                    socket.emit("deletePlaylist", {
+                        name: li.data("pl-name")
+                    });
+                });
+                })(li);
+                if(hasPermission("playlistaddlist")) {
+                    (function(li) {
+                    $("<button/>").addClass("btn btn-mini")
+                        .text("End")
+                        .prependTo(bg)
+                        .click(function() {
+                            socket.emit("queuePlaylist", {
+                                name: li.data("pl-name"),
+                                pos: "end"
+                            });
+                        });
+                    })(li);
+
+                    if(hasPermission("playlistnext")) {
+                        (function(li) {
+                        $("<button/>").addClass("btn btn-mini")
+                            .text("Next")
+                            .prependTo(bg)
+                            .click(function() {
+                                socket.emit("queuePlaylist", {
+                                    name: li.data("pl-name"),
+                                    pos: "next"
+                                });
+                            });
+                        })(li);
+                    }
+                }
             }
         }
     }

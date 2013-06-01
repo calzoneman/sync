@@ -784,8 +784,8 @@ function handlePermissionChange() {
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
 
-    $("#userpl_queueend").attr("disabled", !hasPermission("playlistadd"));
-    $("#userpl_queuenext").attr("disabled", !hasPermission("playlistnext"));
+    $("#userpl_queueend").attr("disabled", !hasPermission("playlistaddlist"));
+    $("#userpl_queuenext").attr("disabled", !hasPermission("playlistaddlist") || !hasPermission("playlistnext"));
 
     setVisible("#modnav", RANK >= 2);
     setVisible("#chanperms_tab", RANK >= 3);
@@ -1268,6 +1268,7 @@ function genPermissionsEditor() {
     makeOption("Move playlist items", "oplaylistmove", standard, CHANPERMS.oplaylistmove+"");
     makeOption("Delete playlist items", "oplaylistdelete", standard, CHANPERMS.oplaylistdelete+"");
     makeOption("Jump to video", "oplaylistjump", standard, CHANPERMS.oplaylistjump+"");
+    makeOption("Queue playlist", "oplaylistaddlist", standard, CHANPERMS.oplaylistaddlist+"");
 
     addDivider("General playlist permissions");
     makeOption("Add to playlist", "playlistadd", standard, CHANPERMS.playlistadd+"");
@@ -1275,6 +1276,7 @@ function genPermissionsEditor() {
     makeOption("Move playlist items", "playlistmove", standard, CHANPERMS.playlistmove+"");
     makeOption("Delete playlist items", "playlistdelete", standard, CHANPERMS.playlistdelete+"");
     makeOption("Jump to video", "playlistjump", standard, CHANPERMS.playlistjump+"");
+    makeOption("Queue playlist", "playlistaddlist", standard, CHANPERMS.playlistaddlist+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANPERMS.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANPERMS.settemp+"");
     makeOption("Retrieve playlist URLs", "playlistgeturl", standard, CHANPERMS.playlistgeturl+"");

@@ -59,6 +59,20 @@ html, body {
     clear: both;
 }
 
+#userpl_list {
+    list-style: none outside none;
+    margin-left: 0;
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+#userpl_list li {
+    clear: both;
+    margin: 2px 0 0 auto;
+    padding: 2px;
+    font-size: 8pt;
+}
+
 #queue {
     margin-bottom: 0;
 }

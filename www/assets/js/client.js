@@ -572,20 +572,6 @@ $("#userpl_name").keydown(function(ev) {
     }
 });
 
-$("#userpl_queuenext").click(function() {
-    socket.emit("queuePlaylist", {
-        name: $("#userpl_dropdown").val(),
-        pos: "next"
-    });
-});
-
-$("#userpl_queueend").click(function() {
-    socket.emit("queuePlaylist", {
-        name: $("#userpl_dropdown").val(),
-        pos: "end"
-    });
-});
-
 $("#show_userpl").click(function() {
     $("#show_library").parent().removeClass("active");
     $("#show_userpl").parent().addClass("active");

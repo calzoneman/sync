@@ -814,8 +814,9 @@ function saveUserPlaylist(pl, user, name) {
     var plstr = JSON.stringify(pl2);
 
     var query = createQuery(
-        "INSERT INTO user_playlists VALUES (?, ?, ?)",
-        [user, name, plstr]
+        "INSERT INTO user_playlists VALUES (?, ?, ?)" +
+        "ON DUPLICATE KEY UPDATE contents=?",
+        [user, name, plstr, plstr]
     );
 
     var results = db.querySync(query);
@@ -825,6 +826,24 @@ function saveUserPlaylist(pl, user, name) {
     }
 
     return true;
+}
+
+function deleteUserPlaylist(user, name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var query = createQuery(
+        "DELETE FROM user_playlists WHERE user=? AND name=?",
+        [user, name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to delete from user_playlists");
+    }
+    return results;
 }
 
 exports.setup = setup;
@@ -855,3 +874,4 @@ exports.resetPassword = resetPassword;
 exports.getUserPlaylists = getUserPlaylists;
 exports.loadUserPlaylist = loadUserPlaylist;
 exports.saveUserPlaylist = saveUserPlaylist;
+exports.deleteUserPlaylist = deleteUserPlaylist;
