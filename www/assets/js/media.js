@@ -389,20 +389,49 @@ Media.prototype.initJWPlayer = function() {
         height: VHEIGHT,
         autostart: true
     });
-    setTimeout(function() {$("#ytapiplayer_logo").remove();}, 1000);
+
+    jwplayer().onPlay(function() {
+        this.paused = false;
+    }.bind(this));
+    jwplayer().onPause(function() {
+        this.paused = true;
+    }.bind(this));
+    jwplayer().onComplete(function() {
+        socket.emit("playNext");
+    });
+
+    function removeLogo() {
+        if($("#ytapiplayer_logo").length > 0) {
+            $("#ytapiplayer_logo").remove();
+        }
+        else {
+            setTimeout(removeLogo, 100);
+        }
+    }
 
     this.load = function(data) {
         this.id = data.id;
         this.initJWPlayer();
     }
 
-    this.pause = function() { }
+    this.pause = function() {
+        jwplayer().pause(true);
+    }
 
-    this.play = function() { }
+    this.play = function() {
+        jwplayer().play(true);
+    }
 
-    this.getTime = function() { }
+    this.getTime = function(callback) {
+        // Only return time for non-live media
+        if(jwplayer().getDuration() != -1) {
+            callback(jwplayer().getPosition());
+        }
+    }
 
-    this.seek = function() { }
+    this.seek = function(time) {
+        jwplayer().seek(time);
+    }
 }
 
 Media.prototype.initUstream = function() {

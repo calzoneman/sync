@@ -1312,7 +1312,7 @@ Channel.prototype.tryUpdate = function(user, data) {
         return;
     }
 
-    if(isLive(this.media.type)) {
+    if(isLive(this.media.type) && this.media.type != "jw") {
         return;
     }
 
