@@ -775,6 +775,14 @@ Callbacks = {
                 $("<div/>").text(pls[i].name).appendTo(li)
                     .css("float", "left")
                     .css("margin-left", "1em");
+                var metastr = pls[i].count + " item";
+                if(pls[i].count != 1) {
+                    metastr += "s";
+                }
+                metastr +=", playtime " + pls[i].time;
+                $("<div/>").text(metastr)
+                    .css("float", "right")
+                    .appendTo(li);
                 var bg = $("<div/>").addClass("btn-group")
                     .css("float", "left")
                     .prependTo(li);

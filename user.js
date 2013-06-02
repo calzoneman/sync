@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var Channel = require("./channel.js").Channel;
+var formatTime = require("./media.js").formatTime;
 var Server = require("./server.js");
 var Database = require("./database.js");
 var Logger = require("./logger.js");
@@ -425,6 +426,9 @@ User.prototype.initCallbacks = function() {
         }
 
         var list = Database.getUserPlaylists(this.name);
+        for(var i = 0; i < list.length; i++) {
+            list[i].time = formatTime(list[i].time);
+        }
         this.socket.emit("listPlaylists", {
             pllist: list,
         });
@@ -458,6 +462,9 @@ User.prototype.initCallbacks = function() {
             error: result ? false : "Unknown"
         });
         var list = Database.getUserPlaylists(this.name);
+        for(var i = 0; i < list.length; i++) {
+            list[i].time = formatTime(list[i].time);
+        }
         this.socket.emit("listPlaylists", {
             pllist: list,
         });
@@ -476,6 +483,9 @@ User.prototype.initCallbacks = function() {
 
         Database.deleteUserPlaylist(this.name, data.name);
         var list = Database.getUserPlaylists(this.name);
+        for(var i = 0; i < list.length; i++) {
+            list[i].time = formatTime(list[i].time);
+        }
         this.socket.emit("listPlaylists", {
             pllist: list,
         });

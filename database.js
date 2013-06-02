@@ -131,6 +131,8 @@ function init() {
                 "`user` VARCHAR(20) NOT NULL,",
                 "`name` VARCHAR(255) NOT NULL,",
                 "`contents` MEDIUMTEXT NOT NULL,",
+                "`count` INT NOT NULL,",
+                "`time` INT NOT NULL,",
                 "PRIMARY KEY (`name`))",
              "ENGINE = MyISAM;"].join("");
     results = db.querySync(query);
@@ -753,7 +755,7 @@ function getUserPlaylists(user) {
     }
 
     var query = createQuery(
-        "SELECT name FROM user_playlists WHERE user=?",
+        "SELECT name,count,time FROM user_playlists WHERE user=?",
         [user]
     );
 
@@ -804,19 +806,22 @@ function saveUserPlaylist(pl, user, name) {
 
     // Strip out unnecessary data
     var pl2 = [];
+    var time = 0;
     for(var i = 0; i < pl.length; i++) {
         var e = {
             id: pl[i].id,
             type: pl[i].type
         };
+        time += pl[i].seconds;
         pl2.push(e);
     }
+    var count = pl2.length;
     var plstr = JSON.stringify(pl2);
 
     var query = createQuery(
-        "INSERT INTO user_playlists VALUES (?, ?, ?)" +
-        "ON DUPLICATE KEY UPDATE contents=?",
-        [user, name, plstr, plstr]
+        "INSERT INTO user_playlists VALUES (?, ?, ?, ?, ?)" +
+        "ON DUPLICATE KEY UPDATE contents=?,count=?,time=?",
+        [user, name, plstr, count, time, plstr, count, time]
     );
 
     var results = db.querySync(query);
