@@ -158,7 +158,7 @@ exports.getSCInfo = function(url, callback) {
         path: "/resolve.json?url="+url+"&client_id=" + SC_CLIENT,
         method: "GET",
         dataType: "jsonp",
-        timeout: 1000}, function(status, data) {
+        timeout: 1000}, function(err, status, data) {
             // This time we can ACTUALLY get the data we want
             getJSON({
             host: "api.soundcloud.com",
