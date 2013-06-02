@@ -381,6 +381,12 @@ Media.prototype.initRTMP = function() {
 }
 
 Media.prototype.initJWPlayer = function() {
+    if(typeof jwplayer == "undefined") {
+        setTimeout(function() {
+            this.initJWPlayer();
+        }.bind(this), 100);
+        return;
+    }
     this.removeOld();
 
     jwplayer("ytapiplayer").setup({
@@ -399,15 +405,6 @@ Media.prototype.initJWPlayer = function() {
     jwplayer().onComplete(function() {
         socket.emit("playNext");
     });
-
-    function removeLogo() {
-        if($("#ytapiplayer_logo").length > 0) {
-            $("#ytapiplayer_logo").remove();
-        }
-        else {
-            setTimeout(removeLogo, 100);
-        }
-    }
 
     this.load = function(data) {
         this.id = data.id;

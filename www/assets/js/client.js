@@ -157,6 +157,12 @@ function queueEnd() {
         if(id) {
             $("#mediaurl").val("");
         }
+        if(type == "jw") {
+            makeAlert("JWPlayer",
+                "If you are queueing a file (not a livestream) with JWPlayer, please note it will only synchronize if you assign a leader.",
+                "alert-warning")
+                .insertAfter($("#playlist_controls"));
+        }
         socket.emit("queue", {
             id: id,
             pos: "end",
@@ -173,7 +179,7 @@ $("#mediaurl").keydown(function(ev) {
 
 $("#queue_next").click(function() {
     var urls = $("#mediaurl").val().split(",");
-    for(var i = 0; i < urls.length; i++) {
+    for(var i = urls.length - 1; i >= 0; i--) {
         if(!urls[i].trim())
             continue;
         var parsed = parseVideoURL(urls[i].trim());
@@ -181,6 +187,12 @@ $("#queue_next").click(function() {
         var type = parsed[1];
         if(id) {
             $("#mediaurl").val("");
+        }
+        if(type == "jw") {
+            makeAlert("JWPlayer",
+                "If you are queueing a file (not a livestream) with JWPlayer, please note it will only synchronize if you assign a leader.",
+                "alert-warning")
+                .insertAfter($("#playlist_controls"));
         }
         socket.emit("queue", {
             id: id,

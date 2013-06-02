@@ -622,6 +622,12 @@ Callbacks = {
         if(data.type != "sc" && PLAYER.type == "sc")
             // [](/goddamnitmango)
             fixSoundcloudShit();
+        if(data.type != "jw" && PLAYER.type == "jw") {
+            // Is it so hard to not mess up my DOM?
+            var wtf = $("<div/>").attr("id", "ytapiplayer")
+                .insertBefore($("#ytapiplayer_wrapper"));
+            $("#ytapiplayer_wrapper").remove();
+        }
         if(data.type != PLAYER.type) {
             PLAYER = new Media(data);
         }
