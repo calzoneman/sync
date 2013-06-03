@@ -40,23 +40,44 @@ function getConnection() {
     return db;
 }
 
+function sqlEscape(obj) {
+    if(obj === undefined || obj === null)
+        return "NULL";
+
+    if(typeof obj === "boolean")
+        return obj ? "true" : "false";
+
+    if(typeof obj === "number")
+        return obj + "";
+
+    if(typeof obj === "object")
+        return "'object'";
+
+    if(typeof obj === "string") {
+        obj = obj.replace(/[\0\n\r\b\t\\\'\"\x1a]/g, function(s) {
+            switch(s) {
+                case "\0": return "\\0";
+                case "\n": return "\\n";
+                case "\r": return "\\r";
+                case "\b": return "\\b";
+                case "\t": return "\\t";
+                case "\x1a": return "\\Z";
+                default: return "\\" + s;
+            }
+        });
+        return "'" + obj + "'";
+    }
+}
+
 function createQuery(template, args) {
     var last = -1;
     while(template.indexOf("?", last) >= 0) {
         var idx = template.indexOf("?", last);
         var arg = args.shift();
-        if(typeof arg == "string") {
-            arg = arg.replace(/([\'])/g, "\\$1");
-            if(idx == 0 || template[idx-1] != "`") {
-                arg = "'" + arg + "'";
-            }
-        }
-        if(arg === null || arg === undefined) {
-            arg = "NULL";
-        }
+        arg = sqlEscape(arg);
         var first = template.substring(0, idx);
         template = first + template.substring(idx).replace("?", arg);
-        last = idx + (arg+"").length;
+        last = idx + arg.length;
     }
     return template;
 }
