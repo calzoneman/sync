@@ -1,7 +1,8 @@
+var Logger = require("./logger");
+
 const chars = "abcdefghijklmnopqsrtuvwxyz" +
               "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
               "0123456789";
-
 
 var NotWebsocket = function() {
     this.hash = "";
@@ -12,21 +13,23 @@ var NotWebsocket = function() {
     this.pktqueue = [];
     this.handlers = {};
     this.room = "";
+    this.lastpoll = Date.now();
 }
 
 NotWebsocket.prototype.emit = function(msg, data) {
-    //hack because something fishy is going on
-    if(typeof msg === "object") {
-        data = msg["1"];
-        msg = msg["0"];
-    }
     var pkt = [msg, data];
     this.pktqueue.push(pkt);
 }
 
 NotWebsocket.prototype.poll = function() {
-    var q = this.pktqueue;
-    this.pktqueue = [];
+    this.lastpoll = Date.now();
+    var q = [];
+    for(var i = 0; i < this.pktqueue.length; i++) {
+        q.push(this.pktqueue[i]);
+    }
+    this.pktqueue.length = 0;
+    if(q.length > 0)
+        console.log("sending", q.length);
     return q;
 }
 
@@ -44,7 +47,8 @@ NotWebsocket.prototype.recv = function(urlstr) {
         data = js[1];
     }
     catch(e) {
-        console.log("Failed to parse NWS string");
+        Logger.errlog.log("Failed to parse NWS string");
+        Logger.errlog.log(urlstr);
     }
     if(!msg)
         return;
@@ -56,11 +60,32 @@ NotWebsocket.prototype.recv = function(urlstr) {
 }
 
 NotWebsocket.prototype.join = function(rm) {
-    this.room = rm;
+    if(!(rm in rooms)) {
+        rooms[rm] = [];
+    }
+
+    rooms[rm].push(this);
+}
+
+NotWebsocket.prototype.leave = function(rm) {
+    if(rm in rooms) {
+        var idx = rooms[rm].indexOf(this);
+        if(idx >= 0) {
+            rooms[rm].splice(idx, 1);
+        }
+    }
 }
 
 NotWebsocket.prototype.disconnect = function() {
-    
+    for(var rm in rooms) {
+        this.leave(rm);
+    }
+
+    this.recv(JSON.stringify(["disconnect", undefined]));
+    this.emit("disconnect");
+
+    clients[this.hash] = null;
+    delete clients[this.hash];
 }
 
 function sendJSON(res, obj) {
@@ -76,6 +101,8 @@ function sendJSON(res, obj) {
 }
 
 var clients = {};
+var rooms = {};
+
 function newConnection(req, res) {
     var nws = new NotWebsocket();
     clients[nws.hash] = nws;
@@ -86,7 +113,7 @@ exports.newConnection = newConnection;
 
 function msgReceived(req, res) {
     var h = req.params.hash;
-    if(h in clients) {
+    if(h in clients && clients[h] != null) {
         if(req.params.str == "poll") {
             sendJSON(res, clients[h].poll());
         }
@@ -95,24 +122,37 @@ function msgReceived(req, res) {
             sendJSON(res, "");
         }
     }
+    else {
+        res.send(404);
+    }
 }
 exports.msgReceived = msgReceived;
 
 function inRoom(rm) {
     var cl = [];
-    for(var h in clients) {
-        if(clients[h].room == rm) {
-            cl.push(clients[h]);
+
+    if(rm in rooms) {
+        for(var i = 0; i < rooms[rm].length; i++) {
+            cl.push(rooms[rm][i]);
         }
     }
 
-    return {
-        emit: function() {
-            for(var i = 0; i < this.cl.length; i++) {
-                this.cl[i].emit(arguments);
-            }
-        },
-        cl: cl
+    cl.emit = function(msg, data) {
+        for(var i = 0; i < this.length; i++) {
+            this[i].emit(msg, data);
+        }
     };
+
+    return cl;
 }
 exports.inRoom = inRoom;
+
+function checkDeadSockets() {
+    for(var h in clients) {
+        if(Date.now() - clients[h].lastpoll >= 2000) {
+            clients[h].disconnect();
+        }
+    }
+}
+
+setInterval(checkDeadSockets, 2000);
