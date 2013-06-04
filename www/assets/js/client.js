@@ -71,7 +71,8 @@ var USEROPTS = {
     modhat          : parseBool(getOrDefault("cytube_modhat", false)),
     blink_title     : parseBool(getOrDefault("cytube_blink_title", false)),
     sync_accuracy   : parseFloat(getOrDefault("cytube_sync_accuracy", 2)) || 2,
-    chatbtn         : parseBool(getOrDefault("cytube_chatbtn", false))
+    chatbtn         : parseBool(getOrDefault("cytube_chatbtn", false)),
+    altsocket       : parseBool(getOrDefault("cytube_altsocket", false))
 };
 applyOpts();
 $("#optlink").click(showUserOpts);

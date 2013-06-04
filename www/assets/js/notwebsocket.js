@@ -2,7 +2,6 @@ var NotWebsocket = function() {
     this.connected = false;
     this.polltmr = false;
     $.getJSON(WEB_URL + "/nws/connect", function(data) {
-        console.log(data);
         this.hash = data;
         this.connected = true;
         this.recv(["connect", undefined]);

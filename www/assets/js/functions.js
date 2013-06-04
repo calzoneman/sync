@@ -1070,6 +1070,13 @@ function showUserOpts() {
     sendbtn.prop("checked", USEROPTS.chatbtn);
     addOption("Send Button", sendbtncontainer);
 
+    var altsocketcontainer = $("<label/>").addClass("checkbox")
+        .text("Use alternative socket connection");
+    var altsocket = $("<input/>").attr("type", "checkbox")
+        .appendTo(altsocketcontainer);
+    altsocket.prop("checked", USEROPTS.altsocket);
+    addOption("Alternate Socket", altsocketcontainer);
+
     var profile = $("<a/>").attr("target", "_blank")
         .addClass("btn")
         .attr("href", "./account.html")
@@ -1100,6 +1107,7 @@ function showUserOpts() {
         USEROPTS.show_timestamps = showts.prop("checked");
         USEROPTS.blink_title     = blink.prop("checked");
         USEROPTS.chatbtn         = sendbtn.prop("checked");
+        USEROPTS.altsocket       = altsocket.prop("checked");
         if(RANK >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
         }
@@ -1178,6 +1186,26 @@ function applyOpts() {
                 $("#chatline").val("");
             }
         });
+    }
+
+    if(USEROPTS.altsocket) {
+        socket.disconnect();
+        socket = new NotWebsocket();
+        for(var key in Callbacks) {
+            socket.on(key, Callbacks[key]);
+        }
+    }
+    // Switch from NotWebsocket => Socket.io
+    else if(socket && typeof socket.poll !== "undefined") {
+        try {
+            socket = io.connect(IO_URL);
+            for(var key in Callbacks) {
+                socket.on(key, Callbacks[key]);
+            }
+        }
+        catch(e) {
+            Callbacks.disconnect();
+        }
     }
 }
 
