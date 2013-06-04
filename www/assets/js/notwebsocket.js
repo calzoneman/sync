@@ -7,7 +7,7 @@ var NotWebsocket = function() {
         this.recv(["connect", undefined]);
         this.pollint = setInterval(function() {
             this.poll();
-        }.bind(this), 500);
+        }.bind(this), 100);
     }.bind(this));
 
     this.handlers = {};
@@ -52,17 +52,20 @@ NotWebsocket.prototype.on = function(msg, callback) {
 NotWebsocket.prototype.poll = function() {
     if(!this.connected)
         return;
-    $.getJSON(WEB_URL+"/nws/"+this.hash+"/poll", function(data) {
-        if(data.length > 0)
-            console.log("receiving", data.length);
+    if(this.polling)
+        return false;
+    $.getJSON(WEB_URL+"/nws/"+this.hash+"/poll?callback=?", function(data) {
+        this.polling = true;
         for(var i = 0; i < data.length; i++) {
             try {
                 this.recv(data[i]);
             }
             catch(e) { }
         }
+        this.polling = false;
     }.bind(this))
     .fail(function() {
+        console.log(arguments);
         this.disconnect();
     }.bind(this));
 }
@@ -81,6 +84,8 @@ NotWebsocket.prototype.disconnect = function() {
     this.recv(["disconnect", undefined]);
     clearInterval(this.pollint);
     this.connected = false;
-    this.reconndelay = 100;
-    this.reconnect();
+    this.reconndelay = 1000;
+    setTimeout(function() {
+        this.reconnect();
+    }.bind(this), this.reconndelay);
 }

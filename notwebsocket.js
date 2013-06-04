@@ -28,8 +28,6 @@ NotWebsocket.prototype.poll = function() {
         q.push(this.pktqueue[i]);
     }
     this.pktqueue.length = 0;
-    if(q.length > 0)
-        console.log("sending", q.length);
     return q;
 }
 
@@ -106,6 +104,7 @@ var rooms = {};
 function newConnection(req, res) {
     var nws = new NotWebsocket();
     clients[nws.hash] = nws;
+    res.callback = req.query.callback;
     sendJSON(res, nws.hash);
     return nws;
 }
@@ -114,11 +113,13 @@ exports.newConnection = newConnection;
 function msgReceived(req, res) {
     var h = req.params.hash;
     if(h in clients && clients[h] != null) {
-        if(req.params.str == "poll") {
+        var str = req.params.str;
+        res.callback = req.query.callback;
+        if(str == "poll") {
             sendJSON(res, clients[h].poll());
         }
         else {
-            clients[h].recv(unescape(req.params.str));
+            clients[h].recv(unescape(str));
             sendJSON(res, "");
         }
     }
