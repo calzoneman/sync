@@ -79,6 +79,8 @@ function createQuery(template, args) {
         template = first + template.substring(idx).replace("?", arg);
         last = idx + arg.length;
     }
+    template = template.replace(/`'/g, "`");
+    template = template.replace(/'`/g, "`");
     return template;
 }
 
