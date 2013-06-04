@@ -18,6 +18,7 @@ Logger.syslog.log("Starting CyTube v" + VERSION);
 var Config = require("./config.js");
 var express = require("express");
 var API = require("./api.js");
+var NWS = require("./notwebsocket");
 
 var app = express();
 app.get("/r/:channel(*)", function(req, res, next) {
@@ -32,6 +33,53 @@ app.get("/r/:channel(*)", function(req, res, next) {
 
 app.get("/api/:apireq(*)", function(req, res, next) {
     API.handle(req.url.substring(5), req, res);
+});
+
+function getClientIP(req) {
+    var ip;
+    var forward = req.header("x-forwarded-for");
+    if(forward) {
+        ip = forward.split(",")[0];
+    }
+    if(!ip) {
+        ip = req.connection.remoteAddress;
+    }
+    return ip;
+}
+
+app.get("/nws/connect", function(req, res, next) {
+    var socket = NWS.newConnection(req, res);
+    var ip = getClientIP(req);
+    if(Database.checkGlobalBan(ip)) {
+        Logger.syslog.log("Disconnecting " + ip + " - bant");
+        socket.emit("kick", {
+            reason: "You're globally banned!"
+        });
+        socket.disconnect(true);
+        return;
+    }
+    socket.on("disconnect", function() {
+        exports.clients[ip]--;
+    });
+    if(!(ip in exports.clients)) {
+        exports.clients[ip] = 1;
+    }
+    else {
+        exports.clients[ip]++;
+    }
+    if(exports.clients[ip] > Config.MAX_PER_IP) {
+        socket.emit("kick", {
+            reason: "Too many connections from your IP address"
+        });
+        socket.disconnect(true);
+        return;
+    }
+    var user = new User(socket, ip);
+    Logger.syslog.log("Accepted connection from /" + user.ip);
+});
+
+app.get("/nws/:hash/:str", function(req, res, next) {
+    NWS.msgReceived(req, res);
 });
 
 app.get("/:thing(*)", function(req, res, next) {

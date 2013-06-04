@@ -19,6 +19,7 @@ var Logger = require("./logger.js");
 var InfoGetter = require("./get-info.js");
 var Server = require("./server.js");
 var io = Server.io;
+var NWS = require("./notwebsocket");
 var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
@@ -760,6 +761,7 @@ Channel.prototype.sendRecentChat = function(user) {
 
 Channel.prototype.sendAll = function(message, data) {
     io.sockets.in(this.name).emit(message, data);
+    NWS.inRoom(this.name).emit(message, data);
 }
 
 Channel.prototype.broadcastPlaylistMeta = function() {

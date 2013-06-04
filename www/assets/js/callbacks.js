@@ -835,6 +835,7 @@ Callbacks = {
     }
 }
 
+/*
 $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
     try {
         socket = io.connect(IO_URL);
@@ -846,3 +847,9 @@ $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
         Callbacks.disconnect();
     }
 });
+*/
+
+socket = new NotWebsocket();
+for(var key in Callbacks) {
+    socket.on(key, Callbacks[key]);
+}
