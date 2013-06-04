@@ -537,12 +537,8 @@ Channel.prototype.userJoin = function(user) {
     if(user.name != "") {
         for(var i = 0; i < this.users.length; i++) {
             if(this.users[i].name.toLowerCase() == user.name.toLowerCase()) {
-                user.name = "";
-                user.loggedIn = false;
-                user.socket.emit("login", {
-                    success: false,
-                    error: "The username " + user.name + " is already in use on this channel"
-                });
+                console.log("DBG");
+                this.kick(this.users[i], "Duplicate login");
             }
         }
     }
