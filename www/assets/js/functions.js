@@ -1129,6 +1129,9 @@ function saveOpts() {
     }
 }
 
+// To be overridden in callbacks.js
+function setupNewSocket() { }
+
 function applyOpts() {
     $("#usertheme").remove();
     if(USEROPTS.theme != "default") {
@@ -1189,22 +1192,18 @@ function applyOpts() {
     }
 
     if(USEROPTS.altsocket) {
-        socket.disconnect();
+        if(socket)
+            socket.disconnect();
         socket = new NotWebsocket();
-        for(var key in Callbacks) {
-            socket.on(key, Callbacks[key]);
-        }
+        setupNewSocket();
     }
     // Switch from NotWebsocket => Socket.io
     else if(socket && typeof socket.poll !== "undefined") {
         try {
             socket = io.connect(IO_URL);
-            for(var key in Callbacks) {
-                socket.on(key, Callbacks[key]);
-            }
+            setupNewSocket();
         }
         catch(e) {
-            Callbacks.disconnect();
         }
     }
 }

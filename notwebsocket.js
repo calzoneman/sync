@@ -14,6 +14,23 @@ var NotWebsocket = function() {
     this.handlers = {};
     this.room = "";
     this.lastpoll = Date.now();
+    this.noflood = {};
+}
+
+NotWebsocket.prototype.checkFlood = function(id, rate) {
+    if(id in this.noflood) {
+        this.noflood[id].push(Date.now());
+    }
+    else {
+        this.noflood[id] = [Date.now()];
+    }
+    if(this.noflood[id].length > 10) {
+        this.noflood[id].shift();
+        var hz = 10000 / (this.noflood[id][9] - this.noflood[id][0]);
+        if(hz > rate) {
+            throw "Rate is too high: " + id;
+        }
+    }
 }
 
 NotWebsocket.prototype.emit = function(msg, data) {
@@ -22,6 +39,7 @@ NotWebsocket.prototype.emit = function(msg, data) {
 }
 
 NotWebsocket.prototype.poll = function() {
+    this.checkFlood("poll", 100);
     this.lastpoll = Date.now();
     var q = [];
     for(var i = 0; i < this.pktqueue.length; i++) {
@@ -38,6 +56,7 @@ NotWebsocket.prototype.on = function(msg, callback) {
 }
 
 NotWebsocket.prototype.recv = function(urlstr) {
+    this.checkFlood("recv", 100);
     var msg, data;
     try {
         var js = JSON.parse(urlstr);
@@ -115,12 +134,17 @@ function msgReceived(req, res) {
     if(h in clients && clients[h] != null) {
         var str = req.params.str;
         res.callback = req.query.callback;
-        if(str == "poll") {
-            sendJSON(res, clients[h].poll());
+        try {
+            if(str == "poll") {
+                sendJSON(res, clients[h].poll());
+            }
+            else {
+                clients[h].recv(unescape(str));
+                sendJSON(res, "");
+            }
         }
-        else {
-            clients[h].recv(unescape(str));
-            sendJSON(res, "");
+        catch(e) {
+            res.send(429); // 429 Too Many Requests
         }
     }
     else {

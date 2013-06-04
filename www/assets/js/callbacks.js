@@ -846,3 +846,9 @@ $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
         Callbacks.disconnect();
     }
 });
+
+window.setupNewSocket = function() {
+    for(var key in Callbacks) {
+        socket.on(key, Callbacks[key]);
+    }
+}
