@@ -581,8 +581,11 @@ Callbacks = {
         $(li).show("blind");
     },
 
-    queueFail: function() {
-        makeAlert("Error", "Queue failed.  Check your link to make sure it is valid.", "alert-error")
+    queueFail: function(data) {
+        if(!data) {
+            data = "Queue failed.  Check your link to make sure it is valid.";
+        }
+        makeAlert("Error", data, "alert-error")
             .insertAfter($("#playlist_controls"));
     },
 

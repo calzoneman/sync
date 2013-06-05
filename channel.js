@@ -55,7 +55,7 @@ var Channel = function(name) {
         playlistdelete: 2,
         playlistjump: 1.5,
         playlistaddlist: 1.5,
-        playlistadd: 1.5,
+        playlistaddlive: 1.5,
         addnontemp: 2,
         settemp: 2,
         playlistgeturl: 1.5,
@@ -984,6 +984,11 @@ Channel.prototype.autoTemp = function(media, user) {
 
 Channel.prototype.enqueue = function(data, user) {
     var idx = data.pos == "next" ? this.position + 1 : this.queue.length;
+
+    if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
+        user.socket.emit("queueFail", "You don't have permission to queue livestreams");
+        return;
+    }
 
     // Prefer cache over looking up new data
     if(data.id in this.library) {

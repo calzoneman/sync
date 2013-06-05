@@ -1314,6 +1314,7 @@ function genPermissionsEditor() {
     makeOption("Delete playlist items", "playlistdelete", standard, CHANPERMS.playlistdelete+"");
     makeOption("Jump to video", "playlistjump", standard, CHANPERMS.playlistjump+"");
     makeOption("Queue playlist", "playlistaddlist", standard, CHANPERMS.playlistaddlist+"");
+    makeOption("Queue livestream", "playlistaddlive", standard, CHANPERMS.playlistaddlive+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANPERMS.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANPERMS.settemp+"");
     makeOption("Retrieve playlist URLs", "playlistgeturl", standard, CHANPERMS.playlistgeturl+"");
