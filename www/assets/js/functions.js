@@ -1142,7 +1142,7 @@ function showUserOpts() {
 
 function saveOpts() {
     for(var key in USEROPTS) {
-        createCookie("cytube_"+key, USEROPTS[key], 100);
+        localStorage.setItem(key, USEROPTS[key]);
     }
 }
 
