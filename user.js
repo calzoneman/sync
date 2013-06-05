@@ -146,6 +146,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("setChannelRank", function(data) {
+        if(this.channel != null) {
+            this.channel.trySetRank(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("banName", function(data) {
         if(this.channel != null) {
             this.channel.banName(this, data.name || "");

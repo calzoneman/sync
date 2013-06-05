@@ -537,7 +537,6 @@ Channel.prototype.userJoin = function(user) {
     if(user.name != "") {
         for(var i = 0; i < this.users.length; i++) {
             if(this.users[i].name.toLowerCase() == user.name.toLowerCase()) {
-                console.log("DBG");
                 this.kick(this.users[i], "Duplicate login");
             }
         }
@@ -758,6 +757,14 @@ Channel.prototype.sendRecentChat = function(user) {
 Channel.prototype.sendAll = function(message, data) {
     io.sockets.in(this.name).emit(message, data);
     NWS.inRoom(this.name).emit(message, data);
+}
+
+Channel.prototype.sendAllWithPermission = function(perm, msg, data) {
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], perm)) {
+            this.users[i].socket.emit(msg, data);
+        }
+    }
 }
 
 Channel.prototype.broadcastPlaylistMeta = function() {
@@ -1671,6 +1678,46 @@ Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
 
 /* REGION Rank stuff */
 
+Channel.prototype.trySetRank = function(user, data) {
+    if(!Rank.hasPermission(user, "promote"))
+        return;
+
+    if(typeof data.user !== "string" || typeof data.rank !== "number")
+        return;
+
+    if(data.rank >= user.rank)
+        return;
+
+    if(data.rank < 1)
+        return;
+
+    var receiver;
+    for(var i = 0; i < this.users.length; i++) {
+        if(this.users[i].name == data.user) {
+            receiver = this.users[i];
+            break;
+        }
+    }
+
+    if(receiver) {
+        if(receiver.rank >= user.rank)
+            return;
+        receiver.rank = data.rank;
+        if(receiver.loggedIn) {
+            this.saveRank(receiver);
+        }
+        this.broadcastUserUpdate(receiver);
+    }
+    else {
+        var rrank = this.getRank(data.user);
+        if(rrank >= user.rank)
+            return;
+        Database.setChannelRank(this.name, data.user, data.rank);
+    }
+
+    this.sendAllWithPermission("acl", "setChannelRank", data);
+}
+
 Channel.prototype.tryPromoteUser = function(actor, data) {
     if(!Rank.hasPermission(actor, "promote")) {
         return;
@@ -1705,7 +1752,7 @@ Channel.prototype.tryPromoteUser = function(actor, data) {
             Database.setChannelRank(this.name, data.name, rank);
         }
         this.logger.log("*** " + actor.name + " promoted " + data.name + " from " + (rank - 1) + " to " + rank);
-        this.broadcastRankTable();
+        //this.broadcastRankTable();
     }
 }
 
@@ -1742,7 +1789,7 @@ Channel.prototype.tryDemoteUser = function(actor, data) {
             Database.setChannelRank(this.name, data.name, rank);
         }
         this.logger.log("*** " + actor.name + " demoted " + data.name + " from " + (rank + 1) + " to " + rank);
-        this.broadcastRankTable();
+        //this.broadcastRankTable();
     }
 }
 

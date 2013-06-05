@@ -361,40 +361,18 @@ Callbacks = {
             }
         }
         loadACLPage(0);
-        return;
-        for(var i = 0; i < entries.length; i++) {
-            var tr = $("<tr/>").appendTo(tbl);
-            var name = $("<td/>").text(entries[i].name).appendTo(tr);
-            name.addClass(getNameColor(entries[i].rank));
-            var rank = $("<td/>").text(entries[i].rank).appendTo(tr);
-            var control = $("<td/>").appendTo(tr);
-            var up = $("<button/>").addClass("btn btn-mini btn-success")
-                .appendTo(control);
-            $("<i/>").addClass("icon-plus").appendTo(up);
-            var down = $("<button/>").addClass("btn btn-mini btn-danger")
-                .appendTo(control);
-            $("<i/>").addClass("icon-minus").appendTo(down);
-            if(entries[i].rank + 1 >= RANK) {
-                up.attr("disabled", true);
-            }
-            else {
-                up.click(function(name) { return function() {
-                    socket.emit("promote", {
-                        name: name
-                    });
-                }}(entries[i].name));
-            }
-            if(entries[i].rank >= RANK) {
-                down.attr("disabled", true);
-            }
-            else {
-                down.click(function(name) { return function() {
-                    socket.emit("demote", {
-                        name: name
-                    });
-                }}(entries[i].name));
+    },
+
+    setChannelRank: function(data) {
+        var ents = $("#channelranks").data("entries");
+        for(var i = 0; i < ents.length; i++) {
+            if(ents[i].name == data.user) {
+                ents[i].rank = data.rank;
+                break;
             }
         }
+        $("#channelranks").data("entries", ents);
+        loadACLPage($("#channelranks").data("page"));
     },
 
     voteskip: function(data) {
@@ -515,6 +493,7 @@ Callbacks = {
                 formatUserlistItem(users[i], data);
             }
         }
+
     },
 
     userLeave: function(data) {

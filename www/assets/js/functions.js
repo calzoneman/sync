@@ -499,7 +499,6 @@ function loadLoginlogPage(page) {
                 .text("Ban IP Range")
                 .appendTo(bantd);
             var callback = (function(id, name) { return function() {
-                console.log(id, name);
                 socket.emit("banIP", {
                     id: id,
                     name: name,
@@ -509,7 +508,6 @@ function loadLoginlogPage(page) {
             } })(entries[i].id, entries[i].names[0]);
             ban.click(callback);
             var callback2 = (function(id, name) { return function() {
-                console.log(id, name);
                 socket.emit("banIP", {
                     id: id,
                     name: name,
@@ -561,6 +559,7 @@ function loadLoginlogPage(page) {
 
 function loadACLPage(page) {
     var entries = $("#channelranks").data("entries");
+    $("#channelranks").data("page", page);
     var start = page * 20;
     var tbl = $("#channelranks table");
     if(tbl.children().length > 1) {
@@ -570,34 +569,42 @@ function loadACLPage(page) {
         var tr = $("<tr/>").appendTo(tbl);
         var name = $("<td/>").text(entries[i].name).appendTo(tr);
         name.addClass(getNameColor(entries[i].rank));
-        var rank = $("<td/>").text(entries[i].rank).appendTo(tr);
-        var control = $("<td/>").appendTo(tr);
-        var up = $("<button/>").addClass("btn btn-mini btn-success")
-            .appendTo(control);
-        $("<i/>").addClass("icon-plus").appendTo(up);
-        var down = $("<button/>").addClass("btn btn-mini btn-danger")
-            .appendTo(control);
-        $("<i/>").addClass("icon-minus").appendTo(down);
-        if(entries[i].rank + 1 >= RANK) {
-            up.attr("disabled", true);
-        }
-        else {
-            up.click(function(name) { return function() {
-                socket.emit("promote", {
-                    name: name
+        var rank = $("<td/>").text(entries[i].rank)
+            .css("min-width", "220px")
+            .appendTo(tr);
+        (function(name) {
+        rank.click(function() {
+            if(this.find(".rank-edit").length > 0)
+                return;
+            var r = this.text();
+            this.text("");
+            var edit = $("<input/>").attr("type", "text")
+                .attr("placeholder", r)
+                .addClass("rank-edit")
+                .appendTo(this)
+                .focus();
+            if(parseInt(r) >= RANK) {
+                edit.attr("disabled", true);
+            }
+            function save() {
+                var r = this.val();
+                var r2 = r;
+                if(r.trim() == "" || parseInt(r) >= RANK || parseInt(r) < 1)
+                    r = this.attr("placeholder");
+                r = parseInt(r) + "";
+                this.parent().text(r);
+                socket.emit("setChannelRank", {
+                    user: name,
+                    rank: parseInt(r)
                 });
-            }}(entries[i].name));
-        }
-        if(entries[i].rank >= RANK) {
-            down.attr("disabled", true);
-        }
-        else {
-            down.click(function(name) { return function() {
-                socket.emit("demote", {
-                    name: name
-                });
-            }}(entries[i].name));
-        }
+            }
+            edit.blur(save.bind(edit));
+            edit.keydown(function(ev) {
+                if(ev.keyCode == 13)
+                    save.bind(edit)();
+            });
+        }.bind(rank));
+        })(entries[i].name);
     }
     if($("#acl_pagination").length > 0) {
         $("#acl_pagination").find("li").each(function() {
