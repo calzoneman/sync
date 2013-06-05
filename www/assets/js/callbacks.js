@@ -206,7 +206,6 @@ Callbacks = {
         $("#opt_show_public").prop("checked", opts.show_public);
         $("#customCss").remove();
         if(opts.customcss.trim() != "") {
-            $("#usertheme").remove();
             $("<link/>")
                 .attr("rel", "stylesheet")
                 .attr("href", opts.customcss)
@@ -253,7 +252,6 @@ Callbacks = {
         $("#jstext").val(data.js);
 
         if(data.css) {
-            $("#usertheme").remove();
             $("<style/>").attr("type", "text/css")
                 .attr("id", "chancss")
                 .text(data.css)
