@@ -952,12 +952,13 @@ function mediaUpdate(chan, id) {
 }
 
 function isLive(type) {
-    return type == "li"
-        || type == "tw"
-        || type == "jt"
-        || type == "rt"
-        || type == "jw"
-        || type == "us";
+    return type == "li" // Livestream.com
+        || type == "tw" // Twitch.tv
+        || type == "jt" // Justin.tv
+        || type == "rt" // RTMP
+        || type == "jw" // JWPlayer
+        || type == "us" // Ustream.tv
+        || type == "im";// Imgur album
 }
 
 Channel.prototype.queueAdd = function(media, idx) {
@@ -1046,6 +1047,12 @@ Channel.prototype.enqueue = function(data, user) {
                 break;
             case "jw":
                 var media = new Media(data.id, "JWPlayer Stream - " + data.id, "--:--", "jw");
+                media.queueby = user ? user.name : "";
+                this.autoTemp(media, user);
+                this.queueAdd(media, idx);
+                break;
+            case "im":
+                var media = new Media(data.id, "Imgur Album", "--:--", "im");
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);

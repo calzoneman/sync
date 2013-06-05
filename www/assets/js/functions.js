@@ -669,6 +669,8 @@ function parseVideoURL(url){
         return [parseVimeo(url), "vi"];
     else if(url.indexOf("dailymotion.com") != -1)
         return [parseDailymotion(url), "dm"];
+    else if(url.indexOf("imgur.com") != -1)
+        return [parseImgur(url), "im"];
 }
 
 function parseYTURL(url) {
@@ -737,6 +739,14 @@ function parseVimeo(url) {
 
 function parseDailymotion(url) {
     var m = url.match(/dailymotion\.com\/video\/([a-zA-Z0-9_-]+)/);
+    if(m) {
+        return m[1];
+    }
+    return null;
+}
+
+function parseImgur(url) {
+    var m = url.match(/imgur\.com\/a\/([a-zA-Z0-9]+)/);
     if(m) {
         return m[1];
     }

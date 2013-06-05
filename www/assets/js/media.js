@@ -51,6 +51,9 @@ var Media = function(data) {
         case "us":
             this.initUstream();
             break;
+        case "im":
+            this.initImgur();
+            break;
         default:
             this.nullPlayer();
             break;
@@ -456,6 +459,31 @@ Media.prototype.initUstream = function() {
     this.load = function(data) {
         this.id = data.id;
         this.initUstream();
+    }
+
+    this.pause = function() { }
+
+    this.play = function() { }
+
+    this.getTime = function() { }
+
+    this.seek = function() { }
+}
+
+Media.prototype.initImgur = function() {
+    var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
+    $("#ytapiplayer").remove();
+    iframe.attr("id", "ytapiplayer");
+    iframe.attr("width", VWIDTH);
+    iframe.attr("height", VHEIGHT);
+    iframe.attr("src", "http://imgur.com/a/"+this.id+"/embed");
+    iframe.attr("frameborder", "0");
+    iframe.attr("scrolling", "no");
+    iframe.css("border", "none");
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initImgur()
     }
 
     this.pause = function() { }
