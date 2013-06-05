@@ -76,7 +76,8 @@ var Channel = function(name) {
         customcss: "",
         customjs: "",
         chat_antiflood: false,
-        show_public: false
+        show_public: false,
+        enable_link_regex: true
     };
     this.filters = [
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
@@ -1465,8 +1466,12 @@ Channel.prototype.trySetLock = function(user, data) {
 Channel.prototype.updateFilter = function(filter) {
     var found = false;
     for(var i = 0; i < this.filters.length; i++) {
-        if(this.filters[i].name == filter.name
-                && this.filters[i].source == filter.source) {
+        if(this.filters[i].name == "" && filter.name == ""
+            && this.filters[i].source == filter.source) {
+            found = true;
+            this.filters[i] = filter;
+        }
+        else if(filter.name != "" && this.filters[i].name == filter.name) {
             found = true;
             this.filters[i] = filter;
         }
@@ -1641,7 +1646,7 @@ Channel.prototype.filterMessage = function(msg) {
     var subs = msg.split(link);
     // Apply other filters
     for(var j = 0; j < subs.length; j++) {
-        if(subs[j].match(link)) {
+        if(this.opts.enable_link_regex && subs[j].match(link)) {
             subs[j] = subs[j].replace(link, "<a href=\"$1\" target=\"_blank\">$1</a>");
             continue;
         }

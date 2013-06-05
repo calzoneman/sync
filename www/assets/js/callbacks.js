@@ -204,6 +204,7 @@ Callbacks = {
         $("#opt_customjs").val(opts.customjs);
         $("#opt_chat_antiflood").prop("checked", opts.chat_antiflood);
         $("#opt_show_public").prop("checked", opts.show_public);
+        $("#opt_enable_link_regex").prop("checked", opts.enable_link_regex);
         $("#customCss").remove();
         if(opts.customcss.trim() != "") {
             $("<link/>")
