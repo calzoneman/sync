@@ -199,7 +199,9 @@ Channel.prototype.loadDump = function() {
             }
             data.logins = data.logins || {};
             for(var ip in data.logins) {
-                this.logins[ip] = data.logins[ip];
+                for(var i = 0; i < data.logins.length; i++) {
+                    this.logins[ip].push(data.logins[ip][i]);
+                }
             }
             this.setLock(!(data.openqueue || false));
             this.chatbuffer = data.chatbuffer || [];
