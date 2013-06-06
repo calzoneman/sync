@@ -15,6 +15,10 @@ html, body {
     clear: both;
 }
 
+#librarywrap, #userplaylistwrap, #playlist_controls {
+    display: none;
+}
+
 #welcome {
     font-size: 10pt;
     color: #ffffff;
@@ -77,7 +81,7 @@ html, body {
     margin-bottom: 0;
 }
 
-#usercountcontainer, #currenttitle {
+#usercountwrap, #currenttitle {
     border: 1px solid #aaaaaa;
     border-bottom: none;
     margin: 0;
@@ -87,9 +91,12 @@ html, body {
     margin: 0;
 }
 
-#ulistchevron {
-    cursor: pointer;
-    float: left;
+.pointer {
+  cursor: pointer;
+}
+
+#leftpane-inner *, #rightpane-inner * {
+  margin-left: 0;
 }
 
 #plmeta {
