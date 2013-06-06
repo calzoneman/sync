@@ -77,10 +77,19 @@ html, body {
     margin-bottom: 0;
 }
 
-#usercount, #currenttitle {
+#usercountcontainer, #currenttitle {
     border: 1px solid #aaaaaa;
     border-bottom: none;
     margin: 0;
+}
+
+#usercount {
+    margin: 0;
+}
+
+#ulistchevron {
+    cursor: pointer;
+    float: left;
 }
 
 #plmeta {

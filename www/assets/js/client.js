@@ -149,6 +149,18 @@ if(!USEROPTS.hidevid) {
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 }
 
+$("#ulistchevron").click(function() {
+    var state = $("#userlist").css("display");
+    if(state == "none") {
+        $("#userlist").show();
+        $("#ulistchevron").removeClass().addClass("icon-chevron-up");
+    }
+    else {
+        $("#userlist").hide();
+        $("#ulistchevron").removeClass().addClass("icon-chevron-down");
+    }
+});
+
 var sendVideoUpdate = function() { }
 setInterval(function() {
     sendVideoUpdate();
