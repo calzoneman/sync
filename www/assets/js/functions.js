@@ -130,7 +130,7 @@ function addUserDropdown(entry, name) {
         a.text("IP Ban");
         a.click(function() {
             socket.emit("chatMsg", {
-                msg: "/ban " + name
+                msg: "/ipban " + name
             });
         });
 

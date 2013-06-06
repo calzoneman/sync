@@ -647,13 +647,12 @@ Channel.prototype.sendRankStuff = function(user) {
         var ents = [];
         for(var ip in this.ipbans) {
             if(this.ipbans[ip] != null) {
-                var name;
+                var name = [];
                 if(ip in this.logins) {
-                    name = this.logins[ip].join(", ");
+                    name = this.logins[ip];
                 }
-                else {
-                    name = this.ipbans[ip][0];
-                }
+                name.push(this.ipbans[ip][0]);
+                name = name.join(", ");
                 var id = this.hideIP(ip);
                 var disp = ip;
                 if(user.rank < Rank.Siteadmin) {
