@@ -95,8 +95,8 @@ html, body {
   cursor: pointer;
 }
 
-#leftpane-inner *, #rightpane-inner * {
-  margin-left: 0;
+#leftpane-inner div.span12, #rightpane-inner div.span12 {
+    margin-left: 0;
 }
 
 #plmeta {
