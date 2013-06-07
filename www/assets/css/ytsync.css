@@ -15,13 +15,21 @@ html, body {
     clear: both;
 }
 
-#librarywrap, #userplaylistwrap, #playlist_controls {
-    display: none;
-}
-
 #welcome {
     font-size: 10pt;
     color: #ffffff;
+}
+
+#usercountwrap, #userlist, #messagebuffer, #videowrap {
+    background-color: #ffffff;
+}
+
+#librarytoggle, #userpltoggle, #playlisttoggle {
+    background-color: #ffffff;
+}
+
+#librarywrap, #userplaylistwrap, #playlist_controls {
+    display: none;
 }
 
 .videolist {

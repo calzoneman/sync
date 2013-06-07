@@ -22,16 +22,24 @@ generateToggle("#playlisttoggle", "#playlist_controls");
 
 /* navbar stuff */
 $("#optlink").click(showOptionsMenu);
-$("#guestlogin").click(function() {
-    socket && socket.emit("login", {
+
+function guestLogin() {
+    socket.emit("login", {
         name: $("#guestname").val(),
     });
+}
+$("#guestlogin").click(guestLogin);
+$("#guestname").keydown(function(ev) {
+    if(ev.keyCode == 13) {
+        guestLogin();
+    }
 });
+
 $("#login").click(showLoginMenu);
 $("#logout").click(function() {
     eraseCookie("cytube_name");
     eraseCookie("cytube_session");
-    document.ocation.reload(true);
+    document.location.reload(true);
 });
 
 /* chatbox */
@@ -117,7 +125,6 @@ $("#library_query").keydown(function(ev) {
             source: "library",
             query: $("#library_query").val().toLowerCase()
         });
-
     }
 });
 
@@ -147,3 +154,87 @@ $("#userpl_save").click(function() {
 });
 
 /* playlist controls */
+
+function queue(pos) {
+    var links = $("#mediaurl").val().split(",");
+    if(pos == "next") {
+        links = links.reverse();
+    }
+    links.forEach(function(link) {
+        var data = parseMediaLink(link);
+        socket.emit("queue", {
+            id: data.id,
+            type: data.type,
+            pos: "end"
+        });
+    });
+}
+
+$("#queue_next").click(function() {
+    queue("next");
+});
+
+$("#queue_end").click(function() {
+    queue("end");
+});
+
+$("#mediaurl").keydown(function(ev) {
+    if(ev.keyCode == 13) {
+        queue("end");
+    }
+});
+
+$("#qlockbtn").click(function() {
+    socket.emit("togglePlaylistLock");
+});
+
+$("#getplaylist").click(function() {
+    var callback = function(data) {
+        socket.listeners("playlist").splice(
+            socket.listeners("playlist").indexOf(callback)
+        );
+        var list = [];
+        for(var i = 0; i < data.pl.length; i++) {
+            var entry = formatURL(data.pl[i]);
+            // TODO formatURL in util.js
+            list.push(entry);
+        }
+        var urls = list.join(",");
+
+        var modal = $("<div/>").addClass("modal hide fade")
+            .appendTo($("body"));
+        var head = $("<div/>").addClass("modal-header")
+            .appendTo(modal);
+        $("<button/>").addClass("close")
+            .attr("data-dismiss", "modal")
+            .attr("aria-hidden", "true")
+            .html("&times;")
+            .appendTo(head);
+        $("<h3/>").text("Playlist URLs").appendTo(head);
+        var body = $("<div/>").addClass("modal-body").appendTo(modal);
+        $("<input/>").attr("type", "text")
+            .val(urls)
+            .appendTo(body);
+        $("<div/>").addClass("modal-footer").appendTo(modal);
+        modal.on("hidden", function() {
+            modal.remove();
+        });
+        modal.modal();
+    }
+    socket.on("playlist", callback);
+    socket.emit("requestPlaylist");
+});
+
+$("#clearplaylist").click(function() {
+    var clear = confirm("Are you sure you want to clear the playlist?");
+    if(clear) {
+        socket.emit("clearPlaylist");
+    }
+});
+
+$("#shuffleplaylist").click(function() {
+    var clear = confirm("Are you sure you want to shuffle the playlist?");
+    if(clear) {
+        socket.emit("shufflePlaylist");
+    }
+});
