@@ -53,25 +53,33 @@ function parseBool(x) {
     else return Boolean(x);
 }
 
-function getOrDefault(cookie, def) {
-    var cook = readCookie(cookie);
-    if(cook === null) {
+getOrDefault = function(k, def) {
+    var v = localStorage.getItem(k);
+    if(v === null)
         return def;
-    }
-    return cook;
+    if(v === "true")
+        return true;
+    if(v === "false")
+        return false;
+    if(v.match(/[0-9]+/))
+        return parseInt(v);
+    if(v.match(/[0-9\.]+/))
+        return parseFloat(v);
+    return v;
 }
 
 var USEROPTS = {
-    theme           : getOrDefault("cytube_theme", "default"),
-    css             : getOrDefault("cytube_css", ""),
-    layout          : getOrDefault("cytube_layout", "default"),
-    synch           : parseBool(getOrDefault("cytube_synch", true)),
-    hidevid         : parseBool(getOrDefault("cytube_hidevid", false)),
-    show_timestamps : parseBool(getOrDefault("cytube_show_timestamps", false)),
-    modhat          : parseBool(getOrDefault("cytube_modhat", false)),
-    blink_title     : parseBool(getOrDefault("cytube_blink_title", false)),
-    sync_accuracy   : parseFloat(getOrDefault("cytube_sync_accuracy", 2)) || 2,
-    chatbtn         : parseBool(getOrDefault("cytube_chatbtn", false))
+    theme           : getOrDefault("theme", "default"),
+    css             : getOrDefault("css", ""),
+    layout          : getOrDefault("layout", "default"),
+    synch           : getOrDefault("synch", true),
+    hidevid         : getOrDefault("hidevid", false),
+    show_timestamps : getOrDefault("show_timestamps", true),
+    modhat          : getOrDefault("modhat", false),
+    blink_title     : getOrDefault("blink_title", false),
+    sync_accuracy   : getOrDefault("sync_accuracy", 2),
+    chatbtn         : getOrDefault("chatbtn", false),
+    altsocket       : getOrDefault("altsocket", false)
 };
 applyOpts();
 $("#optlink").click(showUserOpts);
@@ -140,6 +148,18 @@ if(!USEROPTS.hidevid) {
     var firstScriptTag = document.getElementsByTagName("script")[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 }
+
+$("#ulistchevron").click(function() {
+    var state = $("#userlist").css("display");
+    if(state == "none") {
+        $("#userlist").show();
+        $("#ulistchevron").removeClass().addClass("icon-chevron-up");
+    }
+    else {
+        $("#userlist").hide();
+        $("#ulistchevron").removeClass().addClass("icon-chevron-down");
+    }
+});
 
 var sendVideoUpdate = function() { }
 setInterval(function() {
@@ -365,7 +385,8 @@ $("#opt_submit").click(function() {
         customcss: css,
         customjs: $("#opt_customjs").val(),
         chat_antiflood: $("#opt_chat_antiflood").prop("checked"),
-        show_public: $("#opt_show_public").prop("checked")
+        show_public: $("#opt_show_public").prop("checked"),
+        enable_link_regex: $("#opt_enable_link_regex").prop("checked")
     };
     socket.emit("channelOpts", opts);
 });

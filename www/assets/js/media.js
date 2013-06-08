@@ -1,3 +1,14 @@
+/*
+The MIT License (MIT)
+Copyright (c) 2013 Calvin Montgomery
+ 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ 
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 var Media = function(data) {
     if(!data) {
         data = {
@@ -39,6 +50,9 @@ var Media = function(data) {
             break;
         case "us":
             this.initUstream();
+            break;
+        case "im":
+            this.initImgur();
             break;
         default:
             this.nullPlayer();
@@ -445,6 +459,31 @@ Media.prototype.initUstream = function() {
     this.load = function(data) {
         this.id = data.id;
         this.initUstream();
+    }
+
+    this.pause = function() { }
+
+    this.play = function() { }
+
+    this.getTime = function() { }
+
+    this.seek = function() { }
+}
+
+Media.prototype.initImgur = function() {
+    var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
+    $("#ytapiplayer").remove();
+    iframe.attr("id", "ytapiplayer");
+    iframe.attr("width", VWIDTH);
+    iframe.attr("height", VHEIGHT);
+    iframe.attr("src", "http://imgur.com/a/"+this.id+"/embed");
+    iframe.attr("frameborder", "0");
+    iframe.attr("scrolling", "no");
+    iframe.css("border", "none");
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initImgur()
     }
 
     this.pause = function() { }

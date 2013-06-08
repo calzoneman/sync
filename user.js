@@ -146,6 +146,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("setChannelRank", function(data) {
+        if(this.channel != null) {
+            this.channel.trySetRank(this, data);
+        }
+    }.bind(this));
+
     this.socket.on("banName", function(data) {
         if(this.channel != null) {
             this.channel.banName(this, data.name || "");
@@ -521,11 +527,7 @@ User.prototype.login = function(name, pw, session) {
     if(this.channel != null && name != "") {
         for(var i = 0; i < this.channel.users.length; i++) {
             if(this.channel.users[i].name == name) {
-                this.socket.emit("login", {
-                    success: false,
-                    error: "The username " + name + " is already in use on this channel"
-                });
-                return false;
+                this.channel.kick(this.channel.users[i], "Duplicate login");
             }
         }
     }
