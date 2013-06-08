@@ -1,3 +1,14 @@
+/*
+The MIT License (MIT)
+Copyright (c) 2013 Calvin Montgomery
+ 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ 
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 Callbacks = {
 
     connect: function() {
@@ -193,9 +204,9 @@ Callbacks = {
         $("#opt_customjs").val(opts.customjs);
         $("#opt_chat_antiflood").prop("checked", opts.chat_antiflood);
         $("#opt_show_public").prop("checked", opts.show_public);
+        $("#opt_enable_link_regex").prop("checked", opts.enable_link_regex);
         $("#customCss").remove();
         if(opts.customcss.trim() != "") {
-            $("#usertheme").remove();
             $("<link/>")
                 .attr("rel", "stylesheet")
                 .attr("href", opts.customcss)
@@ -242,7 +253,6 @@ Callbacks = {
         $("#jstext").val(data.js);
 
         if(data.css) {
-            $("#usertheme").remove();
             $("<style/>").attr("type", "text/css")
                 .attr("id", "chancss")
                 .text(data.css)
@@ -352,40 +362,18 @@ Callbacks = {
             }
         }
         loadACLPage(0);
-        return;
-        for(var i = 0; i < entries.length; i++) {
-            var tr = $("<tr/>").appendTo(tbl);
-            var name = $("<td/>").text(entries[i].name).appendTo(tr);
-            name.addClass(getNameColor(entries[i].rank));
-            var rank = $("<td/>").text(entries[i].rank).appendTo(tr);
-            var control = $("<td/>").appendTo(tr);
-            var up = $("<button/>").addClass("btn btn-mini btn-success")
-                .appendTo(control);
-            $("<i/>").addClass("icon-plus").appendTo(up);
-            var down = $("<button/>").addClass("btn btn-mini btn-danger")
-                .appendTo(control);
-            $("<i/>").addClass("icon-minus").appendTo(down);
-            if(entries[i].rank + 1 >= RANK) {
-                up.attr("disabled", true);
-            }
-            else {
-                up.click(function(name) { return function() {
-                    socket.emit("promote", {
-                        name: name
-                    });
-                }}(entries[i].name));
-            }
-            if(entries[i].rank >= RANK) {
-                down.attr("disabled", true);
-            }
-            else {
-                down.click(function(name) { return function() {
-                    socket.emit("demote", {
-                        name: name
-                    });
-                }}(entries[i].name));
+    },
+
+    setChannelRank: function(data) {
+        var ents = $("#channelranks").data("entries");
+        for(var i = 0; i < ents.length; i++) {
+            if(ents[i].name == data.user) {
+                ents[i].rank = data.rank;
+                break;
             }
         }
+        $("#channelranks").data("entries", ents);
+        loadACLPage($("#channelranks").data("page"));
     },
 
     voteskip: function(data) {
@@ -506,6 +494,7 @@ Callbacks = {
                 formatUserlistItem(users[i], data);
             }
         }
+
     },
 
     userLeave: function(data) {
@@ -572,8 +561,11 @@ Callbacks = {
         $(li).show("blind");
     },
 
-    queueFail: function() {
-        makeAlert("Error", "Queue failed.  Check your link to make sure it is valid.", "alert-error")
+    queueFail: function(data) {
+        if(!data) {
+            data = "Queue failed.  Check your link to make sure it is valid.";
+        }
+        makeAlert("Error", data, "alert-error")
             .insertAfter($("#playlist_controls"));
     },
 
@@ -846,3 +838,9 @@ $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
         Callbacks.disconnect();
     }
 });
+
+window.setupNewSocket = function() {
+    for(var key in Callbacks) {
+        socket.on(key, Callbacks[key]);
+    }
+}

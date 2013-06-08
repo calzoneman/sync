@@ -39,7 +39,7 @@ function handle(chan, user, msg, data) {
         handleBan(chan, user, msg.substring(5).split(" "));
     }
     else if(msg.indexOf("/ipban ") == 0) {
-        handleIPBan(chan, user, msg.substring(5).split(" "));
+        handleIPBan(chan, user, msg.substring(7).split(" "));
     }
     else if(msg.indexOf("/unban ") == 0) {
         handleUnban(chan, user, msg.substring(7).split(" "));
@@ -86,12 +86,11 @@ function handleIPBan(chan, user, args) {
                 break;
             }
         }
-        if(kickee && kickee.rank < user.rank) {
-            chan.logger.log("*** " + user.name + " banned " + args[0]);
-            args[0] = "";
-            var reason = args.join(" ");
-            chan.kick(kickee, "(banned) " + reason);
-            chan.banIP(user, kickee);
+        if(kickee) {
+            chan.tryIPBan(user, {
+                id: chan.hideIP(kickee.ip),
+                name: kickee.name
+            });
         }
     }
 }

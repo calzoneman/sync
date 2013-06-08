@@ -19,6 +19,7 @@ var Logger = require("./logger.js");
 var InfoGetter = require("./get-info.js");
 var Server = require("./server.js");
 var io = Server.io;
+var NWS = require("./notwebsocket");
 var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
@@ -54,7 +55,7 @@ var Channel = function(name) {
         playlistdelete: 2,
         playlistjump: 1.5,
         playlistaddlist: 1.5,
-        playlistadd: 1.5,
+        playlistaddlive: 1.5,
         addnontemp: 2,
         settemp: 2,
         playlistgeturl: 1.5,
@@ -75,7 +76,8 @@ var Channel = function(name) {
         customcss: "",
         customjs: "",
         chat_antiflood: false,
-        show_public: false
+        show_public: false,
+        enable_link_regex: true
     };
     this.filters = [
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
@@ -197,7 +199,9 @@ Channel.prototype.loadDump = function() {
             }
             data.logins = data.logins || {};
             for(var ip in data.logins) {
-                this.logins[ip] = data.logins[ip];
+                for(var i = 0; i < data.logins.length; i++) {
+                    this.logins[ip].push(data.logins[ip][i]);
+                }
             }
             this.setLock(!(data.openqueue || false));
             this.chatbuffer = data.chatbuffer || [];
@@ -536,12 +540,7 @@ Channel.prototype.userJoin = function(user) {
     if(user.name != "") {
         for(var i = 0; i < this.users.length; i++) {
             if(this.users[i].name.toLowerCase() == user.name.toLowerCase()) {
-                user.name = "";
-                user.loggedIn = false;
-                user.socket.emit("login", {
-                    success: false,
-                    error: "The username " + user.name + " is already in use on this channel"
-                });
+                this.kick(this.users[i], "Duplicate login");
             }
         }
     }
@@ -650,13 +649,12 @@ Channel.prototype.sendRankStuff = function(user) {
         var ents = [];
         for(var ip in this.ipbans) {
             if(this.ipbans[ip] != null) {
-                var name;
+                var name = [];
                 if(ip in this.logins) {
-                    name = this.logins[ip].join(", ");
+                    name = this.logins[ip];
                 }
-                else {
-                    name = this.ipbans[ip][0];
-                }
+                name.push(this.ipbans[ip][0]);
+                name = name.join(", ");
                 var id = this.hideIP(ip);
                 var disp = ip;
                 if(user.rank < Rank.Siteadmin) {
@@ -760,6 +758,15 @@ Channel.prototype.sendRecentChat = function(user) {
 
 Channel.prototype.sendAll = function(message, data) {
     io.sockets.in(this.name).emit(message, data);
+    NWS.inRoom(this.name).emit(message, data);
+}
+
+Channel.prototype.sendAllWithPermission = function(perm, msg, data) {
+    for(var i = 0; i < this.users.length; i++) {
+        if(Rank.hasPermission(this.users[i], perm)) {
+            this.users[i].socket.emit(msg, data);
+        }
+    }
 }
 
 Channel.prototype.broadcastPlaylistMeta = function() {
@@ -954,12 +961,13 @@ function mediaUpdate(chan, id) {
 }
 
 function isLive(type) {
-    return type == "li"
-        || type == "tw"
-        || type == "jt"
-        || type == "rt"
-        || type == "jw"
-        || type == "us";
+    return type == "li" // Livestream.com
+        || type == "tw" // Twitch.tv
+        || type == "jt" // Justin.tv
+        || type == "rt" // RTMP
+        || type == "jw" // JWPlayer
+        || type == "us" // Ustream.tv
+        || type == "im";// Imgur album
 }
 
 Channel.prototype.queueAdd = function(media, idx) {
@@ -985,6 +993,11 @@ Channel.prototype.autoTemp = function(media, user) {
 
 Channel.prototype.enqueue = function(data, user) {
     var idx = data.pos == "next" ? this.position + 1 : this.queue.length;
+
+    if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
+        user.socket.emit("queueFail", "You don't have permission to queue livestreams");
+        return;
+    }
 
     // Prefer cache over looking up new data
     if(data.id in this.library) {
@@ -1048,6 +1061,12 @@ Channel.prototype.enqueue = function(data, user) {
                 break;
             case "jw":
                 var media = new Media(data.id, "JWPlayer Stream - " + data.id, "--:--", "jw");
+                media.queueby = user ? user.name : "";
+                this.autoTemp(media, user);
+                this.queueAdd(media, idx);
+                break;
+            case "im":
+                var media = new Media(data.id, "Imgur Album", "--:--", "im");
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
@@ -1448,8 +1467,12 @@ Channel.prototype.trySetLock = function(user, data) {
 Channel.prototype.updateFilter = function(filter) {
     var found = false;
     for(var i = 0; i < this.filters.length; i++) {
-        if(this.filters[i].name == filter.name
-                && this.filters[i].source == filter.source) {
+        if(this.filters[i].name == "" && filter.name == ""
+            && this.filters[i].source == filter.source) {
+            found = true;
+            this.filters[i] = filter;
+        }
+        else if(filter.name != "" && this.filters[i].name == filter.name) {
             found = true;
             this.filters[i] = filter;
         }
@@ -1624,7 +1647,7 @@ Channel.prototype.filterMessage = function(msg) {
     var subs = msg.split(link);
     // Apply other filters
     for(var j = 0; j < subs.length; j++) {
-        if(subs[j].match(link)) {
+        if(this.opts.enable_link_regex && subs[j].match(link)) {
             subs[j] = subs[j].replace(link, "<a href=\"$1\" target=\"_blank\">$1</a>");
             continue;
         }
@@ -1661,6 +1684,46 @@ Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
 
 /* REGION Rank stuff */
 
+Channel.prototype.trySetRank = function(user, data) {
+    if(!Rank.hasPermission(user, "promote"))
+        return;
+
+    if(typeof data.user !== "string" || typeof data.rank !== "number")
+        return;
+
+    if(data.rank >= user.rank)
+        return;
+
+    if(data.rank < 1)
+        return;
+
+    var receiver;
+    for(var i = 0; i < this.users.length; i++) {
+        if(this.users[i].name == data.user) {
+            receiver = this.users[i];
+            break;
+        }
+    }
+
+    if(receiver) {
+        if(receiver.rank >= user.rank)
+            return;
+        receiver.rank = data.rank;
+        if(receiver.loggedIn) {
+            this.saveRank(receiver);
+        }
+        this.broadcastUserUpdate(receiver);
+    }
+    else {
+        var rrank = this.getRank(data.user);
+        if(rrank >= user.rank)
+            return;
+        Database.setChannelRank(this.name, data.user, data.rank);
+    }
+
+    this.sendAllWithPermission("acl", "setChannelRank", data);
+}
+
 Channel.prototype.tryPromoteUser = function(actor, data) {
     if(!Rank.hasPermission(actor, "promote")) {
         return;
@@ -1695,7 +1758,7 @@ Channel.prototype.tryPromoteUser = function(actor, data) {
             Database.setChannelRank(this.name, data.name, rank);
         }
         this.logger.log("*** " + actor.name + " promoted " + data.name + " from " + (rank - 1) + " to " + rank);
-        this.broadcastRankTable();
+        //this.broadcastRankTable();
     }
 }
 
@@ -1732,7 +1795,7 @@ Channel.prototype.tryDemoteUser = function(actor, data) {
             Database.setChannelRank(this.name, data.name, rank);
         }
         this.logger.log("*** " + actor.name + " demoted " + data.name + " from " + (rank + 1) + " to " + rank);
-        this.broadcastRankTable();
+        //this.broadcastRankTable();
     }
 }
 

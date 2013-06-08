@@ -130,7 +130,7 @@ function addUserDropdown(entry, name) {
         a.text("IP Ban");
         a.click(function() {
             socket.emit("chatMsg", {
-                msg: "/ban " + name
+                msg: "/ipban " + name
             });
         });
 
@@ -499,7 +499,6 @@ function loadLoginlogPage(page) {
                 .text("Ban IP Range")
                 .appendTo(bantd);
             var callback = (function(id, name) { return function() {
-                console.log(id, name);
                 socket.emit("banIP", {
                     id: id,
                     name: name,
@@ -509,7 +508,6 @@ function loadLoginlogPage(page) {
             } })(entries[i].id, entries[i].names[0]);
             ban.click(callback);
             var callback2 = (function(id, name) { return function() {
-                console.log(id, name);
                 socket.emit("banIP", {
                     id: id,
                     name: name,
@@ -561,6 +559,7 @@ function loadLoginlogPage(page) {
 
 function loadACLPage(page) {
     var entries = $("#channelranks").data("entries");
+    $("#channelranks").data("page", page);
     var start = page * 20;
     var tbl = $("#channelranks table");
     if(tbl.children().length > 1) {
@@ -570,34 +569,42 @@ function loadACLPage(page) {
         var tr = $("<tr/>").appendTo(tbl);
         var name = $("<td/>").text(entries[i].name).appendTo(tr);
         name.addClass(getNameColor(entries[i].rank));
-        var rank = $("<td/>").text(entries[i].rank).appendTo(tr);
-        var control = $("<td/>").appendTo(tr);
-        var up = $("<button/>").addClass("btn btn-mini btn-success")
-            .appendTo(control);
-        $("<i/>").addClass("icon-plus").appendTo(up);
-        var down = $("<button/>").addClass("btn btn-mini btn-danger")
-            .appendTo(control);
-        $("<i/>").addClass("icon-minus").appendTo(down);
-        if(entries[i].rank + 1 >= RANK) {
-            up.attr("disabled", true);
-        }
-        else {
-            up.click(function(name) { return function() {
-                socket.emit("promote", {
-                    name: name
+        var rank = $("<td/>").text(entries[i].rank)
+            .css("min-width", "220px")
+            .appendTo(tr);
+        (function(name) {
+        rank.click(function() {
+            if(this.find(".rank-edit").length > 0)
+                return;
+            var r = this.text();
+            this.text("");
+            var edit = $("<input/>").attr("type", "text")
+                .attr("placeholder", r)
+                .addClass("rank-edit")
+                .appendTo(this)
+                .focus();
+            if(parseInt(r) >= RANK) {
+                edit.attr("disabled", true);
+            }
+            function save() {
+                var r = this.val();
+                var r2 = r;
+                if(r.trim() == "" || parseInt(r) >= RANK || parseInt(r) < 1)
+                    r = this.attr("placeholder");
+                r = parseInt(r) + "";
+                this.parent().text(r);
+                socket.emit("setChannelRank", {
+                    user: name,
+                    rank: parseInt(r)
                 });
-            }}(entries[i].name));
-        }
-        if(entries[i].rank >= RANK) {
-            down.attr("disabled", true);
-        }
-        else {
-            down.click(function(name) { return function() {
-                socket.emit("demote", {
-                    name: name
-                });
-            }}(entries[i].name));
-        }
+            }
+            edit.blur(save.bind(edit));
+            edit.keydown(function(ev) {
+                if(ev.keyCode == 13)
+                    save.bind(edit)();
+            });
+        }.bind(rank));
+        })(entries[i].name);
     }
     if($("#acl_pagination").length > 0) {
         $("#acl_pagination").find("li").each(function() {
@@ -669,6 +676,8 @@ function parseVideoURL(url){
         return [parseVimeo(url), "vi"];
     else if(url.indexOf("dailymotion.com") != -1)
         return [parseDailymotion(url), "dm"];
+    else if(url.indexOf("imgur.com") != -1)
+        return [parseImgur(url), "im"];
 }
 
 function parseYTURL(url) {
@@ -737,6 +746,14 @@ function parseVimeo(url) {
 
 function parseDailymotion(url) {
     var m = url.match(/dailymotion\.com\/video\/([a-zA-Z0-9_-]+)/);
+    if(m) {
+        return m[1];
+    }
+    return null;
+}
+
+function parseImgur(url) {
+    var m = url.match(/imgur\.com\/a\/([a-zA-Z0-9]+)/);
     if(m) {
         return m[1];
     }
@@ -1070,6 +1087,13 @@ function showUserOpts() {
     sendbtn.prop("checked", USEROPTS.chatbtn);
     addOption("Send Button", sendbtncontainer);
 
+    var altsocketcontainer = $("<label/>").addClass("checkbox")
+        .text("Use alternative socket connection");
+    var altsocket = $("<input/>").attr("type", "checkbox")
+        .appendTo(altsocketcontainer);
+    altsocket.prop("checked", USEROPTS.altsocket);
+    addOption("Alternate Socket", altsocketcontainer);
+
     var profile = $("<a/>").attr("target", "_blank")
         .addClass("btn")
         .attr("href", "./account.html")
@@ -1100,6 +1124,7 @@ function showUserOpts() {
         USEROPTS.show_timestamps = showts.prop("checked");
         USEROPTS.blink_title     = blink.prop("checked");
         USEROPTS.chatbtn         = sendbtn.prop("checked");
+        USEROPTS.altsocket       = altsocket.prop("checked");
         if(RANK >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
         }
@@ -1117,9 +1142,12 @@ function showUserOpts() {
 
 function saveOpts() {
     for(var key in USEROPTS) {
-        createCookie("cytube_"+key, USEROPTS[key], 100);
+        localStorage.setItem(key, USEROPTS[key]);
     }
 }
+
+// To be overridden in callbacks.js
+function setupNewSocket() { }
 
 function applyOpts() {
     $("#usertheme").remove();
@@ -1178,6 +1206,22 @@ function applyOpts() {
                 $("#chatline").val("");
             }
         });
+    }
+
+    if(USEROPTS.altsocket) {
+        if(socket)
+            socket.disconnect();
+        socket = new NotWebsocket();
+        setupNewSocket();
+    }
+    // Switch from NotWebsocket => Socket.io
+    else if(socket && typeof socket.poll !== "undefined") {
+        try {
+            socket = io.connect(IO_URL);
+            setupNewSocket();
+        }
+        catch(e) {
+        }
     }
 }
 
@@ -1277,6 +1321,7 @@ function genPermissionsEditor() {
     makeOption("Delete playlist items", "playlistdelete", standard, CHANPERMS.playlistdelete+"");
     makeOption("Jump to video", "playlistjump", standard, CHANPERMS.playlistjump+"");
     makeOption("Queue playlist", "playlistaddlist", standard, CHANPERMS.playlistaddlist+"");
+    makeOption("Queue livestream", "playlistaddlive", standard, CHANPERMS.playlistaddlive+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANPERMS.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANPERMS.settemp+"");
     makeOption("Retrieve playlist URLs", "playlistgeturl", standard, CHANPERMS.playlistgeturl+"");
