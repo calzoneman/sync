@@ -313,10 +313,15 @@ Channel.prototype.saveRank = function(user) {
 }
 
 Channel.prototype.getIPRank = function(ip) {
-    var names = this.logins[ip] || [];
-    if(names.length == 0) {
+    var names = [];
+    if(this.logins[ip] === undefined || this.logins[ip].length == 0) {
         return 0;
     }
+
+    this.logins[ip].forEach(function(name) {
+        names.push(name);
+    });
+
     var ranks = Database.getChannelRank(this.name, names);
     var rank = 0;
     for(var i = 0; i < ranks.length; i++) {
@@ -706,6 +711,28 @@ Channel.prototype.sendRankStuff = function(user) {
         user.socket.emit("chatFilters", {filters: filts});
     }
     this.sendACL(user);
+}
+
+Channel.prototype.sendSeenLogins = function(user) {
+    if(Rank.hasPermission(user, "seenlogins")) {
+        var ents = [];
+        for(var ip in this.logins) {
+            var disp = ip;
+            if(user.rank < Rank.Siteadmin) {
+                disp = "(Hidden)";
+            }
+            var banned = (ip in this.ipbans && this.ipbans[ip] != null);
+            var range = ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3");
+            banned = banned || (range in this.ipbans && this.ipbans[range] != null);
+            ents.push({
+                ip: disp,
+                id: this.hideIP(ip),
+                names: this.logins[ip],
+                banned: banned
+            });
+        }
+        user.socket.emit("seenlogins", {entries: ents});
+    }
 }
 
 Channel.prototype.sendACL = function(user) {
