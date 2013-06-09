@@ -397,7 +397,7 @@ User.prototype.initCallbacks = function() {
             if(this.noflood("requestSeenLogins", 0.25)) {
                 return;
             }
-            this.channel.sendRankStuff(this);
+            this.channel.sendSeenLogins(this);
         }
     }.bind(this));
 
