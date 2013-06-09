@@ -402,7 +402,7 @@ Channel.prototype.tryIPBan = function(actor, data) {
     if(!this.hasPermission(actor, "ban")) {
         return false;
     }
-    if(typeof data.id != "string" || data.id.length != 15) {
+    if(typeof data.id != "string") {
         return false;
     }
     if(typeof data.name != "string") {
@@ -635,16 +635,9 @@ Channel.prototype.kick = function(user, reason) {
 }
 
 Channel.prototype.hideIP = function(ip) {
-    while(ip.length < 15) {
-        ip += "X";
-    }
     var chars = new Array(15);
     for(var i = 0; i < ip.length; i++) {
         chars[i] = String.fromCharCode(ip.charCodeAt(i) ^ this.ipkey.charCodeAt(i));
-        if(chars[i] == "X") {
-            chars[i] = "";
-            break;
-        }
     }
     return chars.join("");
 }
