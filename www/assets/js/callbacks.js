@@ -526,24 +526,26 @@ Callbacks = {
     },
 
     setTemp: function(data) {
-        // TODO redo this when buttons are decided
-        var li = $("#queue").children()[data.idx];
+        var li = $("#queue").children()[data.position];
         li = $(li);
-        var buttons = li.find(".qe_btn");
-        if(buttons.length == 5) {
-            $(buttons[4]).removeClass("btn-danger btn-success");
-            $(buttons[4]).addClass(data.temp ? "btn-success" : "btn-danger");
-        }
+        if(data.temp)
+            li.addClass("queue_temp");
+        else
+            li.removeClass("queue_temp");
+        var btn = li.find(".qbtn-tmp");
+        btn.data("temp", data.temp);
         if(data.temp) {
-            li.addClass("alert alert-error");
+            btn.html(btn.html().replace("Make Temporary",
+                                        "Make Permanent"));
         }
         else {
-            li.removeClass("alert alert-error");
+            btn.html(btn.html().replace("Make Permanent",
+                                        "Make Temporary"));
         }
     },
 
-    unqueue: function(data) {
-        var li = $("#queue").children()[data.pos];
+    "delete": function(data) {
+        var li = $("#queue").children()[data.position];
         $(li).remove();
     },
 

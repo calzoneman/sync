@@ -110,6 +110,10 @@ html, body {
     border: 1px solid #aaaaaa; // [](/w21)
 }
 
+.queue_temp {
+    background-image: url(../img/stripe-diagonal.png);
+}
+
 #plmeta {
     border: 1px solid #aaaaaa;
     background-color: #ffffff;

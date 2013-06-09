@@ -20,7 +20,12 @@ var PLAYER = false;
 var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
 var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
 var POSITION = -1;
-var socket;
+var socket = {
+    emit: function() {
+        console.log("socket not initialized");
+        console.log(arguments);
+    }
+};
 var IGNORED = [];
 var CHATHIST = [];
 var CHATHISTIDX = 0;

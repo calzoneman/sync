@@ -214,26 +214,56 @@ function makeQueueEntry(video) {
         li.addClass("queue_temp");
     }
 
-    // Add dropdown
-    // class="dropdown dropup" lolwut
-    var dd = $("<div/>").addClass("dropdown dropup").appendTo(li);
-    var menu = $("<ul/>").addClass("dropdown-menu")
-        .attr("role", "menu")
-        .appendTo(dd);
-    var del = $("<a/>").appendTo($("<li/>").appendTo(menu))
-        .attr("href", "javascript:void(0)")
-        .attr("tabindex", "-1")
+    // TODO Permissions
+    var menu = $("<div/>").addClass("btn-group").appendTo(li);
+    // Play
+    $("<button/>").addClass("btn btn-mini qbtn-play")
+        .html("<i class='icon-play'></i>Play")
         .click(function() {
+            var i = $("#queue").children().index(li);
+            socket.emit("jumpTo", i);
         })
-        .text("Remove");
-    $("<i/>").addClass("icon-trash").prependTo(del);
+        .appendTo(menu);
+    // Queue next
+    $("<button/>").addClass("btn btn-mini qbtn-next")
+        .html("<i class='icon-share-alt'></i>Queue Next")
+        .click(function() {
+            var i = $("#queue").children().index(li);
+            socket.emit("moveMedia", {
+                src: i,
+                dest: i < POSITION ? POSITION : POSITION + 1
+            });
+        })
+        .appendTo(menu);
+    // Temp/Untemp
+    $("<button/>").addClass("btn btn-mini qbtn-tmp")
+        .html("<i class='icon-flag'></i>Make Temporary")
+        .click(function() {
+            var i = $("#queue").children().index(li);
+            var temp = li.find(".qbtn-tmp").data("temp");
+            socket.emit("setTemp", {
+                position: i,
+                temp: !temp
+            });
+        })
+        .appendTo(menu);
+    // Delete
+    $("<button/>").addClass("btn btn-mini qbtn-delete")
+        .html("<i class='icon-trash'></i>Delete")
+        .click(function() {
+            var i = $("#queue").children().index(li);
+            socket.emit("delete", i);
+        })
+        .appendTo(menu);
+
+    menu.hide();
 
     li.contextmenu(function(ev) {
         ev.preventDefault();
         if(menu.css("display") == "none")
-            menu.show();
+            menu.show("blind");
         else
-            menu.hide();
+            menu.hide("blind");
         return false;
     });
 
