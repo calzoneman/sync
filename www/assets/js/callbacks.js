@@ -11,14 +11,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Callbacks = {
 
+    /* fired when socket connection completes */
     connect: function() {
         socket.emit("joinChannel", {
-            name: CHANNEL
+            name: CHANNEL.name
         });
         if(uname && session) {
             socket.emit("login", {
-                name: uname,
-                session: session
+                name: NAME,
+                session: SESSION
             });
         }
         $("<div/>").addClass("server-msg-reconnect")
@@ -34,7 +35,7 @@ Callbacks = {
             .addClass("server-msg-disconnect")
             .text("Disconnected from server.  Attempting reconnection...")
             .appendTo($("#messagebuffer"));
-        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+        scrollChat();
     },
 
     errorMsg: function(data) {
@@ -42,15 +43,9 @@ Callbacks = {
     },
 
     announcement: function(data) {
-        $("#announcerow").html("");
-        $("#announcerow").css("display", "");
-        var div = $("<div/>").addClass("alert")
-            .appendTo($("#announcerow"));
-        $("<button/>").addClass("close pull-right").text("×")
-            .appendTo(div)
-            .click(function() { div.remove(); });
-        $("<h3/>").text(data.title).appendTo(div);
-        $("<p/>").html(data.text).appendTo(div);
+        $("#announcements").html("");
+        makeAlert(data.title, data.text)
+            .appendTo($("#announcements"));
     },
 
     kick: function(data) {
@@ -58,7 +53,7 @@ Callbacks = {
         $("<div/>").addClass("server-msg-disconnect")
             .text("Kicked: " + data.reason)
             .appendTo($("#messagebuffer"));
-        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollheight"));
+        scrollChat();
     },
 
     noflood: function(data) {
@@ -66,13 +61,14 @@ Callbacks = {
             .addClass("server-msg-disconnect")
             .text(data.action + ": " + data.msg)
             .appendTo($("#messagebuffer"));
-        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+        scrollChat();
     },
 
     channelNotRegistered: function() {
-        var div = $("<div/>").addClass("alert alert-info").attr("id", "chregnotice")
+        var div = $("<div/>").addClass("alert alert-info")
+            .attr("id", "chregnotice")
             .insertBefore($("#main"));
-        $("<button/>").addClass("close pull-right").text("×")
+        $("<button/>").addClass("close pull-right").html("&times;")
             .appendTo(div)
             .click(function() { div.remove(); });
         $("<h3/>").text("This channel isn't registered").appendTo(div);
@@ -88,7 +84,8 @@ Callbacks = {
             $("#chregnotice").remove();
         }
         else {
-            alert(data.error);
+            makeAlert("Error", data.error, "alert-error")
+                .insertAfter($("#chregnotice"));
         }
     },
 
@@ -101,17 +98,15 @@ Callbacks = {
         }
     },
 
-    updateMotd: function(data) {
-        $("#motdtext").val(data.motd);
+    setMotd: function(data) {
+        $("#motd").html(data.html);
         if(data.motd != "")
-            $("#motd").parent().css("display", "");
+            $("#motd").show();
         else
-            $("#motd").parent().css("display", "none");
-        $("#motd")[0].innerHTML = data.html;
+            $("#motd").hide();
     },
 
-    chatFilters: function(data) {
-        var entries = data.filters;
+    chatFilters: function(entries) {
         var tbl = $("#filtereditor table");
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
@@ -179,7 +174,9 @@ Callbacks = {
                     var dummy = new RegExp(re, flags);
                 }
                 catch(e) {
-                    alert("Invalid regex: " + e);
+                    makeAlert("Invalid regex", e+"", "alert-error")
+                        .insertAfter($("#filtereditor table"));
+                    return;
                 }
                 socket.emit("chatFilter", {
                     cmd: "update",
@@ -197,6 +194,7 @@ Callbacks = {
     },
 
     channelOpts: function(opts) {
+        // TODO update if necessary when HTML admin stuff added
         $("#opt_pagetitle").attr("placeholder", opts.pagetitle);
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
@@ -216,21 +214,12 @@ Callbacks = {
         $("#opt_allow_voteskip").prop("checked", opts.allow_voteskip);
         $("#opt_voteskip_ratio").val(opts.voteskip_ratio);
         if(opts.customjs.trim() != "") {
-            if(opts.customjs != CUSTOMJS) {
+            if(opts.customjs != CHANNEL.opts.customjs) {
                 $.getScript(opts.customjs);
-                CUSTOMJS = opts.customjs;
             }
         }
 
-        CHANNELOPTS = opts;
-        if(opts.qopen_allow_qnext)
-            $("#queue_next").attr("disabled", false);
-        else if(RANK < Rank.Moderator && !LEADER)
-            $("#queue_next").attr("disabled", true);
-        if(opts.qopen_allow_playnext)
-            $("#play_next").attr("disabled", false);
-        else if(RANK < Rank.Moderator && !LEADER)
-            $("#play_next").attr("disabled", true);
+        CHANNEL.opts = opts;
 
         if(opts.allow_voteskip)
             $("#voteskip").attr("disabled", false);
@@ -240,8 +229,9 @@ Callbacks = {
     },
 
     setPermissions: function(perms) {
-        CHANPERMS = perms;
-        genPermissionsEditor();
+        CHANNEL.perms = perms;
+        if(CLIENT.rank >= Rank.Admin)
+            genPermissionsEditor();
         handlePermissionChange();
     },
 
@@ -267,8 +257,7 @@ Callbacks = {
         }
     },
 
-    banlist: function(data) {
-        var entries = data.entries;
+    banlist: function(entries) {
         var tbl = $("#banlist table");
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
@@ -280,6 +269,7 @@ Callbacks = {
             $("<i/>").addClass("icon-remove-circle").appendTo(remove);
             var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
             var name = $("<td/>").text(entries[i].name).appendTo(tr);
+            var aliases = $("<td/>").text(entries[i].aliases).appendTo(tr);
             var banner = $("<td/>").text(entries[i].banner).appendTo(tr);
 
             var callback = (function(id, name) { return function() {
@@ -292,47 +282,8 @@ Callbacks = {
         }
     },
 
-    seenlogins: function(data) {
-        var entries = data.entries;
-        var tbl = $("#loginlog table");
-        if(tbl.children().length > 1) {
-            $(tbl.children()[1]).remove();
-        }
-        $("#loginlog_pagination").remove();
-        entries.sort(function(a, b) {
-            var x = a.names.join(",").toLowerCase();
-            var y = b.names.join(",").toLowerCase();
-            // Force blanknames to the bottom
-            if(x == "") {
-                return 1;
-            }
-            if(y == "") {
-                return -1;
-            }
-            return x == y ? 0 : (x < y ? -1 : 1);
-        });
-        $("#loginlog").data("entries", entries);
-        if(entries.length > 20) {
-            var pag = $("<div/>").addClass("pagination span12")
-                .attr("id", "loginlog_pagination")
-                .prependTo($("#loginlog"));
-            var btns = $("<ul/>").appendTo(pag);
-            for(var i = 0; i < entries.length / 20; i++) {
-                var li = $("<li/>").appendTo(btns);
-                (function(i) {
-                $("<a/>").attr("href", "javascript:void(0)")
-                    .text(i+1)
-                    .click(function() {
-                        loadLoginlogPage(i);
-                    })
-                    .appendTo(li);
-                })(i);
-            }
-        }
-        loadLoginlogPage(0);
-    },
-
-    acl: function(entries) {
+    channelRanks: function(entries) {
+        // TODO Edit if necessary
         entries.sort(function(a, b) {
             var x = a.name.toLowerCase();
             var y = b.name.toLowerCase();
@@ -387,11 +338,12 @@ Callbacks = {
 
     /* REGION Rank Stuff */
 
-    rank: function(data) {
-        RANK = data.rank;
+    rank: function(r) {
+        CLIENT.rank = r;
         handlePermissionChange();
     },
 
+    /* should not be relevant since registration is on account.html */
     register: function(data) {
         if(data.error) {
             alert(data.error);
@@ -405,20 +357,24 @@ Callbacks = {
             }
         }
         else {
-            $("#welcome").text("Logged in as " + uname);
+            $("#welcome").text("Logged in as " + data.name);
             $("#loginform").css("display", "none");
             $("#logoutform").css("display", "");
             $("#loggedin").css("display", "");
-            session = data.session || "";
-            createCookie("sync_uname", uname, 7);
-            createCookie("sync_session", session, 7);
+            SESSION = data.session || "";
+            CLIENT.name = data.name;
+            CLIENT.logged_in = true;
+            if(SESSION) {
+                createCookie("cytube_uname", CLIENT.name, 7);
+                createCookie("cytube_session", SESSION, 7);
+            }
         }
     },
 
     /* REGION Chat */
-    usercount: function(data) {
-        var text = data.count + " connected user";
-        if(data.count != 1) {
+    usercount: function(count) {
+        var text = count + " connected user";
+        if(count != 1) {
             text += "s";
         }
         $("#usercount").text(text);
@@ -443,12 +399,8 @@ Callbacks = {
         var div = $("<div/>").attr("class", "userlist_item");
         var flair = $("<span/>").appendTo(div);
         var nametag = $("<span/>").text(data.name).appendTo(div);
-        formatUserlistItem(div[0], data);
+        formatUserlistItem(div, data);
         addUserDropdown(div, data.name);
-        if(data.name == uname) {
-            PROFILE.image = data.profile.image;
-            PROFILE.text = data.profile.text;
-        }
         var users = $("#userlist").children();
         for(var i = 0; i < users.length; i++) {
             var othername = users[i].children[1].innerHTML;
@@ -461,15 +413,15 @@ Callbacks = {
     },
 
     updateUser: function(data) {
-        if(data.name == uname) {
-            PROFILE.text = data.profile.text;
-            PROFILE.image = data.profile.image;
-            LEADER = data.leader;
-            RANK = data.rank;
+        if(data.name == CLIENT.name) {
+            CLIENT.leader = data.leader;
+            CLIENT.rank = data.rank;
             handlePermissionChange();
-            if(LEADER) {
+            if(CLIENT.leader) {
                 // I'm a leader!  Set up sync function
-                sendVideoUpdate = function() {
+                if(LEADTMR)
+                    clearInterval(LEADTMR);
+                LEADTMR = setInterval(function() {
                     PLAYER.getTime(function(seconds) {
                         socket.emit("mediaUpdate", {
                             id: PLAYER.id,
@@ -478,11 +430,13 @@ Callbacks = {
                             type: PLAYER.type
                         });
                     });
-                };
+                }, 5000);
             }
             // I'm not a leader.  Don't send syncs to the server
             else {
-                sendVideoUpdate = function() { }
+                if(LEADTMR)
+                    clearInterval(LEADTMR);
+                LEADTMR = false;
             }
 
         }
@@ -491,7 +445,7 @@ Callbacks = {
             var name = users[i].children[1].innerHTML;
             // Reformat user
             if(name == data.name) {
-                formatUserlistItem(users[i], data);
+                formatUserlistItem($(users[i]), data);
             }
         }
 
@@ -502,7 +456,10 @@ Callbacks = {
         for(var i = 0; i < users.length; i++) {
             var name = users[i].children[1].innerHTML;
             if(name == data.name) {
-                $("#userlist")[0].removeChild(users[i]);
+                $(users[i]).remove();
+                // Note: no break statement here because allowing
+                // the loop to continue means a free cleanup if something
+                // goes wrong and there's a duplicate name
             }
         }
     },
@@ -524,41 +481,40 @@ Callbacks = {
     /* REGION Playlist Stuff */
     playlist: function(data) {
         // Clear the playlist first
-        var ul = $("#queue")[0];
-        var n = ul.children.length;
-        for(var i = 0; i < n; i++) {
-            ul.removeChild(ul.children[0]);
-        }
-        for(var i = 0; i < data.pl.length; i++) {
-            var li = makeQueueEntry(data.pl[i]);
-            if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
-                addQueueButtons(li);
-            $(li).attr("title", data.pl[i].queueby
-                                ? ("Added by: " + data.pl[i].queueby)
-                                : "Added by: Unknown");
-            $(li).appendTo(ul);
+        var q = $("#queue");
+        q.html("");
+
+
+        for(var i = 0; i < data.length; i++) {
+            Callbacks.queue({
+                media: data[i],
+                pos: q.children().length
+            });
         }
     },
 
-    updatePlaylistMeta: function(data) {
-        $("#plcount").text(data.count + " items");
+    setPlaylistMeta: function(data) {
+        var c = data.count + " item";
+        if(data.count != 1)
+            c += "s";
+        $("#plcount").text(c);
         $("#pllength").text(data.time);
     },
 
     queue: function(data) {
         var li = makeQueueEntry(data.media);
-        if(RANK >= Rank.Moderator || OPENQUEUE || LEADER)
-            addQueueButtons(li);
-        $(li).css("display", "none");
+        li.hide();
+        addQueueButtons(li);
         var idx = data.pos;
-        var ul = $("#queue")[0];
-        $(li).attr("title", data.media.queueby
+        var q = $("#queue");
+        li.attr("title", data.media.queueby
                             ? ("Added by: " + data.media.queueby)
                             : "Added by: Unknown");
-        $(li).appendTo(ul);
-        if(idx < ul.children.length - 1)
-            moveVideo(ul.children.length - 1, idx);
-        $(li).show("blind");
+        if(idx < q.children().length - 1)
+            li.insertBefore(q.children()[idx])
+        else
+            li.appendTo(q);
+        li.show("blind");
     },
 
     queueFail: function(data) {
@@ -566,21 +522,23 @@ Callbacks = {
             data = "Queue failed.  Check your link to make sure it is valid.";
         }
         makeAlert("Error", data, "alert-error")
-            .insertAfter($("#playlist_controls"));
+            .insertAfter($("#mediaurl").parent());
     },
 
     setTemp: function(data) {
+        // TODO redo this when buttons are decided
         var li = $("#queue").children()[data.idx];
-        var buttons = $(li).find(".qe_btn");
+        li = $(li);
+        var buttons = li.find(".qe_btn");
         if(buttons.length == 5) {
             $(buttons[4]).removeClass("btn-danger btn-success");
             $(buttons[4]).addClass(data.temp ? "btn-success" : "btn-danger");
         }
         if(data.temp) {
-            $(li).addClass("alert alert-error");
+            li.addClass("alert alert-error");
         }
         else {
-            $(li).removeClass("alert alert-error");
+            li.removeClass("alert alert-error");
         }
     },
 
@@ -590,22 +548,24 @@ Callbacks = {
     },
 
     moveVideo: function(data) {
-        // Not recursive
-        moveVideo(data.src, data.dest);
+        playlistMove(data.src, data.dest);
     },
 
-    updatePlaylistIdx: function(data) {
-        if(data.old != undefined) {
-            var liold = $("#queue").children()[data.old];
-            $(liold).removeClass("alert alert-info");
-        }
-        var linew = $("#queue").children()[data.idx];
-        $(linew).addClass("alert alert-info");
+    setPosition: function(data) {
+        $("#queue li").each(function() {
+            $(this).removeClass("queue_active");
+        });
+        if(data.position < 0)
+            return;
+        POSITION = data.position;
+        var linew = $("#queue").children()[POSITION];
+        $(linew).addClass("queue_active");
+
         $("#queue").scrollTop(0);
         var scroll = $(linew).position().top - $("#queue").position().top;
         $("#queue").scrollTop(scroll);
-        POSITION = data.idx;
-        if(CHANNELOPTS.allow_voteskip)
+
+        if(CHANNEL.opts.allow_voteskip)
             $("#voteskip").attr("disabled", false);
     },
 
@@ -616,12 +576,12 @@ Callbacks = {
             fixSoundcloudShit();
         if(data.type != "jw" && PLAYER.type == "jw") {
             // Is it so hard to not mess up my DOM?
-            var wtf = $("<div/>").attr("id", "ytapiplayer")
+            $("<div/>").attr("id", "ytapiplayer")
                 .insertBefore($("#ytapiplayer_wrapper"));
             $("#ytapiplayer_wrapper").remove();
         }
         if(data.type != PLAYER.type) {
-            PLAYER = new Media(data);
+            PLAYER = new Player(data);
         }
         if(PLAYER.update) {
             PLAYER.update(data);
@@ -634,9 +594,10 @@ Callbacks = {
         }
     },
 
-    queueLock: function(data) {
-        OPENQUEUE = !data.locked;
-        if(OPENQUEUE) {
+    setPlaylistLocked: function(data) {
+        CHANNEL.openqueue = !data.locked;
+        // TODO handlePermissionsChange?
+        if(CHANNEL.openqueue) {
             $("#playlist_controls").css("display", "");
             if(RANK < Rank.Moderator) {
                 $("#qlockbtn").css("display", "none");
@@ -651,19 +612,19 @@ Callbacks = {
             $("#playlist_controls").css("display", "none");
             rebuildPlaylist();
         }
-        if(OPENQUEUE) {
+        if(CHANNEL.openqueue) {
             $("#qlockbtn").removeClass("btn-danger")
                 .addClass("btn-success")
-                .text("Lock Queue");
+                .text("Lock Playlist");
         }
         else {
             $("#qlockbtn").removeClass("btn-success")
                 .addClass("btn-danger")
-                .text("Unlock Queue");
+                .text("Unlock Playlist");
         }
     },
 
-    librarySearchResults: function(data) {
+    searchResults: function(data) {
         clearSearchResults();
         $("#library").data("entries", data.results);
         if(data.results.length > 100) {
@@ -688,13 +649,14 @@ Callbacks = {
 
     /* REGION Polls */
     newPoll: function(data) {
-        closePoll();
+        Callbacks.closePoll();
         var pollMsg = $("<div/>").addClass("poll-notify")
             .text(data.initiator + " opened a poll: \"" + data.title + "\"")
             .appendTo($("#messagebuffer"));
-        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+        scrollChat();
+
         var poll = $("<div/>").addClass("well active").prependTo($("#pollcontainer"));
-        $("<button/>").addClass("close pull-right").text("×")
+        $("<button/>").addClass("close pull-right").html("&times;")
             .appendTo(poll)
             .click(function() { poll.remove(); });
         if(hasPermission("pollctl")) {
@@ -707,18 +669,20 @@ Callbacks = {
 
         $("<h3/>").text(data.title).appendTo(poll);
         for(var i = 0; i < data.options.length; i++) {
-            var callback = (function(i) { return function() {
+            (function(i) {
+            var callback = function() {
                     socket.emit("vote", {
                         option: i
                     });
                     poll.find(".option button").each(function() {
                         $(this).attr("disabled", "disabled");
                     });
-            } })(i);
+            }
             $("<button/>").addClass("btn").text(data.counts[i])
                 .prependTo($("<div/>").addClass("option").text(data.options[i])
                         .appendTo(poll))
                 .click(callback);
+            })(i);
 
         }
 
@@ -735,8 +699,16 @@ Callbacks = {
     },
 
     closePoll: function() {
-        // Not recursive
-        closePoll();
+        if($("#pollcontainer .active").length != 0) {
+            var poll = $("#pollcontainer .active");
+            poll.removeClass("active").addClass("muted");
+            poll.find(".option button").each(function() {
+                $(this).attr("disabled", true);
+            });
+            poll.find(".btn-danger").each(function() {
+                $(this).remove()
+            });
+        }
     },
 
     savePlaylist: function(data) {
@@ -744,8 +716,9 @@ Callbacks = {
             makeAlert("Success", "Playlist saved.", "alert-success");
         }
         else {
-            alert("DBG error " + data.error);
-            makeAlert("Error", data.error, "alert-error");
+            makeAlert("Error", data.error, "alert-error")
+                .addClass("span12")
+                .insertBefore($("#userpl_list"));
         }
     },
 
@@ -753,8 +726,7 @@ Callbacks = {
         if(data.error) {
             makeAlert("Error", data.error, "alert-error")
                 .addClass("span12")
-                .css("margin-left", "0")
-                .insertBefore($("#userpl_name").parent());
+                .insertBefore($("#userpl_list"));
         }
         else {
             var pls = data.pllist;
@@ -827,6 +799,7 @@ Callbacks = {
     }
 }
 
+/*
 $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
     try {
         socket = io.connect(IO_URL);
@@ -838,9 +811,14 @@ $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
         Callbacks.disconnect();
     }
 });
+*/
 
-window.setupNewSocket = function() {
+setupCallbacks = function() {
     for(var key in Callbacks) {
-        socket.on(key, Callbacks[key]);
+        (function(key) {
+        socket.on(key, function() {
+            Callbacks[key]();
+        });
+        })(key);
     }
 }

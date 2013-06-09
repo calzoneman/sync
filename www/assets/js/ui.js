@@ -2,11 +2,13 @@
 function generateToggle(chevron, div) {
     $(chevron).click(function() {
         if($(div).css("display") == "none") {
+            $(chevron).html($(chevron).html().replace(/Show/, "Hide"));
             $(div).show();
             $(chevron+" i").removeClass("icon-chevron-down")
                 .addClass("icon-chevron-up");
         }
         else {
+            $(chevron).html($(chevron).html().replace(/Hide/, "Show"));
             $(div).hide();
             $(chevron+" i").removeClass("icon-chevron-up")
                 .addClass("icon-chevron-down");
@@ -43,7 +45,7 @@ $("#logout").click(function() {
 });
 
 /* chatbox */
-$("#chatline").keyDown(function(ev) {
+$("#chatline").keydown(function(ev) {
     if(ev.keyCode == 13) {
         var msg = $("#chatline").val();
         if(msg.trim()) {
@@ -154,6 +156,11 @@ $("#userpl_save").click(function() {
 });
 
 /* playlist controls */
+
+$(function() {
+    $("#queue").sortable();
+    $("#queue").disableSelection();
+});
 
 function queue(pos) {
     var links = $("#mediaurl").val().split(",");

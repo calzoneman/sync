@@ -39,13 +39,6 @@ html, body {
     overflow-y: scroll;
 }
 
-.videolist li {
-    margin: 2px 0 0 auto;
-    padding: 2px;
-    font-size: 8pt;
-    border: 1px solid #aaaaaa; // [](/w21)
-}
-
 .qe_btn {
     height: 20px;
     font-family: Monospace;
@@ -85,10 +78,6 @@ html, body {
     font-size: 8pt;
 }
 
-#queue {
-    margin-bottom: 0;
-}
-
 #usercountwrap, #currenttitle {
     border: 1px solid #aaaaaa;
     border-bottom: none;
@@ -103,8 +92,22 @@ html, body {
   cursor: pointer;
 }
 
-#leftpane-inner div.span12, #rightpane-inner div.span12 {
+#leftpane-inner div.span12, #rightpane-inner div.span12,
+#leftpane-inner ul, #rightpane-inner ul {
     margin-left: 0;
+}
+
+#queue {
+    margin-bottom: 0;
+}
+
+.queue_entry {
+    cursor: row-resize;
+    background-color: #ffffff;
+    margin: 2px 0 0 auto;
+    padding: 2px;
+    font-size: 8pt;
+    border: 1px solid #aaaaaa; // [](/w21)
 }
 
 #plmeta {

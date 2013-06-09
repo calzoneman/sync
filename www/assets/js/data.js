@@ -1,5 +1,6 @@
 var CLIENT = {
     rank: -1,
+    leader: false,
     name: "",
     logged_in: false,
     profile: {
@@ -12,6 +13,7 @@ var CHANNEL = {
     opts: {},
     openqueue: false,
     perms: {},
+    name: false // TODO load name from URL
 };
 
 var PLAYER = false;
@@ -31,6 +33,7 @@ var TITLE_BLINK;
 var KICKED = false;
 var NAME = readCookie("cytube_uname");
 var SESSION = readCookie("cytube_session");
+var LEADTMR = false;
 
 function getOrDefault(k, def) {
     var v = localStorage.getItem(k);
@@ -95,3 +98,6 @@ function readCookie(name) {
 function eraseCookie(name) {
     createCookie(name,"",-1);
 }
+
+/* to be implemented in callbacks.js */
+function setupCallbacks() { }
