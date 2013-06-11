@@ -24,6 +24,7 @@ generateToggle("#playlisttoggle", "#playlist_controls");
 
 /* navbar stuff */
 $("#optlink").click(showOptionsMenu);
+$("#chatonly").click(chatOnly);
 
 function guestLogin() {
     socket.emit("login", {

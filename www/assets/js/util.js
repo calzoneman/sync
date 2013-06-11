@@ -103,7 +103,7 @@ function getNameColor(rank) {
         return "";
 }
 
-function addUserDropdown(entry, name, aliases) {
+function addUserDropdown(entry, name) {
     entry.find(".user-dropdown").remove();
     var menu = $("<div/>").addClass("user-dropdown")
         .appendTo(entry);
@@ -111,53 +111,61 @@ function addUserDropdown(entry, name, aliases) {
 
     $("<strong/>").text(name).appendTo(menu);
     $("<br/>").appendTo(menu);
-    $("<span/>").text("Aliases: " + aliases)
-        .appendTo(menu);
-    $("<button/>").addClass("btn btn-mini btn-block")
-        .text("Kick")
-        .click(function() {
-            socket.emit("chatMsg", {
-                msg: "/kick " + name
-            });
-        })
-        .appendTo(menu);
-    $("<button/>").addClass("btn btn-mini btn-block")
-        .text("Give Leader")
-        .click(function() {
-            socket.emit("assignLeader", {
-                name: name
-            });
-        })
-        .appendTo(menu);
-    $("<button/>").addClass("btn btn-mini btn-block")
-        .text("Take Leader")
-        .click(function() {
-            socket.emit("assignLeader", {
-                name: ""
-            });
-        })
-        .appendTo(menu);
-    $("<button/>").addClass("btn btn-mini btn-block")
-        .text("Name Ban")
-        .click(function() {
-            socket.emit("chatMsg", {
-                msg: "/ban " + name
-            });
-        })
-        .appendTo(menu);
-    $("<button/>").addClass("btn btn-mini btn-block")
-        .text("IP Ban")
-        .click(function() {
-            socket.emit("chatMsg", {
-                msg: "/ipban " + name
-            });
-        })
-        .appendTo(menu);
+    if(CLIENT.rank >= 2)
+        $("<span/>").addClass("user-aliases").appendTo(menu);
+    if(hasPermission("kick")) {
+        $("<button/>").addClass("btn btn-mini btn-block")
+            .text("Kick")
+            .click(function() {
+                socket.emit("chatMsg", {
+                    msg: "/kick " + name
+                });
+            })
+            .appendTo(menu);
+    }
+    if(CLIENT.rank >= 2) {
+        $("<button/>").addClass("btn btn-mini btn-block")
+            .text("Give Leader")
+            .click(function() {
+                socket.emit("assignLeader", {
+                    name: name
+                });
+            })
+            .appendTo(menu);
+        $("<button/>").addClass("btn btn-mini btn-block")
+            .text("Take Leader")
+            .click(function() {
+                socket.emit("assignLeader", {
+                    name: ""
+                });
+            })
+            .appendTo(menu);
+    }
+    if(hasPermission("ban")) {
+        $("<button/>").addClass("btn btn-mini btn-block")
+            .text("Name Ban")
+            .click(function() {
+                socket.emit("chatMsg", {
+                    msg: "/ban " + name
+                });
+            })
+            .appendTo(menu);
+        $("<button/>").addClass("btn btn-mini btn-block")
+            .text("IP Ban")
+            .click(function() {
+                socket.emit("chatMsg", {
+                    msg: "/ipban " + name
+                });
+            })
+            .appendTo(menu);
+    }
 
 
     entry.contextmenu(function(ev) {
         ev.preventDefault();
         if(menu.css("display") == "none") {
+            menu.find(".user-aliases")
+                .text("Aliases: " + entry.data("aliases"));
             menu.show();
         }
         else {
@@ -302,13 +310,7 @@ function showOptionsMenu() {
     addOption("User CSS", usercss);
 
     var layoutselect = $("<select/>");
-    $("<option/>").attr("value", "default").text("Default")
-        .appendTo(layoutselect);
-    $("<option/>").attr("value", "large").text("Large")
-        .appendTo(layoutselect);
-    $("<option/>").attr("value", "huge").text("Huge")
-        .appendTo(layoutselect);
-    $("<option/>").attr("value", "single").text("Single Column")
+    $("<option/>").attr("value", "default").text("Compact")
         .appendTo(layoutselect);
     $("<option/>").attr("value", "synchtube").text("Synchtube")
         .appendTo(layoutselect);
@@ -436,15 +438,6 @@ function applyOpts() {
     }
 
     switch(USEROPTS.layout) {
-        case "large":
-            largeLayout();
-            break;
-        case "huge":
-            hugeLayout();
-            break;
-        case "single":
-            singleColumnLayout();
-            break;
         case "synchtube":
             synchtubeLayout();
             break;
@@ -1032,4 +1025,13 @@ function fluidLayout() {
 function synchtubeLayout() {
     $("#videowrap").detach().insertBefore($("#chatwrap"));
     $("#rightpane-outer").detach().insertBefore($("#leftpane-outer"));
+}
+
+function chatOnly() {
+    fluidLayout();
+    $("#toprow").remove()
+    $("#announcements").remove();
+    $("#playlistrow").remove();
+    $("#videowrap").remove();
+    $("#chatwrap").removeClass("span5").addClass("span12");
 }

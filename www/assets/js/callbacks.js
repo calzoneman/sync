@@ -466,9 +466,10 @@ Callbacks = {
     },
 
     drinkCount: function(count) {
+        console.log(count);
         if(count != 0) {
             var text = count + " drink";
-            if(data.count != 1) {
+            if(count != 1) {
                 text += "s";
             }
             $("#drinkcount").text(text);

@@ -501,6 +501,10 @@ Player.prototype.update = function(data) {
             data.currentTime = 0;
         }
         this.load(data);
+        this.play();
+    }
+    if(CLIENT.leader) {
+        return;
     }
     if(!USEROPTS.synch) {
         return;
@@ -511,9 +515,6 @@ Player.prototype.update = function(data) {
     }
     else {
         this.play();
-    }
-    if(CLIENT.leader) {
-        return;
     }
     this.getTime(function(seconds) {
         var time = data.currentTime;
