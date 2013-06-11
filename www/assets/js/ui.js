@@ -157,23 +157,21 @@ $("#userpl_save").click(function() {
 
 /* playlist controls */
 
-$(function() {
-    $("#queue").sortable({
-        start: function(ev, ui) {
-            PL_FROM = ui.item.prevAll().length;
-        },
-        update: function(ev, ui) {
-            PL_TO = ui.item.prevAll().length;
-            if(PL_TO != PL_FROM) {
-                socket.emit("moveMedia", {
-                    from: PL_FROM,
-                    to: PL_TO
-                });
-            }
+$("#queue").sortable({
+    start: function(ev, ui) {
+        PL_FROM = ui.item.prevAll().length;
+    },
+    update: function(ev, ui) {
+        PL_TO = ui.item.prevAll().length;
+        if(PL_TO != PL_FROM) {
+            socket.emit("moveMedia", {
+                from: PL_FROM,
+                to: PL_TO
+            });
         }
-    });
-    $("#queue").disableSelection();
+    }
 });
+$("#queue").disableSelection();
 
 function queue(pos) {
     var links = $("#mediaurl").val().split(",");
@@ -210,13 +208,13 @@ $("#qlockbtn").click(function() {
 
 $("#getplaylist").click(function() {
     var callback = function(data) {
+        PLAYER.hide();
         socket.listeners("playlist").splice(
             socket.listeners("playlist").indexOf(callback)
         );
         var list = [];
-        for(var i = 0; i < data.pl.length; i++) {
-            var entry = formatURL(data.pl[i]);
-            // TODO formatURL in util.js
+        for(var i = 0; i < data.length; i++) {
+            var entry = formatURL(data[i]);
             list.push(entry);
         }
         var urls = list.join(",");
@@ -238,6 +236,7 @@ $("#getplaylist").click(function() {
         $("<div/>").addClass("modal-footer").appendTo(modal);
         modal.on("hidden", function() {
             modal.remove();
+            PLAYER.unhide();
         });
         modal.modal();
     }
@@ -253,8 +252,8 @@ $("#clearplaylist").click(function() {
 });
 
 $("#shuffleplaylist").click(function() {
-    var clear = confirm("Are you sure you want to shuffle the playlist?");
-    if(clear) {
+    var shuffle = confirm("Are you sure you want to shuffle the playlist?");
+    if(shuffle) {
         socket.emit("shufflePlaylist");
     }
 });

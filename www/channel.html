@@ -10,7 +10,7 @@
     <link href="./assets/css/bootstrap.css" rel="stylesheet">
     <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
     <link href="./assets/css/ytsync.css" rel="stylesheet" id="defaultcss">
-    <link href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet"> 
+    <link href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet">
     <style>
       body {
         padding-top: 60px;
@@ -88,10 +88,10 @@
           <!-- left pane - Library + user playlists -->
           <div class="span5" id="leftpane-outer">
             <div class="row-fluid" id="leftpane-inner">
+              <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
               <!-- poll container -->
               <div class="span12" id="pollwrap">
                 <!-- new poll controls -->
-                <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
               </div>
               <!-- library search -->
               <div class="span12 pointer" id="librarytoggle">
@@ -106,6 +106,8 @@
                   <button class="btn" id="library_search">Library</button>
                   <button class="btn" id="youtube_search">YouTube</button>
                 </div>
+                <ul class="span12 videolist" id="library">
+                </ul>
               </div>
               <!-- user playlists -->
               <div class="span12 pointer" id="userpltoggle">
@@ -182,12 +184,6 @@
   <script src="./assets/js/ui.js"></script>
   <script src="./assets/js/callbacks.js"></script>
   <script src="./assets/js/notwebsocket.js"></script>
-  <!--
-  <script src="./assets/js/iourl.js"></script>
-  <script src="./assets/js/functions.js"></script>
-  <script src="./assets/js/client.js"></script>
-  <script src="./assets/js/callbacks.js"></script>
-  -->
   <!-- APIs -->
   <script src="http://api.dmcdn.net/all.js"></script>
   <script src="http://jwpsrv.com/library/QouFCLBMEeKC+CIACpYGxA.js"></script>

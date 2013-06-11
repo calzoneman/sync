@@ -502,7 +502,7 @@ Callbacks = {
     },
 
     queue: function(data) {
-        var li = makeQueueEntry(data.media);
+        var li = makeQueueEntry(data.media, true);
         li.hide();
         addQueueButtons(li);
         var idx = data.pos;
@@ -551,17 +551,25 @@ Callbacks = {
 
     moveVideo: function(data) {
         if(data.moveby != CLIENT.name)
-            playlistMove(data.src, data.dest);
+            playlistMove(data.from, data.to);
     },
 
-    setPosition: function(data) {
+    setPosition: function(position) {
         $("#queue li").each(function() {
             $(this).removeClass("queue_active");
         });
-        if(data.position < 0)
+        if(position < 0)
             return;
-        POSITION = data.position;
+        POSITION = position;
         var linew = $("#queue").children()[POSITION];
+        // jQuery UI's sortable thingy kinda fucks this up initially
+        // Wait until it's done
+        if(!$(linew).hasClass("queue_entry")) {
+            setTimeout(function() {
+                Callbacks.setPosition(position);
+            }, 100);
+            return;
+        }
         $(linew).addClass("queue_active");
 
         $("#queue").scrollTop(0);
@@ -643,7 +651,7 @@ Callbacks = {
             .appendTo($("#messagebuffer"));
         scrollChat();
 
-        var poll = $("<div/>").addClass("well active").prependTo($("#pollcontainer"));
+        var poll = $("<div/>").addClass("well active").prependTo($("#pollwrap"));
         $("<button/>").addClass("close pull-right").html("&times;")
             .appendTo(poll)
             .click(function() { poll.remove(); });
@@ -687,8 +695,8 @@ Callbacks = {
     },
 
     closePoll: function() {
-        if($("#pollcontainer .active").length != 0) {
-            var poll = $("#pollcontainer .active");
+        if($("#pollwrap .active").length != 0) {
+            var poll = $("#pollwrap .active");
             poll.removeClass("active").addClass("muted");
             poll.find(".option button").each(function() {
                 $(this).attr("disabled", true);

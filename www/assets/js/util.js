@@ -103,126 +103,73 @@ function getNameColor(rank) {
         return "";
 }
 
-function addUserDropdown(entry, name) {
-    // TODO change this
-    entry.find(".dropdown").remove();
-    entry.unbind();
-    var div = $("<div />").addClass("dropdown").appendTo(entry);
-    var ul = $("<ul />").addClass("dropdown-menu").appendTo(div);
-    ul.attr("role", "menu");
-    ul.attr("aria-labelledby", "dropdownMenu");
+function addUserDropdown(entry, name, aliases) {
+    entry.find(".user-dropdown").remove();
+    var menu = $("<div/>").addClass("user-dropdown")
+        .appendTo(entry);
+    menu.hide();
 
-    var ignore = $("<li />").appendTo(ul);
-    var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(ignore);
-    if(IGNORED.indexOf(name) != -1) {
-        a.text("Unignore User");
-    }
-    else {
-        a.text("Ignore User");
-    }
-    a.click(function() {
-        if(IGNORED.indexOf(name) != -1) {
-            IGNORED.splice(IGNORED.indexOf(name), 1);
-            this.text("Ignore User");
-        }
-        else {
-            IGNORED.push(name);
-            this.text("Unignore User");
-        }
-    }.bind(a));
-
-    if(hasPermission("kick")) {
-        var kick = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(kick);
-        a.text("Kick");
-        a.click(function() {
+    $("<strong/>").text(name).appendTo(menu);
+    $("<br/>").appendTo(menu);
+    $("<span/>").text("Aliases: " + aliases)
+        .appendTo(menu);
+    $("<button/>").addClass("btn btn-mini btn-block")
+        .text("Kick")
+        .click(function() {
             socket.emit("chatMsg", {
                 msg: "/kick " + name
             });
-        });
-    }
-
-    if(CLIENT.rank >= Rank.Moderator) {
-        $("<li />").addClass("divider").appendTo(ul);
-
-        var makeLeader = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(makeLeader);
-        a.text("Make Leader");
-        a.click(function() {
+        })
+        .appendTo(menu);
+    $("<button/>").addClass("btn btn-mini btn-block")
+        .text("Give Leader")
+        .click(function() {
             socket.emit("assignLeader", {
                 name: name
             });
-        });
-
-        var takeLeader = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(takeLeader);
-        a.text("Take Leader");
-        a.click(function() {
+        })
+        .appendTo(menu);
+    $("<button/>").addClass("btn btn-mini btn-block")
+        .text("Take Leader")
+        .click(function() {
             socket.emit("assignLeader", {
                 name: ""
             });
-        });
-
-        var ban = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(ban);
-        a.text("IP Ban");
-        a.click(function() {
+        })
+        .appendTo(menu);
+    $("<button/>").addClass("btn btn-mini btn-block")
+        .text("Name Ban")
+        .click(function() {
             socket.emit("chatMsg", {
                 msg: "/ban " + name
             });
-        });
-
-        var nameban = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(nameban);
-        a.text("Name Ban");
-        a.click(function() {
-            socket.emit("banName", {
-                name: name
+        })
+        .appendTo(menu);
+    $("<button/>").addClass("btn btn-mini btn-block")
+        .text("IP Ban")
+        .click(function() {
+            socket.emit("chatMsg", {
+                msg: "/ipban " + name
             });
-        });
+        })
+        .appendTo(menu);
 
-        $("<li />").addClass("divider").appendTo(ul);
 
-        var promote = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(promote);
-        a.text("Promote");
-        a.click(function() {
-            socket.emit("promote", {
-                name: name
-            });
-        });
-
-        var demote = $("<li />").appendTo(ul);
-        var a = $("<a />").attr("tabindex", "-1").attr("href", "javascript:void(0);").appendTo(demote);
-        a.text("Demote");
-        a.click(function() {
-            socket.emit("demote", {
-                name: name
-            });
-        });
-    }
-
-    entry.click(function() {
-        if(ul.css("display") == "none") {
-            // Hide others
-            $("#userlist ul.dropdown-menu").each(function() {
-                if(this != ul) {
-                    $(this).css("display", "none");
-                }
-            });
-            ul.css("display", "block");
+    entry.contextmenu(function(ev) {
+        ev.preventDefault();
+        if(menu.css("display") == "none") {
+            menu.show();
         }
         else {
-            ul.css("display", "none");
+            menu.hide();
         }
+        return false;
     });
-
-    return ul;
 }
 
 /* queue stuff */
 
-function makeQueueEntry(video) {
+function makeQueueEntry(video, addbtns) {
     var li = $("<li/>");
     li.addClass("queue_entry");
     li.data("media", video);
@@ -243,8 +190,8 @@ function makeQueueEntry(video) {
         li.addClass("queue_temp");
     }
 
-    addQueueButtons(li);
-
+    if(addbtns)
+        addQueueButtons(li);
     return li;
 }
 
@@ -268,8 +215,9 @@ function addQueueButtons(li) {
             .click(function() {
                 var i = $("#queue").children().index(li);
                 socket.emit("moveMedia", {
-                    src: i,
-                    dest: i < POSITION ? POSITION : POSITION + 1
+                    from: i,
+                    to: i < POSITION ? POSITION : POSITION + 1,
+                    moveby: null
                 });
             })
             .appendTo(menu);
@@ -344,6 +292,7 @@ function showOptionsMenu() {
     var themeselect = $("<select/>");
     $("<option/>").attr("value", "default").text("Default").appendTo(themeselect);
     $("<option/>").attr("value", "assets/css/darkstrap.css").text("Dark").appendTo(themeselect);
+    $("<option/>").attr("value", "assets/css/semidark.css").text("Semidark").appendTo(themeselect);
     themeselect.val(USEROPTS.theme);
     addOption("Theme", themeselect);
 
@@ -421,7 +370,7 @@ function showOptionsMenu() {
         .text("Profile has moved to the account page");
     addOption("Profile", profile);
 
-    if(RANK >= Rank.Moderator) {
+    if(CLIENT.rank >= Rank.Moderator) {
         $("<hr>").appendTo(form);
         var modhatcontainer = $("<label/>").addClass("checkbox")
             .text("Show name color");
@@ -446,7 +395,7 @@ function showOptionsMenu() {
         USEROPTS.blink_title     = blink.prop("checked");
         USEROPTS.chatbtn         = sendbtn.prop("checked");
         USEROPTS.altsocket       = altsocket.prop("checked");
-        if(RANK >= Rank.Moderator) {
+        if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
         }
         saveOpts();
@@ -542,6 +491,8 @@ function applyOpts() {
         }
     }
 }
+
+applyOpts();
 
 function showLoginMenu() {
     PLAYER.hide();
@@ -678,8 +629,7 @@ function showPollMenu() {
 }
 
 function scrollChat() {
-    // TODO add check
-    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollheight"));
+    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
 }
 
 function hasPermission(key) {
@@ -712,6 +662,15 @@ function handlePermissionChange() {
     setVisible("#playlisttoggle", hasPermission("playlistadd"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
     setVisible("#qlockbtn", CLIENT.rank >= 2);
+
+    if(hasPermission("playlistmove")) {
+        $("#queue").sortable("enable");
+        $("#queue").addClass("queue_sortable");
+    }
+    else {
+        $("#queue").sortable("disable");
+        $("#queue").removeClass("queue_sortable");
+    }
 
     setVisible("#getplaylist", hasPermission("playlistgeturl"));
     setVisible("#clearplaylist", hasPermission("playlistclear"));
@@ -764,7 +723,7 @@ function loadSearchPage(page) {
     var results = $("#library").data("entries");
     var start = page * 100;
     for(var i = start; i < start + 100 && i < results.length; i++) {
-        var li = makeQueueEntry(results[i]);
+        var li = makeQueueEntry(results[i], false);
         if(hasPermission("playlistadd")) {
             if(results[i].thumb) {
                 addLibraryButtons(li, results[i].id, "yt");
@@ -785,6 +744,7 @@ function loadSearchPage(page) {
 
 function addLibraryButtons(li, id, type) {
     var btns = $("<div/>").addClass("btn-group")
+        .addClass("pull-left")
         .prependTo(li);
 
     if(hasPermission("playlistadd")) {
@@ -811,6 +771,19 @@ function addLibraryButtons(li, id, type) {
             })
             .appendTo(btns);
     }
+    if(CLIENT.rank >= 2) {
+        $("<button/>").addClass("btn btn-mini btn-danger")
+            .html("<i class='icon-trash'></i>")
+            .click(function() {
+                socket.emit("uncache", {
+                    id: id
+                });
+                li.hide("blind", function() {
+                    li.remove();
+                });
+            })
+            .appendTo(btns);
+    }
 }
 
 /* queue stuff */
@@ -824,7 +797,7 @@ function playlistMove(from, to) {
 
     var old = $(q.children()[from]);
     old.hide("blind", function() {
-        old.remove();
+        old.detach();
         if(to >= q.children().length)
             old.appendTo(q);
         else
@@ -935,7 +908,59 @@ function parseMediaLink(url) {
     }
 }
 
+function sendVideoUpdate() {
+    PLAYER.getTime(function(seconds) {
+        socket.emit("mediaUpdate", {
+            id: PLAYER.id,
+            currentTime: seconds,
+            paused: PLAYER.paused,
+            type: PLAYER.type
+        });
+    });
+}
+
 /* chat */
+
+function formatChatMessage(data) {
+    var skip = data.username == LASTCHATNAME;
+    if(data.msgclass == "drink" || data.msgclass == "shout") {
+        skip = false;
+    }
+    LASTCHATNAME = data.username;
+    LASTCHATTIME = data.time;
+    var div = $("<div/>");
+    if(USEROPTS.show_timestamps) {
+        var time = $("<span/>").addClass("timestamp").appendTo(div);
+        var timestamp = new Date(data.time).toTimeString().split(" ")[0];
+        time.text("["+timestamp+"] ");
+    }
+    var name = $("<span/>");
+    if(!skip) {
+        name.appendTo(div);
+    }
+    $("<strong/>").addClass("username").text(data.username + ": ").appendTo(name);
+    var message = $("<span/>").appendTo(div);
+    message[0].innerHTML = data.msg;
+    if(data.modflair) {
+        name.addClass(getNameColor(data.modflair));
+    }
+    if(data.msgclass == "action") {
+        name.remove();
+        message.addClass("action");
+        message[0].innerHTML = data.username + " " + data.msg;
+    }
+    else if(data.msgclass == "drink") {
+        div.addClass("drink");
+    }
+    else if(data.msgclass == "shout") {
+        message.addClass("shout");
+        name.addClass("shout");
+    }
+    else  {
+        message.addClass(data.msgclass);
+    }
+    return div;
+}
 
 function addChatMessage(data) {
     if(IGNORED.indexOf(data.username) != -1) {
@@ -984,4 +1009,27 @@ function addChatMessage(data) {
             }
         }
     }
+}
+
+/* layouts */
+
+function fluidLayout() {
+    $(".row").each(function() {
+        $(this).removeClass("row").addClass("row-fluid");
+    });
+    $(".container").each(function() {
+        $(this).removeClass("container").addClass("container-fluid");
+    });
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
+    $("#userlist").css("height", (VHEIGHT - 31) + "px");
+    $("#ytapiplayer").attr("width", VWIDTH);
+    $("#ytapiplayer").attr("height", VHEIGHT);
+    $("#chatline").removeClass().addClass("span12");
+}
+
+function synchtubeLayout() {
+    $("#videowrap").detach().insertBefore($("#chatwrap"));
+    $("#rightpane-outer").detach().insertBefore($("#leftpane-outer"));
 }

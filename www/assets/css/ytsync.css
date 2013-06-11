@@ -101,8 +101,11 @@ html, body {
     margin-bottom: 0;
 }
 
-.queue_entry {
+.queue_sortable li {
     cursor: row-resize;
+}
+
+.queue_entry {
     background-color: #ffffff;
     margin: 2px 0 0 auto;
     padding: 2px;
@@ -112,6 +115,11 @@ html, body {
 
 .queue_temp {
     background-image: url(../img/stripe-diagonal.png);
+}
+
+.queue_active {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
 }
 
 #plmeta {
@@ -282,6 +290,17 @@ html, body {
     border: 1px solid #aaaaaa;
     border-radius: 5px;
     background-color: #ffffff;
+    max-width: 200px;
+    padding: 5px;
+}
+
+.user-dropdown {
+    z-index: 9999;
+    position: absolute;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #000000;
     max-width: 200px;
     padding: 5px;
 }

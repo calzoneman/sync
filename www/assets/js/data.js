@@ -51,9 +51,9 @@ function getOrDefault(k, def) {
         return true;
     if(v === "false")
         return false;
-    if(v.match(/[0-9]+/))
+    if(v.match(/^[0-9]+$/))
         return parseInt(v);
-    if(v.match(/[0-9\.]+/))
+    if(v.match(/^[0-9\.]+$/))
         return parseFloat(v);
     return v;
 }

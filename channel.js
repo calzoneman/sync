@@ -916,7 +916,7 @@ Channel.prototype.broadcastVoteskipUpdate = function() {
 }
 
 Channel.prototype.broadcastMotd = function() {
-    this.sendAll("updateMotd", this.motd);
+    this.sendAll("setMotd", this.motd);
 }
 
 Channel.prototype.broadcastDrinks = function() {
@@ -1150,7 +1150,7 @@ Channel.prototype.trySetTemp = function(user, data) {
 }
 
 
-Channel.prototype.dequeue = function(position) {
+Channel.prototype.dequeue = function(position, removeonly) {
     if(position < 0 || position >= this.queue.length) {
         return;
     }
@@ -1160,6 +1160,9 @@ Channel.prototype.dequeue = function(position) {
         position: position
     });
     this.broadcastPlaylistMeta();
+
+    if(removeonly)
+        return;
 
     // If you remove the currently playing video, play the next one
     if(position == this.position) {
@@ -1223,7 +1226,7 @@ Channel.prototype.jumpTo = function(pos) {
 
     var old = this.position;
     if(this.media && this.media.temp && old != pos) {
-        this.dequeue({pos: old, removeonly: true});
+        this.dequeue(old, true);
         if(pos > old && pos > 0) {
             pos--;
         }
@@ -1293,9 +1296,9 @@ Channel.prototype.shufflequeue = function() {
         this.queue.splice(i, 1);
     }
     this.queue = n;
-    for(var i = 0; i < this.users.length; i++) {
-        this.sendPlaylist(this.users[i]);
-    }
+    this.sendAll("playlist", this.queue);
+    this.sendAll("setPosition", this.position);
+    this.sendAll("setPlaylistMeta", this.plmeta);
 }
 
 Channel.prototype.tryShufflequeue = function(user) {
@@ -1343,13 +1346,16 @@ Channel.prototype.move = function(data, user) {
     var media = this.queue[data.from];
     var to = data.to > data.from ? data.to + 1 : data.to;
     var from =  data.to > data.from ? data.from      : data.from + 1;
+    var moveby = user && user.name ? user.name : null;
+    if(typeof data.moveby !== "undefined")
+        moveby = data.moveby;
 
     this.queue.splice(to, 0, media);
     this.queue.splice(from, 1);
     this.sendAll("moveVideo", {
         from: data.from,
         to: data.to,
-        moveby: user ? user.name : ""
+        moveby: moveby
     });
 
     // Account for moving things around the active video
@@ -1369,11 +1375,11 @@ Channel.prototype.tryMove = function(user, data) {
          return;
     }
 
-     if(data.src == undefined || data.dest == undefined) {
+     if(typeof data.from !== "number" || typeof data.to !== "number") {
          return;
      }
 
-     this.move(data);
+     this.move(data, user);
 }
 
 /* REGION Polls */

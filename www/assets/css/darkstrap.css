@@ -153,7 +153,7 @@ textarea::-webkit-input-placeholder {
 /* line 18, ../bootstrap/bootstrap/_sprites.scss */
 [class^="icon-"],
 [class*=" icon-"] {
-  background-image: url("../img/glyphicons-halflings.png");
+  background-image: url("../img/glyphicons-halflings-white.png");
 }
 
 /* White icons with optional class, or on hover/active states of certain elements */
@@ -944,6 +944,20 @@ select:focus:invalid:focus {
 
 .poll-notify {
     color: #ff9900;
+}
+
+#usercountwrap, #currenttitle, #videowrap,
+#librarytoggle, #userpltoggle, #playlisttoggle {
+    background-color: #2f2f2f;
+}
+
+.queue_entry {
+    background-color: #111111;
+}
+
+.queue_active {
+    border-color: #ff9900;
+    background-color: #332200;
 }
 
 #plmeta {

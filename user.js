@@ -236,13 +236,13 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("clearqueue", function() {
+    this.socket.on("clearPlaylist", function() {
         if(this.channel != null) {
             this.channel.tryClearqueue(this);
         }
     }.bind(this));
 
-    this.socket.on("shufflequeue", function() {
+    this.socket.on("shufflePlaylist", function() {
         if(this.channel != null) {
             this.channel.tryShufflequeue(this);
         }
@@ -262,7 +262,7 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("searchMedia", function(data) {
         if(this.channel != null) {
-            if(data.yt) {
+            if(data.source == "yt") {
                 var callback = function(vids) {
                     this.socket.emit("searchResults", {
                         results: vids
@@ -373,7 +373,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("updateMotd", function(data) {
+    this.socket.on("setMotd", function(data) {
         if(this.channel != null) {
             this.channel.tryUpdateMotd(this, data);
         }

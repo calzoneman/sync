@@ -1,0 +1,37 @@
+body, #videowrap {
+    background-color: #2f2f2f;
+}
+
+.queue_entry {
+    background-color: #111111;
+}
+
+.queue_active {
+    border-color: #ff9900;
+    background-color: #332200;
+}
+
+#userpltoggle, #librarytoggle, #playlisttoggle {
+    color: #cccccc;
+    background-color: #2f2f2f;
+}
+
+#currenttitle {
+    color: #cccccc;
+}
+
+.qe_time {
+    color: #cccccc;
+}
+
+#userpltoggle i[class^="icon-"], #userpltoggle i[class*=" icon-"],
+#librarytoggle i[class^="icon-"], #librarytoggle i[class*=" icon-"],
+#playlisttoggle i[class^="icon-"], #playlisttoggle i[class*=" icon-"] {
+    background-image: url("../img/glyphicons-halflings-white.png");
+}
+
+#plmeta {
+    color: #cccccc;
+    background-color: #2f2f2f;
+    background-color: rgba(0, 0, 0, 0.3);
+}
