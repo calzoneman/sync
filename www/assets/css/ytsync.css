@@ -116,6 +116,7 @@ html, body {
 
 #plmeta {
     border: 1px solid #aaaaaa;
+    border-top: 0;
     background-color: #ffffff;
     padding: 3px;
     margin: 0;

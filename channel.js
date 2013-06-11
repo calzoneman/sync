@@ -150,9 +150,7 @@ Channel.prototype.loadDump = function() {
                 }
                 this.queue.push(m);
             }
-            this.sendAll("playlist", {
-                pl: this.queue
-            });
+            this.sendAll("playlist", this.queue);
             this.broadcastPlaylistMeta();
             // Backwards compatibility
             if(data.currentPosition != undefined) {
@@ -559,7 +557,7 @@ Channel.prototype.userJoin = function(user) {
     // Set the new guy up
     this.sendPlaylist(user);
     this.sendMediaUpdate(user);
-    user.socket.emit("queueLock", {locked: !this.openqueue});
+    user.socket.emit("setPlaylistLocked", {locked: !this.openqueue});
     this.sendUserlist(user);
     this.sendRecentChat(user);
     user.socket.emit("channelCSSJS", {css: this.css, js: this.js});
@@ -569,7 +567,7 @@ Channel.prototype.userJoin = function(user) {
     user.socket.emit("channelOpts", this.opts);
     user.socket.emit("setPermissions", this.permissions);
     user.socket.emit("updateMotd", this.motd);
-    user.socket.emit("drinkCount", {count: this.drinks});
+    user.socket.emit("drinkCount", this.drinks);
 
     // Send things that require special permission
     this.sendRankStuff(user);
@@ -714,13 +712,9 @@ Channel.prototype.sendACL = function(user) {
 }
 
 Channel.prototype.sendPlaylist = function(user) {
-    user.socket.emit("playlist", {
-        pl: this.queue
-    });
-    user.socket.emit("updatePlaylistIdx", {
-        idx: this.position
-    });
-    user.socket.emit("updatePlaylistMeta", this.plmeta);
+    user.socket.emit("playlist", this.queue);
+    user.socket.emit("setPosition", this.position);
+    user.socket.emit("setPlaylistMeta", this.plmeta);
 }
 
 Channel.prototype.sendMediaUpdate = function(user) {
@@ -779,13 +773,11 @@ Channel.prototype.broadcastPlaylistMeta = function() {
         time: timestr
     };
     this.plmeta = packet;
-    this.sendAll("updatePlaylistMeta", packet);
+    this.sendAll("setPlaylistMeta", packet);
 }
 
 Channel.prototype.broadcastUsercount = function() {
-    this.sendAll("usercount", {
-        count: this.users.length
-    });
+    this.sendAll("usercount", this.users.length);
 }
 
 Channel.prototype.broadcastNewUser = function(user) {
@@ -928,7 +920,7 @@ Channel.prototype.broadcastMotd = function() {
 }
 
 Channel.prototype.broadcastDrinks = function() {
-    this.sendAll("drinkCount", {count: this.drinks});
+    this.sendAll("drinkCount", this.drinks);
 }
 
 /* REGION Playlist Stuff */
@@ -1134,7 +1126,7 @@ Channel.prototype.setTemp = function(idx, temp) {
     var med = this.queue[idx];
     med.temp = temp;
     this.sendAll("setTemp", {
-        idx: idx,
+        position: idx,
         temp: temp
     });
 
@@ -1147,36 +1139,37 @@ Channel.prototype.trySetTemp = function(user, data) {
     if(!this.hasPermission(user, "settemp")) {
         return;
     }
-    if(typeof data.idx != "number" || typeof data.temp != "boolean") {
+    if(typeof data.position != "number" || typeof data.temp != "boolean") {
         return;
     }
-    if(data.idx < 0 || data.idx >= this.queue.length) {
+    if(data.position < 0 || data.position >= this.queue.length) {
         return;
     }
 
-    this.setTemp(data.idx, data.temp);
+    this.setTemp(data.position, data.temp);
 }
 
-Channel.prototype.dequeue = function(data) {
-    if(data.pos < 0 || data.pos >= this.queue.length) {
+
+Channel.prototype.dequeue = function(position) {
+    if(position < 0 || position >= this.queue.length) {
         return;
     }
 
-    this.queue.splice(data.pos, 1);
-    this.sendAll("unqueue", {
-        pos: data.pos
+    this.queue.splice(position, 1);
+    this.sendAll("delete", {
+        position: position
     });
     this.broadcastPlaylistMeta();
 
     // If you remove the currently playing video, play the next one
-    if(data.pos == this.position && !data.removeonly) {
+    if(position == this.position) {
         this.position--;
         this.playNext();
         return;
     }
     // If you remove a video whose position is before the one currently
     // playing, you have to reduce the position of the one playing
-    if(data.pos < this.position) {
+    if(position < this.position) {
         this.position--;
     }
 }
@@ -1186,9 +1179,8 @@ Channel.prototype.tryDequeue = function(user, data) {
         return;
      }
 
-     if(data.pos === undefined) {
+     if(typeof data !== "number")
          return;
-     }
 
      this.dequeue(data);
 }
@@ -1250,10 +1242,7 @@ Channel.prototype.jumpTo = function(pos) {
     this.media.paused = false;
 
     this.sendAll("changeMedia", this.media.fullupdate());
-    this.sendAll("updatePlaylistIdx", {
-        old: old,
-        idx: this.position
-    });
+    this.sendAll("setPosition", this.position);
 
     // If it's not a livestream, enable autolead
     if(this.leader == null && !isLive(this.media.type)) {
@@ -1269,11 +1258,11 @@ Channel.prototype.tryJumpTo = function(user, data) {
          return;
     }
 
-    if(data.pos === undefined) {
+    if(typeof data !== "number") {
         return;
     }
 
-    this.jumpTo(data.pos);
+    this.jumpTo(data);
 }
 
 Channel.prototype.clearqueue = function() {
@@ -1343,34 +1332,35 @@ Channel.prototype.tryUpdate = function(user, data) {
     this.sendAll("mediaUpdate", this.media.timeupdate());
 }
 
-Channel.prototype.move = function(data) {
-    if(data.src < 0 || data.src >= this.queue.length) {
+Channel.prototype.move = function(data, user) {
+    if(data.from < 0 || data.from >= this.queue.length) {
         return;
     }
-    if(data.dest < 0 || data.dest > this.queue.length) {
+    if(data.to < 0 || data.to > this.queue.length) {
         return;
     }
 
-    var media = this.queue[data.src];
-    var dest = data.dest > data.src ? data.dest + 1 : data.dest;
-    var src =  data.dest > data.src ? data.src      : data.src + 1;
+    var media = this.queue[data.from];
+    var to = data.to > data.from ? data.to + 1 : data.to;
+    var from =  data.to > data.from ? data.from      : data.from + 1;
 
-    this.queue.splice(dest, 0, media);
-    this.queue.splice(src, 1);
+    this.queue.splice(to, 0, media);
+    this.queue.splice(from, 1);
     this.sendAll("moveVideo", {
-        src: data.src,
-        dest: data.dest
+        from: data.from,
+        to: data.to,
+        moveby: user ? user.name : ""
     });
 
     // Account for moving things around the active video
-    if(data.src < this.position && data.dest >= this.position) {
+    if(data.from < this.position && data.to >= this.position) {
         this.position--;
     }
-    else if(data.src > this.position && data.dest < this.position) {
+    else if(data.from > this.position && data.to < this.position) {
         this.position++
     }
-    else if(data.src == this.position) {
-        this.position = data.dest;
+    else if(data.from == this.position) {
+        this.position = data.to;
     }
 }
 
@@ -1448,7 +1438,7 @@ Channel.prototype.tryVoteskip = function(user) {
 
 Channel.prototype.setLock = function(locked) {
     this.openqueue = !locked;
-    this.sendAll("queueLock", {locked: locked});
+    this.sendAll("setPlaylistLocked", {locked: locked});
 }
 
 Channel.prototype.trySetLock = function(user, data) {
@@ -1461,6 +1451,14 @@ Channel.prototype.trySetLock = function(user, data) {
     }
 
     this.setLock(data.locked);
+}
+
+Channel.prototype.tryToggleLock = function(user) {
+    if(!Rank.hasPermission(user, "qlock")) {
+        return;
+    }
+
+    this.setLock(this.openqueue);
 }
 
 Channel.prototype.updateFilter = function(filter) {

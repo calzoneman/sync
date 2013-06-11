@@ -206,7 +206,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("unqueue", function(data) {
+    this.socket.on("delete", function(data) {
         if(this.channel != null) {
             this.channel.tryDequeue(this, data);
         }
@@ -248,9 +248,9 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("queueLock", function(data) {
+    this.socket.on("togglePlaylistLock", function() {
         if(this.channel != null) {
-            this.channel.trySetLock(this, data);
+            this.channel.tryToggleLock(this);
         }
     }.bind(this));
 
@@ -260,18 +260,18 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("searchLibrary", function(data) {
+    this.socket.on("searchMedia", function(data) {
         if(this.channel != null) {
             if(data.yt) {
                 var callback = function(vids) {
-                    this.socket.emit("librarySearchResults", {
+                    this.socket.emit("searchResults", {
                         results: vids
                     });
                 }.bind(this);
                 this.channel.search(data.query, callback);
             }
             else {
-                this.socket.emit("librarySearchResults", {
+                this.socket.emit("searchResults", {
                     results: this.channel.search(data.query)
                 });
             }
@@ -328,12 +328,6 @@ User.prototype.initCallbacks = function() {
                 success: false,
                 error: "Unregistration failed.  Please see a site admin if this continues."
             });
-        }
-    }.bind(this));
-
-    this.socket.on("adm", function(data) {
-        if(Rank.hasPermission(this, "acp")) {
-            this.handleAdm(data);
         }
     }.bind(this));
 
@@ -500,27 +494,6 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 }
 
-// Handle administration
-User.prototype.handleAdm = function(data) {
-    if(data.cmd == "listchannels") {
-        var chans = [];
-        for(var chan in Server.channels) {
-            var nowplaying = "-";
-            if(Server.channels[chan].media != null)
-                nowplaying = Server.channels[chan].media.title;
-            chans.push({
-                name: chan,
-                usercount: Server.channels[chan].users.length,
-                nowplaying: nowplaying
-            });
-        }
-        this.socket.emit("adm", {
-            cmd: "listchannels",
-            chans: chans
-        });
-    }
-};
-
 var lastguestlogin = {};
 // Attempt to login
 User.prototype.login = function(name, pw, session) {
@@ -568,11 +541,10 @@ User.prototype.login = function(name, pw, session) {
             this.name = name;
             this.loggedIn = false;
             this.socket.emit("login", {
-                success: true
+                success: true,
+                name: name
             });
-            this.socket.emit("rank", {
-                rank: this.rank
-            });
+            this.socket.emit("rank", this.rank);
             if(this.channel != null) {
                 this.channel.logger.log(this.ip + " signed in as " + name);
                 this.channel.broadcastNewUser(this);
@@ -585,7 +557,8 @@ User.prototype.login = function(name, pw, session) {
             this.loggedIn = true;
             this.socket.emit("login", {
                 success: true,
-                session: row.session_hash
+                session: row.session_hash,
+                name: name
             });
             Logger.syslog.log(this.ip + " logged in as " + name);
             this.profile = {
@@ -597,9 +570,7 @@ User.prototype.login = function(name, pw, session) {
             var rank = (chanrank > row.global_rank) ? chanrank
                                                      : row.global_rank;
             this.rank = (this.rank > rank) ? this.rank : rank;
-            this.socket.emit("rank", {
-                rank: this.rank
-            });
+            this.socket.emit("rank", this.rank);
             this.name = name;
             if(this.channel != null) {
                 this.channel.logger.log(this.ip + " logged in as " + name);

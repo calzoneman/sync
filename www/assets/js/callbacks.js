@@ -16,7 +16,7 @@ Callbacks = {
         socket.emit("joinChannel", {
             name: CHANNEL.name
         });
-        if(uname && session) {
+        if(NAME && SESSION) {
             socket.emit("login", {
                 name: NAME,
                 session: SESSION
@@ -231,7 +231,8 @@ Callbacks = {
     setPermissions: function(perms) {
         CHANNEL.perms = perms;
         if(CLIENT.rank >= Rank.Admin)
-            genPermissionsEditor();
+            1;
+            //genPermissionsEditor();
         handlePermissionChange();
     },
 
@@ -464,9 +465,9 @@ Callbacks = {
         }
     },
 
-    drinkCount: function(data) {
-        if(data.count != 0) {
-            var text = data.count + " drink";
+    drinkCount: function(count) {
+        if(count != 0) {
+            var text = count + " drink";
             if(data.count != 1) {
                 text += "s";
             }
@@ -483,7 +484,6 @@ Callbacks = {
         // Clear the playlist first
         var q = $("#queue");
         q.html("");
-
 
         for(var i = 0; i < data.length; i++) {
             Callbacks.queue({
@@ -550,7 +550,8 @@ Callbacks = {
     },
 
     moveVideo: function(data) {
-        playlistMove(data.src, data.dest);
+        if(data.moveby != CLIENT.name)
+            playlistMove(data.src, data.dest);
     },
 
     setPosition: function(data) {
@@ -598,22 +599,7 @@ Callbacks = {
 
     setPlaylistLocked: function(data) {
         CHANNEL.openqueue = !data.locked;
-        // TODO handlePermissionsChange?
-        if(CHANNEL.openqueue) {
-            $("#playlist_controls").css("display", "");
-            if(RANK < Rank.Moderator) {
-                $("#qlockbtn").css("display", "none");
-                rebuildPlaylist();
-                if(!CHANNELOPTS.qopen_allow_qnext)
-                    $("#queue_next").attr("disabled", true);
-                if(!CHANNELOPTS.qopen_allow_playnext)
-                    $("#play_next").attr("disabled", true);
-            }
-        }
-        else if(RANK < Rank.Moderator && !LEADER) {
-            $("#playlist_controls").css("display", "none");
-            rebuildPlaylist();
-        }
+        handlePermissionChange();
         if(CHANNEL.openqueue) {
             $("#qlockbtn").removeClass("btn-danger")
                 .addClass("btn-success")
@@ -802,25 +788,39 @@ Callbacks = {
 }
 
 /*
+pl = [];
+for(var i = 0; i < 10; i++) {
+    var m = {
+        title: "Test " + i,
+        type: "yt",
+        id: "test" + i,
+        seconds: 0,
+        duration: "00:00"
+    };
+    pl.push(m);
+}
+setTimeout(function() {
+    Callbacks.playlist(pl);
+}, 1000);
+*/
+
 $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
     try {
         socket = io.connect(IO_URL);
-        for(var key in Callbacks) {
-            socket.on(key, Callbacks[key]);
-        }
+        setupCallbacks();
     }
     catch(e) {
         Callbacks.disconnect();
     }
 });
-*/
 
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
-        socket.on(key, function() {
-            Callbacks[key]();
+        socket.on(key, function(data) {
+            Callbacks[key](data);
         });
         })(key);
     }
 }
+

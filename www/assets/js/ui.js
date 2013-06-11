@@ -158,7 +158,20 @@ $("#userpl_save").click(function() {
 /* playlist controls */
 
 $(function() {
-    $("#queue").sortable();
+    $("#queue").sortable({
+        start: function(ev, ui) {
+            PL_FROM = ui.item.prevAll().length;
+        },
+        update: function(ev, ui) {
+            PL_TO = ui.item.prevAll().length;
+            if(PL_TO != PL_FROM) {
+                socket.emit("moveMedia", {
+                    from: PL_FROM,
+                    to: PL_TO
+                });
+            }
+        }
+    });
     $("#queue").disableSelection();
 });
 
@@ -245,3 +258,59 @@ $("#shuffleplaylist").click(function() {
         socket.emit("shufflePlaylist");
     }
 });
+
+/* layout stuff */
+$(window).resize(function() {
+    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
+    $("#userlist").css("height", (VHEIGHT - 31) + "px");
+    $("#ytapiplayer").attr("width", VWIDTH);
+    $("#ytapiplayer").attr("height", VHEIGHT);
+});
+
+/* initial YouTube api */
+
+if(!USEROPTS.hidevid) {
+    var tag = document.createElement("script");
+    tag.src = "http://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+function onYouTubeIframeAPIReady() {
+    if(!PLAYER)
+        PLAYER = new Player({id:"", type: "yt"});
+    if(FLUIDLAYOUT)
+        fluid();
+}
+
+/* load channel */
+
+var loc = document.location+"";
+var m = loc.match(/\/r\/([a-zA-Z0-9-_]+)$/);
+if(m) {
+    CHANNEL.name = m[1];
+}
+else {
+    var main = $("#main");
+    var container = $("<div/>").addClass("container").insertBefore(main);
+    var row = $("<div/>").addClass("row").appendTo(container);
+    var div = $("<div/>").addClass("span6").appendTo(row);
+    main.css("display", "none");
+    var label = $("<label/>").text("Enter Channel:").appendTo(div);
+    var entry = $("<input/>").attr("type", "text").appendTo(div);
+    entry.keydown(function(ev) {
+        var host = ""+document.location;
+        host = host.replace("http://", "");
+        host = host.substring(0, host.indexOf("/"));
+        if(ev.keyCode == 13) {
+            document.location = "http://" + host + "/r/" + entry.val();
+            socket.emit("joinChannel", {
+                name: entry.val()
+            });
+            container.remove();
+            main.css("display", "");
+        }
+    });
+}

@@ -17,6 +17,7 @@ var CHANNEL = {
 };
 
 var PLAYER = false;
+var FLUIDLAYOUT = false;
 var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
 var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
 var POSITION = -1;
@@ -39,6 +40,8 @@ var KICKED = false;
 var NAME = readCookie("cytube_uname");
 var SESSION = readCookie("cytube_session");
 var LEADTMR = false;
+var PL_FROM = 0;
+var PL_TO = 0;
 
 function getOrDefault(k, def) {
     var v = localStorage.getItem(k);

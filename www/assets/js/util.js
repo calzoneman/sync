@@ -18,8 +18,37 @@ function makeAlert(title, text, klass) {
     return al;
 }
 
+function formatURL(data) {
+    switch(data.type) {
+        case "yt":
+            return "http://youtube.com/watch?v=" + data.id;
+        case "vi":
+            return "http://vimeo.com/" + data.id;
+        case "dm":
+            return "http://dailymotion.com/video/" + data.id;
+        case "sc":
+            return data.id;
+        case "li":
+            return "http://livestream.com/" + data.id;
+        case "tw":
+            return "http://twitch.tv/" + data.id;
+        case "jt":
+            return "http://justin.tv/" + data.id;
+        case "rt":
+            return data.id;
+        case "jw":
+            return data.id;
+        case "im":
+            return "http://imgur.com/a/" + data.id;
+        case "us":
+            return "http://ustream.tv/" + data.id;
+        default:
+            return "#";
+    }
+}
+
 function formatUserlistItem(div, data) {
-    var name = $(div.children[1]);
+    var name = $(div.children()[1]);
     name.removeClass();
     name.css("font-style", "");
     name.addClass(getNameColor(data.rank));
@@ -49,7 +78,7 @@ function formatUserlistItem(div, data) {
         profile.remove();
     });
 
-    var flair = div.children[0];
+    var flair = div.children()[0];
     flair.innerHTML = "";
     // denote current leader with a star
     if(data.leader) {
@@ -205,7 +234,7 @@ function makeQueueEntry(video) {
     }
     var title = $("<a/>").addClass("qe_title").appendTo(li)
         .text(video.title)
-        .attr("href", "#")//formatURL(video))
+        .attr("href", formatURL(video))
         .attr("target", "_blank");
     var time = $("<span/>").addClass("qe_time").appendTo(li);
     time.text(video.duration);
@@ -214,47 +243,61 @@ function makeQueueEntry(video) {
         li.addClass("queue_temp");
     }
 
-    // TODO Permissions
+    addQueueButtons(li);
+
+    return li;
+}
+
+function addQueueButtons(li) {
+    li.find(".btn-group").remove();
     var menu = $("<div/>").addClass("btn-group").appendTo(li);
     // Play
-    $("<button/>").addClass("btn btn-mini qbtn-play")
-        .html("<i class='icon-play'></i>Play")
-        .click(function() {
-            var i = $("#queue").children().index(li);
-            socket.emit("jumpTo", i);
-        })
-        .appendTo(menu);
+    if(hasPermission("playlistjump")) {
+        $("<button/>").addClass("btn btn-mini qbtn-play")
+            .html("<i class='icon-play'></i>Play")
+            .click(function() {
+                var i = $("#queue").children().index(li);
+                socket.emit("jumpTo", i);
+            })
+            .appendTo(menu);
+    }
     // Queue next
-    $("<button/>").addClass("btn btn-mini qbtn-next")
-        .html("<i class='icon-share-alt'></i>Queue Next")
-        .click(function() {
-            var i = $("#queue").children().index(li);
-            socket.emit("moveMedia", {
-                src: i,
-                dest: i < POSITION ? POSITION : POSITION + 1
-            });
-        })
-        .appendTo(menu);
+    if(hasPermission("playlistnext")) {
+        $("<button/>").addClass("btn btn-mini qbtn-next")
+            .html("<i class='icon-share-alt'></i>Queue Next")
+            .click(function() {
+                var i = $("#queue").children().index(li);
+                socket.emit("moveMedia", {
+                    src: i,
+                    dest: i < POSITION ? POSITION : POSITION + 1
+                });
+            })
+            .appendTo(menu);
+    }
     // Temp/Untemp
-    $("<button/>").addClass("btn btn-mini qbtn-tmp")
-        .html("<i class='icon-flag'></i>Make Temporary")
-        .click(function() {
-            var i = $("#queue").children().index(li);
-            var temp = li.find(".qbtn-tmp").data("temp");
-            socket.emit("setTemp", {
-                position: i,
-                temp: !temp
-            });
-        })
-        .appendTo(menu);
+    if(hasPermission("settemp")) {
+        $("<button/>").addClass("btn btn-mini qbtn-tmp")
+            .html("<i class='icon-flag'></i>Make Temporary")
+            .click(function() {
+                var i = $("#queue").children().index(li);
+                var temp = li.find(".qbtn-tmp").data("temp");
+                socket.emit("setTemp", {
+                    position: i,
+                    temp: !temp
+                });
+            })
+            .appendTo(menu);
+    }
     // Delete
-    $("<button/>").addClass("btn btn-mini qbtn-delete")
-        .html("<i class='icon-trash'></i>Delete")
-        .click(function() {
-            var i = $("#queue").children().index(li);
-            socket.emit("delete", i);
-        })
-        .appendTo(menu);
+    if(hasPermission("playlistdelete")) {
+        $("<button/>").addClass("btn btn-mini qbtn-delete")
+            .html("<i class='icon-trash'></i>Delete")
+            .click(function() {
+                var i = $("#queue").children().index(li);
+                socket.emit("delete", i);
+            })
+            .appendTo(menu);
+    }
 
     menu.hide();
 
@@ -266,21 +309,12 @@ function makeQueueEntry(video) {
             menu.hide("blind");
         return false;
     });
-
-    menu.blur(function() {
-        menu.hide();
-    });
-    return li;
-}
-
-function addQueueButtons(li) {
-
 }
 
 function rebuildPlaylist() {
     $("#queue li").each(function() {
         $(this).find(".btn-group").remove();
-        addQueueButtons(this);
+        addQueueButtons($(this));
     });
 }
 
@@ -733,7 +767,7 @@ function loadSearchPage(page) {
         var li = makeQueueEntry(results[i]);
         if(hasPermission("playlistadd")) {
             if(results[i].thumb) {
-                addLibraryButtons(li, results[i].id, true);
+                addLibraryButtons(li, results[i].id, "yt");
             }
             else {
                 addLibraryButtons(li, results[i].id);
@@ -746,5 +780,208 @@ function loadSearchPage(page) {
             $(this).removeClass("active");
         });
         $($("#search_pagination").find("li")[page]).addClass("active");
+    }
+}
+
+function addLibraryButtons(li, id, type) {
+    var btns = $("<div/>").addClass("btn-group")
+        .prependTo(li);
+
+    if(hasPermission("playlistadd")) {
+        if(hasPermission("playlistnext")) {
+            $("<button/>").addClass("btn btn-mini")
+                .text("Next")
+                .click(function() {
+                    socket.emit("queue", {
+                        id: id,
+                        pos: "next",
+                        type: type
+                    });
+                })
+                .appendTo(btns);
+        }
+        $("<button/>").addClass("btn btn-mini")
+            .text("End")
+            .click(function() {
+                socket.emit("queue", {
+                    id: id,
+                    pos: "end",
+                    type: type
+                });
+            })
+            .appendTo(btns);
+    }
+}
+
+/* queue stuff */
+
+function playlistMove(from, to) {
+    if(from < 0 || to < 0)
+        return false;
+    var q = $("#queue");
+    if(from >= q.children().length)
+        return false;
+
+    var old = $(q.children()[from]);
+    old.hide("blind", function() {
+        old.remove();
+        if(to >= q.children().length)
+            old.appendTo(q);
+        else
+            old.insertBefore(q.children()[to]);
+        old.show("blind");
+    });
+}
+
+function parseMediaLink(url) {
+    if(typeof url != "string") {
+        return {
+            id: null,
+            type: null
+        };
+    }
+    url = url.trim();
+
+    if(url.indexOf("jw:") == 0) {
+        return {
+            id: url.substring(3),
+            type: "jw"
+        };
+    }
+
+    if(url.indexOf("rtmp://") == 0) {
+        return {
+            id: url,
+            type: "rt"
+        };
+    }
+
+    var m;
+    if((m = url.match(/youtube\.com\/watch\?v=([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "yt"
+        };
+    }
+
+    if((m = url.match(/youtu\.be\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "yt"
+        };
+    }
+
+    if((m = url.match(/youtube\.com\/playlist\?list=([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "yp"
+        };
+    }
+
+    if((m = url.match(/twitch\.tv\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "tw"
+        };
+    }
+
+    if((m = url.match(/justin\.tv\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "jt"
+        };
+    }
+
+    if((m = url.match(/livestream\.com\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "li"
+        };
+    }
+
+    if((m = url.match(/ustream\.tv\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "us"
+        };
+    }
+
+    if((m = url.match(/vimeo\.com\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "vi"
+        };
+    }
+
+    if((m = url.match(/dailymotion\.com\/video\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "dm"
+        };
+    }
+
+    if((m = url.match(/imgur\.com\/a\/([^&#]+)/))) {
+        return {
+            id: m[1],
+            type: "im"
+        };
+    }
+
+    if((m = url.match(/soundcloud\.com\/([^&#]+)/))) {
+        return {
+            id: url,
+            type: "sc"
+        };
+    }
+}
+
+/* chat */
+
+function addChatMessage(data) {
+    if(IGNORED.indexOf(data.username) != -1) {
+        return;
+    }
+    var div = formatChatMessage(data);
+    div.data("sender", data.username);
+    div.appendTo($("#messagebuffer"));
+    div.mouseover(function() {
+        $("#messagebuffer").children().each(function() {
+            var name = $(this).data("sender");
+            if(name == data.username) {
+                $(this).addClass("nick-hover");
+            }
+        });
+    });
+    div.mouseleave(function() {
+        $("#messagebuffer").children().each(function() {
+            $(this).removeClass("nick-hover");
+        });
+    });
+    // Cap chatbox at most recent 100 messages
+    if($("#messagebuffer").children().length > 100) {
+        $($("#messagebuffer").children()[0]).remove();
+    }
+    if(SCROLLCHAT)
+        scrollChat();
+    if(USEROPTS.blink_title && !FOCUSED && !TITLE_BLINK) {
+        TITLE_BLINK = setInterval(function() {
+            if(document.title == "*Chat*")
+                document.title = PAGETITLE;
+            else
+                document.title = "*Chat*";
+        }, 1000);
+    }
+    if(CLIENT.name && data.username != CLIENT.name) {
+        if(data.msg.toUpperCase().indexOf(CLIENT.name.toUpperCase()) != -1) {
+            div.addClass("nick-highlight");
+            if(!FOCUSED && !TITLE_BLINK) {
+                TITLE_BLINK = setInterval(function() {
+                    if(document.title == "*Chat*")
+                        document.title = PAGETITLE;
+                    else
+                        document.title = "*Chat*";
+                }, 1000);
+            }
+        }
     }
 }

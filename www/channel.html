@@ -4,27 +4,26 @@
     <meta charset="utf-8">
     <title>CyTube</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
+    <meta name="description" content="A free, open source synchtube replacement">
     <meta name="author" content="Calvin 'calzoneman' Montgomery">
 
     <link href="./assets/css/bootstrap.css" rel="stylesheet">
+    <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
     <link href="./assets/css/ytsync.css" rel="stylesheet" id="defaultcss">
+    <link href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet"> 
     <style>
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 60px;
       }
     </style>
-    <link href="./assets/css/bootstrap-responsive.css" rel="stylesheet">
   </head>
-
   <body>
-
     <div class="wrapper">
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="index.html">CyTube</a>
-          <div class="">
+      <!-- begin navbar -->
+      <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container">
+            <a class="brand" href="index.html">CyTube</a>
             <ul class="nav">
               <li class="active"><a href="index.html">Home</a></li>
               <li><a href="help.html">Help</a></li>
@@ -32,306 +31,173 @@
               <li><a href="javascript:void(0)" id="optlink">Options</a></li>
             </ul>
             <div class="navbar-form pull-right" id="loginform">
-                <input type="text" id="guestname" placeholder="Name">
-                <button class="btn" id="guestlogin">Guest Login</button>
-                <button class="btn" id="login">Login/Register</button>
+              <input type="text" id="guestname" placeholder="Name">
+              <button class="btn" id="guestlogin">Guest Login</button>
+              <button class="btn" id="login">Login/Register</button>
             </div>
             <div class="navbar-form pull-right" id="logoutform" style="display: none;">
-                <span id="welcome"></span>
-                <button class="btn" id="logout">Logout</button>
+              <span id="welcome"></span>
+              <button class="btn" id="logout">Logout</button>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="container">
-        <div class="row-fluid" id="motdrow">
-            <div class="well span12">
-                <p id="motd"></p>
-            </div>
-            <div class="span12" id="drinkbar">
-                <h1 id="drinkcount"></h1>
-            </div>
+      <!-- end navbar -->
+      <!-- begin main page -->
+      <div class="container" id="mainpage">
+        <!-- top row (MOTD, drink count) -->
+        <div class="row-fluid" id="toprow">
+          <div class="well span12" id="motd">
+          </div>
+          <div class="span12" id="drinkbar">
+            <h1 id="drinkcount"></h1>
+          </div>
         </div>
-        <div class="row-fluid" id="announcerow" style="display: none">
+        <!-- announcement area -->
+        <div class="row-fluid" id="announcements">
         </div>
-        <div class="row" id="main" style="margin-top: 20px;">
-            <div class="span5" id="chatdiv">
-                <div id="usercountcontainer">
-                    <i class="icon-chevron-up" id="ulistchevron" title="Show/Hide Userlist"></i>
-                    <p id="usercount"></p>
-                </div>
-                <div id="userlist">
-                </div>
-                <div id="messagebuffer">
-                </div>
-                <input type="text" id="chatline" maxlength="240" class="span5">
+        <!-- main row -->
+        <div class="row" id="main">
+          <!-- chat container -->
+          <div class="span5" id="chatwrap">
+            <!-- user count -->
+            <div id="usercountwrap" class="pointer">
+              <i class="icon-chevron-up pull-left" id="userlisttoggle" title="Show/Hide Userlist"></i>
+              <p id="usercount">Not connected</p>
             </div>
-            <div class="span7" id="videodiv">
-                <p id="currenttitle">Currently Playing: </p>
-                <div id="ytapiplayer">
-                </div>
+            <!-- userlist -->
+            <div id="userlist">
             </div>
+            <!-- message buffer -->
+            <div id="messagebuffer">
+            </div>
+            <!-- chat input -->
+            <input type="text" id="chatline" maxlength="240" class="span5">
+          </div>
+          <!-- video container -->
+          <div class="span7" id="videowrap">
+            <!-- current video display -->
+            <p id="currenttitle">Nothing playing</p>
+            <!-- video frame -->
+            <div id="ytapiplayer">
+            </div>
+          </div>
         </div>
-        <div class="row" id="queuerow">
-            <div class="span5">
-                <div class="row-fluid">
-                    <div class="span12" id="pollcontainer">
-                    </div>
-                    <div class="span12" id="leftpanetabs" style="margin-left: 0">
-                        <ul class="nav nav-pills">
-                            <li class="active"><a href="javascript:void(0)" id="show_library">Library/YouTube Search</a></li>
-                            <li><a href="javascript:void(0)" id="show_userpl">User Playlists</a></li>
-                    </div>
-                    <div id="userplcontainer" style="display: none">
-                        <div class="span7" style="margin-left: 0;">
-                            <input type="text" id="userpl_name" class="input-block-level" placeholder="Playlist Name">
-                        </div>
-                        <div class="span5">
-                            <button class="btn btn-block" id="userpl_save">Save Playlist</button>
-                        </div>
-                        <ul class="span12" id="userpl_list" style="margin-left: 0">
-                        </ul>
-                    </div>
-                    <div id="libcontainer">
-                        <div class="span7" style="margin-left: 0;">
-                            <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
-                        </div>
-                        <div class="span5 btn-group">
-                            <button class="btn" id="library_search">Library</button>
-                            <button class="btn" id="youtube_search">YouTube</button>
-                        </div>
-                        <div class="span12" style="margin-left: 0;">
-                            <ul id="library" class="videolist">
-                            </ul>
-                            <button class="btn btn-block" id="search_clear">Clear Results</button>
-                        </div>
-                    </div>
+        <!-- playlist row -->
+        <div class="row" id="playlistrow">
+          <!-- left pane - Library + user playlists -->
+          <div class="span5" id="leftpane-outer">
+            <div class="row-fluid" id="leftpane-inner">
+              <!-- poll container -->
+              <div class="span12" id="pollwrap">
+                <!-- new poll controls -->
+                <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
+              </div>
+              <!-- library search -->
+              <div class="span12 pointer" id="librarytoggle">
+                <i class="icon-chevron-down pull-left"></i>
+                <p>Show Library</p>
+              </div>
+              <div id="librarywrap">
+                <div class="span7" id="querywrap">
+                  <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
                 </div>
-            </div>
-            <div class="span7" id="queuediv">
-                <div class="row-fluid" id="qclear">
-                    <div class="span12"></div>
+                <div class="span5 btn-group" id="searchbtns">
+                  <button class="btn" id="library_search">Library</button>
+                  <button class="btn" id="youtube_search">YouTube</button>
                 </div>
-                <div id="playlist_controls"style="display: none;">
-                    <div class="row-fluid">
-                        <div class="span8">
-                            <input type="text" id="mediaurl" class="input-block-level" placeholder="Media URL">
-                        </div>
-                        <div class="span4 btn-group">
-                            <button class="btn" id="queue_next">Next</button>
-                            <button class="btn" id="queue_end">End</button>
-                        </div>
-                    </div>
+              </div>
+              <!-- user playlists -->
+              <div class="span12 pointer" id="userpltoggle">
+                <i class="icon-chevron-down pull-left"></i>
+                <p>Show Playlist Manager</p>
+              </div>
+              <div id="userplaylistwrap">
+                <div class="span7">
+                  <input type="text" id="userpl_name" class="input-block-level" placeholder="Playlist Name">
                 </div>
-                <button class="btn btn-block" id="voteskip">Voteskip</button>
-                <div class="row-fluid">
-                    <ul id="queue" class="span12 videolist">
-                    </ul>
-                    <div class="span12 well well-small" id="plmeta">
-                        <span id="plcount"></span>
-                        <span id="pllength"></span>
-                        <div class="clear: both;"></div>
-                    </div>
-                    <button class="btn btn-danger btn-block" id="qlockbtn" style="display:none;">Unlock Queue</button>
-                    <button class="btn btn-block" id="getplaylist" style="display: none;">Get Playlist URLs</button>
-                    <button class="btn btn-block" id="clearplaylist" style="display: none;">Clear Playlist</button>
-                    <button class="btn btn-block" id="shuffleplaylist" style="display: none;">Shuffle Playlist</button>
+                <div class="span5">
+                  <button class="btn btn-block" id="userpl_save">Save Playlist</button>
                 </div>
-            </div>
-        </div>
-        <div class="row" style="display: none;" id="modnav">
-            <div class="span12" id="modtabs">
-                <ul class="nav nav-tabs">
-                    <li class="active" id="chancontrols_tab">
-                        <a href="javascript:void(0)" id="show_chancontrols">Channel Controls</a>
-                    </li>
-                    <li id="chanperms_tab">
-                        <a href="javascript:void(0)" id="show_chanperms">Channel Permissions</a>
-                    </li>
-                    <li id="banlist_tab">
-                        <a href="javascript:void(0)" id="show_banlist">Ban List</a>
-                    </li>
-                    <li id="loginlog_tab">
-                        <a href="javascript:void(0)" id="show_loginlog">Connection Log</a>
-                    </li>
-                    <li id="motdeditor_tab">
-                        <a href="javascript:void(0)" id="show_motdeditor">MOTD</a>
-                    </li>
-                    <li style="display: none" id="csseditor_tab">
-                        <a href="javascript:void(0)" id="show_csseditor">CSS Editor</a>
-                    </li>
-                    <li style="display: none" id="jseditor_tab">
-                        <a href="javascript:void(0)" id="show_jseditor">JS Editor</a>
-                    </li>
-                    <li id="filtereditor_tab">
-                        <a href="javascript:void(0)" id="show_filtereditor">Chat Filters</a>
-                    </li>
-                    <li id="acl_tab">
-                        <a href="javascript:void(0)" id="show_acl">Channel Ranks</a>
-                    </li>
-                    <li style="display: none" id="dropchannel_tab">
-                        <a href="javascript:void(0)" id="drop_channel">Unregister Channel</a>
-                    </li>
+                <ul class="span12" id="userpl_list">
                 </ul>
+              </div>
             </div>
-        </div>
-        <div class="row modonly" style="display: none" id="chancontrols">
-            <div class="span12">
-                <form action="javascript:void(0)">
-                    <fieldset>
-                        <div class="span5">
-                            <label>Page Title
-                                <input type="text" id="opt_pagetitle" placeholder="CyTube" class="pull-right">
-                            </label>
-                            <br>
-                            <label>External CSS
-                                <input type="text" id="opt_customcss" class="pull-right" placeholder="CSS URL">
-                            </label>
-                            <br>
-                            <label>External JS
-                                <input type="text" id="opt_customjs" class="pull-right" placeholder="JS URL">
-                            </label>
-                            <br>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_allow_voteskip">
-                                Allow voteskip
-                            </label>
-                            <br>
-                            <label>Voteskip Ratio
-                                <input type="text" id="opt_voteskip_ratio" class="pull-right">
-                            </label>
-                            <br>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_chat_antiflood">
-                                Prevent chat flood
-                            </label>
-                            <br>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_show_public">
-                                Show channel publicly
-                            </label>
-                            <br>
-                            <label class="checkbox">
-                                <input type="checkbox" id="opt_enable_link_regex">
-                                Convert URLs to links in chat messages
-                            </label>
-                        </div>
-
-                        <div class="span10">
-                            <button class="btn btn-primary" id="opt_submit">Save</button>
-                        </div>
-                    </fieldset>
-                </form>
+          </div>
+          <!-- right pane - channel playlist -->
+          <div class="span7" id="rightpane-outer">
+            <div class="row-fluid" id="rightpane-inner">
+              <!-- account for left pane having the poll buffer -->
+              <div class="span12" id="queue_align"></div>
+              <!-- playlist controls -->
+              <div class="span12 pointer" id="playlisttoggle">
+                <i class="icon-chevron-down pull-left"></i>
+                <p>Show Playlist Controls</p>
+              </div>
+              <div id="playlist_controls">
+                <div class="span8">
+                  <input type="text" id="mediaurl" class="input-block-level" placeholder="Media URL">
+                </div>
+                <div class="span4 btn-group">
+                  <button class="btn" id="queue_next">Next</button>
+                  <button class="btn" id="queue_end">End</button>
+                </div>
+                <div id="extended_controls" class="span12">
+                  <button class="btn btn-danger btn-block" id="qlockbtn">Unlock Queue</button>
+                  <button class="btn btn-block" id="getplaylist">Get Playlist URLs</button>
+                  <button class="btn btn-block" id="clearplaylist">Clear Playlist</button>
+                  <button class="btn btn-block" id="shuffleplaylist">Shuffle Playlist</button>
+                </div>
+              </div>
+              <!-- video queue -->
+              <ul class="span12 videolist" id="queue">
+              </ul>
+              <div class="span12" id="plmeta">
+                <span id="plcount">0 items</span>
+                <span id="pllength">00:00:00</span>
+              </div>
             </div>
+          </div>
         </div>
-        <div class="row modonly" id="chanperms" style="display: none;">
-        </div>
-        <div class="row modonly" id="banlist" style="display: none;">
-            <div class="span12">
-                <table class="table table-striped">
-                    <thead>
-                        <th></th>
-                        <th>IP</th>
-                        <th>Name</th>
-                        <th>Banned By</th>
-                    </thead>
-                </table>
-            </div>
-        </div>
-        <div class="row modonly" id="loginlog" style="display: none;">
-            <div class="span12">
-                <table class="table table-striped">
-                    <thead>
-                        <th></th>
-                        <th>IP</th>
-                        <th>Names</th>
-                    </thead>
-                </table>
-            </div>
-        </div>
-        <div class="row modonly" id="motdeditor" style="display: none;">
-            <div class="span12">
-                <textarea rows="10" id="motdtext"></textarea>
-                <button class="btn btn-primary" id="updatemotd">Update</button>
-            </div>
-        </div>
-        <div class="row modonly" id="csseditor" style="display: none;">
-            <div class="span12">
-                <p>Max 20KB.  If you need more CSS, host the file somewhere and use the External CSS channel option</p>
-                <textarea rows="10" id="csstext"></textarea>
-                <button class="btn btn-primary" id="updatecss">Update</button>
-            </div>
-        </div>
-        <div class="row modonly" id="jseditor" style="display: none;">
-            <div class="span12">
-                <p>Max 20KB.  If you need more JS, host the file somewhere and use the External JS channel option</p>
-                <textarea rows="10" id="jstext"></textarea>
-                <button class="btn btn-primary" id="updatejs">Update</button>
-            </div>
-        </div>
-        <div class="row modonly" id="filtereditor" style="display: none;">
-            <div class="span12">
-                <p><strong>Note:</strong> if you just want simple word replacement, like emoticons, put the word in the Regex field, use <code>ig</code> for the flags, and put the replacement in the Replacement field.</p>
-                <table class="table table-striped">
-                    <thead>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Regex</th>
-                        <th>Flags</th>
-                        <th>Replacement</th>
-                        <th>Active</th>
-                    </thead>
-                </table>
-            </div>
-            <div class="span12">
-                <p>Multiple filters can be added at once below.  They should contain 3-4 fields separated by whitespace: (name) regex flags replacement.<br>If any field contains whitespace, it must be escaped by a backslash, for example "what\ a\ story\ mark"</p>
-                <textarea rows="10" class="input-block-level" id="multifiltereditor"></textarea>
-                <button class="btn btn-primary" id="multifilter">Update Multiple</button>
-            </div>
-        </div>
-        <div class="row modonly" id="channelranks" style="display: none;">
-            <div class="span12">
-                <table class="table table-striped">
-                    <thead>
-                        <th>Name</th>
-                        <th>Rank (Click to edit)</th>
-                    </thead>
-                </table>
-            </div>
-        </div>
-    </div> <!-- /container -->
+      </div>
     <div class="push"></div>
     <div id="sitefooter">
     </div>
-    </div>
-    <div id="footer">
-        <p class="muted">
-        CyTube Software Copyright &copy; 2013 Calvin Montgomery&nbsp;&middot;&nbsp;Available for free on <a href="http://github.com/calzoneman/sync">GitHub</a>&nbsp;&middot;
-        <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5Y7PUVVGVSEWG&lc=US&item_name=CyTube&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">Donate</a>
-        </p>
+  </div>
+  <div id="footer">
+    <p class="muted">
+    CyTube Software Copyright &copy; 2013 Calvin Montgomery&nbsp;&middot;&nbsp;Available for free on <a href="http://github.com/calzoneman/sync">GitHub</a>&nbsp;&middot;
+    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=5Y7PUVVGVSEWG&lc=US&item_name=CyTube&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted">Donate</a>
+    </p>
 
-    </div>
+  </div>
 
-    <script src="./assets/js/jquery.js"></script>
-    <!-- My Javascript -->
-    <script src="./assets/js/iourl.js"></script>
-    <script src="./assets/js/notwebsocket.js"></script>
-    <script src="./assets/js/media.js"></script>
-    <script src="./assets/js/functions.js"></script>
-    <script src="./assets/js/client.js"></script>
-    <script src="./assets/js/callbacks.js"></script>
-    <!-- APIs -->
-    <script src="http://api.dmcdn.net/all.js"></script>
-    <script src="http://jwpsrv.com/library/QouFCLBMEeKC+CIACpYGxA.js"></script>
-    <script src="./assets/js/sc.js"></script>
-    <script src="./assets/js/froogaloop.min.js"></script>
-    <script src="./assets/js/swf.js"></script>
-    <!-- Third party -->
-    <script src="./assets/js/bootstrap.js"></script>
-    <script src="./assets/js/bootstrap-transition.js"></script>
-    <script src="./assets/js/bootstrap-modal.js"></script>
+  <script src="./assets/js/jquery.js"></script>
+  <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <!-- My Javascript -->
+  <script src="./assets/js/data.js"></script>
+  <script src="./assets/js/iourl.js"></script>
+  <script src="./assets/js/player.js"></script>
+  <script src="./assets/js/util.js"></script>
+  <script src="./assets/js/ui.js"></script>
+  <script src="./assets/js/callbacks.js"></script>
+  <script src="./assets/js/notwebsocket.js"></script>
+  <!--
+  <script src="./assets/js/iourl.js"></script>
+  <script src="./assets/js/functions.js"></script>
+  <script src="./assets/js/client.js"></script>
+  <script src="./assets/js/callbacks.js"></script>
+  -->
+  <!-- APIs -->
+  <script src="http://api.dmcdn.net/all.js"></script>
+  <script src="http://jwpsrv.com/library/QouFCLBMEeKC+CIACpYGxA.js"></script>
+  <script src="./assets/js/sc.js"></script>
+  <script src="./assets/js/froogaloop.min.js"></script>
+  <script src="./assets/js/swf.js"></script>
+  <!-- Third party -->
+  <script src="./assets/js/bootstrap.js"></script>
+  <script src="./assets/js/bootstrap-transition.js"></script>
+  <script src="./assets/js/bootstrap-modal.js"></script>
 
   </body>
 </html>
