@@ -181,6 +181,14 @@ function queue(pos) {
     }
     links.forEach(function(link) {
         var data = parseMediaLink(link);
+        if(data.id === null || data.type === null) {
+            makeAlert("Error", "Invalid link.  Please double check it and remove extraneous information", "alert-error")
+                .addClass("span12")
+                .insertBefore($("#extended_controls"));
+        }
+        else {
+            $("#mediaurl").val("");
+        }
         socket.emit("queue", {
             id: data.id,
             type: data.type,

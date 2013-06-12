@@ -807,6 +807,7 @@ function parseMediaLink(url) {
         };
     }
     url = url.trim();
+    url = url.replace("feature=player_embedded&", "");
 
     if(url.indexOf("jw:") == 0) {
         return {
@@ -899,6 +900,11 @@ function parseMediaLink(url) {
             type: "sc"
         };
     }
+
+    return {
+        id: null,
+        type: null
+    };
 }
 
 function sendVideoUpdate() {
