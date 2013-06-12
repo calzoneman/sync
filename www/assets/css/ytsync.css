@@ -93,7 +93,8 @@ html, body {
 }
 
 #leftpane-inner div.span12, #rightpane-inner div.span12,
-#leftpane-inner ul, #rightpane-inner ul {
+#leftpane-inner ul, #rightpane-inner ul,
+#channelsettingswrap div.span12 {
     margin-left: 0;
 }
 

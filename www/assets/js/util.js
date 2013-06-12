@@ -646,8 +646,11 @@ function handlePermissionChange() {
         $(selector).css("display", disp);
     }
 
-    if(CLIENT.rank < 2) {
-        $(".modonly").hide();
+    if(CLIENT.rank >= 2) {
+        $("#channelsettingswrap").load("channeloptions.html");
+    }
+    else {
+        $("#channelsettingswrap").html("");
     }
 
     setVisible("#userpltoggle", CLIENT.rank >= 1);
@@ -669,15 +672,14 @@ function handlePermissionChange() {
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
 
-    setVisible("#modnav", CLIENT.rank >= 2);
-    setVisible("#chanperms_tab", CLIENT.rank >= 3);
+    setVisible("#permedit_tab", CLIENT.rank >= 3);
     setVisible("#banlist_tab", hasPermission("ban"));
-    setVisible("#motdeditor_tab", hasPermission("motdedit"));
-    setVisible("#csseditor_tab", CLIENT.rank >= 3);
-    setVisible("#jseditor_tab", CLIENT.rank >= 3);
-    setVisible("#filtereditor_tab", hasPermission("filteredit"));
-    setVisible("#acl_tab", CLIENT.rank >= 3);
-    setVisible("#dropchannel_tab", CLIENT.rank >= 10);
+    setVisible("#motdedit_tab", hasPermission("motdedit"));
+    setVisible("#cssedit_tab", CLIENT.rank >= 3);
+    setVisible("#jsedit_tab", CLIENT.rank >= 3);
+    setVisible("#filteredit_tab", hasPermission("filteredit"));
+    // TODO add acl back?
+    setVisible("#recentconn_tab", CLIENT.rank >= 3);
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
 

@@ -568,7 +568,7 @@ Channel.prototype.userJoin = function(user) {
     }
     user.socket.emit("channelOpts", this.opts);
     user.socket.emit("setPermissions", this.permissions);
-    user.socket.emit("updateMotd", this.motd);
+    user.socket.emit("setMotd", this.motd);
     user.socket.emit("drinkCount", this.drinks);
 
     // Send things that require special permission
