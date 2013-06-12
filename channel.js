@@ -332,6 +332,8 @@ Channel.prototype.seen = function(ip, name) {
 }
 
 Channel.prototype.cacheMedia = function(media) {
+    // Prevent the copy in the playlist from messing with this one
+    media = media.dup();
     if(media.temp) {
         return;
     }
