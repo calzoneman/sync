@@ -27,6 +27,7 @@ var Filter = require("./filter.js").Filter;
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
+    this.initialized = false;
 
     this.name = name;
     // Initialize defaults
@@ -135,6 +136,8 @@ Channel.prototype.hasPermission = function(user, key) {
 Channel.prototype.loadDump = function() {
     fs.readFile("chandump/" + this.name, function(err, data) {
         if(err) {
+            Logger.errlog.log("Failed to open channel dump " + this.name);
+            Logger.errlog.log(err);
             return;
         }
         try {
@@ -211,6 +214,7 @@ Channel.prototype.loadDump = function() {
             this.css = data.css || "";
             this.js = data.js || "";
             this.sendAll("channelCSSJS", {css: this.css, js: this.js});
+            this.initialized = true;
             setTimeout(function() { incrementalDump(this); }.bind(this), 300000);
         }
         catch(e) {
@@ -221,6 +225,8 @@ Channel.prototype.loadDump = function() {
 }
 
 Channel.prototype.saveDump = function() {
+    if(!this.initialized)
+        return;
     var filts = new Array(this.filters.length);
     for(var i = 0; i < this.filters.length; i++) {
         filts[i] = this.filters[i].pack();
