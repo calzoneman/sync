@@ -89,14 +89,17 @@
           <!-- left pane - Library + user playlists -->
           <div class="span5" id="leftpane-outer">
             <div class="row-fluid" id="leftpane-inner">
-              <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
+              <!-- new poll controls -->
+              <div class="span12" id="pollbtnwrap">
+                  <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
+              </div>
               <!-- poll container -->
               <div class="span12" id="pollwrap">
-                <!-- new poll controls -->
               </div>
               <!-- library search -->
+              <div class="well well-small span12 row-fluid">
               <div class="span12 pointer" id="librarytoggle">
-                <i class="icon-chevron-down pull-left"></i>
+                <i class="icon-plus pull-left"></i>
                 <p>Show Library</p>
               </div>
               <div id="librarywrap">
@@ -110,9 +113,11 @@
                 <ul class="span12 videolist" id="library">
                 </ul>
               </div>
+              </div>
               <!-- user playlists -->
+              <div class="well well-small span12 row-fluid">
               <div class="span12 pointer" id="userpltoggle">
-                <i class="icon-chevron-down pull-left"></i>
+                <i class="icon-plus pull-left"></i>
                 <p>Show Playlist Manager</p>
               </div>
               <div id="userplaylistwrap">
@@ -125,6 +130,7 @@
                 <ul class="span12" id="userpl_list">
                 </ul>
               </div>
+              </div>
             </div>
           </div>
           <!-- right pane - channel playlist -->
@@ -135,8 +141,9 @@
               <!-- electric boogaloo -->
               <div class="span12" id="queue_align2"></div>
               <!-- playlist controls -->
+              <div class="well well-small span12 row-fluid">
               <div class="span12 pointer" id="playlisttoggle">
-                <i class="icon-chevron-down pull-left"></i>
+                <i class="icon-plus pull-left"></i>
                 <p>Show Playlist Controls</p>
               </div>
               <div id="playlist_controls">
@@ -154,6 +161,7 @@
                   <button class="btn btn-block" id="shuffleplaylist">Shuffle Playlist</button>
                 </div>
               </div>
+              </div>
               <!-- video queue -->
               <ul class="span12 videolist" id="queue">
               </ul>
@@ -164,7 +172,12 @@
             </div>
           </div>
           <!-- moderator controls -->
-          <div class="span12 row-fluid" id="channelsettingswrap">
+          <!-- there has got to be a better way to nest this -->
+          <div class="span12" id="channelsettingswrap3">
+            <div class="well" id="channelsettingswrap2">
+              <div class="row-fluid" id="channelsettingswrap">
+              </div>
+            </div>
           </div>
         </div>
       </div>

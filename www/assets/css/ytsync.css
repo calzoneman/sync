@@ -24,10 +24,6 @@ html, body {
     background-color: #ffffff;
 }
 
-#librarytoggle, #userpltoggle, #playlisttoggle {
-    background-color: #ffffff;
-}
-
 #librarywrap, #userplaylistwrap, #playlist_controls {
     display: none;
 }

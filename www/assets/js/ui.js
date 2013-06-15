@@ -4,14 +4,14 @@ function generateToggle(chevron, div) {
         if($(div).css("display") == "none") {
             $(chevron).html($(chevron).html().replace(/Show/, "Hide"));
             $(div).show();
-            $(chevron+" i").removeClass("icon-chevron-down")
-                .addClass("icon-chevron-up");
+            $(chevron+" i").removeClass("icon-plus")
+                .addClass("icon-minus");
         }
         else {
             $(chevron).html($(chevron).html().replace(/Hide/, "Show"));
             $(div).hide();
-            $(chevron+" i").removeClass("icon-chevron-up")
-                .addClass("icon-chevron-down");
+            $(chevron+" i").removeClass("icon-minus")
+                .addClass("icon-plus");
         }
     });
 }

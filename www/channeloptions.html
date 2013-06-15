@@ -1,21 +1,102 @@
 <script src="/assets/js/channelsettings.js"></script>
-<ul class="nav nav-pills" id="channelsettings_nav">
-    <li id="optedit_tab"><a href="javascript:void(0);" id="show_optedit">Channel Options</a></li>
-    <li id="permedit_tab"><a href="javascript:void(0);" id="show_permedit">Permissions</a></li>
-    <li id="motdedit_tab"><a href="javascript:void(0);" id="show_motdedit">MOTD Editor</a></li>
-    <li id="filteredit_tab"><a href="javascript:void(0);" id="show_filteredit">Chat Filters</a></li>
-    <li id="cssedit_tab"><a href="javascript:void(0);" id="show_cssedit">CSS Editor</a></li>
-    <li id="jsedit_tab"><a href="javascript:void(0);" id="show_jsedit">JS Editor</a></li>
-    <li id="banlist_tab"><a href="javascript:void(0);" id="show_banlist">Ban List</a></li>
-    <li id="recentconn_tab"><a href="javascript:void(0);" id="show_recentconn">Recent Connections</a></li>
-</ul>
+<div class="btn-group">
+    <a class="btn dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+        <span id="csdropdown_title">Moderation Menu</span>
+        <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu" id="channelsettings_nav">
+        <li id="optedit_tab"><a href="javascript:void(0);" id="show_optedit">Channel Options</a></li>
+        <li id="permedit_tab"><a href="javascript:void(0);" id="show_permedit">Permissions</a></li>
+        <li id="motdedit_tab"><a href="javascript:void(0);" id="show_motdedit">MOTD Editor</a></li>
+        <li id="filteredit_tab"><a href="javascript:void(0);" id="show_filteredit">Chat Filters</a></li>
+        <li id="cssedit_tab"><a href="javascript:void(0);" id="show_cssedit">CSS Editor</a></li>
+        <li id="jsedit_tab"><a href="javascript:void(0);" id="show_jsedit">JS Editor</a></li>
+        <li id="banlist_tab"><a href="javascript:void(0);" id="show_banlist">Ban List</a></li>
+        <li id="recentconn_tab"><a href="javascript:void(0);" id="show_recentconn">Recent Connections</a></li>
+    </ul>
+</div>
+<hr>
 
 <div id="optedit" class="span12">
-    Wut
+    <form class="form-horizontal" action="javascript:void(0)">
+    <!-- prevent chat flood -->
+    <div class="control-group">
+        <label class="control-label" for="opt_chat_antiflood">Prevent Chat Flood</label>
+        <div class="controls">
+            <input type="checkbox" id="opt_chat_antiflood">
+        </div>
+    </div>
+    <!-- convert URLs to links -->
+    <div class="control-group">
+        <label class="control-label" for="opt_enable_link_regex">Convert URLs in chat to links</label>
+        <div class="controls">
+            <input type="checkbox" id="opt_enable_link_regex">
+        </div>
+    </div>
+    <!-- voteskip toggle -->
+    <div class="control-group">
+        <label class="control-label" for="opt_allow_voteskip">Allow Voteskip</label>
+        <div class="controls">
+            <input type="checkbox" id="opt_allow_voteskip">
+        </div>
+    </div>
+    <!-- voteskip ratio -->
+    <div class="control-group">
+        <label class="control-label" for="opt_voteskip_ratio">Voteskip Ratio</label>
+        <div class="controls">
+            <input type="text" id="opt_voteskip_ratio" placeholder="0.5">
+        </div>
+    </div>
+    <hr>
+    <strong>Admin-Only Controls</strong>
+    <!-- page title -->
+    <div class="control-group">
+        <label class="control-label" for="opt_pagetitle">Page Title</label>
+        <div class="controls">
+            <input type="text" id="opt_pagetitle" placeholder="CyTube">
+        </div>
+    </div>
+    <!-- external CSS -->
+    <div class="control-group">
+        <label class="control-label" for="opt_externalcss">External CSS</label>
+        <div class="controls">
+            <input type="text" id="opt_externalcss" placeholder="Stylesheet URL">
+        </div>
+    </div>
+    <!-- external JS -->
+    <div class="control-group">
+        <label class="control-label" for="opt_externaljs">External Javascript</label>
+        <div class="controls">
+            <input type="text" id="opt_externaljs" placeholder="Script URL">
+        </div>
+    </div>
+    <!-- show publicly -->
+    <div class="control-group">
+        <label class="control-label" for="opt_show_public">List Channel Publicly</label>
+        <div class="controls">
+            <input type="checkbox" id="opt_show_public">
+        </div>
+    </div>
+</div>
+<br>
 </div>
 <div id="permedit" class="span12">
-    Permissions shit
+Permissions Here
 </div>
 <div id="motdedit" class="span12">
-    MOTD shit
+    <textarea rows="10" id="motdtext"></textarea>
+    <button class="btn btn-primary" id="save_motd">Save</button>
+</div>
+<div id="filteredit" class="span12">
+Filters Here
+</div>
+<div id="cssedit" class="span12">
+    <p>Max 20KB.  If you need more space, host the file externally and use the External CSS option</p>
+    <textarea rows="10" id="csstext"></textarea>
+    <button class="btn btn-primary" id="save_css">Save</button>
+</div>
+<div id="jsedit" class="span12">
+    <p>Max 20KB.  If you need more space, host the file externally and use the External JS option</p>
+    <textarea rows="10" id="jstext"></textarea>
+    <button class="btn btn-primary" id="save_js">Save</button>
 </div>
