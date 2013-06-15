@@ -27,6 +27,7 @@ var Filter = require("./filter.js").Filter;
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
+    this.initialized = false;
 
     this.name = name;
     // Initialize defaults
@@ -135,6 +136,8 @@ Channel.prototype.hasPermission = function(user, key) {
 Channel.prototype.loadDump = function() {
     fs.readFile("chandump/" + this.name, function(err, data) {
         if(err) {
+            Logger.errlog.log("Failed to open channel dump " + this.name);
+            Logger.errlog.log(err);
             return;
         }
         try {
@@ -207,6 +210,7 @@ Channel.prototype.loadDump = function() {
             this.css = data.css || "";
             this.js = data.js || "";
             this.sendAll("channelCSSJS", {css: this.css, js: this.js});
+            this.initialized = true;
             setTimeout(function() { incrementalDump(this); }.bind(this), 300000);
         }
         catch(e) {
@@ -217,6 +221,8 @@ Channel.prototype.loadDump = function() {
 }
 
 Channel.prototype.saveDump = function() {
+    if(!this.initialized)
+        return;
     var filts = new Array(this.filters.length);
     for(var i = 0; i < this.filters.length; i++) {
         filts[i] = this.filters[i].pack();
@@ -309,10 +315,15 @@ Channel.prototype.saveRank = function(user) {
 }
 
 Channel.prototype.getIPRank = function(ip) {
-    var names = this.logins[ip] || [];
-    if(names.length == 0) {
+    var names = [];
+    if(this.logins[ip] === undefined || this.logins[ip].length == 0) {
         return 0;
     }
+
+    this.logins[ip].forEach(function(name) {
+        names.push(name);
+    });
+
     var ranks = Database.getChannelRank(this.name, names);
     var rank = 0;
     for(var i = 0; i < ranks.length; i++) {
@@ -395,7 +406,7 @@ Channel.prototype.tryIPBan = function(actor, data) {
     if(!this.hasPermission(actor, "ban")) {
         return false;
     }
-    if(typeof data.id != "string" || data.id.length != 15) {
+    if(typeof data.id != "string") {
         return false;
     }
     if(typeof data.name != "string") {
@@ -628,16 +639,9 @@ Channel.prototype.kick = function(user, reason) {
 }
 
 Channel.prototype.hideIP = function(ip) {
-    while(ip.length < 15) {
-        ip += "X";
-    }
     var chars = new Array(15);
     for(var i = 0; i < ip.length; i++) {
         chars[i] = String.fromCharCode(ip.charCodeAt(i) ^ this.ipkey.charCodeAt(i));
-        if(chars[i] == "X") {
-            chars[i] = "";
-            break;
-        }
     }
     return chars.join("");
 }
@@ -705,6 +709,9 @@ Channel.prototype.sendRankStuff = function(user) {
         user.socket.emit("chatFilters", {filters: filts});
     }
     this.sendACL(user);
+}
+
+Channel.prototype.sendSeenLogins = function(user) {
 }
 
 Channel.prototype.sendACL = function(user) {

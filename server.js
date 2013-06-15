@@ -180,5 +180,6 @@ exports.unload = function(chan) {
     if(chan.registered) {
         chan.saveDump();
     }
+    exports.channels[chan.name] = null;
     delete exports.channels[chan.name];
 }

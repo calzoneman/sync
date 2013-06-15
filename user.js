@@ -93,7 +93,7 @@ User.prototype.initCallbacks = function() {
             return;
         data.name = data.name.toLowerCase();
         // Channel already loaded
-        if(data.name in Server.channels) {
+        if(data.name in Server.channels && Server.channels[data.name] != null) {
             this.channel = Server.channels[data.name];
         }
         // Channel not loaded
@@ -391,7 +391,8 @@ User.prototype.initCallbacks = function() {
             if(this.noflood("requestSeenLogins", 0.25)) {
                 return;
             }
-            this.channel.sendRankStuff(this);
+            // does nothing
+            this.channel.sendSeenLogins(this);
         }
     }.bind(this));
 
