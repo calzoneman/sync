@@ -74,8 +74,8 @@ var Channel = function(name) {
         allow_voteskip: true,
         voteskip_ratio: 0.5,
         pagetitle: this.name,
-        customcss: "",
-        customjs: "",
+        externalcss: "",
+        externaljs: "",
         chat_antiflood: false,
         show_public: false,
         enable_link_regex: true
@@ -170,7 +170,14 @@ Channel.prototype.loadDump = function() {
                 this.media.currentTime = data.currentTime;
             }
             for(var key in data.opts) {
-                this.opts[key] = data.opts[key];
+                // Gotta love backwards compatibility
+                if(key == "customcss" || key == "customjs") {
+                    var k = key.substring(6);
+                    this.opts[k] = data.opts[key];
+                }
+                else {
+                    this.opts[key] = data.opts[key];
+                }
             }
             for(var key in data.permissions) {
                 this.permissions[key] = data.permissions[key];

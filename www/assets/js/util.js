@@ -647,7 +647,17 @@ function handlePermissionChange() {
     }
 
     if(CLIENT.rank >= 2) {
-        $("#channelsettingswrap").load("channeloptions.html");
+        if($("#channelsettingswrap").html() == "")
+            $("#channelsettingswrap").load("channeloptions.html");
+        /* update channel controls */
+        $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
+        $("#opt_externalcss").val(CHANNEL.opts.externalcss);
+        $("#opt_externaljs").val(CHANNEL.opts.externaljs);
+        $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
+        $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
+        $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
+        $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
+        $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
     }
     else {
         $("#channelsettingswrap").html("");
@@ -1042,4 +1052,102 @@ function chatOnly() {
     $("#playlistrow").remove();
     $("#videowrap").remove();
     $("#chatwrap").removeClass("span5").addClass("span12");
+}
+
+/* channel administration stuff */
+
+function genPermissionsEditor() {
+    $("#permedit").html("");
+    var form = $("<form/>").addClass("form-horizontal")
+        .attr("action", "javascript:void(0)")
+        .appendTo($("#permedit"));
+    var fs = $("<fieldset/>").appendTo(form);
+
+    function makeOption(text, key, permset, defval) {
+        var group = $("<div/>").addClass("control-group")
+            .appendTo(fs);
+        $("<label/>").addClass("control-label")
+            .text(text)
+            .appendTo(group);
+        var controls = $("<div/>").addClass("controls")
+            .appendTo(group);
+        var select = $("<select/>").appendTo(controls);
+        select.data("key", key);
+        for(var i = 0; i < permset.length; i++) {
+            $("<option/>").attr("value", permset[i][1])
+                .text(permset[i][0])
+                .attr("selected", defval == permset[i][1])
+                .appendTo(select);
+        }
+    }
+
+    function addDivider(text) {
+        $("<hr/>").appendTo(fs);
+        $("<h3/>").text(text).appendTo(fs);
+    }
+
+    var standard = [
+        ["Anonymous"    , "-1"],
+        ["Guest"        , "0"],
+        ["Registered"   , "1"],
+        ["Leader"       , "1.5"],
+        ["Moderator"    , "2"],
+        ["Channel Admin", "3"]
+    ];
+
+    var modleader = [
+        ["Leader"       , "1.5"],
+        ["Moderator"    , "2"],
+        ["Channel Admin", "3"]
+    ];
+
+    var modplus = [
+        ["Moderator"    , "2"],
+        ["Channel Admin", "3"]
+    ];
+
+    addDivider("Open playlist permissions");
+    makeOption("Add to playlist", "oplaylistadd", standard, CHANNEL.perms.oplaylistadd+"");
+    makeOption("Add/move to next", "oplaylistnext", standard, CHANNEL.perms.oplaylistnext+"");
+    makeOption("Move playlist items", "oplaylistmove", standard, CHANNEL.perms.oplaylistmove+"");
+    makeOption("Delete playlist items", "oplaylistdelete", standard, CHANNEL.perms.oplaylistdelete+"");
+    makeOption("Jump to video", "oplaylistjump", standard, CHANNEL.perms.oplaylistjump+"");
+    makeOption("Queue playlist", "oplaylistaddlist", standard, CHANNEL.perms.oplaylistaddlist+"");
+
+    addDivider("General playlist permissions");
+    makeOption("Add to playlist", "playlistadd", standard, CHANNEL.perms.playlistadd+"");
+    makeOption("Add/move to next", "playlistnext", standard, CHANNEL.perms.playlistnext+"");
+    makeOption("Move playlist items", "playlistmove", standard, CHANNEL.perms.playlistmove+"");
+    makeOption("Delete playlist items", "playlistdelete", standard, CHANNEL.perms.playlistdelete+"");
+    makeOption("Jump to video", "playlistjump", standard, CHANNEL.perms.playlistjump+"");
+    makeOption("Queue playlist", "playlistaddlist", standard, CHANNEL.perms.playlistaddlist+"");
+    makeOption("Queue livestream", "playlistaddlive", standard, CHANNEL.perms.playlistaddlive+"");
+    makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
+    makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");
+    makeOption("Retrieve playlist URLs", "playlistgeturl", standard, CHANNEL.perms.playlistgeturl+"");
+    makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");
+    makeOption("Clear playlist", "playlistclear", standard, CHANNEL.perms.playlistclear+"");
+
+    addDivider("Polls");
+    makeOption("Open/Close poll", "pollctl", modleader, CHANNEL.perms.pollctl+"");
+    makeOption("Vote", "pollvote", standard, CHANNEL.perms.pollvote+"");
+
+    addDivider("Moderation");
+    makeOption("Kick users", "kick", modleader, CHANNEL.perms.kick+"");
+    makeOption("Ban users", "ban", modplus, CHANNEL.perms.ban+"");
+    makeOption("Edit MOTD", "motdedit", modplus, CHANNEL.perms.motdedit+"");
+    makeOption("Edit chat filters", "filteredit", modplus, CHANNEL.perms.filteredit+"");
+
+    addDivider("Misc");
+    makeOption("Drink calls", "drink", modleader, CHANNEL.perms.drink+"");
+
+    var submit = $("<button/>").addClass("btn btn-primary").appendTo(fs);
+    submit.text("Save");
+    submit.click(function() {
+        var perms = {};
+        fs.find("select").each(function() {
+            perms[$(this).data("key")] = parseFloat($(this).val());
+        });
+        socket.emit("setPermissions", perms);
+    });
 }

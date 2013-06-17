@@ -343,7 +343,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("channelOpts", function(data) {
+    this.socket.on("setOptions", function(data) {
         if(this.channel != null) {
             this.channel.tryUpdateOptions(this, data);
         }

@@ -194,28 +194,19 @@ Callbacks = {
     },
 
     channelOpts: function(opts) {
-        // TODO update if necessary when HTML admin stuff added
-        $("#opt_pagetitle").attr("placeholder", opts.pagetitle);
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
-        $("#opt_customcss").val(opts.customcss);
-        $("#opt_customjs").val(opts.customjs);
-        $("#opt_chat_antiflood").prop("checked", opts.chat_antiflood);
-        $("#opt_show_public").prop("checked", opts.show_public);
-        $("#opt_enable_link_regex").prop("checked", opts.enable_link_regex);
-        $("#customCss").remove();
-        if(opts.customcss.trim() != "") {
+        $("#chanexternalcss").remove();
+        if(opts.externalcss.trim() != "") {
             $("<link/>")
                 .attr("rel", "stylesheet")
-                .attr("href", opts.customcss)
-                .attr("id", "customCss")
+                .attr("href", opts.externalcss)
+                .attr("id", "chanexternalcss")
                 .appendTo($("head"));
         }
-        $("#opt_allow_voteskip").prop("checked", opts.allow_voteskip);
-        $("#opt_voteskip_ratio").val(opts.voteskip_ratio);
-        if(opts.customjs.trim() != "") {
-            if(opts.customjs != CHANNEL.opts.customjs) {
-                $.getScript(opts.customjs);
+        if(opts.externaljs.trim() != "") {
+            if(opts.externaljs != CHANNEL.opts.externaljs) {
+                $.getScript(opts.externaljs);
             }
         }
 
@@ -231,8 +222,7 @@ Callbacks = {
     setPermissions: function(perms) {
         CHANNEL.perms = perms;
         if(CLIENT.rank >= Rank.Admin)
-            1;
-            //genPermissionsEditor();
+            genPermissionsEditor();
         handlePermissionChange();
     },
 
@@ -466,7 +456,6 @@ Callbacks = {
     },
 
     drinkCount: function(count) {
-        console.log(count);
         if(count != 0) {
             var text = count + " drink";
             if(count != 1) {

@@ -19,69 +19,71 @@
 
 <div id="optedit" class="span12">
     <form class="form-horizontal" action="javascript:void(0)">
-    <!-- prevent chat flood -->
-    <div class="control-group">
-        <label class="control-label" for="opt_chat_antiflood">Prevent Chat Flood</label>
-        <div class="controls">
-            <input type="checkbox" id="opt_chat_antiflood">
+        <!-- prevent chat flood -->
+        <div class="control-group">
+            <label class="control-label" for="opt_chat_antiflood">Prevent Chat Flood</label>
+            <div class="controls">
+                <input type="checkbox" id="opt_chat_antiflood">
+            </div>
         </div>
-    </div>
-    <!-- convert URLs to links -->
-    <div class="control-group">
-        <label class="control-label" for="opt_enable_link_regex">Convert URLs in chat to links</label>
-        <div class="controls">
-            <input type="checkbox" id="opt_enable_link_regex">
+        <!-- convert URLs to links -->
+        <div class="control-group">
+            <label class="control-label" for="opt_enable_link_regex">Convert URLs in chat to links</label>
+            <div class="controls">
+                <input type="checkbox" id="opt_enable_link_regex">
+            </div>
         </div>
-    </div>
-    <!-- voteskip toggle -->
-    <div class="control-group">
-        <label class="control-label" for="opt_allow_voteskip">Allow Voteskip</label>
-        <div class="controls">
-            <input type="checkbox" id="opt_allow_voteskip">
+        <!-- voteskip toggle -->
+        <div class="control-group">
+            <label class="control-label" for="opt_allow_voteskip">Allow Voteskip</label>
+            <div class="controls">
+                <input type="checkbox" id="opt_allow_voteskip">
+            </div>
         </div>
-    </div>
-    <!-- voteskip ratio -->
-    <div class="control-group">
-        <label class="control-label" for="opt_voteskip_ratio">Voteskip Ratio</label>
-        <div class="controls">
-            <input type="text" id="opt_voteskip_ratio" placeholder="0.5">
+        <!-- voteskip ratio -->
+        <div class="control-group">
+            <label class="control-label" for="opt_voteskip_ratio">Voteskip Ratio</label>
+            <div class="controls">
+                <input type="text" id="opt_voteskip_ratio" placeholder="0.5">
+            </div>
         </div>
-    </div>
-    <hr>
-    <strong>Admin-Only Controls</strong>
-    <!-- page title -->
-    <div class="control-group">
-        <label class="control-label" for="opt_pagetitle">Page Title</label>
-        <div class="controls">
-            <input type="text" id="opt_pagetitle" placeholder="CyTube">
+        <hr>
+        <strong>Admin-Only Controls</strong>
+        <!-- page title -->
+        <div class="control-group">
+            <label class="control-label" for="opt_pagetitle">Page Title</label>
+            <div class="controls">
+                <input type="text" id="opt_pagetitle" placeholder="CyTube">
+            </div>
         </div>
-    </div>
-    <!-- external CSS -->
-    <div class="control-group">
-        <label class="control-label" for="opt_externalcss">External CSS</label>
-        <div class="controls">
-            <input type="text" id="opt_externalcss" placeholder="Stylesheet URL">
+        <!-- external CSS -->
+        <div class="control-group">
+            <label class="control-label" for="opt_externalcss">External CSS</label>
+            <div class="controls">
+                <input type="text" id="opt_externalcss" placeholder="Stylesheet URL">
+            </div>
         </div>
-    </div>
-    <!-- external JS -->
-    <div class="control-group">
-        <label class="control-label" for="opt_externaljs">External Javascript</label>
-        <div class="controls">
-            <input type="text" id="opt_externaljs" placeholder="Script URL">
+        <!-- external JS -->
+        <div class="control-group">
+            <label class="control-label" for="opt_externaljs">External Javascript</label>
+            <div class="controls">
+                <input type="text" id="opt_externaljs" placeholder="Script URL">
+            </div>
         </div>
-    </div>
-    <!-- show publicly -->
-    <div class="control-group">
-        <label class="control-label" for="opt_show_public">List Channel Publicly</label>
-        <div class="controls">
-            <input type="checkbox" id="opt_show_public">
+        <!-- show publicly -->
+        <div class="control-group">
+            <label class="control-label" for="opt_show_public">List Channel Publicly</label>
+            <div class="controls">
+                <input type="checkbox" id="opt_show_public">
+            </div>
         </div>
-    </div>
+        <!-- submit -->
+        <button class="btn btn-primary" id="chanopts_submit">Save</button>
+    </form>
 </div>
 <br>
 </div>
 <div id="permedit" class="span12">
-Permissions Here
 </div>
 <div id="motdedit" class="span12">
     <textarea rows="10" id="motdtext"></textarea>
