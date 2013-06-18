@@ -93,7 +93,7 @@ function formatUserlistItem(div, data) {
 function getNameColor(rank) {
     if(rank >= Rank.Siteadmin)
         return "userlist_siteadmin";
-    else if(rank >= Rank.Owner)
+    else if(rank >= Rank.Admin)
         return "userlist_owner";
     else if(rank >= Rank.Moderator)
         return "userlist_op";
@@ -379,6 +379,12 @@ function showOptionsMenu() {
         var modhat = $("<input/>").attr("type", "checkbox").appendTo(modhatcontainer);
         modhat.prop("checked", USEROPTS.modhat);
         addOption("Modflair", modhatcontainer);
+
+        var joincontainer = $("<label/>").addClass("checkbox")
+            .text("Show join messages");
+        var join = $("<input/>").attr("type", "checkbox").appendTo(joincontainer);
+        join.prop("checked", USEROPTS.joinmessage);
+        addOption("Join Messages", joincontainer);
     }
 
     var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
@@ -399,6 +405,7 @@ function showOptionsMenu() {
         USEROPTS.altsocket       = altsocket.prop("checked");
         if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
+            USEROPTS.joinmessage = join.prop("checked");
         }
         saveOpts();
         modal.modal("hide");
@@ -642,6 +649,12 @@ function hasPermission(key) {
 
 function handlePermissionChange() {
     function setVisible(selector, bool) {
+        if($(selector) && $(selector).attr("id") != selector.substring(1)) {
+            setTimeout(function() {
+                setVisible(selector, bool);
+            }, 100);
+            return;
+        }
         var disp = bool ? "" : "none";
         $(selector).css("display", disp);
     }
@@ -659,6 +672,13 @@ function handlePermissionChange() {
         $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
         $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
         $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+        setVisible("#permedit_tab", CLIENT.rank >= 3);
+        setVisible("#banlist_tab", hasPermission("ban"));
+        setVisible("#motdedit_tab", hasPermission("motdedit"));
+        setVisible("#cssedit_tab", CLIENT.rank >= 3);
+        setVisible("#jsedit_tab", CLIENT.rank >= 3);
+        setVisible("#filteredit_tab", hasPermission("filteredit"));
+        setVisible("#channelranks_tab", CLIENT.rank >= 3);
     }
     else {
         $("#channelsettingswrap").html("");
@@ -684,14 +704,6 @@ function handlePermissionChange() {
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
 
-    setVisible("#permedit_tab", CLIENT.rank >= 3);
-    setVisible("#banlist_tab", hasPermission("ban"));
-    setVisible("#motdedit_tab", hasPermission("motdedit"));
-    setVisible("#cssedit_tab", CLIENT.rank >= 3);
-    setVisible("#jsedit_tab", CLIENT.rank >= 3);
-    setVisible("#filteredit_tab", hasPermission("filteredit"));
-    // TODO add acl back?
-    setVisible("#recentconn_tab", CLIENT.rank >= 3);
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
 
@@ -1113,7 +1125,7 @@ function genPermissionsEditor() {
         ["Channel Admin", "3"]
     ];
 
-    addDivider("Open playlist permissions");
+    $("<h3/>").text("Open playlist permissions").appendTo(fs);
     makeOption("Add to playlist", "oplaylistadd", standard, CHANNEL.perms.oplaylistadd+"");
     makeOption("Add/move to next", "oplaylistnext", standard, CHANNEL.perms.oplaylistnext+"");
     makeOption("Move playlist items", "oplaylistmove", standard, CHANNEL.perms.oplaylistmove+"");
@@ -1157,4 +1169,61 @@ function genPermissionsEditor() {
         });
         socket.emit("setPermissions", perms);
     });
+}
+
+function loadChannelRanksPage(page) {
+    var entries = $("#channelranks").data("entries");
+    $("#channelranks").data("page", page);
+    var start = page * 20;
+    var tbl = $("#channelranks table");
+    if(tbl.children().length > 1) {
+        $(tbl.children()[1]).remove();
+    }
+    for(var i = start; i < start + 20 && i < entries.length; i++) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var name = $("<td/>").text(entries[i].name).appendTo(tr);
+        name.addClass(getNameColor(entries[i].rank));
+        var rank = $("<td/>").text(entries[i].rank)
+            .css("min-width", "220px")
+            .appendTo(tr);
+        (function(name) {
+        rank.click(function() {
+            if(this.find(".rank-edit").length > 0)
+                return;
+            var r = this.text();
+            this.text("");
+            var edit = $("<input/>").attr("type", "text")
+                .attr("placeholder", r)
+                .addClass("rank-edit")
+                .appendTo(this)
+                .focus();
+            if(parseInt(r) >= CLIENT.rank) {
+                edit.attr("disabled", true);
+            }
+            function save() {
+                var r = this.val();
+                var r2 = r;
+                if(r.trim() == "" || parseInt(r) >= CLIENT.rank || parseInt(r) < 1)
+                    r = this.attr("placeholder");
+                r = parseInt(r) + "";
+                this.parent().text(r);
+                socket.emit("setChannelRank", {
+                    user: name,
+                    rank: parseInt(r)
+                });
+            }
+            edit.blur(save.bind(edit));
+            edit.keydown(function(ev) {
+                if(ev.keyCode == 13)
+                    save.bind(edit)();
+            });
+        }.bind(rank));
+        })(entries[i].name);
+    }
+    if($("#channelranks_pagination").length > 0) {
+        $("#channelranks_pagination").find("li").each(function() {
+            $(this).removeClass("active");
+        });
+        $($("#channelranks_pagination").find("li")[page]).addClass("active");
+    }
 }

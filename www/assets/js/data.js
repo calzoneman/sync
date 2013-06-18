@@ -69,7 +69,8 @@ var USEROPTS = {
     blink_title     : getOrDefault("blink_title", false),
     sync_accuracy   : getOrDefault("sync_accuracy", 2),
     chatbtn         : getOrDefault("chatbtn", false),
-    altsocket       : getOrDefault("altsocket", false)
+    altsocket       : getOrDefault("altsocket", false),
+    joinmessage     : getOrDefault("joinmessage", true)
 };
 
 var Rank = {

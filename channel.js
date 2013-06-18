@@ -367,8 +367,11 @@ Channel.prototype.tryNameBan = function(actor, name) {
             break;
         }
     }
-    //this.broadcastBanlist();
     this.logger.log(name + " was banned by " + actor.name);
+    var chan = this;
+    this.users.forEach(function(u) {
+        chan.sendBanlist(u);
+    });
     if(!this.registered) {
         return false;
     }
@@ -383,9 +386,12 @@ Channel.prototype.unbanName = function(actor, name) {
 
     this.namebans[name] = null;
     delete this.namebans[name];
-    //this.broadcastBanlist();
     this.logger.log(name + " was unbanned by " + actor.name);
 
+    var chan = this;
+    this.users.forEach(function(u) {
+        chan.sendBanlist(u);
+    });
     return Database.channelUnbanName(this.name, name);
 }
 
@@ -430,6 +436,11 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
         // Update database ban table
         return Database.channelBan(chan.name, ip, name, actor.name);
     });
+
+    var chan = this;
+    this.users.forEach(function(u) {
+        chan.sendBanlist(u);
+    });
 }
 
 Channel.prototype.banIP = function(actor, receiver) {
@@ -458,6 +469,10 @@ Channel.prototype.unbanIP = function(actor, ip) {
         return false;
 
     this.ipbans[ip] = null;
+    var chan = this;
+    this.users.forEach(function(u) {
+        chan.sendBanlist(u);
+    });
 
     if(!this.registered)
         return false;
@@ -681,15 +696,12 @@ Channel.prototype.sendRankStuff = function(user) {
         }
         user.socket.emit("chatFilters", {filters: filts});
     }
-    this.sendACL(user);
+    this.sendChannelRanks(user);
 }
 
-Channel.prototype.sendSeenLogins = function(user) {
-}
-
-Channel.prototype.sendACL = function(user) {
+Channel.prototype.sendChannelRanks = function(user) {
     if(Rank.hasPermission(user, "acl")) {
-        user.socket.emit("acl", Database.listChannelRanks(this.name));
+        user.socket.emit("channelRanks", Database.listChannelRanks(this.name));
     }
 }
 
@@ -805,7 +817,7 @@ Channel.prototype.broadcastNewUser = function(user) {
     };
     this.users.forEach(function(u) {
         if(u.rank >= 2) {
-            u.socket.emit("chatMsg", pkt);
+            u.socket.emit("joinMessage", pkt);
         }
     });
 }

@@ -391,10 +391,11 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("requestAcl", function() {
+    this.socket.on("requestChannelRanks", function() {
         if(this.channel != null) {
-            this.channel.sendACL(this);
-            this.noflood("requestAcl", 0.25);
+            if(this.noflood("requestChannelRanks", 0.25))
+                return;
+            this.channel.sendChannelRanks(this);
         }
     }.bind(this));
 

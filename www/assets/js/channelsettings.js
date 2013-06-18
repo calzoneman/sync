@@ -28,6 +28,10 @@
     $("#show_loginhistory").click(function() {
         socket.emit("requestLoginHistory");
     });
+    clickHandler("#show_channelranks", "#channelranks");
+    $("#show_channelranks").click(function() {
+        socket.emit("requestChannelRanks");
+    });
 
     genPermissionsEditor();
 

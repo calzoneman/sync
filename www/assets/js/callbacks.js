@@ -308,21 +308,27 @@ Callbacks = {
     },
 
     channelRanks: function(entries) {
-        // TODO Edit if necessary
+        var tbl = $("#channelranks table");
+        // Dammit jQuery UI
+        if(!tbl.hasClass("table")) {
+            setTimeout(function() {
+                Callbacks.channelRanks(entries);
+            }, 100);
+            return;
+        }
         entries.sort(function(a, b) {
             var x = a.name.toLowerCase();
             var y = b.name.toLowerCase();
             return y == x ? 0 : (x < y ? -1 : 1);
         });
         $("#channelranks").data("entries", entries);
-        var tbl = $("#channelranks table");
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
         }
-        $("#acl_pagination").remove();
+        $("#channelranks_pagination").remove();
         if(entries.length > 20) {
             var pag = $("<div/>").addClass("pagination span12")
-                .attr("id", "acl_pagination")
+                .attr("id", "channelranks_pagination")
                 .prependTo($("#channelranks"));
             var btns = $("<ul/>").appendTo(pag);
             for(var i = 0; i < entries.length / 20; i++) {
@@ -331,13 +337,13 @@ Callbacks = {
                 $("<a/>").attr("href", "javascript:void(0)")
                     .text(i+1)
                     .click(function() {
-                        loadACLPage(i);
+                        loadChannelRanksPage(i);
                     })
                     .appendTo(li);
                 })(i);
             }
         }
-        loadACLPage(0);
+        loadChannelRanksPage(0);
     },
 
     setChannelRank: function(data) {
@@ -349,7 +355,7 @@ Callbacks = {
             }
         }
         $("#channelranks").data("entries", ents);
-        loadACLPage($("#channelranks").data("page"));
+        loadChannelRanksPage($("#channelranks").data("page"));
     },
 
     voteskip: function(data) {
@@ -407,6 +413,11 @@ Callbacks = {
 
     chatMsg: function(data) {
         addChatMessage(data);
+    },
+
+    joinMessage: function(data) {
+        if(USEROPTS.joinmessage)
+            addChatMessage(data);
     },
 
     clearchat: function() {
