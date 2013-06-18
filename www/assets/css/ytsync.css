@@ -185,6 +185,12 @@ html, body {
     color: #888888;
 }
 
+.server-whisper {
+    font-style: italic;
+    color: #888888;
+    font-size: 8pt;
+}
+
 .spoiler {
     color: #000000;
     background-color: #000000;

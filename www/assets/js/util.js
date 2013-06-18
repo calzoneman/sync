@@ -647,6 +647,7 @@ function handlePermissionChange() {
     }
 
     if(CLIENT.rank >= 2) {
+        $("#channelsettingswrap3").show();
         if($("#channelsettingswrap").html() == "")
             $("#channelsettingswrap").load("channeloptions.html");
         /* update channel controls */
@@ -661,11 +662,12 @@ function handlePermissionChange() {
     }
     else {
         $("#channelsettingswrap").html("");
+        $("#channelsettingswrap3").hide();
     }
 
-    setVisible("#userpltoggle", CLIENT.rank >= 1);
+    setVisible("#userpltogglewrap", CLIENT.rank >= 1);
 
-    setVisible("#playlisttoggle", hasPermission("playlistadd"));
+    setVisible("#playlisttogglewrap", hasPermission("playlistadd"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
     setVisible("#qlockbtn", CLIENT.rank >= 2);
 
@@ -937,6 +939,9 @@ function formatChatMessage(data) {
     if(data.msgclass == "drink" || data.msgclass == "shout") {
         skip = false;
     }
+    if(data.msgclass == "server-whisper") {
+        skip = true;
+    }
     LASTCHATNAME = data.username;
     LASTCHATTIME = data.time;
     var div = $("<div/>");
@@ -944,6 +949,8 @@ function formatChatMessage(data) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
         time.text("["+timestamp+"] ");
+        if(data.msgclass != "greentext" && data.msgclass != "drink")
+            time.addClass(data.msgclass);
     }
     var name = $("<span/>");
     if(!skip) {

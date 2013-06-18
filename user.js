@@ -385,6 +385,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("requestBanlist", function() {
+        if(this.channel != null) {
+            this.channel.sendBanlist(this);
+        }
+    }.bind(this));
+
     this.socket.on("requestAcl", function() {
         if(this.channel != null) {
             this.channel.sendACL(this);

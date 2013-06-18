@@ -367,7 +367,7 @@ Channel.prototype.tryNameBan = function(actor, name) {
             break;
         }
     }
-    this.broadcastBanlist();
+    //this.broadcastBanlist();
     this.logger.log(name + " was banned by " + actor.name);
     if(!this.registered) {
         return false;
@@ -383,7 +383,7 @@ Channel.prototype.unbanName = function(actor, name) {
 
     this.namebans[name] = null;
     delete this.namebans[name];
-    this.broadcastBanlist();
+    //this.broadcastBanlist();
     this.logger.log(name + " was unbanned by " + actor.name);
 
     return Database.channelUnbanName(this.name, name);
@@ -414,7 +414,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
             }
         }
         chan.ipbans[ip] = [name, actor.name];
-        chan.broadcastBanlist();
+        //chan.broadcastBanlist();
         chan.logger.log(ip + " (" + name + ") was banned by " + actor.name);
 
         for(var i = 0; i < chan.users.length; i++) {
@@ -443,7 +443,7 @@ Channel.prototype.banIP = function(actor, receiver) {
     catch(e) {
         // Socket already disconnected
     }
-    this.broadcastBanlist();
+    //this.broadcastBanlist();
     this.logger.log(receiver.ip + " (" + receiver.name + ") was banned by " + actor.name);
 
     if(!this.registered)
@@ -462,7 +462,7 @@ Channel.prototype.unbanIP = function(actor, ip) {
     if(!this.registered)
         return false;
 
-    this.broadcastBanlist();
+    //this.broadcastBanlist();
     // Update database ban table
     return Database.channelUnbanIP(this.name, ip);
 }
@@ -637,7 +637,7 @@ Channel.prototype.sendLoginHistory = function(user) {
     user.socket.emit("recentLogins", this.login_hist);
 }
 
-Channel.prototype.sendRankStuff = function(user) {
+Channel.prototype.sendBanlist = function(user) {
     if(this.hasPermission(user, "ban")) {
         var ents = [];
         for(var ip in this.ipbans) {
@@ -670,26 +670,10 @@ Channel.prototype.sendRankStuff = function(user) {
         }
         user.socket.emit("banlist", ents);
     }
-    // TODO get rid of this
-    if(Rank.hasPermission(user, "seenlogins")) {
-        var ents = [];
-        for(var ip in this.ip_alias) {
-            var disp = ip;
-            if(user.rank < Rank.Siteadmin) {
-                disp = "(Hidden)";
-            }
-            var banned = (ip in this.ipbans && this.ipbans[ip] != null);
-            var range = ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3");
-            banned = banned || (range in this.ipbans && this.ipbans[range] != null);
-            ents.push({
-                ip: disp,
-                id: this.hideIP(ip),
-                names: this.ip_alias[ip],
-                banned: banned
-            });
-        }
-        user.socket.emit("seenlogins", {entries: ents});
-    }
+}
+
+Channel.prototype.sendRankStuff = function(user) {
+    this.sendBanlist(user);
     if(this.hasPermission(user, "filteredit")) {
         var filts = new Array(this.filters.length);
         for(var i = 0; i < this.filters.length; i++) {
@@ -806,10 +790,24 @@ Channel.prototype.broadcastNewUser = function(user) {
         meta: user.meta,
         profile: user.profile
     });
-    this.sendRankStuff(user);
+    //this.sendRankStuff(user);
     if(user.rank > Rank.Guest) {
         this.saveRank(user);
     }
+
+    var msg = user.name + " joined (aliases: ";
+    msg += this.ip_alias[user.ip].join(", ") + ")";
+    var pkt = {
+        username: "[server]",
+        msg: msg,
+        msgclass: "server-whisper",
+        time: Date.now()
+    };
+    this.users.forEach(function(u) {
+        if(u.rank >= 2) {
+            u.socket.emit("chatMsg", pkt);
+        }
+    });
 }
 
 Channel.prototype.broadcastUserUpdate = function(user) {

@@ -21,6 +21,9 @@
     clickHandler("#show_cssedit", "#cssedit");
     clickHandler("#show_jsedit", "#jsedit");
     clickHandler("#show_banlist", "#banlist");
+    $("#show_banlist").click(function() {
+        socket.emit("requestBanlist");
+    });
     clickHandler("#show_loginhistory", "#loginhistory");
     $("#show_loginhistory").click(function() {
         socket.emit("requestLoginHistory");
