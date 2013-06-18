@@ -18,6 +18,9 @@
     clickHandler("#show_permedit", "#permedit");
     clickHandler("#show_motdedit", "#motdedit");
     clickHandler("#show_filteredit", "#filteredit");
+    $("#show_filteredit").click(function() {
+        socket.emit("requestChatFilters");
+    });
     clickHandler("#show_cssedit", "#cssedit");
     clickHandler("#show_jsedit", "#jsedit");
     clickHandler("#show_banlist", "#banlist");

@@ -107,7 +107,13 @@ Callbacks = {
     },
 
     chatFilters: function(entries) {
-        var tbl = $("#filtereditor table");
+        var tbl = $("#filteredit table");
+        if(!tbl.hasClass("table")) {
+            setTimeout(function() {
+                Callbacks.chatFilters(entries);
+            }, 100);
+            return;
+        }
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
         }
@@ -116,7 +122,7 @@ Callbacks = {
             var tr = $("<tr/>").appendTo(tbl);
             var remove = $("<button/>").addClass("btn btn-mini btn-danger")
                 .appendTo($("<td/>").appendTo(tr));
-            $("<i/>").addClass("icon-remove-circle").appendTo(remove);
+            $("<i/>").addClass("icon-trash").appendTo(remove);
             var name = $("<code/>").text(f.name)
                 .appendTo($("<td/>").appendTo(tr));
             var regex = $("<code/>").text(f.source)
@@ -125,6 +131,9 @@ Callbacks = {
                 .appendTo($("<td/>").appendTo(tr));
             var replace = $("<code/>").text(f.replace)
                 .appendTo($("<td/>").appendTo(tr));
+            var linktd = $("<td/>").appendTo(tr);
+            var link = $("<input/>").attr("type", "checkbox")
+                .prop("checked", false).appendTo(linktd);
             var activetd = $("<td/>").appendTo(tr);
             var active = $("<input/>").attr("type", "checkbox")
                 .prop("checked", f.active).appendTo(activetd);
@@ -152,7 +161,7 @@ Callbacks = {
             active.click(actcallback);
         }
 
-        var newfilt = $("<tr/>").appendTo(tbl);
+        var newfilt = $("<tr/>");//.appendTo(tbl);
         $("<td/>").appendTo(newfilt);
         var name = $("<input/>").attr("type", "text")
             .appendTo($("<td/>").appendTo(newfilt));

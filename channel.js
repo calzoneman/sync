@@ -687,15 +687,19 @@ Channel.prototype.sendBanlist = function(user) {
     }
 }
 
-Channel.prototype.sendRankStuff = function(user) {
-    this.sendBanlist(user);
+Channel.prototype.sendChatFilters = function(user) {
     if(this.hasPermission(user, "filteredit")) {
         var filts = new Array(this.filters.length);
         for(var i = 0; i < this.filters.length; i++) {
             filts[i] = this.filters[i].pack();
         }
-        user.socket.emit("chatFilters", {filters: filts});
+        user.socket.emit("chatFilters", filts);
     }
+}
+
+Channel.prototype.sendRankStuff = function(user) {
+    this.sendBanlist(user);
+    this.sendChatFilters(user);
     this.sendChannelRanks(user);
 }
 
@@ -916,7 +920,7 @@ Channel.prototype.broadcastChatFilters = function() {
     }
     for(var i = 0; i < this.users.length; i++) {
         if(this.hasPermission(this.users[i], "filteredit")) {
-            this.users[i].socket.emit("chatFilters", {filters: filts});
+            this.users[i].socket.emit("chatFilters", filts);
         }
     }
 }

@@ -1057,6 +1057,7 @@ function fluidLayout() {
     $("#ytapiplayer").attr("width", VWIDTH);
     $("#ytapiplayer").attr("height", VHEIGHT);
     $("#chatline").removeClass().addClass("span12");
+    $("#channelsettingswrap3").css("margin-left", "0");
 }
 
 function synchtubeLayout() {

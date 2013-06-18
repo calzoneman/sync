@@ -391,21 +391,17 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("requestChatFilters", function() {
+        if(this.channel != null) {
+            this.channel.sendChatFilters(this);
+        }
+    }.bind(this));
+
     this.socket.on("requestChannelRanks", function() {
         if(this.channel != null) {
             if(this.noflood("requestChannelRanks", 0.25))
                 return;
             this.channel.sendChannelRanks(this);
-        }
-    }.bind(this));
-
-    this.socket.on("requestSeenlogins", function() {
-        if(this.channel != null) {
-            if(this.noflood("requestSeenLogins", 0.25)) {
-                return;
-            }
-            // does nothing
-            this.channel.sendSeenLogins(this);
         }
     }.bind(this));
 
