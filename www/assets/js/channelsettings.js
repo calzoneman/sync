@@ -81,4 +81,31 @@
             js: $("#jstext").val()
         });
     });
+
+    $("#newfilter_submit").click(function() {
+        var re = $("#newfilter_regex").val();
+        var flags = $("#newfilter_flags").val();
+        try {
+            new RegExp(re, flags);
+        }
+        catch(e) {
+            makeAlert("Invalid Regex", e, "alert-error")
+                .insertAfter($("#filteredit form"));
+            return;
+        }
+
+        socket.emit("updateFilter", {
+            name: $("#newfilter_name").val(),
+            source: re,
+            flags: flags,
+            replace: $("#newfilter_replace").val(),
+            filterlinks: $("#newfilter_filterlinks").prop("checked"),
+            active: true
+        });
+
+        $("#newfilter_name").val("");
+        $("#newfilter_regex").val("");
+        $("#newfilter_flags").val("");
+        $("#newfilter_replace").val("");
+    });
 })();

@@ -114,12 +114,10 @@ Callbacks = {
             }, 100);
             return;
         }
-        if(tbl.children().length > 1) {
-            $(tbl.children()[1]).remove();
-        }
+        tbl.find(".filter-row").remove();
         for(var i = 0; i < entries.length; i++) {
             var f = entries[i];
-            var tr = $("<tr/>").appendTo(tbl);
+            var tr = $("<tr/>").appendTo(tbl).addClass("filter-row");
             var remove = $("<button/>").addClass("btn btn-mini btn-danger")
                 .appendTo($("<td/>").appendTo(tr));
             $("<i/>").addClass("icon-trash").appendTo(remove);

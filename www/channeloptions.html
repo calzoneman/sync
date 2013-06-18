@@ -92,7 +92,7 @@
 </div>
 <div id="filteredit" class="span12">
     <p>Filters will be processed in the order that they are listed here.  Click and drag a row to rearrange the order.  Click a regex, flags, or replacement field to edit a filter.  Changes are automatically saved when you finish editing.</p>
-    <table class="table table-striped">
+    <table class="table table-striped table-condensed">
         <thead>
             <tr>
                 <th>Delete</th>
@@ -105,6 +105,54 @@
             </tr>
         </thead>
     </table>
+    <strong>Add Filter</strong>
+    <form class="form-horizontal" action="javascript:void(0)">
+        <div class="control-group">
+            <label class="control-label" for="newfilter_name">
+                Name
+            </label>
+            <div class="controls">
+                <input type="text" id="newfilter_name">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="newfilter_regex">
+                Regex
+            </label>
+            <div class="controls">
+                <input type="text" id="newfilter_regex">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="newfilter_flags">
+                Flags
+            </label>
+            <div class="controls">
+                <input type="text" id="newfilter_flags" value="g">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="newfilter_replace">
+                Replacement
+            </label>
+            <div class="controls">
+                <input type="text" id="newfilter_replace">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="newfilter_filterlinks">
+                Filter Links
+            </label>
+            <div class="controls">
+                <input type="checkbox" id="newfilter_filterlinks">
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn btn-primary" id="newfilter_submit">New Filter</button>
+            </div>
+        </div>
+    </form>
 </div>
 <div id="cssedit" class="span12">
     <p>Max 20KB.  If you need more space, host the file externally and use the External CSS option</p>
