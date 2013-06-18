@@ -20,6 +20,11 @@
     clickHandler("#show_filteredit", "#filteredit");
     clickHandler("#show_cssedit", "#cssedit");
     clickHandler("#show_jsedit", "#jsedit");
+    clickHandler("#show_banlist", "#banlist");
+    clickHandler("#show_loginhistory", "#loginhistory");
+    $("#show_loginhistory").click(function() {
+        socket.emit("requestLoginHistory");
+    });
 
     genPermissionsEditor();
 

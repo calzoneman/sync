@@ -918,7 +918,6 @@ function recordVisit(ip, name) {
 
     var results = db.querySync(query);
     if(!results) {
-        console.log(results);
         Logger.errlog.log("! Failed to record visit");
     }
 
@@ -931,9 +930,58 @@ function recordVisit(ip, name) {
          ");"].join(""),
          [ip]
     ));
-    console.log(results);
 
     return results;
+}
+
+function getAliases(ip) {
+    var db = getConnection();
+    if(!db) {
+        return [];
+    }
+
+    var query = createQuery(
+        "SELECT name FROM aliases WHERE ip=?",
+        [ip]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to retrieve aliases");
+        return [];
+    }
+
+    var names = [];
+    results.fetchAllSync().forEach(function(row) {
+        names.push(row.name);
+    });
+
+    return names;
+}
+
+function ipForName(name) {
+    var db = getConnection();
+    if(!db) {
+        return [];
+    }
+
+    var query = createQuery(
+        "SELECT ip FROM aliases WHERE name=?",
+        [name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to retrieve IP for name");
+        return [];
+    }
+
+    var ips = [];
+    results.fetchAllSync().forEach(function(row) {
+        ips.push(row.ip);
+    });
+
+    return ips;
 }
 
 exports.setup = setup;
@@ -966,3 +1014,5 @@ exports.loadUserPlaylist = loadUserPlaylist;
 exports.saveUserPlaylist = saveUserPlaylist;
 exports.deleteUserPlaylist = deleteUserPlaylist;
 exports.recordVisit = recordVisit;
+exports.getAliases = getAliases;
+exports.ipForName = ipForName;

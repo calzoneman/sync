@@ -39,7 +39,7 @@ function handle(chan, user, msg, data) {
         handleBan(chan, user, msg.substring(5).split(" "));
     }
     else if(msg.indexOf("/ipban ") == 0) {
-        handleIPBan(chan, user, msg.substring(5).split(" "));
+        handleIPBan(chan, user, msg.substring(7).split(" "));
     }
     else if(msg.indexOf("/unban ") == 0) {
         handleUnban(chan, user, msg.substring(7).split(" "));
@@ -77,30 +77,13 @@ function handleKick(chan, user, args) {
 }
 
 function handleIPBan(chan, user, args) {
-    if(chan.hasPermission(user, "ban") && args.length > 0) {
-        args[0] = args[0].toLowerCase();
-        var kickee;
-        for(var i = 0; i < chan.users.length; i++) {
-            if(chan.users[i].name.toLowerCase() == args[0]) {
-                kickee = chan.users[i];
-                break;
-            }
-        }
-        if(kickee && kickee.rank < user.rank) {
-            chan.logger.log("*** " + user.name + " banned " + args[0]);
-            args[0] = "";
-            var reason = args.join(" ");
-            chan.kick(kickee, "(banned) " + reason);
-            chan.banIP(user, kickee);
-        }
-    }
+    chan.tryIPBan(user, args[0], args[1]);
+    // Ban the name too for good measure
+    chan.tryNameBan(user, args[0]);
 }
 
 function handleBan(chan, user, args) {
-    if(chan.hasPermission(user, "ban") && args.length > 0) {
-        args[0] = args[0].toLowerCase();
-        chan.banName(user, args[0]);
-    }
+    chan.tryNameBan(user, args[0]);
 }
 
 function handleUnban(chan, user, args) {

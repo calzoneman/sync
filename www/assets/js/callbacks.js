@@ -250,26 +250,60 @@ Callbacks = {
 
     banlist: function(entries) {
         var tbl = $("#banlist table");
+        // dumb hack because of jquery UI
+        // sortable turns tables and lists into a mess of race conditions
+        if(!tbl.hasClass("table")) {
+            setTimeout(function() {
+                Callbacks.banlist(entries);
+            }, 100);
+            return;
+        }
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
         }
         for(var i = 0; i < entries.length; i++) {
-            var tr = $("<tr/>").appendTo(tbl);
+            var tr = document.createElement("tr");
             var remove = $("<button/>").addClass("btn btn-mini btn-danger")
                 .appendTo($("<td/>").appendTo(tr));
             $("<i/>").addClass("icon-remove-circle").appendTo(remove);
-            var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
+            var ip = $("<td/>").text(entries[i].ip_displayed).appendTo(tr);
             var name = $("<td/>").text(entries[i].name).appendTo(tr);
-            var aliases = $("<td/>").text(entries[i].aliases).appendTo(tr);
+            var aliases = $("<td/>").text(entries[i].aliases.join(", ")).appendTo(tr);
             var banner = $("<td/>").text(entries[i].banner).appendTo(tr);
 
-            var callback = (function(id, name) { return function() {
+            var callback = (function(ip, name) { return function() {
                 socket.emit("unban", {
-                    id: id,
+                    ip: ip,
                     name: name
                 });
-            } })(entries[i].id, entries[i].name);
+            } })(entries[i].ip_hidden, entries[i].name);
             remove.click(callback);
+
+            $(tr).appendTo(tbl);
+        }
+    },
+
+    recentLogins: function(entries) {
+        var tbl = $("#loginhistory table");
+        // dumb hack because of jquery UI
+        // sortable turns tables and lists into a mess of race conditions
+        if(!tbl.hasClass("table")) {
+            setTimeout(function() {
+                Callbacks.recentLogins(entries);
+            }, 100);
+            return;
+        }
+        if(tbl.children().length > 1) {
+            $(tbl.children()[1]).remove();
+        }
+        for(var i = 0; i < entries.length; i++) {
+            var tr = document.createElement("tr");
+            var name = $("<td/>").text(entries[i].name).appendTo(tr);
+            var aliases = $("<td/>").text(entries[i].aliases.join(", ")).appendTo(tr);
+            var time = new Date(entries[i].time).toTimeString();
+            $("<td/>").text(time).appendTo(tr);
+
+            $(tr).appendTo(tbl);
         }
     },
 

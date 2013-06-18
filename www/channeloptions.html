@@ -12,7 +12,7 @@
         <li id="cssedit_tab"><a href="javascript:void(0);" id="show_cssedit">CSS Editor</a></li>
         <li id="jsedit_tab"><a href="javascript:void(0);" id="show_jsedit">JS Editor</a></li>
         <li id="banlist_tab"><a href="javascript:void(0);" id="show_banlist">Ban List</a></li>
-        <li id="recentconn_tab"><a href="javascript:void(0);" id="show_recentconn">Recent Connections</a></li>
+        <li id="loginhistory_tab"><a href="javascript:void(0);" id="show_loginhistory">Recent Connections</a></li>
     </ul>
 </div>
 <hr>
@@ -101,4 +101,28 @@ Filters Here
     <p>Max 20KB.  If you need more space, host the file externally and use the External JS option</p>
     <textarea rows="10" id="jstext"></textarea>
     <button class="btn btn-primary" id="save_js">Save</button>
+</div>
+<div id="banlist" class="span12">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Unban</th>
+                <th>IP</th>
+                <th>Name</th>
+                <th>Aliases</th>
+                <th>Banned By</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+<div id="loginhistory" class="span12">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Aliases</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+    </table>
 </div>

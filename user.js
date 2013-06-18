@@ -379,6 +379,12 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
+    this.socket.on("requestLoginHistory", function() {
+        if(this.channel != null) {
+            this.channel.sendLoginHistory(this);
+        }
+    }.bind(this));
+
     this.socket.on("requestAcl", function() {
         if(this.channel != null) {
             this.channel.sendACL(this);
