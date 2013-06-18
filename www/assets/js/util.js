@@ -661,24 +661,26 @@ function handlePermissionChange() {
 
     if(CLIENT.rank >= 2) {
         $("#channelsettingswrap3").show();
-        if($("#channelsettingswrap").html() == "")
-            $("#channelsettingswrap").load("channeloptions.html");
-        /* update channel controls */
-        $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
-        $("#opt_externalcss").val(CHANNEL.opts.externalcss);
-        $("#opt_externaljs").val(CHANNEL.opts.externaljs);
-        $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
-        $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
-        $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
-        $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
-        $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
-        setVisible("#permedit_tab", CLIENT.rank >= 3);
-        setVisible("#banlist_tab", hasPermission("ban"));
-        setVisible("#motdedit_tab", hasPermission("motdedit"));
-        setVisible("#cssedit_tab", CLIENT.rank >= 3);
-        setVisible("#jsedit_tab", CLIENT.rank >= 3);
-        setVisible("#filteredit_tab", hasPermission("filteredit"));
-        setVisible("#channelranks_tab", CLIENT.rank >= 3);
+        if($("#channelsettingswrap").html() == "") {
+            $("#channelsettingswrap").load("channeloptions.html", function() {
+            /* update channel controls */
+            $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
+            $("#opt_externalcss").val(CHANNEL.opts.externalcss);
+            $("#opt_externaljs").val(CHANNEL.opts.externaljs);
+            $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
+            $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
+            $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
+            $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
+            $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+            setVisible("#permedit_tab", CLIENT.rank >= 3);
+            setVisible("#banlist_tab", hasPermission("ban"));
+            setVisible("#motdedit_tab", hasPermission("motdedit"));
+            setVisible("#cssedit_tab", CLIENT.rank >= 3);
+            setVisible("#jsedit_tab", CLIENT.rank >= 3);
+            setVisible("#filteredit_tab", hasPermission("filteredit"));
+            setVisible("#channelranks_tab", CLIENT.rank >= 3);
+        });
+        }
     }
     else {
         $("#channelsettingswrap").html("");

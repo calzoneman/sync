@@ -14,6 +14,13 @@
         });
     }
 
+    $("#hide_settings").click(function() {
+        $("#csdropdown_title").text("Moderation Menu");
+        $("#channelsettingswrap div.span12").each(function() {
+            $(this).hide();
+        });
+    });
+
     clickHandler("#show_optedit", "#optedit");
     clickHandler("#show_permedit", "#permedit");
     clickHandler("#show_motdedit", "#motdedit");

@@ -215,6 +215,10 @@ $("#qlockbtn").click(function() {
     socket.emit("togglePlaylistLock");
 });
 
+$("#voteskip").click(function() {
+    socket.emit("voteskip");
+});
+
 $("#getplaylist").click(function() {
     var callback = function(data) {
         PLAYER.hide();
