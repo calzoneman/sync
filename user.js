@@ -539,6 +539,7 @@ User.prototype.login = function(name, pw, session) {
             lastguestlogin[this.ip] = Date.now();
             this.rank = Rank.Guest;
             Logger.syslog.log(this.ip + " signed in as " + name);
+            Database.recordVisit(this.ip, name);
             this.name = name;
             this.loggedIn = false;
             this.socket.emit("login", {
@@ -562,6 +563,7 @@ User.prototype.login = function(name, pw, session) {
                 name: name
             });
             Logger.syslog.log(this.ip + " logged in as " + name);
+            Database.recordVisit(this.ip, name);
             this.profile = {
                 image: row.profile_image,
                 text: row.profile_text

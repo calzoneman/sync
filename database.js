@@ -173,6 +173,19 @@ function init() {
     if(!results) {
         Logger.errlog.log("! Failed to create playlist table");
     }
+
+    // Create user aliases table
+    query = ["CREATE TABLE IF NOT EXISTS `aliases` (",
+                "`visit_id` INT NOT NULL AUTO_INCREMENT,",
+                "`ip` VARCHAR(15) NOT NULL,",
+                "`name` VARCHAR(20) NOT NULL,",
+                "`time` BIGINT NOT NULL,",
+                "PRIMARY KEY (`visit_id`), INDEX (`ip`))",
+             "ENGINE = MyISAM;"].join("");
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create aliases table");
+    }
 }
 
 /* REGION Global Bans */
@@ -885,6 +898,44 @@ function deleteUserPlaylist(user, name) {
     return results;
 }
 
+/* User Aliases */
+
+function recordVisit(ip, name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var time = Date.now();
+    db.querySync(createQuery(
+        "DELETE FROM aliases WHERE ip=? AND name=?",
+        [ip, name]
+    ));
+    var query = createQuery(
+        "INSERT INTO aliases VALUES (NULL, ?, ?, ?)",
+        [ip, name, time]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        console.log(results);
+        Logger.errlog.log("! Failed to record visit");
+    }
+
+    // Keep most recent 5 records per IP
+    results = db.querySync(createQuery(
+        ["DELETE FROM aliases WHERE visit_id NOT IN (",
+            "SELECT visit_id FROM (",
+            "SELECT visit_id,time FROM aliases WHERE ip=? ORDER BY time DESC LIMIT 5",
+            ") foo",
+         ");"].join(""),
+         [ip]
+    ));
+    console.log(results);
+
+    return results;
+}
+
 exports.setup = setup;
 exports.getConnection = getConnection;
 exports.createQuery = createQuery;
@@ -914,3 +965,4 @@ exports.getUserPlaylists = getUserPlaylists;
 exports.loadUserPlaylist = loadUserPlaylist;
 exports.saveUserPlaylist = saveUserPlaylist;
 exports.deleteUserPlaylist = deleteUserPlaylist;
+exports.recordVisit = recordVisit;
