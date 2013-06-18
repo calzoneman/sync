@@ -1491,17 +1491,32 @@ Channel.prototype.tryToggleLock = function(user) {
     this.setLock(this.openqueue);
 }
 
+Channel.prototype.tryRemoveFilter = function(user, f) {
+    if(!this.hasPermission(user, "filteredit"))
+        return false;
+
+    this.removeFilter(f);
+}
+
+Channel.prototype.removeFilter = function(filter) {
+    for(var i = 0; i < this.filters.length; i++) {
+        if(this.filters[i].name == filter.name) {
+            this.filters.splice(i, 1);
+            break;
+        }
+    }
+    this.broadcastChatFilters();
+}
+
 Channel.prototype.updateFilter = function(filter) {
+    if(filter.name == "")
+        filter.name = filter.source;
     var found = false;
     for(var i = 0; i < this.filters.length; i++) {
-        if(this.filters[i].name == "" && filter.name == ""
-            && this.filters[i].source == filter.source) {
+        if(this.filters[i].name == filter.name) {
             found = true;
             this.filters[i] = filter;
-        }
-        else if(filter.name != "" && this.filters[i].name == filter.name) {
-            found = true;
-            this.filters[i] = filter;
+            break;
         }
     }
     if(!found) {
@@ -1510,45 +1525,45 @@ Channel.prototype.updateFilter = function(filter) {
     this.broadcastChatFilters();
 }
 
-Channel.prototype.removeFilter = function(name, source) {
-    for(var i = 0; i < this.filters.length; i++) {
-        if(this.filters[i].name == name
-                && this.filters[i].source == source) {
-            this.filters.splice(i, 1);
-            break;
-        }
-    }
-    this.broadcastChatFilters();
-}
-
-Channel.prototype.tryChangeFilter = function(user, data) {
+Channel.prototype.tryUpdateFilter = function(user, f) {
     if(!this.hasPermission(user, "filteredit")) {
         return;
     }
 
-    if(data.cmd == undefined || data.filter == undefined) {
+    var re = f.source;
+    var flags = f.flags;
+    try {
+        new RegExp(re, flags);
+    }
+    catch(e) {
         return;
     }
+    var filter = new Filter(f.name, f.source, f.flags, f.replace);
+    filter.active = f.active;
+    filter.filterlinks = f.filterlinks;
+    this.updateFilter(filter);
+}
 
-    if(data.cmd == "update") {
-        var re = data.filter.source;
-        var flags = data.filter.flags;
-        try {
-            new RegExp(re, flags);
-        }
-        catch(e) {
-            return;
-        }
-        var f = new Filter(data.filter.name,
-                           data.filter.source,
-                           data.filter.flags,
-                           data.filter.replace);
-        f.active = data.filter.active;
-        this.updateFilter(f);
+Channel.prototype.moveFilter = function(data) {
+    if(data.from < 0 || data.to < 0 || data.from >= this.filters.length ||
+        data.to > this.filters.length) {
+        return;
     }
-    else if(data.cmd == "remove") {
-        this.removeFilter(data.filter.name, data.filter.source);
-    }
+    var f = this.filters[data.from];
+    var to = data.to > data.from ? data.to + 1 : data.to;
+    var from =  data.to > data.from ? data.from : data.from + 1;
+    this.filters.splice(to, 0, f);
+    this.filters.splice(from, 1);
+    this.broadcastChatFilters();
+}
+
+Channel.prototype.tryMoveFilter = function(user, data) {
+    if(!this.hasPermission(user, "filteredit"))
+        return;
+
+    if(typeof data.to !== "number" || typeof data.from !== "number")
+        return;
+    this.moveFilter(data);
 }
 
 Channel.prototype.tryUpdatePermissions = function(user, perms) {
@@ -1676,6 +1691,11 @@ Channel.prototype.filterMessage = function(msg) {
     for(var j = 0; j < subs.length; j++) {
         if(this.opts.enable_link_regex && subs[j].match(link)) {
             subs[j] = subs[j].replace(link, "<a href=\"$1\" target=\"_blank\">$1</a>");
+            for(var i = 0; i < this.filters.length; i++) {
+                if(!this.filters[i].filterlinks || !this.filters[i].active)
+                    continue;
+                subs[j] = this.filters[i].filter(subs[j]);
+            }
             continue;
         }
         for(var i = 0; i < this.filters.length; i++) {

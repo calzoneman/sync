@@ -367,9 +367,21 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("chatFilter", function(data) {
+    this.socket.on("updateFilter", function(data) {
         if(this.channel != null) {
-            this.channel.tryChangeFilter(this, data);
+            this.channel.tryUpdateFilter(this, data);
+        }
+    }.bind(this));
+
+    this.socket.on("removeFilter", function(data) {
+        if(this.channel != null) {
+            this.channel.tryRemoveFilter(this, data);
+        }
+    }.bind(this));
+
+    this.socket.on("moveFilter", function(data) {
+        if(this.channel != null) {
+            this.channel.tryMoveFilter(this, data);
         }
     }.bind(this));
 

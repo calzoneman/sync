@@ -133,33 +133,132 @@ Callbacks = {
                 .appendTo($("<td/>").appendTo(tr));
             var linktd = $("<td/>").appendTo(tr);
             var link = $("<input/>").attr("type", "checkbox")
-                .prop("checked", false).appendTo(linktd);
+                .prop("checked", f.filterlinks).appendTo(linktd);
             var activetd = $("<td/>").appendTo(tr);
             var active = $("<input/>").attr("type", "checkbox")
                 .prop("checked", f.active).appendTo(activetd);
+            (function(f) {
+                regex.click(function() {
+                    if(this.find(".filter-regex-edit").length > 0)
+                        return;
+                    var r = this.text();
+                    this.text("");
+                    var edit = $("<input/>").attr("type", "text")
+                        .css("font-family", "Monospace")
+                        .attr("placeholder", r)
+                        .val(r)
+                        .addClass("filter-regex-edit")
+                        .appendTo(this)
+                        .focus();
 
-            var remcallback = (function(filter) { return function() {
-                socket.emit("chatFilter", {
-                    cmd: "remove",
-                    filter: filter
-                });
-            } })(f);
-            remove.click(remcallback);
+                    function save() {
+                        var r = this.val();
+                        var r2 = r;
+                        if(r.trim() == "")
+                            r = this.attr("placeholder");
+                        this.parent().text(r);
+                        f.source = r;
+                        socket.emit("updateFilter", f);
+                    }
+                    edit.blur(save.bind(edit));
+                    edit.keydown(function(ev) {
+                        if(ev.keyCode == 13)
+                            save.bind(edit)();
+                    });
+                }.bind(regex));
+                flags.click(function() {
+                    if(this.find(".filter-flags-edit").length > 0)
+                        return;
+                    var r = this.text();
+                    this.text("");
+                    var edit = $("<input/>").attr("type", "text")
+                        .css("font-family", "Monospace")
+                        .attr("placeholder", r)
+                        .val(r)
+                        .addClass("filter-flags-edit")
+                        .appendTo(this)
+                        .focus();
 
-            var actcallback = (function(filter) { return function() {
-                // Apparently when you check a checkbox, its value is changed
-                // before this callback.  When you uncheck it, its value is not
-                // changed before this callback
-                // [](/amgic)
-                var enabled = active.prop("checked");
-                filter.active = (filter.active == enabled) ? !enabled : enabled;
-                socket.emit("chatFilter", {
-                    cmd: "update",
-                    filter: filter
+                    function save() {
+                        var r = this.val();
+                        var r2 = r;
+                        if(r.trim() == "")
+                            r = this.attr("placeholder");
+                        this.parent().text(r);
+                        f.flags = r;
+                        socket.emit("updateFilter", f);
+                    }
+                    edit.blur(save.bind(edit));
+                    edit.keydown(function(ev) {
+                        if(ev.keyCode == 13)
+                            save.bind(edit)();
+                    });
+                }.bind(flags));
+                replace.click(function() {
+                    if(this.find(".filter-replace-edit").length > 0)
+                        return;
+                    var r = this.text();
+                    this.text("");
+                    var edit = $("<input/>").attr("type", "text")
+                        .css("font-family", "Monospace")
+                        .attr("placeholder", r)
+                        .val(r)
+                        .addClass("filter-replace-edit")
+                        .appendTo(this)
+                        .focus();
+
+                    function save() {
+                        var r = this.val();
+                        var r2 = r;
+                        if(r.trim() == "")
+                            r = this.attr("placeholder");
+                        this.parent().text(r);
+                        f.replace = r;
+                        socket.emit("updateFilter", f);
+                    }
+                    edit.blur(save.bind(edit));
+                    edit.keydown(function(ev) {
+                        if(ev.keyCode == 13)
+                            save.bind(edit)();
+                    });
+                }.bind(replace));
+
+                remove.click(function() {
+                    socket.emit("removeFilter", f);
                 });
-            } })(f);
-            active.click(actcallback);
+
+                active.click(function() {
+                    // Apparently when you check a checkbox, its value is changed
+                    // before this callback.  When you uncheck it, its value is not
+                    // changed before this callback
+                    // [](/amgic)
+                    var enabled = active.prop("checked");
+                    f.active = (f.active == enabled) ? !enabled : enabled;
+                    socket.emit("updateFilter", f);
+                });
+                link.click(function() {
+                    var enabled = link.prop("checked");
+                    f.filterlinks = (f.filterlinks == enabled) ? !enabled : enabled;
+                    socket.emit("updateFilter", f);
+                });
+            })(f);
         }
+
+        $(tbl.children()[1]).sortable({
+            start: function(ev, ui) {
+                FILTER_FROM = ui.item.prevAll().length;
+            },
+            update: function(ev, ui) {
+                FILTER_TO = ui.item.prevAll().length;
+                if(FILTER_TO != FILTER_FROM) {
+                    socket.emit("moveFilter", {
+                        from: FILTER_FROM,
+                        to: FILTER_TO
+                    });
+                    console.log("moveFilter", FILTER_FROM, FILTER_TO);
+                }
+            }
+        });
 
         var newfilt = $("<tr/>");//.appendTo(tbl);
         $("<td/>").appendTo(newfilt);

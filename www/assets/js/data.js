@@ -42,6 +42,8 @@ var SESSION = readCookie("cytube_session");
 var LEADTMR = false;
 var PL_FROM = 0;
 var PL_TO = 0;
+var FILTER_FROM = 0;
+var FILTER_TO = 0;
 
 function getOrDefault(k, def) {
     var v = localStorage.getItem(k);
