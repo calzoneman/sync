@@ -111,8 +111,6 @@ function addUserDropdown(entry, name) {
 
     $("<strong/>").text(name).appendTo(menu);
     $("<br/>").appendTo(menu);
-    if(CLIENT.rank >= 2)
-        $("<span/>").addClass("user-aliases").appendTo(menu);
     if(hasPermission("kick")) {
         $("<button/>").addClass("btn btn-mini btn-block")
             .text("Kick")
@@ -164,8 +162,6 @@ function addUserDropdown(entry, name) {
     entry.contextmenu(function(ev) {
         ev.preventDefault();
         if(menu.css("display") == "none") {
-            menu.find(".user-aliases")
-                .text("Aliases: " + entry.data("aliases"));
             menu.show();
         }
         else {
@@ -476,7 +472,7 @@ function applyOpts() {
     }
 
     if(USEROPTS.altsocket) {
-        if(socket)
+        if(socket && socket.disconnect)
             socket.disconnect();
         socket = new NotWebsocket();
         setupCallbacks();
@@ -649,6 +645,8 @@ function hasPermission(key) {
 
 function handlePermissionChange() {
     function setVisible(selector, bool) {
+        // I originally added this check because of a race condition
+        // Now it seems to work without but I don't trust it
         if($(selector) && $(selector).attr("id") != selector.substring(1)) {
             setTimeout(function() {
                 setVisible(selector, bool);

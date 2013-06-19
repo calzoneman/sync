@@ -20,7 +20,7 @@ var Logger = require("./logger.js");
 exports.isRegistered = function(name) {
     var db = Database.getConnection();
     if(!db) {
-        return true;
+        throw "Database failure";
     }
     var query = Database.createQuery(
         "SELECT * FROM `registrations` WHERE uname=?",
@@ -90,7 +90,7 @@ exports.login = function(name, pw, session) {
 exports.loginPassword = function(name, pw) {
     var db = Database.getConnection();
     if(!db) {
-        return false;
+        throw "Database failure";
     }
     var query = Database.createQuery(
         "SELECT * FROM `registrations` WHERE uname=?",
@@ -140,7 +140,7 @@ exports.createSession = function(name) {
     var hash = hashlib.sha256(salt + name);
     var db = Database.getConnection();
     if(!db) {
-        return false;
+        throw "Database failure";
     }
     var query = Database.createQuery(
         ["UPDATE `registrations` SET ",
@@ -156,7 +156,7 @@ exports.createSession = function(name) {
 exports.loginSession = function(name, hash) {
     var db = Database.getConnection();
     if(!db) {
-        return false;
+        throw "Database failure";
     }
     var query = Database.createQuery(
         "SELECT * FROM `registrations` WHERE `uname`=?",

@@ -38,7 +38,7 @@ function getConnection() {
     db = mysql.createConnectionSync();
     db.connectSync(SERVER, USER, PASSWORD, DATABASE);
     if(!db.connectedSync()) {
-        //Logger.errlog.log("DB connection failed");
+        Logger.errlog.log("DB connection failed");
         return false;
     }
     if(CONFIG.DEBUG) {

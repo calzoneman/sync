@@ -541,73 +541,89 @@ User.prototype.login = function(name, pw, session) {
                 return false;
             }
         }
-        // Sorry bud, can't take that name
-        if(Auth.isRegistered(name)) {
-            this.socket.emit("login", {
-                success: false,
-                error: "That username is already taken"
-            });
-            return false;
-        }
-        // YOUR ARGUMENT IS INVALID
-        else if(!Auth.validateName(name)) {
-            this.socket.emit("login", {
-                success: false,
-                error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
-            });
-        }
-        else {
-            lastguestlogin[this.ip] = Date.now();
-            this.rank = Rank.Guest;
-            Logger.syslog.log(this.ip + " signed in as " + name);
-            Database.recordVisit(this.ip, name);
-            this.name = name;
-            this.loggedIn = false;
-            this.socket.emit("login", {
-                success: true,
-                name: name
-            });
-            this.socket.emit("rank", this.rank);
-            if(this.channel != null) {
-                this.channel.logger.log(this.ip + " signed in as " + name);
-                this.channel.broadcastNewUser(this);
+        try {
+            // Sorry bud, can't take that name
+            if(Auth.isRegistered(name)) {
+                this.socket.emit("login", {
+                    success: false,
+                    error: "That username is already taken"
+                });
+                return false;
             }
+            // YOUR ARGUMENT IS INVALID
+            else if(!Auth.validateName(name)) {
+                this.socket.emit("login", {
+                    success: false,
+                    error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
+                });
+            }
+            else {
+                lastguestlogin[this.ip] = Date.now();
+                this.rank = Rank.Guest;
+                Logger.syslog.log(this.ip + " signed in as " + name);
+                Database.recordVisit(this.ip, name);
+                this.name = name;
+                this.loggedIn = false;
+                this.socket.emit("login", {
+                    success: true,
+                    name: name
+                });
+                this.socket.emit("rank", this.rank);
+                if(this.channel != null) {
+                    this.channel.logger.log(this.ip + " signed in as " + name);
+                    this.channel.broadcastNewUser(this);
+                }
+            }
+        }
+        catch(e) {
+            this.socket.emit("login", {
+                success: false,
+                error: e
+            });
         }
     }
     else {
-        var row;
-        if((row = Auth.login(name, pw, session))) {
-            this.loggedIn = true;
-            this.socket.emit("login", {
-                success: true,
-                session: row.session_hash,
-                name: name
-            });
-            Logger.syslog.log(this.ip + " logged in as " + name);
-            Database.recordVisit(this.ip, name);
-            this.profile = {
-                image: row.profile_image,
-                text: row.profile_text
-            };
-            var chanrank = (this.channel != null) ? this.channel.getRank(name)
-                                                  : Rank.Guest;
-            var rank = (chanrank > row.global_rank) ? chanrank
-                                                     : row.global_rank;
-            this.rank = (this.rank > rank) ? this.rank : rank;
-            this.socket.emit("rank", this.rank);
-            this.name = name;
-            if(this.channel != null) {
-                this.channel.logger.log(this.ip + " logged in as " + name);
-                this.channel.broadcastNewUser(this);
+        try {
+            var row;
+            if((row = Auth.login(name, pw, session))) {
+                this.loggedIn = true;
+                this.socket.emit("login", {
+                    success: true,
+                    session: row.session_hash,
+                    name: name
+                });
+                Logger.syslog.log(this.ip + " logged in as " + name);
+                Database.recordVisit(this.ip, name);
+                this.profile = {
+                    image: row.profile_image,
+                    text: row.profile_text
+                };
+                var chanrank = (this.channel != null) ? this.channel.getRank(name)
+                                                      : Rank.Guest;
+                var rank = (chanrank > row.global_rank) ? chanrank
+                                                         : row.global_rank;
+                this.rank = (this.rank > rank) ? this.rank : rank;
+                this.socket.emit("rank", this.rank);
+                this.name = name;
+                if(this.channel != null) {
+                    this.channel.logger.log(this.ip + " logged in as " + name);
+                    this.channel.broadcastNewUser(this);
+                }
+            }
+            // Wrong password
+            else {
+                this.socket.emit("login", {
+                    success: false,
+                    error: "Invalid session"
+                });
+                return false;
             }
         }
-        // Wrong password
-        else {
+        catch(e) {
             this.socket.emit("login", {
                 success: false,
-                error: "Invalid session"
+                error: e
             });
-            return false;
         }
     }
 }

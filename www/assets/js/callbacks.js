@@ -356,9 +356,10 @@ Callbacks = {
 
     banlist: function(entries) {
         var tbl = $("#banlist table");
-        // dumb hack because of jquery UI
-        // sortable turns tables and lists into a mess of race conditions
+        // I originally added this check because of a race condition
+        // Now it seems to work without but I don't trust it
         if(!tbl.hasClass("table")) {
+            console.log("thing");
             setTimeout(function() {
                 Callbacks.banlist(entries);
             }, 100);
@@ -391,8 +392,8 @@ Callbacks = {
 
     recentLogins: function(entries) {
         var tbl = $("#loginhistory table");
-        // dumb hack because of jquery UI
-        // sortable turns tables and lists into a mess of race conditions
+        // I originally added this check because of a race condition
+        // Now it seems to work without but I don't trust it
         if(!tbl.hasClass("table")) {
             setTimeout(function() {
                 Callbacks.recentLogins(entries);
@@ -415,8 +416,10 @@ Callbacks = {
 
     channelRanks: function(entries) {
         var tbl = $("#channelranks table");
-        // Dammit jQuery UI
+        // I originally added this check because of a race condition
+        // Now it seems to work without but I don't trust it
         if(!tbl.hasClass("table")) {
+            console.log("thing");
             setTimeout(function() {
                 Callbacks.channelRanks(entries);
             }, 100);
@@ -935,35 +938,8 @@ Callbacks = {
         }
     }
 }
-
-/*
-pl = [];
-for(var i = 0; i < 10; i++) {
-    var m = {
-        title: "Test " + i,
-        type: "yt",
-        id: "test" + i,
-        seconds: 0,
-        duration: "00:00"
-    };
-    pl.push(m);
-}
-setTimeout(function() {
-    Callbacks.playlist(pl);
-}, 1000);
-*/
-
-$.getScript(IO_URL+"/socket.io/socket.io.js", function() {
-    try {
-        socket = io.connect(IO_URL);
-        setupCallbacks();
-    }
-    catch(e) {
-        Callbacks.disconnect();
-    }
-});
-
 setupCallbacks = function() {
+    console.log(socket);
     for(var key in Callbacks) {
         (function(key) {
         socket.on(key, function(data) {
@@ -973,3 +949,23 @@ setupCallbacks = function() {
     }
 }
 
+if(USEROPTS.altsocket) {
+    socket = new NotWebsocket();
+    setupCallbacks();
+}
+else {
+    $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
+        try {
+            if(NO_WEBSOCKETS) {
+                var i = io.transports.indexOf("websocket");
+                if(i >= 0)
+                    io.transports.splice(i, 1);
+            }
+            socket = io.connect(IO_URL);
+            setupCallbacks();
+        }
+        catch(e) {
+            Callbacks.disconnect();
+        }
+    });
+}

@@ -1,3 +1,5 @@
+var CL_VERSION = "2.0.0";
+
 var CLIENT = {
     rank: -1,
     leader: false,

@@ -12,7 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var NotWebsocket = function() {
     this.connected = false;
     this.polltmr = false;
-    $.getJSON(WEB_URL + "/nws/connect", function(data) {
+    $.getJSON(WEB_URL + "/nws/connect?callback=?", function(data) {
         this.hash = data;
         this.connected = true;
         this.recv(["connect", undefined]);
@@ -76,7 +76,7 @@ NotWebsocket.prototype.emit = function(msg, data) {
     }
     var pkt = [msg, data];
     var str = escape(JSON.stringify(pkt)).replace(/\//g, "%2F");
-    $.getJSON(WEB_URL+"/nws/"+this.hash+"/"+str, function() {
+    $.getJSON(WEB_URL+"/nws/"+this.hash+"/"+str+"?callback=?", function() {
         // Poll more quickly because sending a packet usually means
         // expecting some data to come back
         this.pollint = 100;

@@ -138,8 +138,15 @@ Channel.prototype.hasPermission = function(user, key) {
 Channel.prototype.loadDump = function() {
     fs.readFile("chandump/" + this.name, function(err, data) {
         if(err) {
-            Logger.errlog.log("Failed to open channel dump " + this.name);
-            Logger.errlog.log(err);
+            if(err.code == "ENOENT") {
+                Logger.errlog.log("WARN: missing dump for " + this.name);
+                this.initialized = true;
+                this.saveDump();
+            }
+            else {
+                Logger.errlog.log("Failed to open channel dump " + this.name);
+                Logger.errlog.log(err);
+            }
             return;
         }
         try {

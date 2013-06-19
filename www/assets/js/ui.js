@@ -57,7 +57,7 @@ $("#chatline").keydown(function(ev) {
                 msg: msg
             });
             CHATHIST.push($("#chatline").val());
-            CHATLISTIDX = CHATHIST.length;
+            CHATHISTIDX = CHATHIST.length;
             $("#chatline").val("");
         }
         return;
@@ -326,3 +326,8 @@ else {
         }
     });
 }
+
+/* oh internet explorer, how I hate thee */
+$(":input:not(textarea)").keypress(function(ev) {
+    return ev.keyCode != 13;
+});
