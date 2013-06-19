@@ -26,7 +26,10 @@ var CHANNEL = {
     opts: {},
     openqueue: false,
     perms: {},
-    name: false // TODO load name from URL
+    css: "",
+    js: "",
+    motd: "",
+    name: false
 };
 
 var PLAYER = false;

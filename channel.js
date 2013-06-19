@@ -1446,7 +1446,7 @@ Channel.prototype.tryVote = function(user, data) {
     if(!this.hasPermission(user, "pollvote")) {
         return;
     }
-    if(data.option == undefined) {
+    if(typeof data.option !== "number") {
         return;
     }
 

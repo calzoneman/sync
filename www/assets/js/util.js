@@ -65,7 +65,6 @@ function formatUserlistItem(div, data) {
     name.addClass(getNameColor(data.rank));
     div.find(".profile-box").remove();
 
-    // TODO might remove this
     var profile;
     name.mouseenter(function(ev) {
         profile = $("<div/>")
@@ -681,6 +680,9 @@ function handlePermissionChange() {
             $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
             $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
             $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+            $("#csstext").val(CHANNEL.css);
+            $("#jstext").val(CHANNEL.js);
+            $("#motdtext").val(CHANNEL.motd);
             setVisible("#permedit_tab", CLIENT.rank >= 3);
             setVisible("#banlist_tab", hasPermission("ban"));
             setVisible("#motdedit_tab", hasPermission("motdedit"));

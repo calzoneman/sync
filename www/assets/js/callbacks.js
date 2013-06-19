@@ -99,7 +99,9 @@ Callbacks = {
     },
 
     setMotd: function(data) {
+        CHANNEL.motd = data.html;
         $("#motd").html(data.html);
+        $("#motdtext").val(CHANNEL.motd);
         if(data.motd != "")
             $("#motd").show();
         else
@@ -335,6 +337,9 @@ Callbacks = {
     channelCSSJS: function(data) {
         $("#chancss").remove();
         $("#chanjs").remove();
+
+        CHANNEL.css = data.css;
+        CHANNEL.js = data.js;
 
         $("#csstext").val(data.css);
         $("#jstext").val(data.js);
@@ -811,6 +816,7 @@ Callbacks = {
         for(var i = 0; i < data.options.length; i++) {
             (function(i) {
             var callback = function() {
+                    console.log("vote", i);
                     socket.emit("vote", {
                         option: i
                     });
@@ -830,7 +836,7 @@ Callbacks = {
     },
 
     updatePoll: function(data) {
-        var poll = $("#pollcontainer .active");
+        var poll = $("#pollwrap .active");
         var i = 0;
         poll.find(".option button").each(function() {
             $(this).text(data.counts[i]);
