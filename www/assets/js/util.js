@@ -720,9 +720,9 @@ function handlePermissionChange() {
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
 
-    $("#pollcontainer .active").find(".btn-danger").remove();
+    $("#pollwrap .active").find(".btn-danger").remove();
     if(hasPermission("pollctl")) {
-        var poll = $("#pollcontainer .active");
+        var poll = $("#pollwrap .active");
         if(poll.length > 0) {
             $("<button/>").addClass("btn btn-danger pull-right")
                 .text("End Poll")
@@ -732,7 +732,7 @@ function handlePermissionChange() {
                 });
         }
     }
-    var poll = $("#pollcontainer .active");
+    var poll = $("#pollwrap .active");
     if(poll.length > 0) {
         poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
     }
