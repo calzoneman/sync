@@ -31,8 +31,8 @@ function onLogin() {
     $("#register").hide();
     loggedin = true;
     $("#login").text("Logout");
-    createCookie("sync_uname", uname, 7);
-    createCookie("sync_session", session, 7);
+    createCookie("cytube_uname", uname, 7);
+    createCookie("cytube_session", session, 7);
 }
 
 function makeTabCallback(tabid, paneid) {
@@ -341,8 +341,8 @@ $("#login").click(function() {
     else {
         uname = "";
         session = "";
-        eraseCookie("sync_uname");
-        eraseCookie("sync_session");
+        eraseCookie("cytube_uname");
+        eraseCookie("cytube_session");
         $("#accountnav li")[0].innerHTML = "Not Logged In";
         $("#register").show();
         $("#login").text("Login");

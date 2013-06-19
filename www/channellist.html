@@ -52,8 +52,8 @@
                 $.getJSON(WEB_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
                     if(data.success) {
                         $(".loginform").remove();
-                        createCookie("sync_uname", uname, 7);
-                        createCookie("sync_session", session, 7);
+                        createCookie("cytube_uname", uname, 7);
+                        createCookie("cytube_session", session, 7);
                         p = "name=" + uname + "&session=" + session;
                         refresh();
                         setInterval(refresh, 5000);
@@ -68,8 +68,8 @@
                     if(data.success) {
                         $(".loginform").remove();
                         session = data.session;
-                        createCookie("sync_uname", uname, 7);
-                        createCookie("sync_session", session, 7);
+                        createCookie("cytube_uname", uname, 7);
+                        createCookie("cytube_session", session, 7);
                         p = "name=" + uname + "&session=" + session;
                     }
                 });
