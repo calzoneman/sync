@@ -16,7 +16,7 @@ function makeAlert(title, text, klass) {
 
     var al = $("<div/>").addClass("alert")
         .addClass(klass)
-        .text(text);
+        .html(text);
     $("<br/>").prependTo(al);
     $("<strong/>").text(title).prependTo(al);
     $("<button/>").addClass("close pull-right").html("&times;")
