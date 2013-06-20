@@ -288,6 +288,8 @@ Channel.prototype.tryRegister = function(user) {
     else {
         if(Database.registerChannel(this.name)) {
             this.registered = true;
+            this.initialized = true;
+            this.saveDump();
             this.saveRank(user);
             user.socket.emit("registerChannel", {
                 success: true,
