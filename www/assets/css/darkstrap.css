@@ -946,8 +946,7 @@ select:focus:invalid:focus {
     color: #ff9900;
 }
 
-#usercountwrap, #currenttitle, #videowrap,
-#librarytoggle, #userpltoggle, #playlisttoggle {
+#usercountwrap, #currenttitle, #videowrap {
     background-color: #2f2f2f;
 }
 

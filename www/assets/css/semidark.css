@@ -11,11 +11,6 @@ body, #videowrap {
     background-color: #332200;
 }
 
-#userpltoggle, #librarytoggle, #playlisttoggle {
-    color: #cccccc;
-    background-color: #2f2f2f;
-}
-
 #currenttitle {
     color: #cccccc;
 }
