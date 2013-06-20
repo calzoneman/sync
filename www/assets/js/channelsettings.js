@@ -54,9 +54,15 @@
             externaljs: $("#opt_externaljs").val(),
             chat_antiflood: $("#opt_chat_antiflood").prop("checked"),
             show_public: $("#opt_show_public").prop("checked"),
-            /* TODO Deprecate this in favour of per-filter toggle */
             enable_link_regex: $("#opt_enable_link_regex").prop("checked")
         });
+    });
+
+    $("#chanopts_unregister").click(function() {
+        var res = confirm("You are about to unregister your channel.  This will PERMANENTLY delete your channel data, including ranks, bans, and library videos.  This cannot be undone.  Are you sure you want to continue?");
+        if(res) {
+            socket.emit("unregisterChannel");
+        }
     });
 
     $("#save_motd").click(function() {

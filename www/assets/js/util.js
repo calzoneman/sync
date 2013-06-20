@@ -665,6 +665,19 @@ function hasPermission(key) {
     return CLIENT.rank >= v;
 }
 
+function setVisible(selector, bool) {
+    // I originally added this check because of a race condition
+    // Now it seems to work without but I don't trust it
+    if($(selector) && $(selector).attr("id") != selector.substring(1)) {
+        setTimeout(function() {
+            setVisible(selector, bool);
+        }, 100);
+        return;
+    }
+    var disp = bool ? "" : "none";
+    $(selector).css("display", disp);
+}
+
 function handleModPermissions() {
     /* update channel controls */
     $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
@@ -689,22 +702,10 @@ function handleModPermissions() {
     setVisible("#jsedit_tab", CLIENT.rank >= 3);
     setVisible("#filteredit_tab", hasPermission("filteredit"));
     setVisible("#channelranks_tab", CLIENT.rank >= 3);
+    setVisible("#chanopts_unregister_wrap", CLIENT.rank >= 10);
 }
 
 function handlePermissionChange() {
-    function setVisible(selector, bool) {
-        // I originally added this check because of a race condition
-        // Now it seems to work without but I don't trust it
-        if($(selector) && $(selector).attr("id") != selector.substring(1)) {
-            setTimeout(function() {
-                setVisible(selector, bool);
-            }, 100);
-            return;
-        }
-        var disp = bool ? "" : "none";
-        $(selector).css("display", disp);
-    }
-
     if(CLIENT.rank >= 2) {
         $("#channelsettingswrap3").show();
         if($("#channelsettingswrap").html() == "") {
