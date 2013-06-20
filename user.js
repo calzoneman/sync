@@ -17,6 +17,7 @@ var Server = require("./server.js");
 var Database = require("./database.js");
 var Logger = require("./logger.js");
 var Config = require("./config.js");
+var ACP = require("./acp");
 
 // Represents a client connected via socket.io
 var User = function(socket, ip) {
@@ -24,6 +25,7 @@ var User = function(socket, ip) {
     this.socket = socket;
     this.loggedIn = false;
     this.rank = Rank.Anonymous;
+    this.global_rank = Rank.Anonymous;
     this.channel = null;
     this.name = "";
     this.meta = {
@@ -514,6 +516,11 @@ User.prototype.initCallbacks = function() {
             pllist: list,
         });
     }.bind(this));
+
+    this.socket.on("acp-init", function() {
+        if(this.global_rank >= Rank.Siteadmin)
+            ACP.init(this);
+    }.bind(this));
 }
 
 var lastguestlogin = {};
@@ -603,6 +610,7 @@ User.prototype.login = function(name, pw, session) {
                 var rank = (chanrank > row.global_rank) ? chanrank
                                                          : row.global_rank;
                 this.rank = (this.rank > rank) ? this.rank : rank;
+                this.global_rank = row.global_rank;
                 this.socket.emit("rank", this.rank);
                 this.name = name;
                 if(this.channel != null) {
