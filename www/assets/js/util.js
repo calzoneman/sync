@@ -261,7 +261,8 @@ function addQueueButtons(li) {
             .appendTo(menu);
     }
 
-    if(USEROPTS.qbtn_hide && !USEROPTS.qbtn_idontlikechange)
+    if(USEROPTS.qbtn_hide && !USEROPTS.qbtn_idontlikechange
+        || menu.find(".btn").length == 0)
         menu.hide();
 
     // I DON'T LIKE CHANGE
@@ -277,7 +278,7 @@ function addQueueButtons(li) {
         menu.find(".qbtn-play").addClass("btn-success");
         menu.find(".qbtn-delete").addClass("btn-danger");
     }
-    else {
+    else if(menu.find(".btn").length != 0) {
         li.contextmenu(function(ev) {
             ev.preventDefault();
             if(menu.css("display") == "none")
