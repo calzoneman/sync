@@ -261,7 +261,7 @@ function addQueueButtons(li) {
             .appendTo(menu);
     }
 
-    if(!USEROPTS.qbtn_always)
+    if(USEROPTS.qbtn_hide)
         menu.hide();
 
     li.contextmenu(function(ev) {
@@ -332,9 +332,9 @@ function showOptionsMenu() {
     $("<hr>").appendTo(form);
 
     var qbtncontainer = $("<label/>").addClass("checkbox")
-        .text("Show playlist buttons by default");
+        .text("Hide playlist buttons by default");
     var qbtn = $("<input/>").attr("type", "checkbox").appendTo(qbtncontainer);
-    qbtn.prop("checked", USEROPTS.qbtn_always);
+    qbtn.prop("checked", USEROPTS.qbtn_hide);
     addOption("Playlist Buttons", qbtncontainer);
 
     var synchcontainer = $("<label/>").addClass("checkbox")
@@ -417,7 +417,7 @@ function showOptionsMenu() {
         USEROPTS.blink_title     = blink.prop("checked");
         USEROPTS.chatbtn         = sendbtn.prop("checked");
         USEROPTS.altsocket       = altsocket.prop("checked");
-        USEROPTS.qbtn_always     = qbtn.prop("checked");
+        USEROPTS.qbtn_hide     = qbtn.prop("checked");
         if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
             USEROPTS.joinmessage = join.prop("checked");
@@ -665,6 +665,32 @@ function hasPermission(key) {
     return CLIENT.rank >= v;
 }
 
+function handleModPermissions() {
+    /* update channel controls */
+    $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
+    $("#opt_pagetitle").attr("disabled", CLIENT.rank < 3);
+    $("#opt_externalcss").val(CHANNEL.opts.externalcss);
+    $("#opt_externalcss").attr("disabled", CLIENT.rank < 3);
+    $("#opt_externaljs").val(CHANNEL.opts.externaljs);
+    $("#opt_externaljs").attr("disabled", CLIENT.rank < 3);
+    $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
+    $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
+    $("#opt_show_public").attr("disabled", CLIENT.rank < 3);
+    $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
+    $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
+    $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+    $("#csstext").val(CHANNEL.css);
+    $("#jstext").val(CHANNEL.js);
+    $("#motdtext").val(CHANNEL.motd);
+    setVisible("#permedit_tab", CLIENT.rank >= 3);
+    setVisible("#banlist_tab", hasPermission("ban"));
+    setVisible("#motdedit_tab", hasPermission("motdedit"));
+    setVisible("#cssedit_tab", CLIENT.rank >= 3);
+    setVisible("#jsedit_tab", CLIENT.rank >= 3);
+    setVisible("#filteredit_tab", hasPermission("filteredit"));
+    setVisible("#channelranks_tab", CLIENT.rank >= 3);
+}
+
 function handlePermissionChange() {
     function setVisible(selector, bool) {
         // I originally added this check because of a race condition
@@ -682,27 +708,10 @@ function handlePermissionChange() {
     if(CLIENT.rank >= 2) {
         $("#channelsettingswrap3").show();
         if($("#channelsettingswrap").html() == "") {
-            $("#channelsettingswrap").load("channeloptions.html", function() {
-            /* update channel controls */
-            $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
-            $("#opt_externalcss").val(CHANNEL.opts.externalcss);
-            $("#opt_externaljs").val(CHANNEL.opts.externaljs);
-            $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
-            $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
-            $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
-            $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
-            $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
-            $("#csstext").val(CHANNEL.css);
-            $("#jstext").val(CHANNEL.js);
-            $("#motdtext").val(CHANNEL.motd);
-            setVisible("#permedit_tab", CLIENT.rank >= 3);
-            setVisible("#banlist_tab", hasPermission("ban"));
-            setVisible("#motdedit_tab", hasPermission("motdedit"));
-            setVisible("#cssedit_tab", CLIENT.rank >= 3);
-            setVisible("#jsedit_tab", CLIENT.rank >= 3);
-            setVisible("#filteredit_tab", hasPermission("filteredit"));
-            setVisible("#channelranks_tab", CLIENT.rank >= 3);
-        });
+            $("#channelsettingswrap").load("channeloptions.html", handleModPermissions);
+        }
+        else {
+            handleModPermissions();
         }
     }
     else {

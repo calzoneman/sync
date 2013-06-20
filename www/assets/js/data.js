@@ -89,7 +89,7 @@ var USEROPTS = {
     chatbtn         : getOrDefault("chatbtn", false),
     altsocket       : getOrDefault("altsocket", false),
     joinmessage     : getOrDefault("joinmessage", true),
-    qbtn_always     : getOrDefault("qbtn_always", false)
+    qbtn_hide       : getOrDefault("qbtn_hide", false)
 };
 
 var Rank = {

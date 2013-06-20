@@ -1633,8 +1633,8 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
 
     const adminonly = {
         pagetitle: true,
-        customcss: true,
-        customjs: true,
+        externalcss: true,
+        externaljs: true,
         show_public: true
     };
 
