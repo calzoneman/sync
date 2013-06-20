@@ -1042,6 +1042,8 @@ Channel.prototype.enqueue = function(data, user, callback) {
             case "sc":
                 InfoGetter.getMedia(data.id, data.type, function(err, media) {
                     if(err) {
+                        if(callback)
+                            callback();
                         user.socket.emit("queueFail");
                         return;
                     }
