@@ -762,6 +762,8 @@ function handlePermissionChange() {
     for(var i = 0; i < users.length; i++) {
         addUserDropdown($(users[i]), users[i].children[1].innerHTML);
     }
+
+    $("#chatline").attr("disabled", !hasPermission("chat"));
     rebuildPlaylist();
 }
 
@@ -1195,6 +1197,7 @@ function genPermissionsEditor() {
 
     addDivider("Misc");
     makeOption("Drink calls", "drink", modleader, CHANNEL.perms.drink+"");
+    makeOption("Chat", "chat", standard, CHANNEL.perms.chat+"");
 
     var submit = $("<button/>").addClass("btn btn-primary").appendTo(fs);
     submit.text("Save");

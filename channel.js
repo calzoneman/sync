@@ -68,7 +68,8 @@ var Channel = function(name) {
         ban: 2,
         motdedit: 3,
         filteredit: 3,
-        drink: 1.5
+        drink: 1.5,
+        chat: 0
     };
     this.opts = {
         allow_voteskip: true,
@@ -1710,7 +1711,10 @@ Channel.prototype.tryChat = function(user, data) {
         return;
     }
 
-    if(data.msg == undefined) {
+    if(!this.hasPermission(user, "chat"))
+        return;
+
+    if(typeof data.msg !== "string") {
         return;
     }
 
