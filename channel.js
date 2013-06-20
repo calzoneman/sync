@@ -1015,7 +1015,7 @@ Channel.prototype.autoTemp = function(media, user) {
     }
 }
 
-Channel.prototype.enqueue = function(data, user) {
+Channel.prototype.enqueue = function(data, user, callback) {
     var idx = data.pos == "next" ? this.position + 1 : this.queue.length;
 
     if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
@@ -1030,6 +1030,8 @@ Channel.prototype.enqueue = function(data, user) {
         this.autoTemp(media, user);
         this.queueAdd(media, idx);
         this.logger.log("*** Queued from cache: id=" + data.id);
+        if(callback)
+            callback();
     }
     else {
         switch(data.type) {
@@ -1049,6 +1051,8 @@ Channel.prototype.enqueue = function(data, user) {
                     this.cacheMedia(media);
                     if(data.type == "yp")
                         idx++;
+                    if(callback)
+                        callback();
                 }.bind(this));
                 break;
             case "li":
@@ -1056,18 +1060,24 @@ Channel.prototype.enqueue = function(data, user) {
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
+                if(callback)
+                    callback();
                 break;
             case "tw":
                 var media = new Media(data.id, "Twitch - " + data.id, "--:--", "tw");
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
+                if(callback)
+                    callback();
                 break;
             case "jt":
                 var media = new Media(data.id, "JustinTV - " + data.id, "--:--", "jt");
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
+                if(callback)
+                    callback();
                 break;
             case "us":
                 InfoGetter.getUstream(data.id, function(id) {
@@ -1075,6 +1085,8 @@ Channel.prototype.enqueue = function(data, user) {
                     media.queueby = user ? user.name : "";
                     this.autoTemp(media, user);
                     this.queueAdd(media, idx);
+                    if(callback)
+                        callback();
                 }.bind(this));
                 break;
             case "rt":
@@ -1082,18 +1094,24 @@ Channel.prototype.enqueue = function(data, user) {
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
+                if(callback)
+                    callback();
                 break;
             case "jw":
                 var media = new Media(data.id, "JWPlayer Stream - " + data.id, "--:--", "jw");
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
+                if(callback)
+                    callback();
                 break;
             case "im":
                 var media = new Media(data.id, "Imgur Album", "--:--", "im");
                 media.queueby = user ? user.name : "";
                 this.autoTemp(media, user);
                 this.queueAdd(media, idx);
+                if(callback)
+                    callback();
                 break;
             default:
                 break;
@@ -1140,18 +1158,29 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
     }
 
     var pl = Database.loadUserPlaylist(user.name, data.name);
+    var chan = this;
     // Queue in reverse order for qnext
     if(data.pos == "next") {
-        for(var i = pl.length - 1; i >= 0; i--) {
-            pl[i].pos = "next";
-            this.enqueue(pl[i], user);
+        var i = pl.length;
+        var cback = function() {
+            i--;
+            if(i > 0) {
+                pl[i].pos = "next";
+                chan.enqueue(pl[i], user, cback);
+            }
         }
+        this.enqueue(pl[0], user, cback);
     }
     else {
-        for(var i = 0; i < pl.length; i++) {
-            pl[i].pos = "end";
-            this.enqueue(pl[i], user);
+        var i = 0;
+        var cback = function() {
+            i++;
+            if(i < pl.length) {
+                pl[i].pos = "end";
+                chan.enqueue(pl[i], user, cback);
+            }
         }
+        this.enqueue(pl[i], user, cback);
     }
 }
 
