@@ -92,7 +92,8 @@ var USEROPTS = {
     altsocket            : getOrDefault("altsocket", false),
     joinmessage          : getOrDefault("joinmessage", true),
     qbtn_hide            : getOrDefault("qbtn_hide", false),
-    qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false)
+    qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false),
+    first_visit          : getOrDefault("first_visit", true)
 };
 
 var Rank = {
