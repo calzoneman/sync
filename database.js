@@ -923,12 +923,12 @@ function recordVisit(ip, name) {
 
     // Keep most recent 5 records per IP
     results = db.querySync(createQuery(
-        ["DELETE FROM aliases WHERE visit_id NOT IN (",
+        ["DELETE FROM aliases WHERE ip=? AND visit_id NOT IN (",
             "SELECT visit_id FROM (",
             "SELECT visit_id,time FROM aliases WHERE ip=? ORDER BY time DESC LIMIT 5",
             ") foo",
          ");"].join(""),
-         [ip]
+         [ip, ip]
     ));
 
     return results;
