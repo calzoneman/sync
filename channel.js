@@ -1123,10 +1123,13 @@ Channel.prototype.tryQueue = function(user, data) {
     if(!this.hasPermission(user, "playlistadd")) {
         return;
     }
-    if(data.pos == undefined || data.id == undefined) {
+    if(typeof data.pos !== "string") {
         return;
     }
-    if(data.type == undefined && !(data.id in this.library)) {
+    if(typeof data.id !== "string" && data.id !== false) {
+        return;
+    }
+    if(typeof data.type !== "string" && !(data.id in this.library)) {
         return;
     }
 
@@ -1140,24 +1143,14 @@ Channel.prototype.tryQueue = function(user, data) {
         return;
     }
 
-    this.enqueue(data, user);
+    if(data.list)
+        this.enqueueList(data, user);
+    else
+        this.enqueue(data, user);
 }
 
-Channel.prototype.tryQueuePlaylist = function(user, data) {
-    if(!this.hasPermission(user, "playlistaddlist")) {
-        return;
-    }
-
-    if(typeof data.name != "string" ||
-       typeof data.pos != "string") {
-        return;
-    }
-
-    if(data.pos == "next" && !this.hasPermission(user, "playlistnext")) {
-        return;
-    }
-
-    var pl = Database.loadUserPlaylist(user.name, data.name);
+Channel.prototype.enqueueList = function(data, user) {
+    var pl = data.list;
     var chan = this;
     // Queue in reverse order for qnext
     if(data.pos == "next") {
@@ -1182,6 +1175,25 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
         }
         this.enqueue(pl[i], user, cback);
     }
+}
+
+Channel.prototype.tryQueuePlaylist = function(user, data) {
+    if(!this.hasPermission(user, "playlistaddlist")) {
+        return;
+    }
+
+    if(typeof data.name != "string" ||
+       typeof data.pos != "string") {
+        return;
+    }
+
+    if(data.pos == "next" && !this.hasPermission(user, "playlistnext")) {
+        return;
+    }
+
+    var pl = Database.loadUserPlaylist(user.name, data.name);
+    data.list = pl;
+    this.enqueueList(data, user);
 }
 
 Channel.prototype.setTemp = function(idx, temp) {

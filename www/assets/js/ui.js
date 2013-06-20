@@ -190,6 +190,7 @@ function queue(pos) {
     if(pos == "next") {
         links = links.reverse();
     }
+    var parsed = [];
     links.forEach(function(link) {
         var data = parseMediaLink(link);
         if(data.id === null || data.type === null) {
@@ -200,12 +201,24 @@ function queue(pos) {
         else {
             $("#mediaurl").val("");
         }
-        socket.emit("queue", {
+        parsed.push({
             id: data.id,
-            type: data.type,
-            pos: "end"
+            type: data.type
         });
     });
+
+    if(parsed.length > 1) {
+        socket.emit("queue", {
+            id: false,
+            list: parsed,
+            type: "list",
+            pos: pos
+        });
+    }
+    else {
+        parsed[0].pos = pos;
+        socket.emit("queue", parsed[0]);
+    }
 }
 
 $("#queue_next").click(function() {
