@@ -34,8 +34,10 @@ var CHANNEL = {
 
 var PLAYER = false;
 var FLUIDLAYOUT = false;
-var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
-var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+if($("ytapiplayer").length > 0) {
+    var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+}
 var POSITION = -1;
 var socket = {
     emit: function() {
@@ -77,19 +79,20 @@ function getOrDefault(k, def) {
 }
 
 var USEROPTS = {
-    theme           : getOrDefault("theme", "default"),
-    css             : getOrDefault("css", ""),
-    layout          : getOrDefault("layout", "default"),
-    synch           : getOrDefault("synch", true),
-    hidevid         : getOrDefault("hidevid", false),
-    show_timestamps : getOrDefault("show_timestamps", true),
-    modhat          : getOrDefault("modhat", false),
-    blink_title     : getOrDefault("blink_title", false),
-    sync_accuracy   : getOrDefault("sync_accuracy", 2),
-    chatbtn         : getOrDefault("chatbtn", false),
-    altsocket       : getOrDefault("altsocket", false),
-    joinmessage     : getOrDefault("joinmessage", true),
-    qbtn_hide       : getOrDefault("qbtn_hide", false)
+    theme                : getOrDefault("theme", "default"),
+    css                  : getOrDefault("css", ""),
+    layout               : getOrDefault("layout", "default"),
+    synch                : getOrDefault("synch", true),
+    hidevid              : getOrDefault("hidevid", false),
+    show_timestamps      : getOrDefault("show_timestamps", true),
+    modhat               : getOrDefault("modhat", false),
+    blink_title          : getOrDefault("blink_title", false),
+    sync_accuracy        : getOrDefault("sync_accuracy", 2),
+    chatbtn              : getOrDefault("chatbtn", false),
+    altsocket            : getOrDefault("altsocket", false),
+    joinmessage          : getOrDefault("joinmessage", true),
+    qbtn_hide            : getOrDefault("qbtn_hide", false),
+    qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false)
 };
 
 var Rank = {

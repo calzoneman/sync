@@ -261,17 +261,32 @@ function addQueueButtons(li) {
             .appendTo(menu);
     }
 
-    if(USEROPTS.qbtn_hide)
+    if(USEROPTS.qbtn_hide && !USEROPTS.qbtn_idontlikechange)
         menu.hide();
 
-    li.contextmenu(function(ev) {
-        ev.preventDefault();
-        if(menu.css("display") == "none")
-            menu.show("blind");
-        else
-            menu.hide("blind");
-        return false;
-    });
+    // I DON'T LIKE CHANGE
+    if(USEROPTS.qbtn_idontlikechange) {
+        menu.addClass("pull-left");
+        menu.detach().prependTo(li);
+        menu.find(".btn").each(function() {
+            // Clear icon
+            var icon = $(this).find("i");
+            $(this).html("");
+            icon.appendTo(this);
+        });
+        menu.find(".qbtn-play").addClass("btn-success");
+        menu.find(".qbtn-delete").addClass("btn-danger");
+    }
+    else {
+        li.contextmenu(function(ev) {
+            ev.preventDefault();
+            if(menu.css("display") == "none")
+                menu.show("blind");
+            else
+                menu.hide("blind");
+            return false;
+        });
+    }
 }
 
 function rebuildPlaylist() {
@@ -331,11 +346,17 @@ function showOptionsMenu() {
     addOption("", warn);
     $("<hr>").appendTo(form);
 
-    var qbtncontainer = $("<label/>").addClass("checkbox")
+    var hqbtncontainer = $("<label/>").addClass("checkbox")
         .text("Hide playlist buttons by default");
-    var qbtn = $("<input/>").attr("type", "checkbox").appendTo(qbtncontainer);
-    qbtn.prop("checked", USEROPTS.qbtn_hide);
-    addOption("Playlist Buttons", qbtncontainer);
+    var hqbtn = $("<input/>").attr("type", "checkbox").appendTo(hqbtncontainer);
+    hqbtn.prop("checked", USEROPTS.qbtn_hide);
+    addOption("Playlist Buttons", hqbtncontainer);
+
+    var oqbtncontainer = $("<label/>").addClass("checkbox")
+        .text("Old style playlist buttons");
+    var oqbtn = $("<input/>").attr("type", "checkbox").appendTo(oqbtncontainer);
+    oqbtn.prop("checked", USEROPTS.qbtn_idontlikechange);
+    addOption("Playlist Buttons (Old)", oqbtncontainer);
 
     var synchcontainer = $("<label/>").addClass("checkbox")
         .text("Synchronize Media");
@@ -407,17 +428,18 @@ function showOptionsMenu() {
         .appendTo(footer);
 
     submit.click(function() {
-        USEROPTS.theme           = themeselect.val();
-        USEROPTS.css             = usercss.val();
-        USEROPTS.layout          = layoutselect.val();
-        USEROPTS.synch           = synch.prop("checked");
-        USEROPTS.sync_accuracy   = parseFloat(syncacc.val()) || 2;
-        USEROPTS.hidevid         = hidevid.prop("checked");
-        USEROPTS.show_timestamps = showts.prop("checked");
-        USEROPTS.blink_title     = blink.prop("checked");
-        USEROPTS.chatbtn         = sendbtn.prop("checked");
-        USEROPTS.altsocket       = altsocket.prop("checked");
-        USEROPTS.qbtn_hide     = qbtn.prop("checked");
+        USEROPTS.theme                = themeselect.val();
+        USEROPTS.css                  = usercss.val();
+        USEROPTS.layout               = layoutselect.val();
+        USEROPTS.synch                = synch.prop("checked");
+        USEROPTS.sync_accuracy        = parseFloat(syncacc.val()) || 2;
+        USEROPTS.hidevid              = hidevid.prop("checked");
+        USEROPTS.show_timestamps      = showts.prop("checked");
+        USEROPTS.blink_title          = blink.prop("checked");
+        USEROPTS.chatbtn              = sendbtn.prop("checked");
+        USEROPTS.altsocket            = altsocket.prop("checked");
+        USEROPTS.qbtn_hide            = hqbtn.prop("checked");
+        USEROPTS.qbtn_idontlikechange = oqbtn.prop("checked");
         if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
             USEROPTS.joinmessage = join.prop("checked");
