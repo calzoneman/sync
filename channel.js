@@ -136,6 +136,11 @@ Channel.prototype.hasPermission = function(user, key) {
 Channel.prototype.loadDump = function() {
     fs.readFile("chandump/" + this.name, function(err, data) {
         if(err) {
+            if(err.code === "ENOENT") {
+                Logger.errlog.log("WARN: missing dump for " + this.name);
+                this.initialized = true;
+                this.saveDump();
+            }
             Logger.errlog.log("Failed to open channel dump " + this.name);
             Logger.errlog.log(err);
             return;
@@ -281,6 +286,8 @@ Channel.prototype.tryRegister = function(user) {
     else {
         if(Database.registerChannel(this.name)) {
             this.registered = true;
+            this.initialized = true;
+            this.saveDump();
             this.saveRank(user);
             user.socket.emit("registerChannel", {
                 success: true,
