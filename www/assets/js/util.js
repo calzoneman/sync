@@ -757,7 +757,6 @@ function handlePermissionChange() {
         $("#queue").removeClass("queue_sortable");
     }
 
-    setVisible("#getplaylist", hasPermission("playlistgeturl"));
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
 
@@ -1203,7 +1202,6 @@ function genPermissionsEditor() {
     makeOption("Queue livestream", "playlistaddlive", standard, CHANNEL.perms.playlistaddlive+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");
-    makeOption("Retrieve playlist URLs", "playlistgeturl", standard, CHANNEL.perms.playlistgeturl+"");
     makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");
     makeOption("Clear playlist", "playlistclear", standard, CHANNEL.perms.playlistclear+"");
 
