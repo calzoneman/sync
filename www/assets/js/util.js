@@ -283,7 +283,8 @@ function rebuildPlaylist() {
 
 /* menus */
 function showOptionsMenu() {
-    PLAYER.hide();
+    if(PLAYER)
+        PLAYER.hide();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -426,7 +427,8 @@ function showOptionsMenu() {
     });
 
     modal.on("hidden", function() {
-        PLAYER.unhide();
+        if(PLAYER)
+            PLAYER.unhide();
         applyOpts();
         modal.remove();
     });
@@ -509,7 +511,8 @@ function applyOpts() {
 applyOpts();
 
 function showLoginMenu() {
-    PLAYER.hide();
+    if(PLAYER)
+        PLAYER.hide();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -580,7 +583,8 @@ function showLoginMenu() {
     }
     var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
     modal.on("hidden", function() {
-        PLAYER.unhide();
+        if(PLAYER)
+            PLAYER.unhide();
         modal.remove();
     });
     modal.modal();

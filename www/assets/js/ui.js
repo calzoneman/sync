@@ -9,6 +9,16 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* window focus/blur */
+$(window).focus(function() {
+    FOCUSED = true;
+    clearInterval(TITLE_BLINK);
+    TITLE_BLINK = false;
+    document.title = PAGETITLE;
+}).blur(function() {
+    FOCUSED = false;
+});
+
 /* Generalized show/hide function */
 function generateToggle(chevron, div) {
     $(chevron).click(function() {
@@ -29,6 +39,7 @@ function generateToggle(chevron, div) {
 
 /* setup show/hide toggles */
 generateToggle("#usercountwrap", "#userlist");
+$("#usercountwrap").click(scrollChat);
 generateToggle("#librarytoggle", "#librarywrap");
 generateToggle("#userpltoggle", "#userplaylistwrap");
 generateToggle("#playlisttoggle", "#playlist_controls");
@@ -57,6 +68,9 @@ $("#logout").click(function() {
 });
 
 /* chatbox */
+$("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
+$("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
+
 $("#chatline").keydown(function(ev) {
     if(ev.keyCode == 13) {
         var msg = $("#chatline").val();
