@@ -88,7 +88,8 @@ var USEROPTS = {
     sync_accuracy   : getOrDefault("sync_accuracy", 2),
     chatbtn         : getOrDefault("chatbtn", false),
     altsocket       : getOrDefault("altsocket", false),
-    joinmessage     : getOrDefault("joinmessage", true)
+    joinmessage     : getOrDefault("joinmessage", true),
+    qbtn_always     : getOrDefault("qbtn_always", false)
 };
 
 var Rank = {

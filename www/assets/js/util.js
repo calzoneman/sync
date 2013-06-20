@@ -261,7 +261,8 @@ function addQueueButtons(li) {
             .appendTo(menu);
     }
 
-    menu.hide();
+    if(!USEROPTS.qbtn_always)
+        menu.hide();
 
     li.contextmenu(function(ev) {
         ev.preventDefault();
@@ -328,6 +329,12 @@ function showOptionsMenu() {
         .text("Changing layouts may require a refresh")
     addOption("", warn);
     $("<hr>").appendTo(form);
+
+    var qbtncontainer = $("<label/>").addClass("checkbox")
+        .text("Show playlist buttons by default");
+    var qbtn = $("<input/>").attr("type", "checkbox").appendTo(qbtncontainer);
+    qbtn.prop("checked", USEROPTS.qbtn_always);
+    addOption("Playlist Buttons", qbtncontainer);
 
     var synchcontainer = $("<label/>").addClass("checkbox")
         .text("Synchronize Media");
@@ -409,6 +416,7 @@ function showOptionsMenu() {
         USEROPTS.blink_title     = blink.prop("checked");
         USEROPTS.chatbtn         = sendbtn.prop("checked");
         USEROPTS.altsocket       = altsocket.prop("checked");
+        USEROPTS.qbtn_always     = qbtn.prop("checked");
         if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
             USEROPTS.joinmessage = join.prop("checked");
