@@ -41,6 +41,13 @@ menuHandler("#show_logview", "#logview");
 menuHandler("#show_announce", "#announcepanel");
 menuHandler("#show_gbans", "#gbanpanel");
 menuHandler("#show_userlookup", "#userlookup");
+menuHandler("#show_chanloaded", "#channellist");
+$("#show_chanloaded").click(function() {
+    socket.emit("acp-list-loaded");
+});
+$("#listloaded_refresh").click(function() {
+    socket.emit("acp-list-loaded");
+});
 
 function getSyslog() {
     $.ajax(WEB_URL+"/api/plain/readlog?type=sys&"+AUTH).done(function(data) {
@@ -164,7 +171,7 @@ function setupCallbacks() {
             var tr = $("<tr/>").appendTo($("#userlookup table"));
             $("<td/>").text(u.id).appendTo(tr);
             $("<td/>").text(u.uname).appendTo(tr);
-            $("<td/>").text(u.global_rank).appendTo(tr);
+            var rank = $("<td/>").text(u.global_rank).appendTo(tr);
             $("<td/>").text(u.email).appendTo(tr);
             (function(name, email) {
             $("<button/>").addClass("btn btn-mini")
@@ -180,7 +187,44 @@ function setupCallbacks() {
                     }
                 });
             })(u.uname, u.email);
+            (function(u) {
+                rank.click(function() {
+                    if(this.find(".rank-edit").length > 0)
+                        return;
+                    var r = this.text();
+                    this.text("");
+                    var edit = $("<input/>").attr("type", "text")
+                        .attr("placeholder", r)
+                        .addClass("rank-edit")
+                        .appendTo(this)
+                        .focus();
+
+                    function save() {
+                        var r = this.val();
+                        var r2 = r;
+                        if(r.trim() == "")
+                            r = this.attr("placeholder");
+                        this.parent().text(this.attr("placeholder"));
+                        socket.emit("acp-set-rank", {
+                            name: u.uname,
+                            rank: parseInt(r)
+                        });
+                    }
+                    edit.blur(save.bind(edit));
+                    edit.keydown(function(ev) {
+                        if(ev.keyCode == 13)
+                            save.bind(edit)();
+                    });
+                }.bind(rank));
+            })(u);
         }
+    });
+
+    socket.on("acp-set-rank", function(data) {
+        $("#userlookup tr").each(function() {
+            if($($(this).children()[1]).text() == data.name)
+                $($(this).children()[2]).text(data.rank);
+        });
     });
 
     socket.on("acp-reset-password", function(data) {
@@ -188,6 +232,41 @@ function setupCallbacks() {
             alert(data.error);
         else
             alert("Password reset successful.  Reset hash: " + data.hash);
+    });
+
+    socket.on("acp-list-loaded", function(data) {
+        $("#channellist tbody").remove();
+        var total = 0;
+        data.forEach(function(c) {
+            total += c.usercount;
+            var tr = $("<tr/>").appendTo($("#channellist table"));
+            $("<td/>").text(c.title + " (" + c.name + ")").appendTo(tr);
+            $("<td/>").text(c.usercount).appendTo(tr);
+            $("<td/>").text(c.mediatitle).appendTo(tr);
+            $("<td/>").text(c.registered ? "Yes" : "No").appendTo(tr);
+            $("<td/>").text(c.is_public ? "Yes" : "No").appendTo(tr);
+            $("<button/>").addClass("btn btn-danger btn-mini")
+                .text("Force Unload")
+                .appendTo($("<td/>").appendTo(tr))
+                .click(function() {
+                    var go = confirm("Really force unload?");
+                    if(go) {
+                        socket.emit("acp-channel-unload", {
+                            name: c.name,
+                            save: true
+                        });
+                        socket.emit("acp-list-loaded");
+                    }
+                });
+        });
+
+        var tr = $("<tr/>").appendTo($("#channellist table"));
+        $("<td/>").text("Total").appendTo(tr);
+        $("<td/>").text(total).appendTo(tr);
+        $("<td/>").appendTo(tr);
+        $("<td/>").appendTo(tr);
+        $("<td/>").appendTo(tr);
+        $("<td/>").appendTo(tr);
     });
 
 }
