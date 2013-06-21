@@ -685,6 +685,16 @@ function setUserEmail(name, email) {
     return true;
 }
 
+function genSalt() {
+    var chars = "abcdefgihjklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+              + "0123456789!@#$%^&*_+=~";
+    var salt = [];
+    for(var i = 0; i < 32; i++) {
+        salt.push(chars[parseInt(Math.random()*chars.length)]);
+    }
+    return salt.join('');
+}
+
 function generatePasswordReset(ip, name, email) {
     var db = getConnection();
     if(!db) {
@@ -711,7 +721,7 @@ function generatePasswordReset(ip, name, email) {
     }
 
     // Validation complete, now time to reset it
-    var hash = hashlib.sha256(Date.now() + name);
+    var hash = hashlib.sha256(genSalt() + name);
     var exp = Date.now() + 24*60*60*1000;
     query = createQuery(
         ["INSERT INTO `password_reset` (",
