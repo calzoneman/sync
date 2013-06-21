@@ -34,7 +34,7 @@ var CHANNEL = {
 
 var PLAYER = false;
 var FLUIDLAYOUT = false;
-if($("ytapiplayer").length > 0) {
+if($("#ytapiplayer").length > 0) {
     var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
     var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
 }
