@@ -908,9 +908,12 @@ Callbacks = {
                 $("<i/>").addClass("icon-trash").appendTo(del);
                 (function(li) {
                 del.click(function() {
-                    socket.emit("deletePlaylist", {
-                        name: li.data("pl-name")
-                    });
+                    var go = confirm("Are you sure you want to delete playlist '" + li.data("pl-name") + "'?");
+                    if(go) {
+                        socket.emit("deletePlaylist", {
+                            name: li.data("pl-name")
+                        });
+                    }
                 });
                 })(li);
                 if(hasPermission("playlistaddlist")) {
