@@ -666,6 +666,7 @@ function showPollMenu() {
                 title: title.val(),
                 opts: opts
             });
+            menu.remove();
         });
 }
 
@@ -793,6 +794,7 @@ function handlePermissionChange() {
 
 function clearSearchResults() {
     $("#library").html("");
+    $("#search_clear").remove();
     $("#search_pagination").remove();
 }
 
@@ -1174,6 +1176,14 @@ function genPermissionsEditor() {
         ["Channel Admin", "3"]
     ];
 
+    var noanon = [
+        ["Guest"        , "0"],
+        ["Registered"   , "1"],
+        ["Leader"       , "1.5"],
+        ["Moderator"    , "2"],
+        ["Channel Admin", "3"]
+    ];
+
     var modleader = [
         ["Leader"       , "1.5"],
         ["Moderator"    , "2"],
@@ -1218,7 +1228,7 @@ function genPermissionsEditor() {
 
     addDivider("Misc");
     makeOption("Drink calls", "drink", modleader, CHANNEL.perms.drink+"");
-    makeOption("Chat", "chat", standard, CHANNEL.perms.chat+"");
+    makeOption("Chat", "chat", noanon, CHANNEL.perms.chat+"");
 
     var submit = $("<button/>").addClass("btn btn-primary").appendTo(fs);
     submit.text("Save");

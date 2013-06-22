@@ -22,6 +22,9 @@
     });
 
     clickHandler("#show_optedit", "#optedit");
+    $("#optedit input[type='text']").keydown(function(ev) {
+        return ev.keyCode != 13;
+    });
     clickHandler("#show_permedit", "#permedit");
     clickHandler("#show_motdedit", "#motdedit");
     clickHandler("#show_filteredit", "#filteredit");

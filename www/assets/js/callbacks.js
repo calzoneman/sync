@@ -770,6 +770,7 @@ Callbacks = {
     },
 
     searchResults: function(data) {
+        $("#search_clear").remove();
         clearSearchResults();
         $("#library").data("entries", data.results);
         if(data.results.length > 100) {
@@ -789,6 +790,13 @@ Callbacks = {
                 })(i);
             }
         }
+        $("<button/>").addClass("btn btn-block")
+            .attr("id", "search_clear")
+            .text("Clear Results")
+            .click(function() {
+                clearSearchResults();
+            })
+            .insertBefore($("#library"));
         loadSearchPage(0);
     },
 

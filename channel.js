@@ -24,6 +24,7 @@ var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
 var Filter = require("./filter.js").Filter;
+var ActionLog = require("./actionlog");
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
