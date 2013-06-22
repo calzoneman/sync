@@ -1022,7 +1022,7 @@ function formatChatMessage(data) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
         time.text("["+timestamp+"] ");
-        if(data.msgclass != "greentext" && data.msgclass != "drink")
+        if(data.msgclass == "shout" || data.msgclass == "server-whisper")
             time.addClass(data.msgclass);
     }
     var name = $("<span/>");
