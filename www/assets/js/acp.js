@@ -41,6 +41,26 @@ menuHandler("#show_logview", "#logview");
 menuHandler("#show_announce", "#announcepanel");
 menuHandler("#show_gbans", "#gbanpanel");
 menuHandler("#show_userlookup", "#userlookup");
+function tableResort(tbl, sortby) {
+    if(tbl.data("sortby") == sortby)
+        tbl.data("sort_desc", !tbl.data("sort_desc"));
+    else
+        tbl.data("sortby", sortby)
+    loadPage(tbl, 0);
+}
+$("#userlookup_uid").click(function() {
+    tableResort($("#userlookup table"), "id");
+});
+$("#userlookup_uname").click(function() {
+    tableResort($("#userlookup table"), "uname");
+});
+$("#userlookup_rank").click(function() {
+    tableResort($("#userlookup table"), "global_rank");
+});
+$("#userlookup_email").click(function() {
+    tableResort($("#userlookup table"), "email");
+});
+
 menuHandler("#show_chanloaded", "#channellist");
 $("#show_chanloaded").click(function() {
     socket.emit("acp-list-loaded");
@@ -151,6 +171,41 @@ $("#userlookup_submit").click(function() {
     socket.emit("acp-lookup-user", $("#userlookup_name").val());
 });
 
+function loadPage(tbl, page) {
+    var sort_field = tbl.data("sortby");
+    var sort_desc = tbl.data("sort_desc");
+    var generator = tbl.data("generator");
+    var pag = tbl.data("pagination");
+    if(pag) {
+        pag.find("li").each(function() {
+            $(this).removeClass("active");
+        });
+        $(pag.find("li")[page]).addClass("active");
+    }
+    var e = tbl.data("entries");
+
+    tbl.find("tbody").remove();
+
+    if(sort_field) {
+        e.sort(function(a, b) {
+            var x = a[sort_field];
+            if(typeof x == "string")
+                x = x.toLowerCase();
+            var y = b[sort_field];
+            if(typeof y == "string")
+                y = y.toLowerCase();
+            var z = x == y ? 0 : (x < y ? -1 : 1);
+            if(sort_desc)
+                z = -z;
+            return z;
+        });
+    }
+
+    for(var i = page * 20; i < page * 20 + 20; i++) {
+        generator(e[i]);
+    }
+}
+
 function setupCallbacks() {
     socket.on("connect", function() {
         if(NAME && SESSION) {
@@ -213,21 +268,34 @@ function setupCallbacks() {
     });
 
     socket.on("acp-userdata", function(data) {
-        data = data.sort(function(a, b) {
-            var x = a.uname.toLowerCase();
-            var y = b.uname.toLowerCase();
-            return x == y ? 0 : (x < y ? -1 : 1);
-        });
-
-        $("#userlookup tbody").remove();
-        for(var i = 0; i < data.length; i++) {
-            var u = data[i];
+        var tbl = $("#userlookup table");
+        if(data.length > 20) {
+            var pag = $("<div/>").addClass("pagination")
+                .attr("id", "userlookup_pagination")
+                .insertAfter($("#userlookup table"));
+            var btns = $("<ul/>").appendTo(pag);
+            for(var i = 0; i < data.length / 20; i++) {
+                var li = $("<li/>").appendTo(btns);
+                (function(i) {
+                $("<a/>").attr("href", "javascript:void(0)")
+                    .text(i+1)
+                    .click(function() {
+                        loadPage(tbl, i);
+                    })
+                    .appendTo(li);
+                })(i);
+            }
+            tbl.data("pagination", pag);
+        }
+        tbl.data("entries", data);
+        tbl.data("sortby", "uname");
+        tbl.data("sort_desc", false);
+        tbl.data("generator", function(u) {
             var tr = $("<tr/>").appendTo($("#userlookup table"));
             $("<td/>").text(u.id).appendTo(tr);
             $("<td/>").text(u.uname).appendTo(tr);
             var rank = $("<td/>").text(u.global_rank).appendTo(tr);
             $("<td/>").text(u.email).appendTo(tr);
-            (function(name, email) {
             $("<button/>").addClass("btn btn-mini")
                 .text("Reset password")
                 .appendTo($("<td/>").appendTo(tr))
@@ -235,43 +303,41 @@ function setupCallbacks() {
                     var reset = confirm("Really reset password?");
                     if(reset) {
                         socket.emit("acp-reset-password", {
-                            name: name,
-                            email: email
+                            name: u.uname,
+                            email: u.email
                         });
                     }
                 });
-            })(u.uname, u.email);
-            (function(u) {
-                rank.click(function() {
-                    if(this.find(".rank-edit").length > 0)
-                        return;
-                    var r = this.text();
-                    this.text("");
-                    var edit = $("<input/>").attr("type", "text")
-                        .attr("placeholder", r)
-                        .addClass("rank-edit")
-                        .appendTo(this)
-                        .focus();
+            rank.click(function() {
+                if(this.find(".rank-edit").length > 0)
+                    return;
+                var r = this.text();
+                this.text("");
+                var edit = $("<input/>").attr("type", "text")
+                    .attr("placeholder", r)
+                    .addClass("rank-edit")
+                    .appendTo(this)
+                    .focus();
 
-                    function save() {
-                        var r = this.val();
-                        var r2 = r;
-                        if(r.trim() == "")
-                            r = this.attr("placeholder");
-                        this.parent().text(this.attr("placeholder"));
-                        socket.emit("acp-set-rank", {
-                            name: u.uname,
-                            rank: parseInt(r)
-                        });
-                    }
-                    edit.blur(save.bind(edit));
-                    edit.keydown(function(ev) {
-                        if(ev.keyCode == 13)
-                            save.bind(edit)();
+                function save() {
+                    var r = this.val();
+                    var r2 = r;
+                    if(r.trim() == "")
+                        r = this.attr("placeholder");
+                    this.parent().text(this.attr("placeholder"));
+                    socket.emit("acp-set-rank", {
+                        name: u.uname,
+                        rank: parseInt(r)
                     });
-                }.bind(rank));
-            })(u);
-        }
+                }
+                edit.blur(save.bind(edit));
+                edit.keydown(function(ev) {
+                    if(ev.keyCode == 13)
+                        save.bind(edit)();
+                });
+            }.bind(rank));
+        });
+        loadPage($("#userlookup table"), 0);
     });
 
     socket.on("acp-set-rank", function(data) {

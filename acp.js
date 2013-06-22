@@ -137,8 +137,8 @@ module.exports = {
             }
         });
 
-        user.socket.on("acp-actionlog-clear", function() {
-            ActionLog.clear();
+        user.socket.on("acp-actionlog-clear", function(data) {
+            ActionLog.clear(data);
             ActionLog.record(user.ip, user.name, "acp-actionlog-clear");
         });
     }
