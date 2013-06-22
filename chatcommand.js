@@ -32,6 +32,29 @@ function handle(chan, user, msg, data) {
             chan.chainMessage(user, msg.substring(3), {modflair: user.rank})
         }
     }
+    else if(msg.indexOf("/a ") == 0) {
+        if(user.rank >= Rank.Siteadmin) {
+            var flair = {
+                superadminflair: {
+                    labelclass: "label-important",
+                    icon: "icon-globe"
+                }
+            };
+            var args = msg.substring(3).split(" ");
+            var cargs = [];
+            for(var i = 0; i < args.length; i++) {
+                var a = args[i];
+                if(a.indexOf("!icon-") == 0)
+                    flair.superadminflair.icon = a.substring(1);
+                else if(a.indexOf("!label-") == 0)
+                    flair.superadminflair.labelclass = a.substring(1);
+                else {
+                    cargs.push(a);
+                }
+            }
+            chan.chainMessage(user, cargs.join(" "), flair);
+        }
+    }
     else if(msg.indexOf("/kick ") == 0) {
         handleKick(chan, user, msg.substring(6).split(" "));
     }

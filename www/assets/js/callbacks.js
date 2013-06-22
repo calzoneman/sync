@@ -1,11 +1,11 @@
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -364,7 +364,6 @@ Callbacks = {
         // I originally added this check because of a race condition
         // Now it seems to work without but I don't trust it
         if(!tbl.hasClass("table")) {
-            console.log("thing");
             setTimeout(function() {
                 Callbacks.banlist(entries);
             }, 100);
@@ -424,7 +423,6 @@ Callbacks = {
         // I originally added this check because of a race condition
         // Now it seems to work without but I don't trust it
         if(!tbl.hasClass("table")) {
-            console.log("thing");
             setTimeout(function() {
                 Callbacks.channelRanks(entries);
             }, 100);
@@ -484,8 +482,42 @@ Callbacks = {
     /* REGION Rank Stuff */
 
     rank: function(r) {
+        if(r >= 255)
+            SUPERADMIN = true;
         CLIENT.rank = r;
         handlePermissionChange();
+        if(SUPERADMIN && $("#setrank").length == 0) {
+            $("<a/>").attr("href", "/acp.html")
+                .attr("target", "_blank")
+                .text("ACP")
+                .appendTo($("<li/>").appendTo($(".nav")[0]));
+            var li = $("<li/>").addClass("dropdown")
+                .attr("id", "setrank")
+                .appendTo($(".nav")[0]);
+            $("<a/>").addClass("dropdown-toggle")
+                .attr("data-toggle", "dropdown")
+                .attr("href", "javascript:void(0)")
+                .html("Set Rank <b class='caret'></b>")
+                .appendTo(li);
+            var menu = $("<ul/>").addClass("dropdown-menu")
+                .appendTo(li);
+
+            function addRank(r, disp) {
+                var li = $("<li/>").appendTo(menu);
+                $("<a/>").attr("href", "javascript:void(0)")
+                    .html(disp)
+                    .click(function() {
+                        socket.emit("borrow-rank", r);
+                    })
+                    .appendTo(li);
+            }
+
+            addRank(0, "<span class='userlist_guest'>Guest</span>");
+            addRank(1, "<span>Registered</span>");
+            addRank(2, "<span class='userlist_op'>Moderator</span>");
+            addRank(3, "<span class='userlist_owner'>Admin</span>");
+            addRank(255, "<span class='userlist_siteadmin'>Superadmin</span>");
+        }
     },
 
     /* should not be relevant since registration is on account.html */

@@ -1012,6 +1012,8 @@ function formatChatMessage(data) {
     if(data.msgclass == "drink" || data.msgclass == "shout") {
         skip = false;
     }
+    if(data.superadminflair)
+        skip = false;
     if(data.msgclass == "server-whisper") {
         skip = true;
     }
@@ -1034,6 +1036,13 @@ function formatChatMessage(data) {
     message[0].innerHTML = data.msg;
     if(data.modflair) {
         name.addClass(getNameColor(data.modflair));
+    }
+    if(data.superadminflair) {
+        name.addClass("label")
+            .addClass(data.superadminflair.labelclass);
+        $("<i/>").addClass(data.superadminflair.icon)
+            .addClass("icon-white")
+            .prependTo(name);
     }
     if(data.msgclass == "action") {
         name.remove();
