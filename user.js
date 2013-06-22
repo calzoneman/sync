@@ -18,6 +18,7 @@ var Database = require("./database.js");
 var Logger = require("./logger.js");
 var Config = require("./config.js");
 var ACP = require("./acp");
+var ActionLog = require("./actionlog");
 
 // Represents a client connected via socket.io
 var User = function(socket, ip) {
@@ -526,13 +527,6 @@ User.prototype.initCallbacks = function() {
 var lastguestlogin = {};
 // Attempt to login
 User.prototype.login = function(name, pw, session) {
-    if(this.channel != null && name != "") {
-        for(var i = 0; i < this.channel.users.length; i++) {
-            if(this.channel.users[i].name == name) {
-                this.channel.kick(this.channel.users[i], "Duplicate login");
-            }
-        }
-    }
     // No password => try guest login
     if(pw == "" && session == "") {
         if(this.ip in lastguestlogin) {
@@ -593,6 +587,14 @@ User.prototype.login = function(name, pw, session) {
         try {
             var row;
             if((row = Auth.login(name, pw, session))) {
+                if(this.channel != null) {
+                    for(var i = 0; i < this.channel.users.length; i++) {
+                        if(this.channel.users[i].name == name) {
+                            this.channel.kick(this.channel.users[i], "Duplicate login");
+                        }
+                    }
+                }
+                ActionLog.record(this.ip, name, "login-success");
                 this.loggedIn = true;
                 this.socket.emit("login", {
                     success: true,
@@ -620,6 +622,7 @@ User.prototype.login = function(name, pw, session) {
             }
             // Wrong password
             else {
+                ActionLog.record(this.ip, this.name, "login-failure");
                 this.socket.emit("login", {
                     success: false,
                     error: "Invalid session"

@@ -59,6 +59,7 @@
                         <li id="li_gbans"><a href="javascript:void(0)" id="show_gbans">Global Bans</a></li>
                         <li id="li_userlookup"><a href="javascript:void(0)" id="show_userlookup">Users</a></li>
                         <li id="li_chanloaded"><a href="javascript:void(0)" id="show_chanloaded">Loaded Channels</a></li>
+                        <li id="li_actionlog"><a href="javascript:void(0)" id="show_actionlog">Action Log</a></li>
                     </ul>
                 </div>
             </div>
@@ -170,6 +171,22 @@
                             <th>Registered</th>
                             <th>Public</th>
                             <th>Force Unload</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="span12" id="actionlog">
+                <h3>Action Log</h3>
+                <select multiple="multiple" id="actionlog_filter">
+                </select>
+                <button class="btn btn-danger" id="actionlog_clear">Clear</button>
+                <table class="table table-bordered table-striped table-compact">
+                    <thead>
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Name</th>
+                            <th>Action</th>
+                            <th>Time</th>
                         </tr>
                     </thead>
                 </table>

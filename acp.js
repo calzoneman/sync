@@ -1,24 +1,30 @@
 var Server = require("./server");
 var Auth = require("./auth");
 var Database = require("./database");
+var ActionLog = require("./actionlog");
 
 module.exports = {
     init: function(user) {
+        ActionLog.record(user.ip, user.name, "acp-init");
         user.socket.on("acp-announce", function(data) {
+            ActionLog.record(user.ip, user.name, ["acp-announce", data]);
             Server.announcement = data;
             Server.io.sockets.emit("announcement", data);
         });
 
         user.socket.on("acp-announce-clear", function() {
+            ActionLog.record(user.ip, user.name, "acp-announce-clear");
             Server.announcement = null;
         });
 
         user.socket.on("acp-global-ban", function(data) {
+            ActionLog.record(user.ip, user.name, ["acp-global-ban", data.ip]);
             Database.globalBanIP(data.ip, data.note);
             user.socket.emit("acp-global-banlist", Database.refreshGlobalBans());
         });
 
         user.socket.on("acp-global-unban", function(ip) {
+            ActionLog.record(user.ip, user.name, ["acp-global-unban", data.ip]);
             Database.globalUnbanIP(ip);
             user.socket.emit("acp-global-banlist", Database.refreshGlobalBans());
         });
@@ -49,6 +55,7 @@ module.exports = {
                 return;
             try {
                 var hash = Database.generatePasswordReset(user.ip, data.name, data.email);
+                ActionLog.record(user.ip, user.name, ["acp-reset-password", data.name]);
             }
             catch(e) {
                 user.socket.emit("acp-reset-password", {
@@ -83,6 +90,7 @@ module.exports = {
             if(!db)
                 return;
 
+            ActionLog.record(user.ip, user.name, ["acp-set-rank", data]);
             var query = Database.createQuery(
                 "UPDATE registrations SET global_rank=? WHERE uname=?",
                 [data.name, data.rank]
@@ -120,12 +128,18 @@ module.exports = {
                 var c = Server.channels[data.name];
                 if(!c)
                     return;
+                ActionLog.record(user.ip, user.name, "acp-channel-unload");
                 c.initialized = data.save;
                 c.users.forEach(function(u) {
                     c.kick(u, "Channel shutting down");
                 });
                 Server.unload(c);
             }
+        });
+
+        user.socket.on("acp-actionlog-clear", function() {
+            ActionLog.clear();
+            ActionLog.record(user.ip, user.name, "acp-actionlog-clear");
         });
     }
 }

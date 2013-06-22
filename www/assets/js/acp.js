@@ -48,6 +48,27 @@ $("#show_chanloaded").click(function() {
 $("#listloaded_refresh").click(function() {
     socket.emit("acp-list-loaded");
 });
+menuHandler("#show_actionlog", "#actionlog");
+$("#show_actionlog").click(getActionLog);
+$("#actionlog_filter").click(function() {
+    var actions = $(this).val();
+    $("#actionlog tbody").remove();
+    $("#actionlog table").data("entries").forEach(function(e) {
+        if(typeof e.action == "string" && actions.indexOf(e.action) == -1)
+            return;
+        if(typeof e.action == "object" && "0" in e.action && actions.indexOf(e.action[0]) == -1)
+            return;
+
+        var tr = $("<tr/>").appendTo($("#actionlog table"));
+        $("<td/>").text(e.ip).appendTo(tr);
+        $("<td/>").text(e.name).appendTo(tr);
+        $("<td/>").text(e.action).appendTo(tr);
+        $("<td/>").text(new Date(e.time).toTimeString()).appendTo(tr);
+    });
+});
+$("#actionlog_clear").click(function() {
+    socket.emit("acp-actionlog-clear");
+});
 
 function getSyslog() {
     $.ajax(WEB_URL+"/api/plain/readlog?type=sys&"+AUTH).done(function(data) {
@@ -61,6 +82,39 @@ function getErrlog() {
     });
 }
 $("#errlog").click(getErrlog);
+function getActionLog() {
+    $.ajax(WEB_URL+"/api/plain/readlog?type=action&"+AUTH).done(function(data) {
+        var entries = [];
+        var actions = [];
+        data.split("\n").forEach(function(ln) {
+            var entry;
+            try {
+                entry = JSON.parse(ln);
+                if(typeof entry.action == "string") {
+                    if(actions.indexOf(entry.action) == -1)
+                        actions.push(entry.action);
+                }
+                else if(typeof entry.action == "object" && "0" in entry.action) {
+                    if(actions.indexOf(entry.action[0]) == -1)
+                        actions.push(entry.action[0]);
+                }
+                entries.push(entry);
+            }
+            catch(e) { }
+        });
+        entries.sort(function(a, b) {
+            return a.time == b.time ? 0 : (a.time < b.time ? 1 : -1);
+        });
+        $("#actionlog table").data("entries", entries);
+        $("#actionlog_filter").html("");
+        actions.sort(function(a, b) {
+            return a == b ? 0 : (a < b ? -1 : 1);
+        });
+        actions.forEach(function(a) {
+            $("<option/>").text(a).val(a).appendTo($("#actionlog_filter"));
+        });
+    });
+}
 function getChanlog() {
     var chan = $("#channame").val();
     $.ajax(WEB_URL+"/api/plain/readlog?type=channel&channel="+chan+"&"+AUTH).done(function(data) {
