@@ -57,122 +57,128 @@
         <!-- announcement area -->
         <div class="row-fluid" id="announcements">
         </div>
-        <div class="row" id="main-outer">
-        <div class="span12" id="main-inner">
         <!-- main row -->
         <div class="row" id="main">
-          <!-- chat container -->
-          <div class="span5" id="chatwrap">
-            <!-- user count -->
-            <div id="usercountwrap" class="pointer">
-              <i class="icon-chevron-up pull-left" id="userlisttoggle" title="Show/Hide Userlist"></i>
-              <p id="usercount">Not connected</p>
-            </div>
-            <!-- userlist -->
-            <div id="userlist">
-            </div>
-            <!-- message buffer -->
-            <div id="messagebuffer">
-            </div>
-            <!-- chat input -->
-            <input type="text" id="chatline" maxlength="240" class="span5">
-          </div>
-          <!-- video container -->
-          <div class="span7" id="videowrap">
-            <!-- current video display -->
-            <p id="currenttitle">Nothing playing</p>
-            <!-- video frame -->
-            <div id="ytapiplayer">
+          <div class="span12" id="main-outer">
+            <div class="row" id="main-inner">
+              <!-- chat container -->
+              <div class="span5" id="chatwrap">
+                <!-- user count -->
+                <div id="usercountwrap" class="pointer">
+                  <i class="icon-chevron-up pull-left" id="userlisttoggle" title="Show/Hide Userlist"></i>
+                  <p id="usercount">Not connected</p>
+                </div>
+                <!-- userlist -->
+                <div id="userlist">
+                </div>
+                <!-- message buffer -->
+                <div id="messagebuffer">
+                </div>
+                <!-- chat input -->
+                <input type="text" id="chatline" maxlength="240" class="span5">
+              </div>
+              <!-- video container -->
+              <div class="span7" id="videowrap">
+                <!-- current video display -->
+                <p id="currenttitle">Nothing playing</p>
+                <!-- video frame -->
+                <div id="ytapiplayer">
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <!-- playlist row -->
         <div class="row" id="playlistrow">
-          <!-- left pane - Library + user playlists -->
-          <div class="span5" id="leftpane-outer">
-            <div class="row-fluid" id="leftpane-inner">
-              <!-- new poll controls -->
-              <div class="span12" id="pollbtnwrap">
-                  <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
-              </div>
-              <!-- poll container -->
-              <div class="span12" id="pollwrap">
-              </div>
-              <!-- library search -->
-              <div class="well well-small span12 row-fluid">
-              <div class="span12 pointer" id="librarytoggle">
-                <i class="icon-plus pull-left"></i>
-                <p>Show Library</p>
-              </div>
-              <div id="librarywrap">
-                <div class="span7" id="querywrap">
-                  <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
-                </div>
-                <div class="span5 btn-group" id="searchbtns">
-                  <button class="btn" id="library_search">Library</button>
-                  <button class="btn" id="youtube_search">YouTube</button>
-                </div>
-                <ul class="span12 videolist" id="library">
-                </ul>
-              </div>
-              </div>
-              <!-- user playlists -->
-              <div class="well well-small span12 row-fluid" id="userpltogglewrap">
-              <div class="span12 pointer" id="userpltoggle">
-                <i class="icon-plus pull-left"></i>
-                <p>Show Playlist Manager</p>
-              </div>
-              <div id="userplaylistwrap">
-                <div class="span7">
-                  <input type="text" id="userpl_name" class="input-block-level" placeholder="Playlist Name">
-                </div>
-                <div class="span5">
-                  <button class="btn btn-block" id="userpl_save">Save Playlist</button>
-                </div>
-                <ul class="span12" id="userpl_list">
-                </ul>
-              </div>
-              </div>
-            </div>
-          </div>
-          <!-- right pane - channel playlist -->
-          <div class="span7" id="rightpane-outer">
-            <div class="row-fluid" id="rightpane-inner">
-              <!-- account for left pane having the poll buffer -->
-              <div class="span12" id="queue_align"></div>
-              <!-- electric boogaloo -->
-              <div class="span12" id="queue_align2"></div>
-              <!-- playlist controls -->
-              <div class="well well-small span12 row-fluid" id="playlisttogglewrap">
-              <div class="span12 pointer" id="playlisttoggle">
-                <i class="icon-plus pull-left"></i>
-                <p>Show Playlist Controls</p>
-              </div>
-              <div id="playlist_controls">
-                <div class="span8">
-                  <input type="text" id="mediaurl" class="input-block-level" placeholder="Media URL">
-                </div>
-                <div class="span4 btn-group">
-                  <button class="btn" id="queue_next">Next</button>
-                  <button class="btn" id="queue_end">End</button>
-                </div>
-                <div id="extended_controls" class="span12">
-                  <button class="btn btn-danger btn-block" id="qlockbtn">Unlock Queue</button>
-                  <button class="btn btn-block" id="clearplaylist">Clear Playlist</button>
-                  <button class="btn btn-block" id="shuffleplaylist">Shuffle Playlist</button>
+          <div class="span12" id="playlist-outer">
+            <div class="row" id="playlist-inner">
+              <!-- left pane - Library + user playlists -->
+              <div class="span5" id="leftpane-outer">
+                <div class="row-fluid" id="leftpane-inner">
+                  <!-- new poll controls -->
+                  <div class="span12" id="pollbtnwrap">
+                      <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
+                  </div>
+                  <!-- poll container -->
+                  <div class="span12" id="pollwrap">
+                  </div>
+                  <!-- library search -->
+                  <div class="well well-small span12 row-fluid">
+                  <div class="span12 pointer" id="librarytoggle">
+                    <i class="icon-plus pull-left"></i>
+                    <p>Show Library</p>
+                  </div>
+                  <div id="librarywrap">
+                    <div class="span7" id="querywrap">
+                      <input type="text" id="library_query" class="input-block-level" placeholder="Search Query">
+                    </div>
+                    <div class="span5 btn-group" id="searchbtns">
+                      <button class="btn" id="library_search">Library</button>
+                      <button class="btn" id="youtube_search">YouTube</button>
+                    </div>
+                    <ul class="span12 videolist" id="library">
+                    </ul>
+                  </div>
+                  </div>
+                  <!-- user playlists -->
+                  <div class="well well-small span12 row-fluid" id="userpltogglewrap">
+                  <div class="span12 pointer" id="userpltoggle">
+                    <i class="icon-plus pull-left"></i>
+                    <p>Show Playlist Manager</p>
+                  </div>
+                  <div id="userplaylistwrap">
+                    <div class="span7">
+                      <input type="text" id="userpl_name" class="input-block-level" placeholder="Playlist Name">
+                    </div>
+                    <div class="span5">
+                      <button class="btn btn-block" id="userpl_save">Save Playlist</button>
+                    </div>
+                    <ul class="span12" id="userpl_list">
+                    </ul>
+                  </div>
+                  </div>
                 </div>
               </div>
-              </div>
-              <div class="btn-group span12">
-                  <button class="btn" style="width: 50%" id="voteskip">Voteskip</button>
-                  <button class="btn" style="width: 50%" id="getplaylist">Get Playlist URLs</button>
-              </div>
-              <!-- video queue -->
-              <ul class="span12 videolist" id="queue">
-              </ul>
-              <div class="span12" id="plmeta">
-                <span id="plcount">0 items</span>
-                <span id="pllength">00:00:00</span>
+              <!-- right pane - channel playlist -->
+              <div class="span7" id="rightpane-outer">
+                <div class="row-fluid" id="rightpane-inner">
+                  <!-- account for left pane having the poll buffer -->
+                  <div class="span12" id="queue_align"></div>
+                  <!-- electric boogaloo -->
+                  <div class="span12" id="queue_align2"></div>
+                  <!-- playlist controls -->
+                  <div class="well well-small span12 row-fluid" id="playlisttogglewrap">
+                  <div class="span12 pointer" id="playlisttoggle">
+                    <i class="icon-plus pull-left"></i>
+                    <p>Show Playlist Controls</p>
+                  </div>
+                  <div id="playlist_controls">
+                    <div class="span8">
+                      <input type="text" id="mediaurl" class="input-block-level" placeholder="Media URL">
+                    </div>
+                    <div class="span4 btn-group">
+                      <button class="btn" id="queue_next">Next</button>
+                      <button class="btn" id="queue_end">End</button>
+                    </div>
+                    <div id="extended_controls" class="span12">
+                      <button class="btn btn-danger btn-block" id="qlockbtn">Unlock Queue</button>
+                      <button class="btn btn-block" id="clearplaylist">Clear Playlist</button>
+                      <button class="btn btn-block" id="shuffleplaylist">Shuffle Playlist</button>
+                    </div>
+                  </div>
+                  </div>
+                  <div class="btn-group span12">
+                      <button class="btn" style="width: 50%" id="voteskip">Voteskip</button>
+                      <button class="btn" style="width: 50%" id="getplaylist">Get Playlist URLs</button>
+                  </div>
+                  <!-- video queue -->
+                  <ul class="span12 videolist" id="queue">
+                  </ul>
+                  <div class="span12" id="plmeta">
+                    <span id="plcount">0 items</span>
+                    <span id="pllength">00:00:00</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
