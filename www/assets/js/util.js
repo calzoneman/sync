@@ -752,6 +752,36 @@ function handlePermissionChange() {
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
     setVisible("#qlockbtn", CLIENT.rank >= 2);
 
+    if(hasPermission("playlistadd") ||
+        hasPermission("playlistmove") ||
+        hasPermission("playlistjump") ||
+        hasPermission("playlistdelete") ||
+        hasPermission("settemp")) {
+        if(USEROPTS.first_visit) {
+            var al = makeAlert("Playlist Options", [
+                "From the Options menu, you can choose to automatically",
+                " hide the buttons on each entry (and show them when",
+                " you right click).  You can also choose to use the old",
+                " style of playlist buttons.",
+                "<br>"].join(""))
+                .addClass("span12")
+                .insertBefore($("#queue"));
+
+            al.find(".close").remove();
+
+            $("<button/>").addClass("btn btn-primary")
+                .text("Dismiss")
+                .appendTo(al)
+                .click(function() {
+                    USEROPTS.first_visit = false;
+                    saveOpts();
+                    al.hide("blind", function() {
+                        al.remove();
+                    });
+                });
+        }
+    }
+
     if(hasPermission("playlistmove")) {
         $("#queue").sortable("enable");
         $("#queue").addClass("queue_sortable");
