@@ -85,7 +85,7 @@ $("#actionlog_filter").click(function() {
             .attr("id", "actionlog_pagination")
             .insertAfter($("#actionlog table"));
         var btns = $("<ul/>").appendTo(pag);
-        for(var i = 0; i < data.length / 20; i++) {
+        for(var i = 0; i < entries.length / 20; i++) {
             var li = $("<li/>").appendTo(btns);
             (function(i) {
             $("<a/>").attr("href", "javascript:void(0)")
