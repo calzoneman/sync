@@ -9,8 +9,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var uname = readCookie("sync_uname") || "";
-var session = readCookie("sync_session") || "";
+var uname = readCookie("cytube_uname") || "";
+var session = readCookie("cytube_session") || "";
 var api = WEB_URL + "/api/json/";
 var loggedin = false;
 
@@ -31,8 +31,8 @@ function onLogin() {
     $("#register").hide();
     loggedin = true;
     $("#login").text("Logout");
-    createCookie("sync_uname", uname, 7);
-    createCookie("sync_session", session, 7);
+    createCookie("cytube_uname", uname, 7);
+    createCookie("cytube_session", session, 7);
 }
 
 function makeTabCallback(tabid, paneid) {
@@ -341,8 +341,8 @@ $("#login").click(function() {
     else {
         uname = "";
         session = "";
-        eraseCookie("sync_uname");
-        eraseCookie("sync_session");
+        eraseCookie("cytube_uname");
+        eraseCookie("cytube_session");
         $("#accountnav li")[0].innerHTML = "Not Logged In";
         $("#register").show();
         $("#login").text("Login");

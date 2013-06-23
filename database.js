@@ -38,7 +38,7 @@ function getConnection() {
     db = mysql.createConnectionSync();
     db.connectSync(SERVER, USER, PASSWORD, DATABASE);
     if(!db.connectedSync()) {
-        //Logger.errlog.log("DB connection failed");
+        Logger.errlog.log("DB connection failed");
         return false;
     }
     if(CONFIG.DEBUG) {
@@ -172,6 +172,19 @@ function init() {
     results = db.querySync(query);
     if(!results) {
         Logger.errlog.log("! Failed to create playlist table");
+    }
+
+    // Create user aliases table
+    query = ["CREATE TABLE IF NOT EXISTS `aliases` (",
+                "`visit_id` INT NOT NULL AUTO_INCREMENT,",
+                "`ip` VARCHAR(15) NOT NULL,",
+                "`name` VARCHAR(20) NOT NULL,",
+                "`time` BIGINT NOT NULL,",
+                "PRIMARY KEY (`visit_id`), INDEX (`ip`))",
+             "ENGINE = MyISAM;"].join("");
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create aliases table");
     }
 }
 
@@ -672,6 +685,16 @@ function setUserEmail(name, email) {
     return true;
 }
 
+function genSalt() {
+    var chars = "abcdefgihjklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+              + "0123456789!@#$%^&*_+=~";
+    var salt = [];
+    for(var i = 0; i < 32; i++) {
+        salt.push(chars[parseInt(Math.random()*chars.length)]);
+    }
+    return salt.join('');
+}
+
 function generatePasswordReset(ip, name, email) {
     var db = getConnection();
     if(!db) {
@@ -698,7 +721,7 @@ function generatePasswordReset(ip, name, email) {
     }
 
     // Validation complete, now time to reset it
-    var hash = hashlib.sha256(Date.now() + name);
+    var hash = hashlib.sha256(genSalt() + name);
     var exp = Date.now() + 24*60*60*1000;
     query = createQuery(
         ["INSERT INTO `password_reset` (",
@@ -885,6 +908,92 @@ function deleteUserPlaylist(user, name) {
     return results;
 }
 
+/* User Aliases */
+
+function recordVisit(ip, name) {
+    var db = getConnection();
+    if(!db) {
+        return false;
+    }
+
+    var time = Date.now();
+    db.querySync(createQuery(
+        "DELETE FROM aliases WHERE ip=? AND name=?",
+        [ip, name]
+    ));
+    var query = createQuery(
+        "INSERT INTO aliases VALUES (NULL, ?, ?, ?)",
+        [ip, name, time]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to record visit");
+    }
+
+    // Keep most recent 5 records per IP
+    results = db.querySync(createQuery(
+        ["DELETE FROM aliases WHERE ip=? AND visit_id NOT IN (",
+            "SELECT visit_id FROM (",
+            "SELECT visit_id,time FROM aliases WHERE ip=? ORDER BY time DESC LIMIT 5",
+            ") foo",
+         ");"].join(""),
+         [ip, ip]
+    ));
+
+    return results;
+}
+
+function getAliases(ip) {
+    var db = getConnection();
+    if(!db) {
+        return [];
+    }
+
+    var query = createQuery(
+        "SELECT name FROM aliases WHERE ip=?",
+        [ip]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to retrieve aliases");
+        return [];
+    }
+
+    var names = [];
+    results.fetchAllSync().forEach(function(row) {
+        names.push(row.name);
+    });
+
+    return names;
+}
+
+function ipForName(name) {
+    var db = getConnection();
+    if(!db) {
+        return [];
+    }
+
+    var query = createQuery(
+        "SELECT ip FROM aliases WHERE name=?",
+        [name]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to retrieve IP for name");
+        return [];
+    }
+
+    var ips = [];
+    results.fetchAllSync().forEach(function(row) {
+        ips.push(row.ip);
+    });
+
+    return ips;
+}
+
 exports.setup = setup;
 exports.getConnection = getConnection;
 exports.createQuery = createQuery;
@@ -914,3 +1023,6 @@ exports.getUserPlaylists = getUserPlaylists;
 exports.loadUserPlaylist = loadUserPlaylist;
 exports.saveUserPlaylist = saveUserPlaylist;
 exports.deleteUserPlaylist = deleteUserPlaylist;
+exports.recordVisit = recordVisit;
+exports.getAliases = getAliases;
+exports.ipForName = ipForName;

@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Media = function(data) {
+var Player = function(data) {
     if(!data) {
         data = {
             id: "",
@@ -60,7 +60,7 @@ var Media = function(data) {
     }
 }
 
-Media.prototype.nullPlayer = function() {
+Player.prototype.nullPlayer = function() {
     this.player = null;
     this.load = function(data) { }
     this.play = function() { }
@@ -69,15 +69,19 @@ Media.prototype.nullPlayer = function() {
     this.seek = function(time) { }
 }
 
-Media.prototype.initYouTube = function() {
+Player.prototype.initYouTube = function() {
     this.removeOld();
     this.player = new YT.Player("ytapiplayer", {
         height: VHEIGHT,
         width: VWIDTH,
         videoId: this.id,
         playerVars: {
-            "autoplay": 1,
-            "controls": 1,
+            autohide: 1,        // Autohide controls
+            autoplay: 1,        // Autoplay video
+            controls: 1,        // Show controls
+            iv_load_policy: 3,  // No annotations
+            modestbranding: 1,  // No logo
+            rel: 0              // No related videos
         },
         events: {
             onReady: function() {
@@ -92,7 +96,7 @@ Media.prototype.initYouTube = function() {
                 else {
                     PLAYER.paused = (ev.data == YT.PlayerState.PAUSED);
                 }
-                if(LEADER && ev.data == YT.PlayerState.ENDED) {
+                if(CLIENT.leader && ev.data == YT.PlayerState.ENDED) {
                     socket.emit("playNext");
                 }
             }
@@ -103,6 +107,8 @@ Media.prototype.initYouTube = function() {
     this.load = function(data) {
         if(this.player.loadVideoById) {
             this.player.loadVideoById(data.id, data.currentTime);
+            if(VIDEOQUALITY)
+                this.player.setPlaybackQuality(VIDEOQUALITY);
             this.id = data.id;
         }
     }
@@ -124,7 +130,7 @@ Media.prototype.initYouTube = function() {
     }
 }
 
-Media.prototype.initVimeo = function() {
+Player.prototype.initVimeo = function() {
     var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
     $("#ytapiplayer").remove();
     iframe.attr("id", "ytapiplayer");
@@ -143,7 +149,7 @@ Media.prototype.initVimeo = function() {
         this.player.api("play");
 
         this.player.addEvent("finish", function() {
-            if(LEADER) {
+            if(CLIENT.leader) {
                 socket.emit("playNext");
             }
         });
@@ -184,7 +190,7 @@ Media.prototype.initVimeo = function() {
     }
 }
 
-Media.prototype.initDailymotion = function() {
+Player.prototype.initDailymotion = function() {
     this.removeOld();
     this.player = DM.player("ytapiplayer", {
         video: this.id,
@@ -196,7 +202,7 @@ Media.prototype.initDailymotion = function() {
     this.player.addEventListener("apiready", function(e) {
         socket.emit("playerReady");
         this.player.addEventListener("ended", function(e) {
-            if(LEADER) {
+            if(CLIENT.leader) {
                 socket.emit("playNext");
             }
         });
@@ -235,7 +241,7 @@ Media.prototype.initDailymotion = function() {
     }
 }
 
-Media.prototype.initSoundcloud = function() {
+Player.prototype.initSoundcloud = function() {
     unfixSoundcloudShit();
     var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
     $("#ytapiplayer").remove();
@@ -262,7 +268,7 @@ Media.prototype.initSoundcloud = function() {
         });
 
         this.player.bind(SC.Widget.Events.FINISH, function() {
-            if(LEADER) {
+            if(CLIENT.leader) {
                 socket.emit("playNext");
             }
         });
@@ -292,7 +298,7 @@ Media.prototype.initSoundcloud = function() {
     }
 }
 
-Media.prototype.initLivestream = function() {
+Player.prototype.initLivestream = function() {
     this.removeOld();
     var flashvars = {channel: this.id};
     var params = {AllowScriptAccess: "always"};
@@ -312,7 +318,7 @@ Media.prototype.initLivestream = function() {
     this.seek = function() { }
 }
 
-Media.prototype.initTwitch = function() {
+Player.prototype.initTwitch = function() {
     this.removeOld();
     var url = "http://www.twitch.tv/widgets/live_embed_player.swf?channel="+this.id;
     var params = {
@@ -339,7 +345,7 @@ Media.prototype.initTwitch = function() {
     this.seek = function() { }
 }
 
-Media.prototype.initJustinTV = function() {
+Player.prototype.initJustinTV = function() {
     this.removeOld();
     var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+this.id;
     var params = {
@@ -366,16 +372,16 @@ Media.prototype.initJustinTV = function() {
     this.seek = function() { }
 }
 
-Media.prototype.initRTMP = function() {
+Player.prototype.initRTMP = function() {
     this.removeOld();
-    var url = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
+    var url = "http://fpdownload.adobe.com/strobe/FlashPlayerPlayback_101.swf";
     var src = encodeURIComponent(this.id);
     var params = {
             allowFullScreen:"true",
             allowScriptAccess:"always",
             allowNetworking:"all",
             wMode:"direct",
-            movie:"http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
+            movie:"http://fpdownload.adobe.com/strobe/FlashPlayerPlayback_101.swf",
             flashvars:"src="+src+"&streamType=live&autoPlay=true"
         };
         swfobject.embedSWF(url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
@@ -394,7 +400,7 @@ Media.prototype.initRTMP = function() {
     this.seek = function() { }
 }
 
-Media.prototype.initJWPlayer = function() {
+Player.prototype.initJWPlayer = function() {
     if(typeof jwplayer == "undefined") {
         setTimeout(function() {
             this.initJWPlayer();
@@ -445,7 +451,7 @@ Media.prototype.initJWPlayer = function() {
     }
 }
 
-Media.prototype.initUstream = function() {
+Player.prototype.initUstream = function() {
     var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
     $("#ytapiplayer").remove();
     iframe.attr("id", "ytapiplayer");
@@ -470,7 +476,7 @@ Media.prototype.initUstream = function() {
     this.seek = function() { }
 }
 
-Media.prototype.initImgur = function() {
+Player.prototype.initImgur = function() {
     var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
     $("#ytapiplayer").remove();
     iframe.attr("id", "ytapiplayer");
@@ -495,12 +501,16 @@ Media.prototype.initImgur = function() {
     this.seek = function() { }
 }
 
-Media.prototype.update = function(data) {
+Player.prototype.update = function(data) {
     if(data.id && data.id != this.id) {
         if(data.currentTime < 0) {
             data.currentTime = 0;
         }
         this.load(data);
+        this.play();
+    }
+    if(CLIENT.leader) {
+        return;
     }
     if(!USEROPTS.synch) {
         return;
@@ -511,9 +521,6 @@ Media.prototype.update = function(data) {
     }
     else {
         this.play();
-    }
-    if(LEADER) {
-        return;
     }
     this.getTime(function(seconds) {
         var time = data.currentTime;
@@ -528,14 +535,14 @@ Media.prototype.update = function(data) {
     }.bind(this));
 }
 
-Media.prototype.removeOld = function() {
+Player.prototype.removeOld = function() {
     var old = $("#ytapiplayer");
     var placeholder = $("<div/>").insertBefore(old);
     old.remove();
     placeholder.attr("id", "ytapiplayer");
 }
 
-Media.prototype.hide = function() {
+Player.prototype.hide = function() {
     if(!/chrome/ig.test(navigator.userAgent)) {
         return;
     }
@@ -547,7 +554,7 @@ Media.prototype.hide = function() {
         .attr("height", 1);
 }
 
-Media.prototype.unhide = function() {
+Player.prototype.unhide = function() {
     if(!/chrome/ig.test(navigator.userAgent)) {
         return;
     }

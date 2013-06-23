@@ -16,6 +16,7 @@ var Filter = function(name, regex, flags, replace) {
     this.regex = new RegExp(this.source, this.flags);
     this.replace = replace;
     this.active = true;
+    this.filterlinks = false;
 }
 
 Filter.prototype.pack = function() {
@@ -24,7 +25,8 @@ Filter.prototype.pack = function() {
         source: this.source,
         flags: this.flags,
         replace: this.replace,
-        active: this.active
+        active: this.active,
+        filterlinks: this.filterlinks
     }
 }
 

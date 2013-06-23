@@ -32,6 +32,29 @@ function handle(chan, user, msg, data) {
             chan.chainMessage(user, msg.substring(3), {modflair: user.rank})
         }
     }
+    else if(msg.indexOf("/a ") == 0) {
+        if(user.rank >= Rank.Siteadmin) {
+            var flair = {
+                superadminflair: {
+                    labelclass: "label-important",
+                    icon: "icon-globe"
+                }
+            };
+            var args = msg.substring(3).split(" ");
+            var cargs = [];
+            for(var i = 0; i < args.length; i++) {
+                var a = args[i];
+                if(a.indexOf("!icon-") == 0)
+                    flair.superadminflair.icon = a.substring(1);
+                else if(a.indexOf("!label-") == 0)
+                    flair.superadminflair.labelclass = a.substring(1);
+                else {
+                    cargs.push(a);
+                }
+            }
+            chan.chainMessage(user, cargs.join(" "), flair);
+        }
+    }
     else if(msg.indexOf("/kick ") == 0) {
         handleKick(chan, user, msg.substring(6).split(" "));
     }
@@ -77,29 +100,13 @@ function handleKick(chan, user, args) {
 }
 
 function handleIPBan(chan, user, args) {
-    if(chan.hasPermission(user, "ban") && args.length > 0) {
-        args[0] = args[0].toLowerCase();
-        var kickee;
-        for(var i = 0; i < chan.users.length; i++) {
-            if(chan.users[i].name.toLowerCase() == args[0]) {
-                kickee = chan.users[i];
-                break;
-            }
-        }
-        if(kickee) {
-            chan.tryIPBan(user, {
-                id: chan.hideIP(kickee.ip),
-                name: kickee.name
-            });
-        }
-    }
+    chan.tryIPBan(user, args[0], args[1]);
+    // Ban the name too for good measure
+    chan.tryNameBan(user, args[0]);
 }
 
 function handleBan(chan, user, args) {
-    if(chan.hasPermission(user, "ban") && args.length > 0) {
-        args[0] = args[0].toLowerCase();
-        chan.banName(user, args[0]);
-    }
+    chan.tryNameBan(user, args[0]);
 }
 
 function handleUnban(chan, user, args) {

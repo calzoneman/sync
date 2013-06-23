@@ -20,18 +20,19 @@ html, body {
     color: #ffffff;
 }
 
+#usercountwrap, #userlist, #messagebuffer, #videowrap {
+    background-color: #ffffff;
+}
+
+#librarywrap, #userplaylistwrap, #playlist_controls {
+    display: none;
+}
+
 .videolist {
     list-style: none outside none;
     margin-left: 0;
     max-height: 500px;
     overflow-y: scroll;
-}
-
-.videolist li {
-    margin: 2px 0 0 auto;
-    padding: 2px;
-    font-size: 8pt;
-    border: 1px solid #aaaaaa; // [](/w21)
 }
 
 .qe_btn {
@@ -73,11 +74,7 @@ html, body {
     font-size: 8pt;
 }
 
-#queue {
-    margin-bottom: 0;
-}
-
-#usercountcontainer, #currenttitle {
+#usercountwrap, #currenttitle {
     border: 1px solid #aaaaaa;
     border-bottom: none;
     margin: 0;
@@ -87,13 +84,44 @@ html, body {
     margin: 0;
 }
 
-#ulistchevron {
-    cursor: pointer;
-    float: left;
+.pointer {
+  cursor: pointer;
+}
+
+#leftpane-inner div.span12, #rightpane-inner div.span12,
+#leftpane-inner ul, #rightpane-inner ul,
+#channelsettingswrap div.span12 {
+    margin-left: 0;
+}
+
+#queue {
+    margin-bottom: 0;
+}
+
+.queue_sortable li {
+    cursor: row-resize;
+}
+
+.queue_entry {
+    background-color: #ffffff;
+    margin: 2px 0 0 auto;
+    padding: 2px;
+    font-size: 8pt;
+    border: 1px solid #aaaaaa; // [](/w21)
+}
+
+.queue_temp {
+    background-image: url(../img/stripe-diagonal.png);
+}
+
+.queue_active {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
 }
 
 #plmeta {
     border: 1px solid #aaaaaa;
+    border-top: 0;
     background-color: #ffffff;
     padding: 3px;
     margin: 0;
@@ -126,12 +154,16 @@ html, body {
     border-left: 0;
 }
 
-#messagebuffer div, #messagebuffer code {
+#messagebuffer div, #messagebuffer code, #filteredit code {
     white-space: pre-wrap; /* css-3 */
     white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
     white-space: -pre-wrap; /* Opera 4-6 */
     white-space: -o-pre-wrap; /* Opera 7 */
     word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+#filteredit td {
+    max-width: 200px;
 }
 
 .userlist_siteadmin {
@@ -155,6 +187,12 @@ html, body {
 .action {
     font-style: italic;
     color: #888888;
+}
+
+.server-whisper {
+    font-style: italic;
+    color: #888888;
+    font-size: 8pt;
 }
 
 .spoiler {
@@ -263,9 +301,24 @@ html, body {
     padding: 5px;
 }
 
+.user-dropdown {
+    z-index: 9999;
+    position: absolute;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #000000;
+    max-width: 200px;
+    padding: 5px;
+}
+
 .profile-image {
     width: 80px;
     height: 80px;
     border: 1px solid #aaaaaa;
     border-radius: 5px;
+}
+
+#channelsettingswrap3 {
+    margin-top: 20px;
 }

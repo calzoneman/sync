@@ -17,6 +17,8 @@ var Server = require("./server.js");
 var Database = require("./database.js");
 var Logger = require("./logger.js");
 var Config = require("./config.js");
+var ACP = require("./acp");
+var ActionLog = require("./actionlog");
 
 // Represents a client connected via socket.io
 var User = function(socket, ip) {
@@ -24,6 +26,7 @@ var User = function(socket, ip) {
     this.socket = socket;
     this.loggedIn = false;
     this.rank = Rank.Anonymous;
+    this.global_rank = Rank.Anonymous;
     this.channel = null;
     this.name = "";
     this.meta = {
@@ -206,7 +209,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("unqueue", function(data) {
+    this.socket.on("delete", function(data) {
         if(this.channel != null) {
             this.channel.tryDequeue(this, data);
         }
@@ -236,21 +239,21 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("clearqueue", function() {
+    this.socket.on("clearPlaylist", function() {
         if(this.channel != null) {
             this.channel.tryClearqueue(this);
         }
     }.bind(this));
 
-    this.socket.on("shufflequeue", function() {
+    this.socket.on("shufflePlaylist", function() {
         if(this.channel != null) {
             this.channel.tryShufflequeue(this);
         }
     }.bind(this));
 
-    this.socket.on("queueLock", function(data) {
+    this.socket.on("togglePlaylistLock", function() {
         if(this.channel != null) {
-            this.channel.trySetLock(this, data);
+            this.channel.tryToggleLock(this);
         }
     }.bind(this));
 
@@ -260,18 +263,18 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("searchLibrary", function(data) {
+    this.socket.on("searchMedia", function(data) {
         if(this.channel != null) {
-            if(data.yt) {
+            if(data.source == "yt") {
                 var callback = function(vids) {
-                    this.socket.emit("librarySearchResults", {
+                    this.socket.emit("searchResults", {
                         results: vids
                     });
                 }.bind(this);
                 this.channel.search(data.query, callback);
             }
             else {
-                this.socket.emit("librarySearchResults", {
+                this.socket.emit("searchResults", {
                     results: this.channel.search(data.query)
                 });
             }
@@ -331,12 +334,6 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("adm", function(data) {
-        if(Rank.hasPermission(this, "acp")) {
-            this.handleAdm(data);
-        }
-    }.bind(this));
-
     this.socket.on("announce", function(data) {
         if(Rank.hasPermission(this, "announce")) {
             if(data.clear) {
@@ -349,7 +346,7 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("channelOpts", function(data) {
+    this.socket.on("setOptions", function(data) {
         if(this.channel != null) {
             this.channel.tryUpdateOptions(this, data);
         }
@@ -373,31 +370,53 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("chatFilter", function(data) {
+    this.socket.on("updateFilter", function(data) {
         if(this.channel != null) {
-            this.channel.tryChangeFilter(this, data);
+            this.channel.tryUpdateFilter(this, data);
         }
     }.bind(this));
 
-    this.socket.on("updateMotd", function(data) {
+    this.socket.on("removeFilter", function(data) {
+        if(this.channel != null) {
+            this.channel.tryRemoveFilter(this, data);
+        }
+    }.bind(this));
+
+    this.socket.on("moveFilter", function(data) {
+        if(this.channel != null) {
+            this.channel.tryMoveFilter(this, data);
+        }
+    }.bind(this));
+
+    this.socket.on("setMotd", function(data) {
         if(this.channel != null) {
             this.channel.tryUpdateMotd(this, data);
         }
     }.bind(this));
 
-    this.socket.on("requestAcl", function() {
+    this.socket.on("requestLoginHistory", function() {
         if(this.channel != null) {
-            this.channel.sendACL(this);
-            this.noflood("requestAcl", 0.25);
+            this.channel.sendLoginHistory(this);
         }
     }.bind(this));
 
-    this.socket.on("requestSeenlogins", function() {
+    this.socket.on("requestBanlist", function() {
         if(this.channel != null) {
-            if(this.noflood("requestSeenLogins", 0.25)) {
+            this.channel.sendBanlist(this);
+        }
+    }.bind(this));
+
+    this.socket.on("requestChatFilters", function() {
+        if(this.channel != null) {
+            this.channel.sendChatFilters(this);
+        }
+    }.bind(this));
+
+    this.socket.on("requestChannelRanks", function() {
+        if(this.channel != null) {
+            if(this.noflood("requestChannelRanks", 0.25))
                 return;
-            }
-            this.channel.sendSeenLogins(this);
+            this.channel.sendChannelRanks(this);
         }
     }.bind(this));
 
@@ -498,39 +517,29 @@ User.prototype.initCallbacks = function() {
             pllist: list,
         });
     }.bind(this));
-}
 
-// Handle administration
-User.prototype.handleAdm = function(data) {
-    if(data.cmd == "listchannels") {
-        var chans = [];
-        for(var chan in Server.channels) {
-            var nowplaying = "-";
-            if(Server.channels[chan].media != null)
-                nowplaying = Server.channels[chan].media.title;
-            chans.push({
-                name: chan,
-                usercount: Server.channels[chan].users.length,
-                nowplaying: nowplaying
-            });
-        }
-        this.socket.emit("adm", {
-            cmd: "listchannels",
-            chans: chans
-        });
-    }
-};
+    this.socket.on("acp-init", function() {
+        if(this.global_rank >= Rank.Siteadmin)
+            ACP.init(this);
+    }.bind(this));
+
+    this.socket.on("borrow-rank", function(rank) {
+        if(this.global_rank < 255)
+            return;
+        if(rank > this.global_rank)
+            return;
+
+        this.rank = rank;
+        this.socket.emit("rank", rank);
+        if(this.channel != null)
+            this.channel.broadcastUserUpdate(this);
+
+    }.bind(this));
+}
 
 var lastguestlogin = {};
 // Attempt to login
 User.prototype.login = function(name, pw, session) {
-    if(this.channel != null && name != "") {
-        for(var i = 0; i < this.channel.users.length; i++) {
-            if(this.channel.users[i].name == name) {
-                this.channel.kick(this.channel.users[i], "Duplicate login");
-            }
-        }
-    }
     // No password => try guest login
     if(pw == "" && session == "") {
         if(this.ip in lastguestlogin) {
@@ -546,73 +555,99 @@ User.prototype.login = function(name, pw, session) {
                 return false;
             }
         }
-        // Sorry bud, can't take that name
-        if(Auth.isRegistered(name)) {
-            this.socket.emit("login", {
-                success: false,
-                error: "That username is already taken"
-            });
-            return false;
-        }
-        // YOUR ARGUMENT IS INVALID
-        else if(!Auth.validateName(name)) {
-            this.socket.emit("login", {
-                success: false,
-                error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
-            });
-        }
-        else {
-            lastguestlogin[this.ip] = Date.now();
-            this.rank = Rank.Guest;
-            Logger.syslog.log(this.ip + " signed in as " + name);
-            this.name = name;
-            this.loggedIn = false;
-            this.socket.emit("login", {
-                success: true
-            });
-            this.socket.emit("rank", {
-                rank: this.rank
-            });
-            if(this.channel != null) {
-                this.channel.logger.log(this.ip + " signed in as " + name);
-                this.channel.broadcastNewUser(this);
+        try {
+            // Sorry bud, can't take that name
+            if(Auth.isRegistered(name)) {
+                this.socket.emit("login", {
+                    success: false,
+                    error: "That username is already taken"
+                });
+                return false;
             }
+            // YOUR ARGUMENT IS INVALID
+            else if(!Auth.validateName(name)) {
+                this.socket.emit("login", {
+                    success: false,
+                    error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
+                });
+            }
+            else {
+                lastguestlogin[this.ip] = Date.now();
+                this.rank = Rank.Guest;
+                Logger.syslog.log(this.ip + " signed in as " + name);
+                Database.recordVisit(this.ip, name);
+                this.name = name;
+                this.loggedIn = false;
+                this.socket.emit("login", {
+                    success: true,
+                    name: name
+                });
+                this.socket.emit("rank", this.rank);
+                if(this.channel != null) {
+                    this.channel.logger.log(this.ip + " signed in as " + name);
+                    this.channel.broadcastNewUser(this);
+                }
+            }
+        }
+        catch(e) {
+            this.socket.emit("login", {
+                success: false,
+                error: e
+            });
         }
     }
     else {
-        var row;
-        if((row = Auth.login(name, pw, session))) {
-            this.loggedIn = true;
-            this.socket.emit("login", {
-                success: true,
-                session: row.session_hash
-            });
-            Logger.syslog.log(this.ip + " logged in as " + name);
-            this.profile = {
-                image: row.profile_image,
-                text: row.profile_text
-            };
-            var chanrank = (this.channel != null) ? this.channel.getRank(name)
-                                                  : Rank.Guest;
-            var rank = (chanrank > row.global_rank) ? chanrank
-                                                     : row.global_rank;
-            this.rank = (this.rank > rank) ? this.rank : rank;
-            this.socket.emit("rank", {
-                rank: this.rank
-            });
-            this.name = name;
-            if(this.channel != null) {
-                this.channel.logger.log(this.ip + " logged in as " + name);
-                this.channel.broadcastNewUser(this);
+        try {
+            var row;
+            if((row = Auth.login(name, pw, session))) {
+                if(this.channel != null) {
+                    for(var i = 0; i < this.channel.users.length; i++) {
+                        if(this.channel.users[i].name == name) {
+                            this.channel.kick(this.channel.users[i], "Duplicate login");
+                        }
+                    }
+                }
+                ActionLog.record(this.ip, name, "login-success");
+                this.loggedIn = true;
+                this.socket.emit("login", {
+                    success: true,
+                    session: row.session_hash,
+                    name: name
+                });
+                Logger.syslog.log(this.ip + " logged in as " + name);
+                Database.recordVisit(this.ip, name);
+                this.profile = {
+                    image: row.profile_image,
+                    text: row.profile_text
+                };
+                var chanrank = (this.channel != null) ? this.channel.getRank(name)
+                                                      : Rank.Guest;
+                var rank = (chanrank > row.global_rank) ? chanrank
+                                                         : row.global_rank;
+                this.rank = (this.rank > rank) ? this.rank : rank;
+                this.global_rank = row.global_rank;
+                this.socket.emit("rank", this.rank);
+                this.name = name;
+                if(this.channel != null) {
+                    this.channel.logger.log(this.ip + " logged in as " + name);
+                    this.channel.broadcastNewUser(this);
+                }
+            }
+            // Wrong password
+            else {
+                ActionLog.record(this.ip, this.name, "login-failure");
+                this.socket.emit("login", {
+                    success: false,
+                    error: "Invalid session"
+                });
+                return false;
             }
         }
-        // Wrong password
-        else {
+        catch(e) {
             this.socket.emit("login", {
                 success: false,
-                error: "Invalid session"
+                error: e
             });
-            return false;
         }
     }
 }

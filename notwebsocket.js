@@ -141,6 +141,7 @@ function newConnection(req, res) {
 exports.newConnection = newConnection;
 
 function msgReceived(req, res) {
+    res.callback = req.query.callback;
     var h = req.params.hash;
     if(h in clients && clients[h] != null) {
         var str = req.params.str;

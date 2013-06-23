@@ -15,6 +15,7 @@ var Logger = require("./logger.js");
 var apilog = new Logger.Logger("api.log");
 var Database = require("./database.js");
 var Config = require("./config.js");
+var ActionLog = require("./actionlog.js");
 var fs = require("fs");
 
 var plainHandlers = {
@@ -32,10 +33,20 @@ var jsonHandlers = {
     "setprofile" : handleProfileChange,
     "getprofile" : handleProfileGet,
     "setemail"   : handleEmailChange,
-    "globalbans" : handleGlobalBans,
     "admreports" : handleAdmReports,
-    "acppwreset" : handleAcpPasswordReset
 };
+
+function getClientIP(req) {
+    var ip;
+    var forward = req.header("x-forwarded-for");
+    if(forward) {
+        ip = forward.split(",")[0];
+    }
+    if(!ip) {
+        ip = req.connection.remoteAddress;
+    }
+    return ip;
+}
 
 function handle(path, req, res) {
     var parts = path.split("/");
@@ -193,12 +204,14 @@ function handleLogin(params, req, res) {
 
     var row = Auth.login(name, pw, session);
     if(row) {
+        ActionLog.record(getClientIP(req), name, "login-success");
         sendJSON(res, {
             success: true,
             session: row.session_hash
         });
     }
     else {
+        ActionLog.record(getClientIP(req), name, "login-failure");
         sendJSON(res, {
             error: "Invalid username/password",
             success: false
@@ -219,6 +232,7 @@ function handlePasswordChange(params, req, res) {
     }
     var row = Auth.login(name, oldpw);
     if(row) {
+        ActionLog.record(getClientIP(req), name, "password-change");
         var success = Auth.setUserPassword(name, newpw);
         sendJSON(res, {
             success: success,
@@ -237,11 +251,12 @@ function handlePasswordChange(params, req, res) {
 function handlePasswordReset(params, req, res) {
     var name = params.name || "";
     var email = unescape(params.email || "");
-    var ip = req.socket.address().address;
+    var ip = getClientIP(req);
 
     var hash = false;
     try {
         hash = Database.generatePasswordReset(ip, name, email);
+        ActionLog.record(ip, name, "password-reset-generate");
     }
     catch(e) {
         sendJSON(res, {
@@ -301,7 +316,7 @@ function handlePasswordReset(params, req, res) {
 
 function handlePasswordRecover(params, req, res) {
     var hash = params.hash || "";
-    var ip = req.socket.address().address;
+    var ip = getClientIP(req);
 
     try {
         var info = Database.recoverPassword(hash);
@@ -310,10 +325,12 @@ function handlePasswordRecover(params, req, res) {
             name: info[0],
             pw: info[1]
         });
+        ActionLog.record(ip, name, "password-recover-success");
         Logger.syslog.log(ip + " recovered password for " + name);
         return;
     }
     catch(e) {
+        ActionLog.record(ip, name, "password-recover-failure");
         sendJSON(res, {
             success: false,
             error: e
@@ -412,6 +429,7 @@ function handleEmailChange(params, req, res) {
     var row = Auth.login(name, pw);
     if(row) {
         var success = Database.setUserEmail(name, email);
+        ActionLog.record(getClientIP(req), name, "email-update", [email]);
         sendJSON(res, {
             success: success,
             error: success ? "" : "Email update failed",
@@ -438,6 +456,7 @@ function handleRegister(params, req, res) {
         return;
     }
     else if(Auth.isRegistered(name)) {
+        ActionLog.record(getClientIP(req), name, "register-failure");
         sendJSON(res, {
             success: false,
             error: "That username is already taken"
@@ -445,6 +464,7 @@ function handleRegister(params, req, res) {
         return false;
     }
     else if(!Auth.validateName(name)) {
+        ActionLog.record(getClientIP(req), name, "register-failure");
         sendJSON(res, {
             success: false,
             error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
@@ -453,7 +473,8 @@ function handleRegister(params, req, res) {
     else {
         var session = Auth.register(name, pw);
         if(session) {
-            Logger.syslog.log(this.ip + " registered " + name);
+            ActionLog.record(getClientIP(req), name, "register-success");
+            Logger.syslog.log(getClientIP(req) + " registered " + name);
             sendJSON(res, {
                 success: true,
                 session: session
@@ -468,101 +489,10 @@ function handleRegister(params, req, res) {
     }
 }
 
-function handleGlobalBans(params, req, res) {
-    var name = params.name || "";
-    var pw = params.pw || "";
-    var session = params.session || "";
-    var row = Auth.login(name, pw, session);
-    if(!row || row.global_rank < 255) {
-        res.send(403);
-        return;
-    }
-
-    var action = params.action || "list";
-    if(action == "list") {
-        var gbans = Database.refreshGlobalBans();
-        sendJSON(res, gbans);
-    }
-    else if(action == "add") {
-        var ip = params.ip || "";
-        var reason = params.reason || "";
-        if(!ip.match(/\d+\.\d+\.(\d+\.(\d+)?)?/)) {
-            sendJSON(res, {
-                error: "Invalid IP address"
-            });
-            return;
-        }
-        var result = Database.globalBanIP(ip, reason);
-        sendJSON(res, {
-            success: result,
-            ip: ip,
-            reason: reason
-        });
-    }
-    else if(action == "remove") {
-        var ip = params.ip || "";
-        if(!ip.match(/\d+\.\d+\.(\d+\.(\d+)?)?/)) {
-            sendJSON(res, {
-                error: "Invalid IP address"
-            });
-            return;
-        }
-        var result = Database.globalUnbanIP(ip);
-        sendJSON(res, {
-            success: result,
-            ip: ip,
-        });
-    }
-    else {
-        sendJSON(res,  {
-            error: "Invalid action: " + action
-        });
-    }
-}
-
 function handleAdmReports(params, req, res) {
     sendJSON(res, {
         error: "Not implemented"
     });
-}
-
-function handleAcpPasswordReset(params, req, res) {
-    var name = params.name || "";
-    var pw = params.pw || "";
-    var session = params.session || "";
-    var row = Auth.login(name, pw, session);
-    if(!row || row.global_rank < 255) {
-        res.send(403);
-        return;
-    }
-
-    var action = params.action || "";
-    if(action == "reset") {
-        var uname = params.reset_name;
-        if(Auth.getGlobalRank(uname) > row.global_rank) {
-            sendJSON(res, {
-                success: false
-            });
-            return;
-        }
-        var new_pw = Database.resetPassword(uname);
-        if(new_pw) {
-            sendJSON(res, {
-                success: true,
-                pw: new_pw
-            });
-        }
-        else {
-            sendJSON(res, {
-                success: false
-            });
-        }
-    }
-    else {
-        sendJSON(res, {
-            success: false
-        });
-    }
 }
 
 // Helper function
@@ -598,6 +528,10 @@ function handleReadLog(params, req, res) {
     }
     else if(type == "err") {
         pipeLast(res, "error.log", 1024*1024);
+    }
+    else if(type == "action") {
+        ActionLog.flush();
+        pipeLast(res, "action.log", 1024*1024*100);
     }
     else if(type == "channel") {
         var chan = params.channel || "";
