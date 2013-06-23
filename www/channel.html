@@ -97,7 +97,7 @@
                 <div class="row-fluid" id="leftpane-inner">
                   <!-- new poll controls -->
                   <div class="span12" id="pollbtnwrap">
-                      <button class="btn btn-primary btn-small" id="newpollbtn">New Poll</button>
+                      <button class="btn btn-small" id="newpollbtn">New Poll</button>
                   </div>
                   <!-- poll container -->
                   <div class="span12" id="pollwrap">
@@ -143,7 +143,20 @@
               <div class="span7" id="rightpane-outer">
                 <div class="row-fluid" id="rightpane-inner">
                   <!-- account for left pane having the poll buffer -->
-                  <div class="span12" id="queue_align"></div>
+                  <div class="span12" id="qualitywrap">
+                    <div class="btn-group">
+                      <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="javascript:void(0)">
+                        Quality <span class="caret"></span>
+                      </a>
+                      <ul class="dropdown-menu">
+                        <li><a id="quality_240p" href="javascript:void(0)">240p</a></li>
+                        <li><a id="quality_360p" href="javascript:void(0)">360p</a></li>
+                        <li><a id="quality_480p" href="javascript:void(0)">480p</a></li>
+                        <li><a id="quality_720p" href="javascript:void(0)">720p</a></li>
+                        <li><a id="quality_1080p" href="javascript:void(0)">1080p</a></li>
+                      </ul>
+                    </div>
+                  </div>
                   <!-- electric boogaloo -->
                   <div class="span12" id="queue_align2"></div>
                   <!-- playlist controls -->

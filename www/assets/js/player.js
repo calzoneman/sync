@@ -76,8 +76,12 @@ Player.prototype.initYouTube = function() {
         width: VWIDTH,
         videoId: this.id,
         playerVars: {
-            "autoplay": 1,
-            "controls": 1,
+            autohide: 1,        // Autohide controls
+            autoplay: 1,        // Autoplay video
+            controls: 1,        // Show controls
+            iv_load_policy: 3,  // No annotations
+            modestbranding: 1,  // No logo
+            rel: 0              // No related videos
         },
         events: {
             onReady: function() {
@@ -103,6 +107,8 @@ Player.prototype.initYouTube = function() {
     this.load = function(data) {
         if(this.player.loadVideoById) {
             this.player.loadVideoById(data.id, data.currentTime);
+            if(VIDEOQUALITY)
+                this.player.setPlaybackQuality(VIDEOQUALITY);
             this.id = data.id;
         }
     }

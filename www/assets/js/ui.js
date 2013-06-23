@@ -181,6 +181,24 @@ $("#userpl_save").click(function() {
     });
 });
 
+/* video controls */
+(function() {
+    function qualHandler(select, preset) {
+        $(select).click(function() {
+            VIDEOQUALITY = preset;
+            var btn = $("#qualitywrap .btn.dropdown-toggle");
+            var caret = btn.find(".caret").detach();
+            btn.text($(select).text());
+            caret.appendTo(btn);
+        });
+    }
+    qualHandler("#quality_240p", "small");
+    qualHandler("#quality_360p", "medium");
+    qualHandler("#quality_480p", "large");
+    qualHandler("#quality_720p", "hd720");
+    qualHandler("#quality_1080p", "hd1080");
+})();
+
 /* playlist controls */
 
 $("#queue").sortable({
