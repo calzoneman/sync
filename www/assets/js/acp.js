@@ -73,21 +73,53 @@ $("#show_actionlog").click(getActionLog);
 $("#actionlog_filter").click(function() {
     var actions = $(this).val();
     $("#actionlog tbody").remove();
-    $("#actionlog table").data("entries").forEach(function(e) {
-        if(typeof e.action == "string" && actions.indexOf(e.action) == -1)
+    var entries = [];
+    $("#actionlog table").data("allentries").forEach(function(e) {
+        if(actions.indexOf(e.action) == -1)
             return;
-        if(typeof e.action == "object" && "0" in e.action && actions.indexOf(e.action[0]) == -1)
-            return;
-
-        var tr = $("<tr/>").appendTo($("#actionlog table"));
-        $("<td/>").text(e.ip).appendTo(tr);
-        $("<td/>").text(e.name).appendTo(tr);
-        $("<td/>").text(e.action).appendTo(tr);
-        $("<td/>").text(new Date(e.time).toTimeString()).appendTo(tr);
+        entries.push(e);
     });
+    $("#actionlog_pagination").remove();
+    if(entries.length > 20) {
+        var pag = $("<div/>").addClass("pagination")
+            .attr("id", "actionlog_pagination")
+            .insertAfter($("#actionlog table"));
+        var btns = $("<ul/>").appendTo(pag);
+        for(var i = 0; i < data.length / 20; i++) {
+            var li = $("<li/>").appendTo(btns);
+            (function(i) {
+            $("<a/>").attr("href", "javascript:void(0)")
+                .text(i+1)
+                .click(function() {
+                    loadPage(tbl, i);
+                })
+                .appendTo(li);
+            })(i);
+        }
+        tbl.data("pagination", pag);
+    }
+
+    $("#actionlog table").data("entries", entries);
+    loadPage($("#actionlog table"), 0);
 });
 $("#actionlog_clear").click(function() {
-    socket.emit("acp-actionlog-clear");
+    socket.emit("acp-actionlog-clear", $("#actionlog_filter").val());
+    getActionLog();
+});
+$("#actionlog_refresh").click(function() {
+    getActionLog();
+});
+$("#actionlog_ip").click(function() {
+    tableResort($("#actionlog table"), "ip");
+});
+$("#actionlog_name").click(function() {
+    tableResort($("#actionlog table"), "name");
+});
+$("#actionlog_action").click(function() {
+    tableResort($("#actionlog table"), "action");
+});
+$("#actionlog_time").click(function() {
+    tableResort($("#actionlog table"), "time");
 });
 
 function getSyslog() {
@@ -110,20 +142,24 @@ function getActionLog() {
             var entry;
             try {
                 entry = JSON.parse(ln);
-                if(typeof entry.action == "string") {
-                    if(actions.indexOf(entry.action) == -1)
-                        actions.push(entry.action);
-                }
-                else if(typeof entry.action == "object" && "0" in entry.action) {
-                    if(actions.indexOf(entry.action[0]) == -1)
-                        actions.push(entry.action[0]);
-                }
+                if(actions.indexOf(entry.action) == -1)
+                    actions.push(entry.action);
                 entries.push(entry);
             }
             catch(e) { }
         });
-        entries.sort(function(a, b) {
-            return a.time == b.time ? 0 : (a.time < b.time ? 1 : -1);
+        var tbl = $("#actionlog table");
+        tbl.data("sortby", "time");
+        tbl.data("sort_desc", true);
+        tbl.data("entries", entries);
+        tbl.data("allentries", entries);
+        tbl.data("generator", function(e) {
+            var tr = $("<tr/>").appendTo($("#actionlog table"));
+            $("<td/>").text(e.ip).appendTo(tr);
+            $("<td/>").text(e.name).appendTo(tr);
+            $("<td/>").text(e.action).appendTo(tr);
+            $("<td/>").text(e.args.join(", ")).appendTo(tr);
+            $("<td/>").text(new Date(e.time).toTimeString()).appendTo(tr);
         });
         $("#actionlog table").data("entries", entries);
         $("#actionlog_filter").html("");
@@ -133,6 +169,7 @@ function getActionLog() {
         actions.forEach(function(a) {
             $("<option/>").text(a).val(a).appendTo($("#actionlog_filter"));
         });
+        loadPage(tbl, 0);
     });
 }
 function getChanlog() {
@@ -201,7 +238,7 @@ function loadPage(tbl, page) {
         });
     }
 
-    for(var i = page * 20; i < page * 20 + 20; i++) {
+    for(var i = page * 20; i < page * 20 + 20 && i < e.length; i++) {
         generator(e[i]);
     }
 }
@@ -356,6 +393,13 @@ function setupCallbacks() {
 
     socket.on("acp-list-loaded", function(data) {
         $("#channellist tbody").remove();
+        data.sort(function(a, b) {
+            if(a.usercount == b.usercount) {
+                var x = a.name, y = b.name;
+                return x == y ? 0 : (x < y ? -1 : 1);
+            }
+            return a.usercount < b.usercount ? -1 : 1;
+        });
         var total = 0;
         data.forEach(function(c) {
             total += c.usercount;

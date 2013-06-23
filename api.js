@@ -429,7 +429,7 @@ function handleEmailChange(params, req, res) {
     var row = Auth.login(name, pw);
     if(row) {
         var success = Database.setUserEmail(name, email);
-        ActionLog.record(getClientIP(req), name, ["email-update", email]);
+        ActionLog.record(getClientIP(req), name, "email-update", [email]);
         sendJSON(res, {
             success: success,
             error: success ? "" : "Email update failed",

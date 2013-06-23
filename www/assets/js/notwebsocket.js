@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var NotWebsocket = function() {
     this.connected = false;
     this.polltmr = false;
+    this.nws = true;
     $.getJSON(WEB_URL + "/nws/connect?callback=?", function(data) {
         this.hash = data;
         this.connected = true;

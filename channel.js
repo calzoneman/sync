@@ -269,14 +269,14 @@ function incrementalDump(chan) {
 
 Channel.prototype.tryRegister = function(user) {
     if(this.registered) {
-        ActionLog.record(user.ip, user.name, ["channel-register-failure", this.name]);
+        ActionLog.record(user.ip, user.name, "channel-register-failure", [this.name]);
         user.socket.emit("registerChannel", {
             success: false,
             error: "This channel is already registered"
         });
     }
     else if(!user.loggedIn) {
-        ActionLog.record(user.ip, user.name, ["channel-register-failure", this.name]);
+        ActionLog.record(user.ip, user.name, "channel-register-failure", [this.name]);
         user.socket.emit("registerChannel", {
             success: false,
             error: "You must log in to register a channel"
@@ -284,7 +284,7 @@ Channel.prototype.tryRegister = function(user) {
 
     }
     else if(!Rank.hasPermission(user, "registerChannel")) {
-        ActionLog.record(user.ip, user.name, ["channel-register-failure", this.name]);
+        ActionLog.record(user.ip, user.name, "channel-register-failure", [this.name]);
         user.socket.emit("registerChannel", {
             success: false,
             error: "You don't have permission to register this channel"
@@ -292,7 +292,7 @@ Channel.prototype.tryRegister = function(user) {
     }
     else {
         if(Database.registerChannel(this.name)) {
-            ActionLog.record(user.ip, user.name, ["channel-register-success", this.name]);
+            ActionLog.record(user.ip, user.name, "channel-register-success", [this.name]);
             this.registered = true;
             this.initialized = true;
             this.saveDump();

@@ -515,10 +515,12 @@ function applyOpts() {
     }
 
     if(USEROPTS.altsocket) {
-        if(socket && socket.disconnect)
-            socket.disconnect();
-        socket = new NotWebsocket();
-        setupCallbacks();
+        if(!socket.nws) {
+            if(socket && socket.disconnect)
+                socket.disconnect();
+            socket = new NotWebsocket();
+            setupCallbacks();
+        }
     }
     // Switch from NotWebsocket => Socket.io
     else if(socket && typeof socket.poll !== "undefined") {

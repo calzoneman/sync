@@ -46,6 +46,8 @@
     </div>
 
     <div class="container">
+    <div class="row">
+    <div class="span12">
         <div class="row">
             <div class="span12">
                 <div class="btn-group">
@@ -179,19 +181,23 @@
                 <h3>Action Log</h3>
                 <select multiple="multiple" id="actionlog_filter">
                 </select>
-                <button class="btn btn-danger" id="actionlog_clear">Clear</button>
+                <button class="btn btn-danger" id="actionlog_clear">Clear Selected</button>
+                <button class="btn" id="actionlog_refresh">Refresh</button>
                 <table class="table table-bordered table-striped table-compact">
                     <thead>
                         <tr>
-                            <th>IP Address</th>
-                            <th>Name</th>
-                            <th>Action</th>
-                            <th>Time</th>
+                            <th id="actionlog_ip">IP Address</th>
+                            <th id="actionlog_name">Name</th>
+                            <th id="actionlog_action">Action</th>
+                            <th>Args</th>
+                            <th id="actionlog_time">Time</th>
                         </tr>
                     </thead>
                 </table>
             </div>
         </div>
+    </div>
+    </div>
     </div> <!-- /container -->
     <div class="push"></div>
     <div id="sitefooter">
