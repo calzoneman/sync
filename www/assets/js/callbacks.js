@@ -255,50 +255,9 @@ Callbacks = {
                         from: FILTER_FROM,
                         to: FILTER_TO
                     });
-                    console.log("moveFilter", FILTER_FROM, FILTER_TO);
                 }
             }
         });
-
-        var newfilt = $("<tr/>");//.appendTo(tbl);
-        $("<td/>").appendTo(newfilt);
-        var name = $("<input/>").attr("type", "text")
-            .appendTo($("<td/>").appendTo(newfilt));
-        var regex = $("<input/>").attr("type", "text")
-            .appendTo($("<td/>").appendTo(newfilt));
-        var flags = $("<input/>").attr("type", "text")
-            .val("g")
-            .appendTo($("<td/>").appendTo(newfilt));
-        var replace = $("<input/>").attr("type", "text")
-            .appendTo($("<td/>").appendTo(newfilt));
-        var add = $("<button/>").addClass("btn btn-primary")
-            .text("Add Filter")
-            .appendTo($("<td/>").appendTo(newfilt));
-        var cback = (function(name, regex, fg, replace) { return function() {
-            if(regex.val() && replace.val()) {
-                var re = regex.val();
-                var flags = fg.val();
-                try {
-                    var dummy = new RegExp(re, flags);
-                }
-                catch(e) {
-                    makeAlert("Invalid regex", e+"", "alert-error")
-                        .insertAfter($("#filtereditor table"));
-                    return;
-                }
-                socket.emit("chatFilter", {
-                    cmd: "update",
-                    filter: {
-                        name: name.val(),
-                        source: re,
-                        flags: flags,
-                        replace: replace.val(),
-                        active: true
-                    }
-                });
-            }
-        } })(name, regex, flags, replace);
-        add.click(cback);
     },
 
     channelOpts: function(opts) {

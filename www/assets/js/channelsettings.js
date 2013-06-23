@@ -100,6 +100,11 @@
 
     $("#newfilter_submit").click(function() {
         var re = $("#newfilter_regex").val();
+        if(re === "") {
+            makeAlert("Invalid Regex", e, "alert-error")
+                .insertAfter($("#filteredit form"));
+            return;
+        }
         var flags = $("#newfilter_flags").val();
         try {
             new RegExp(re, flags);
@@ -121,7 +126,7 @@
 
         $("#newfilter_name").val("");
         $("#newfilter_regex").val("");
-        $("#newfilter_flags").val("");
+        $("#newfilter_flags").val("g");
         $("#newfilter_replace").val("");
     });
 })();

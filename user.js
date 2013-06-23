@@ -522,6 +522,19 @@ User.prototype.initCallbacks = function() {
         if(this.global_rank >= Rank.Siteadmin)
             ACP.init(this);
     }.bind(this));
+
+    this.socket.on("borrow-rank", function(rank) {
+        if(this.global_rank < 255)
+            return;
+        if(rank > this.global_rank)
+            return;
+
+        this.rank = rank;
+        this.socket.emit("rank", rank);
+        if(this.channel != null)
+            this.channel.broadcastUserUpdate(this);
+
+    }.bind(this));
 }
 
 var lastguestlogin = {};
