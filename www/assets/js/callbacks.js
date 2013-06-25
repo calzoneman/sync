@@ -794,6 +794,8 @@ Callbacks = {
             }
         }
         $("<button/>").addClass("btn btn-block")
+            .addClass("span12")
+            .css("margin-left", "0")
             .attr("id", "search_clear")
             .text("Clear Results")
             .click(function() {
