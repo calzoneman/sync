@@ -626,10 +626,11 @@ Callbacks = {
         q.html("");
 
         for(var i = 0; i < data.length; i++) {
-            Callbacks.queue({
-                media: data[i],
-                pos: q.children().length
-            });
+            var li = makeQueueEntry(data[i], false);
+            li.attr("title", data[i].queueby
+                                ? ("Added by: " + data[i].queueby)
+                                : "Added by: Unknown");
+            li.appendTo(q);
         }
     },
 
@@ -642,9 +643,8 @@ Callbacks = {
     },
 
     queue: function(data) {
-        var li = makeQueueEntry(data.media, true);
+        var li = makeQueueEntry(data.media, false);
         li.hide();
-        addQueueButtons(li);
         var idx = data.pos;
         var q = $("#queue");
         li.attr("title", data.media.queueby
