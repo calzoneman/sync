@@ -71,10 +71,11 @@ $("#listloaded_refresh").click(function() {
 menuHandler("#show_actionlog", "#actionlog");
 $("#show_actionlog").click(getActionLog);
 $("#actionlog_filter").click(function() {
+    var tbl = $("#actionlog table");
     var actions = $(this).val();
     $("#actionlog tbody").remove();
     var entries = [];
-    $("#actionlog table").data("allentries").forEach(function(e) {
+    tbl.data("allentries").forEach(function(e) {
         if(actions.indexOf(e.action) == -1)
             return;
         entries.push(e);
@@ -398,7 +399,7 @@ function setupCallbacks() {
                 var x = a.name, y = b.name;
                 return x == y ? 0 : (x < y ? -1 : 1);
             }
-            return a.usercount < b.usercount ? -1 : 1;
+            return a.usercount < b.usercount ? 1 : -1;
         });
         var total = 0;
         data.forEach(function(c) {

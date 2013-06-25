@@ -72,6 +72,12 @@ function handle(chan, user, msg, data) {
     }
     else if(msg.indexOf("/d") == 0 && msg.length > 2 &&
             msg[2].match(/[-0-9 ]/)) {
+        if(msg[2] == "-") {
+            if(msg.length == 3)
+                return;
+            if(!msg[3].match(/[0-9]/))
+                return;
+        }
         handleDrink(chan, user, msg.substring(2), data);
     }
     else if(msg.indexOf("/clear") == 0) {
