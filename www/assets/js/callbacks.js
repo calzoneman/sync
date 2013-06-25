@@ -22,6 +22,12 @@ Callbacks = {
                 session: SESSION
             });
         }
+        // Guest auto-relogin
+        else if(CLIENT.name) {
+            socket.emit("login", {
+                name: CLIENT.name
+            });
+        }
         $("<div/>").addClass("server-msg-reconnect")
             .text("Connected")
             .appendTo($("#messagebuffer"));
