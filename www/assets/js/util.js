@@ -294,19 +294,19 @@ function rebuildPlaylist() {
     if(REBUILDING)
         return;
 
+    var qli = $("#queue li");
+    if(qli.length == 0)
+        return;
     REBUILDING = true;
     var i = 0;
-    var qli = $("#queue li");
     qli.each(function() {
         var li = $(this);
         setTimeout(function() {
             addQueueButtons(li);
-        }, 10*i);
-        if(i == qli.length - 1) {
-            setTimeout(function() {
+            if(i == qli.length - 1) {
                 REBUILDING = false;
-            }, 10*i);
-        }
+            }
+        }, 10*i);
         i++;
     });
 }

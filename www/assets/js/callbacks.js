@@ -643,7 +643,7 @@ Callbacks = {
     },
 
     queue: function(data) {
-        var li = makeQueueEntry(data.media, false);
+        var li = makeQueueEntry(data.media, true);
         li.hide();
         var idx = data.pos;
         var q = $("#queue");
@@ -690,6 +690,12 @@ Callbacks = {
     },
 
     moveVideo: function(data) {
+        if(data.from < POSITION && data.to >= POSITION)
+            POSITION--;
+        else if(data.from > POSITION && data.to <= POSITION)
+            POSITION++;
+        else if(data.from == POSITION)
+            POSITION = data.to;
         if(data.moveby != CLIENT.name)
             playlistMove(data.from, data.to);
     },
