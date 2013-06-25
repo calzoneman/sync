@@ -121,6 +121,24 @@ function addUserDropdown(entry, name) {
 
     $("<strong/>").text(name).appendTo(menu);
     $("<br/>").appendTo(menu);
+    var ignore = $("<button/>").addClass("btn btn-mini btn-block")
+        .appendTo(menu);
+    ignore.click(function() {
+        if(IGNORED.indexOf(name) == -1) {
+            ignore.text("Unignore User");
+            IGNORED.push(name);
+        }
+        else {
+            ignore.text("Ignore User");
+            IGNORED.splice(IGNORED.indexOf(name), 1);
+        }
+    });
+    if(IGNORED.indexOf(name) == -1) {
+        ignore.text("Ignore User");
+    }
+    else {
+        ignore.text("Unignore User");
+    }
     if(hasPermission("kick")) {
         $("<button/>").addClass("btn btn-mini btn-block")
             .text("Kick")
