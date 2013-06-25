@@ -55,6 +55,12 @@ function handle(chan, user, msg, data) {
             chan.chainMessage(user, cargs.join(" "), flair);
         }
     }
+    else if(msg.indexOf("/mute ") == 0) {
+        handleMute(chan, user, msg.substring(6).split(" "));
+    }
+    else if(msg.indexOf("/unmute ") == 0) {
+        handleUnmute(chan, user, msg.substring(8).split(" "));
+    }
     else if(msg.indexOf("/kick ") == 0) {
         handleKick(chan, user, msg.substring(6).split(" "));
     }
@@ -82,6 +88,46 @@ function handle(chan, user, msg, data) {
     }
     else if(msg.indexOf("/clear") == 0) {
         handleClear(chan, user);
+    }
+}
+
+function handleMute(chan, user, args) {
+    if(chan.hasPermission(user, "mute") && args.length > 0) {
+        args[0] = args[0].toLowerCase();
+        var person = false;
+        for(var i = 0; i < chan.users.length; i++) {
+            if(chan.users[i].name.toLowerCase() == args[0]) {
+                person = chan.users[i];
+                break;
+            }
+        }
+
+        if(person) {
+            person.meta.icon = "icon-volume-off";
+            person.muted = true;
+            chan.broadcastUserUpdate(person);
+            chan.logger.log("*** " + user.name + " muted " + args[0]);
+        }
+    }
+}
+
+function handleUnmute(chan, user, args) {
+    if(chan.hasPermission(user, "mute") && args.length > 0) {
+        args[0] = args[0].toLowerCase();
+        var person = false;
+        for(var i = 0; i < chan.users.length; i++) {
+            if(chan.users[i].name.toLowerCase() == args[0]) {
+                person = chan.users[i];
+                break;
+            }
+        }
+
+        if(person) {
+            person.meta.icon = false;
+            person.muted = false;
+            chan.broadcastUserUpdate(person);
+            chan.logger.log("*** " + user.name + " unmuted " + args[0]);
+        }
     }
 }
 

@@ -65,6 +65,7 @@ var Channel = function(name) {
         playlistclear: 2,
         pollctl: 1.5,
         pollvote: -1,
+        mute: 1.5,
         kick: 1.5,
         ban: 2,
         motdedit: 3,
@@ -1719,6 +1720,14 @@ Channel.prototype.tryChat = function(user, data) {
     if(!this.hasPermission(user, "chat"))
         return;
 
+    if(user.muted) {
+        user.socket.emit("noflood", {
+            action: "chat",
+            msg: "You have been muted on this channel."
+        });
+        return;
+    }
+
     if(typeof data.msg !== "string") {
         return;
     }
@@ -1770,6 +1779,7 @@ Channel.prototype.filterMessage = function(msg) {
 
 Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
     // I don't want HTML from strangers
+    msg = msg.replace(/&/g, "&amp;");
     msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     msg = this.filterMessage(msg);
     var msgobj = {

@@ -30,8 +30,10 @@ var User = function(socket, ip) {
     this.channel = null;
     this.name = "";
     this.meta = {
-        afk: false
+        afk: false,
+        icon: false
     };
+    this.muted = false;
     this.throttle = {};
     this.flooded = {};
     this.profile = {

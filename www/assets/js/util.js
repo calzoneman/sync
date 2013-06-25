@@ -98,6 +98,9 @@ function formatUserlistItem(div, data) {
         name.css("font-style", "italic");
         $("<i/>").addClass("icon-time").appendTo(flair);
     }
+    if(data.meta && data.meta.icon) {
+        $("<i/>").addClass(data.meta.icon).prependTo(flair);
+    }
 }
 
 function getNameColor(rank) {
@@ -1294,6 +1297,7 @@ function genPermissionsEditor() {
     makeOption("Vote", "pollvote", standard, CHANNEL.perms.pollvote+"");
 
     addDivider("Moderation");
+    makeOption("Mute users", "mute", modleader, CHANNEL.perms.mute+"");
     makeOption("Kick users", "kick", modleader, CHANNEL.perms.kick+"");
     makeOption("Ban users", "ban", modplus, CHANNEL.perms.ban+"");
     makeOption("Edit MOTD", "motdedit", modplus, CHANNEL.perms.motdedit+"");
