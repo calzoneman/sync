@@ -93,7 +93,7 @@ module.exports = {
             ActionLog.record(user.ip, user.name, "acp-set-rank", [data]);
             var query = Database.createQuery(
                 "UPDATE registrations SET global_rank=? WHERE uname=?",
-                [data.name, data.rank]
+                [data.rank, data.name]
             );
 
             var res = db.querySync(query);
