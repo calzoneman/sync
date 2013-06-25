@@ -291,9 +291,23 @@ function addQueueButtons(li) {
 }
 
 function rebuildPlaylist() {
-    $("#queue li").each(function() {
-        $(this).find(".btn-group").remove();
-        addQueueButtons($(this));
+    if(REBUILDING)
+        return;
+
+    REBUILDING = true;
+    var i = 0;
+    var qli = $("#queue li");
+    qli.each(function() {
+        var li = $(this);
+        setTimeout(function() {
+            addQueueButtons(li);
+        }, 10*i);
+        if(i == qli.length - 1) {
+            setTimeout(function() {
+                REBUILDING = false;
+            }, 10*i);
+        }
+        i++;
     });
 }
 

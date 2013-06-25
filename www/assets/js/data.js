@@ -40,6 +40,7 @@ if($("#ytapiplayer").length > 0) {
     var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
 }
 var POSITION = -1;
+var REBUILDING = false;
 var socket = {
     emit: function() {
         console.log("socket not initialized");
