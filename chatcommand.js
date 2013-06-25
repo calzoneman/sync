@@ -103,6 +103,12 @@ function handleMute(chan, user, args) {
         }
 
         if(person) {
+            if(person.rank >= user.rank) {
+                user.socket.emit("errorMsg", {
+                    msg: "You don't have permission to mute that person."
+                });
+                return;
+            }
             person.meta.icon = "icon-volume-off";
             person.muted = true;
             chan.broadcastUserUpdate(person);
@@ -123,6 +129,12 @@ function handleUnmute(chan, user, args) {
         }
 
         if(person) {
+            if(person.rank >= user.rank) {
+                user.socket.emit("errorMsg", {
+                    msg: "You don't have permission to unmute that person."
+                });
+                return;
+            }
             person.meta.icon = false;
             person.muted = false;
             chan.broadcastUserUpdate(person);
