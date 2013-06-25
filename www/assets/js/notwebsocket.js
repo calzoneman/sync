@@ -76,7 +76,7 @@ NotWebsocket.prototype.emit = function(msg, data) {
         return;
     }
     var pkt = [msg, data];
-    var str = escape(JSON.stringify(pkt)).replace(/\//g, "%2F");
+    var str = encodeURIComponent(JSON.stringify(pkt)).replace(/\//g, "%2F");
     $.getJSON(WEB_URL+"/nws/"+this.hash+"/"+str+"?callback=?", function() {
         // Poll more quickly because sending a packet usually means
         // expecting some data to come back

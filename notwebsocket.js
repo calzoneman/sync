@@ -151,7 +151,7 @@ function msgReceived(req, res) {
                 sendJSON(res, clients[h].poll());
             }
             else {
-                clients[h].recv(unescape(str));
+                clients[h].recv(decodeURIComponent(str));
                 sendJSON(res, "");
             }
         }
