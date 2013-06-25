@@ -300,6 +300,7 @@ function addQueueButtons(li) {
         menu.find(".qbtn-delete").addClass("btn-danger");
     }
     else if(menu.find(".btn").length != 0) {
+        li.unbind("contextmenu");
         li.contextmenu(function(ev) {
             ev.preventDefault();
             if(menu.css("display") == "none")
@@ -322,12 +323,14 @@ function rebuildPlaylist() {
     var i = 0;
     qli.each(function() {
         var li = $(this);
-        setTimeout(function() {
-            addQueueButtons(li);
-            if(i == qli.length - 1) {
-                REBUILDING = false;
-            }
-        }, 10*i);
+        (function(i) {
+            setTimeout(function() {
+                addQueueButtons(li);
+                if(i == qli.length - 1) {
+                    REBUILDING = false;
+                }
+            }, 10*i);
+        })(i);
         i++;
     });
 }
