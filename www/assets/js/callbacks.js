@@ -341,9 +341,9 @@ Callbacks = {
             var aliases = $("<td/>").text(entries[i].aliases.join(", ")).appendTo(tr);
             var banner = $("<td/>").text(entries[i].banner).appendTo(tr);
 
-            var callback = (function(ip, name) { return function() {
+            var callback = (function(ip_hidden, name) { return function() {
                 socket.emit("unban", {
-                    ip: ip,
+                    ip_hidden: ip_hidden,
                     name: name
                 });
             } })(entries[i].ip_hidden, entries[i].name);

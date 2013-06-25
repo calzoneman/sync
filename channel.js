@@ -502,7 +502,7 @@ Channel.prototype.tryUnban = function(actor, data) {
         var ip = this.hideIP(data.ip_hidden);
         this.unbanIP(actor, ip);
     }
-    else if(data.name) {
+    if(data.name) {
         this.unbanName(actor, data.name);
     }
 }
