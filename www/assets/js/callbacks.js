@@ -668,6 +668,7 @@ Callbacks = {
             data = "Queue failed.  Check your link to make sure it is valid.";
         }
         makeAlert("Error", data, "alert-error")
+            .addClass("span12")
             .insertAfter($("#mediaurl").parent());
     },
 

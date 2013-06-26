@@ -1051,7 +1051,9 @@ Channel.prototype.enqueue = function(data, user, callback) {
                     if(err) {
                         if(callback)
                             callback();
-                        user.socket.emit("queueFail");
+                        if(err === true)
+                            err = false;
+                        user.socket.emit("queueFail", err);
                         return;
                     }
                     media.queueby = user ? user.name : "";

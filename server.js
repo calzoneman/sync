@@ -159,7 +159,8 @@ exports.io.sockets.on("connection", function(socket) {
 
 if(!Config.DEBUG) {
     process.on("uncaughtException", function(err) {
-    Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
+        Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
+        Logger.errlog.log(err.stack);
     });
 
     process.on("exit", shutdown);

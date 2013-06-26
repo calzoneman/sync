@@ -29,7 +29,8 @@ function getJSON(options, callback) {
             }
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
-                callback(true, res.statusCode, null);
+                var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
+                callback(m[1] || true, res.statusCode, null);
                 return;
             }
             callback(false, res.statusCode, data);
@@ -53,7 +54,8 @@ function getJSONHTTPS(options, callback) {
             }
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
-                callback(true, res.statusCode, null);
+                var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
+                callback(m[1] || true, res.statusCode, null);
                 return;
             }
             callback(false, res.statusCode, data);
@@ -229,7 +231,7 @@ exports.getMedia = function(id, type, callback) {
         case "yt":
             exports.getYTInfo(id, function(err, res, data) {
                 if(err || res != 200) {
-                    callback(true, null);
+                    callback(err || true, null);
                     return;
                 }
 
