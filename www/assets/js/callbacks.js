@@ -708,6 +708,13 @@ Callbacks = {
     },
 
     setPosition: function(position) {
+        // Wait until any pending movement is finished
+        if(MOVING) {
+            setTimeout(function() {
+                Callbacks.move(position);
+            }, 100);
+            return;
+        }
         $("#queue li").each(function() {
             $(this).removeClass("queue_active");
         });

@@ -952,6 +952,7 @@ function playlistMove(from, to) {
     if(from >= q.children().length)
         return false;
 
+    MOVING = true;
     var old = $(q.children()[from]);
     old.hide("blind", function() {
         old.detach();
@@ -960,6 +961,7 @@ function playlistMove(from, to) {
         else
             old.insertBefore(q.children()[to]);
         old.show("blind");
+        MOVING = false;
     });
 }
 
