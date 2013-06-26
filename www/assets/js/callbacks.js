@@ -638,6 +638,8 @@ Callbacks = {
                                 : "Added by: Unknown");
             li.appendTo(q);
         }
+
+        rebuildPlaylist();
     },
 
     setPlaylistMeta: function(data) {
