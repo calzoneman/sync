@@ -384,6 +384,17 @@ function showOptionsMenu() {
         .text("Changing layouts may require a refresh")
     addOption("", warn);
     $("<hr>").appendTo(form);
+    var nocsscontainer = $("<label/>").addClass("checkbox")
+        .text("Ignore channel CSS");
+    var nocss = $("<input/>").attr("type", "checkbox").appendTo(nocsscontainer);
+    nocss.prop("checked", USEROPTS.ignore_channelcss);
+    addOption("Channel CSS", nocsscontainer);
+    var nojscontainer = $("<label/>").addClass("checkbox")
+        .text("Ignore channel JS");
+    var nojs = $("<input/>").attr("type", "checkbox").appendTo(nojscontainer);
+    nojs.prop("checked", USEROPTS.ignore_channeljs);
+    addOption("Channel JS", nojscontainer);
+    $("<hr>").appendTo(form);
 
     var hqbtncontainer = $("<label/>").addClass("checkbox")
         .text("Hide playlist buttons by default");
@@ -440,12 +451,6 @@ function showOptionsMenu() {
     altsocket.prop("checked", USEROPTS.altsocket);
     addOption("Alternate Socket", altsocketcontainer);
 
-    var profile = $("<a/>").attr("target", "_blank")
-        .addClass("btn")
-        .attr("href", "./account.html")
-        .text("Profile has moved to the account page");
-    addOption("Profile", profile);
-
     if(CLIENT.rank >= Rank.Moderator) {
         $("<hr>").appendTo(form);
         var modhatcontainer = $("<label/>").addClass("checkbox")
@@ -479,6 +484,8 @@ function showOptionsMenu() {
         USEROPTS.altsocket            = altsocket.prop("checked");
         USEROPTS.qbtn_hide            = hqbtn.prop("checked");
         USEROPTS.qbtn_idontlikechange = oqbtn.prop("checked");
+        USEROPTS.ignore_channelcss    = nocss.prop("checked");
+        USEROPTS.ignore_channeljs     = nojs.prop("checked");
         if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
             USEROPTS.joinmessage = join.prop("checked");

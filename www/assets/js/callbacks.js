@@ -270,14 +270,14 @@ Callbacks = {
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
         $("#chanexternalcss").remove();
-        if(opts.externalcss.trim() != "") {
+        if(opts.externalcss.trim() != "" && !USEROPTS.ignore_channelcss) {
             $("<link/>")
                 .attr("rel", "stylesheet")
                 .attr("href", opts.externalcss)
                 .attr("id", "chanexternalcss")
                 .appendTo($("head"));
         }
-        if(opts.externaljs.trim() != "") {
+        if(opts.externaljs.trim() != "" && !USEROPTS.ignore_channeljs) {
             if(opts.externaljs != CHANNEL.opts.externaljs) {
                 $.getScript(opts.externaljs);
             }
@@ -301,22 +301,20 @@ Callbacks = {
 
     channelCSSJS: function(data) {
         $("#chancss").remove();
-        $("#chanjs").remove();
-
         CHANNEL.css = data.css;
-        CHANNEL.js = data.js;
-
         $("#csstext").val(data.css);
-        $("#jstext").val(data.js);
-
-        if(data.css) {
+        if(data.css && !USEROPTS.ignore_channelcss) {
             $("<style/>").attr("type", "text/css")
                 .attr("id", "chancss")
                 .text(data.css)
                 .appendTo($("head"));
         }
 
-        if(data.js) {
+        $("#chanjs").remove();
+        CHANNEL.js = data.js;
+        $("#jstext").val(data.js);
+
+        if(data.js && !USEROPTS.ignore_channeljs) {
             $("<script/>").attr("type", "text/javascript")
                 .attr("id", "chanjs")
                 .text(data.js)

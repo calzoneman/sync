@@ -95,7 +95,9 @@ var USEROPTS = {
     joinmessage          : getOrDefault("joinmessage", true),
     qbtn_hide            : getOrDefault("qbtn_hide", false),
     qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false),
-    first_visit          : getOrDefault("first_visit", true)
+    first_visit          : getOrDefault("first_visit", true),
+    ignore_channelcss    : getOrDefault("ignore_channelcss", false),
+    ignore_channeljs     : getOrDefault("ignore_channeljs", false)
 };
 
 var Rank = {
