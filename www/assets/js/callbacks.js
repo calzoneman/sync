@@ -649,6 +649,13 @@ Callbacks = {
     },
 
     queue: function(data) {
+        // Wait until pending movements are completed
+        if(MOVING) {
+            setTimeout(function() {
+                Callbacks.queue(data);
+            }, 100);
+            return;
+        }
         var li = makeQueueEntry(data.media, true);
         li.hide();
         var idx = data.pos;
