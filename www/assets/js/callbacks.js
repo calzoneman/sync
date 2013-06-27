@@ -650,7 +650,7 @@ Callbacks = {
 
     queue: function(data) {
         // Wait until pending movements are completed
-        if(MOVING) {
+        if(PL_MOVING || PL_ADDING || PL_DELETING) {
             setTimeout(function() {
                 Callbacks.queue(data);
             }, 100);
@@ -699,11 +699,25 @@ Callbacks = {
     },
 
     "delete": function(data) {
+        // Wait until any pending manipulation is finished
+        if(PL_MOVING || PL_ADDING || PL_DELETING) {
+            setTimeout(function() {
+                Callbacks["delete"](data);
+            }, 100);
+            return;
+        }
         var li = $("#queue").children()[data.position];
         $(li).remove();
     },
 
     moveVideo: function(data) {
+        // Wait until any pending manipulation is finished
+        if(PL_MOVING || PL_ADDING || PL_DELETING) {
+            setTimeout(function() {
+                Callbacks.moveVideo(position);
+            }, 100);
+            return;
+        }
         if(data.from < POSITION && data.to >= POSITION)
             POSITION--;
         else if(data.from > POSITION && data.to <= POSITION)
@@ -715,10 +729,10 @@ Callbacks = {
     },
 
     setPosition: function(position) {
-        // Wait until any pending movement is finished
-        if(MOVING) {
+        // Wait until any pending manipulation is finished
+        if(PL_MOVING || PL_ADDING || PL_DELETING) {
             setTimeout(function() {
-                Callbacks.move(position);
+                Callbacks.setPosition(position);
             }, 100);
             return;
         }

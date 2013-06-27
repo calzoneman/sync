@@ -259,8 +259,9 @@ function addQueueButtons(li) {
     }
     // Temp/Untemp
     if(hasPermission("settemp")) {
+        var tempstr = li.data("media").temp?"Make Permanent":"Make Temporary";
         $("<button/>").addClass("btn btn-mini qbtn-tmp")
-            .html("<i class='icon-flag'></i>Make Temporary")
+            .html("<i class='icon-flag'></i>" + tempstr)
             .click(function() {
                 var i = $("#queue").children().index(li);
                 var temp = li.find(".qbtn-tmp").data("temp");
@@ -313,24 +314,25 @@ function addQueueButtons(li) {
 }
 
 function rebuildPlaylist() {
-    if(REBUILDING)
-        return;
-
     var qli = $("#queue li");
     if(qli.length == 0)
         return;
-    REBUILDING = true;
+    REBUILDING = Math.random() + "";
+    var r = REBUILDING;
     var i = 0;
     qli.each(function() {
         var li = $(this);
-        (function(i) {
+        (function(i, r) {
             setTimeout(function() {
+                // Stop if another rebuild is running
+                if(REBUILDING != r)
+                    return;
                 addQueueButtons(li);
                 if(i == qli.length - 1) {
                     REBUILDING = false;
                 }
             }, 10*i);
-        })(i);
+        })(i, r);
         i++;
     });
 }
