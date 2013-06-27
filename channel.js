@@ -293,7 +293,7 @@ Channel.prototype.tryRegister = function(user) {
         });
     }
     else {
-        if(Database.registerChannel(this.name)) {
+        if(Database.registerChannel(this.name, user.name)) {
             ActionLog.record(user.ip, user.name, "channel-register-success", [this.name]);
             this.registered = true;
             this.initialized = true;

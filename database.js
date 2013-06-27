@@ -105,6 +105,7 @@ function init() {
     var query = ["CREATE TABLE IF NOT EXISTS `channels` (",
                     "`id` INT NOT NULL AUTO_INCREMENT,",
                     "`name` VARCHAR(255) NOT NULL,",
+                    "`owner` VARCHAR(20) NOT NULL,",
                     "PRIMARY KEY(`id`))",
                  "ENGINE = MyISAM;"].join("");
     var results = db.querySync(query);
@@ -249,7 +250,7 @@ function globalUnbanIP(ip) {
 
 /* REGION Channel Registration/Loading */
 
-function registerChannel(name) {
+function registerChannel(name, owner) {
     if(!name.match(/^[a-zA-Z0-9-_]+$/)) {
         return false;
     }
@@ -305,8 +306,8 @@ function registerChannel(name) {
 
     // Insert into channel table
     query = createQuery(
-        "INSERT INTO `channels` VALUES (NULL, ?)",
-        [name]
+        "INSERT INTO `channels` VALUES (NULL, ?, ?)",
+        [name, owner]
     );
 
     results = db.querySync(query);
