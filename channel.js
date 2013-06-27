@@ -1077,7 +1077,7 @@ Channel.prototype.enqueue = function(data, user, callback) {
                     this.queueAdd(media, after);
                     this.cacheMedia(media);
                     if(data.type == "yp")
-                        after++;
+                        after = media.hash;
                     if(callback)
                         callback();
                 }.bind(this));
