@@ -24,7 +24,7 @@ module.exports = {
         });
 
         user.socket.on("acp-global-unban", function(ip) {
-            ActionLog.record(user.ip, user.name, "acp-global-unban", [data.ip]);
+            ActionLog.record(user.ip, user.name, "acp-global-unban", [ip]);
             Database.globalUnbanIP(ip);
             user.socket.emit("acp-global-banlist", Database.refreshGlobalBans());
         });
