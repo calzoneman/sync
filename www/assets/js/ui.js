@@ -203,16 +203,18 @@ $("#userpl_save").click(function() {
 
 $("#queue").sortable({
     start: function(ev, ui) {
-        PL_FROM = ui.item.prevAll().length;
+        PL_FROM = ui.item.data("hash");
     },
     update: function(ev, ui) {
-        PL_TO = ui.item.prevAll().length;
-        if(PL_TO != PL_FROM) {
-            socket.emit("moveMedia", {
-                from: PL_FROM,
-                to: PL_TO
-            });
-        }
+        var prev = ui.item.prevAll();
+        if(prev.length == 0)
+            PL_AFTER = "";
+        else
+            PL_AFTER = $(prev[0]).data("hash");
+        socket.emit("moveMedia", {
+            from: PL_FROM,
+            after: PL_AFTER
+        });
     }
 });
 $("#queue").disableSelection();

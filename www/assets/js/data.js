@@ -39,7 +39,7 @@ if($("#ytapiplayer").length > 0) {
     var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
     var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
 }
-var POSITION = -1;
+var MEDIA = { hash: "" };
 var PL_MOVING = false;
 var PL_ADDING = false;
 var PL_DELETING = false;
@@ -63,8 +63,8 @@ var KICKED = false;
 var NAME = readCookie("cytube_uname");
 var SESSION = readCookie("cytube_session");
 var LEADTMR = false;
-var PL_FROM = 0;
-var PL_TO = 0;
+var PL_FROM = "";
+var PL_AFTER = "";
 var FILTER_FROM = 0;
 var FILTER_TO = 0;
 

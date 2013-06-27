@@ -649,25 +649,25 @@ Callbacks = {
     },
 
     queue: function(data) {
-        // Wait until pending movements are completed
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks.queue(data);
-            }, 100);
-            return;
-        }
         var li = makeQueueEntry(data.media, true);
         li.hide();
-        var idx = data.pos;
         var q = $("#queue");
         li.attr("title", data.media.queueby
                             ? ("Added by: " + data.media.queueby)
                             : "Added by: Unknown");
-        if(idx < q.children().length - 1)
-            li.insertBefore(q.children()[idx])
-        else
-            li.appendTo(q);
-        li.show("blind");
+        if(data.after == "") {
+            li.prependTo(q);
+            li.show("blind");
+            return;
+        }
+        var qli = q.find("li");
+        for(var i = 0; i < qli.length; i++) {
+            if($(qli[i]).data("hash") == data.after) {
+                li.insertAfter(qli[i]);
+                li.show("blind");
+                return;
+            }
+        }
     },
 
     queueFail: function(data) {
@@ -680,89 +680,79 @@ Callbacks = {
     },
 
     setTemp: function(data) {
-        var li = $("#queue").children()[data.position];
-        li = $(li);
+        var li = false;
+        var qli = $("#queue li");
+        for(var i = 0; i < qli.length; i++) {
+            if($(qli[i]).data("hash") == data.hash) {
+                li = $(qli[i]);
+                break;
+            }
+        }
+        if(!li)
+            return;
         if(data.temp)
             li.addClass("queue_temp");
         else
             li.removeClass("queue_temp");
         var btn = li.find(".qbtn-tmp");
-        btn.data("temp", data.temp);
-        if(data.temp) {
-            btn.html(btn.html().replace("Make Temporary",
-                                        "Make Permanent"));
-        }
-        else {
-            btn.html(btn.html().replace("Make Permanent",
-                                        "Make Temporary"));
+        if(btn.length > 0) {
+            btn.data("temp", data.temp);
+            if(data.temp) {
+                btn.html(btn.html().replace("Make Temporary",
+                                            "Make Permanent"));
+            }
+            else {
+                btn.html(btn.html().replace("Make Permanent",
+                                            "Make Temporary"));
+            }
         }
     },
 
     "delete": function(data) {
-        // Wait until any pending manipulation is finished
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks["delete"](data);
-            }, 100);
-            return;
+        var li = false;
+        var qli = $("#queue li");
+        for(var i = 0; i < qli.length; i++) {
+            if($(qli[i]).data("hash") == data.hash) {
+                li = $(qli[i]);
+                break;
+            }
         }
-        var li = $("#queue").children()[data.position];
-        $(li).remove();
+        if(!li)
+            return;
+        li.hide("blind", function() {
+            li.remove();
+        });
     },
 
     moveVideo: function(data) {
-        // Wait until any pending manipulation is finished
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks.moveVideo(position);
-            }, 100);
-            return;
-        }
-        if(data.from < POSITION && data.to >= POSITION)
-            POSITION--;
-        else if(data.from > POSITION && data.to <= POSITION)
-            POSITION++;
-        else if(data.from == POSITION)
-            POSITION = data.to;
         if(data.moveby != CLIENT.name)
-            playlistMove(data.from, data.to);
-    },
-
-    setPosition: function(position) {
-        // Wait until any pending manipulation is finished
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks.setPosition(position);
-            }, 100);
-            return;
-        }
-        $("#queue li").each(function() {
-            $(this).removeClass("queue_active");
-        });
-        if(position < 0)
-            return;
-        POSITION = position;
-        var linew = $("#queue").children()[POSITION];
-        // jQuery UI's sortable thingy kinda fucks this up initially
-        // Wait until it's done
-        if(!$(linew).hasClass("queue_entry")) {
-            setTimeout(function() {
-                Callbacks.setPosition(position);
-            }, 100);
-            return;
-        }
-        $(linew).addClass("queue_active");
-
-        $("#queue").scrollTop(0);
-        var scroll = $(linew).position().top - $("#queue").position().top;
-        $("#queue").scrollTop(scroll);
-
-        if(CHANNEL.opts.allow_voteskip)
-            $("#voteskip").attr("disabled", false);
+            playlistMove(data.from, data.after);
     },
 
     changeMedia: function(data) {
+        MEDIA = data;
+        var qli = $("#queue li");
+        var li = false;
+        $("#queue li").removeClass("queue_active");
+        for(var i = 0; i < qli.length; i++) {
+            if($(qli[i]).data("hash") == MEDIA.hash) {
+                $(qli[i]).addClass("queue_active");
+                li = $(qli[i]);
+                break;
+            }
+        }
+
+        if(li) {
+            $("#queue").scrollTop(0);
+            var scroll = li.position().top - $("#queue").position().top;
+            $("#queue").scrollTop(scroll);
+        }
+
+        if(CHANNEL.opts.allow_voteskip)
+            $("#voteskip").attr("disabled", false);
+
         $("#currenttitle").text("Currently Playing: " + data.title);
+
         if(data.type != "sc" && PLAYER.type == "sc")
             // [](/goddamnitmango)
             fixSoundcloudShit();
@@ -858,7 +848,6 @@ Callbacks = {
         for(var i = 0; i < data.options.length; i++) {
             (function(i) {
             var callback = function() {
-                    console.log("vote", i);
                     socket.emit("vote", {
                         option: i
                     });
@@ -990,7 +979,6 @@ Callbacks = {
     }
 }
 setupCallbacks = function() {
-    console.log(socket);
     for(var key in Callbacks) {
         (function(key) {
         socket.on(key, function(data) {

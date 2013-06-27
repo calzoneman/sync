@@ -208,6 +208,7 @@ function makeQueueEntry(video, addbtns) {
     var li = $("<li/>");
     li.addClass("queue_entry");
     li.data("media", video);
+    li.data("hash", video.hash);
     if(video.thumb) {
         $("<img/>").attr("src", video.thumb.url)
             .css("float", "left")
@@ -238,8 +239,7 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-play")
             .html("<i class='icon-play'></i>Play")
             .click(function() {
-                var i = $("#queue").children().index(li);
-                socket.emit("jumpTo", i);
+                socket.emit("jumpTo", li.data("hash"));
             })
             .appendTo(menu);
     }
@@ -248,10 +248,9 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-next")
             .html("<i class='icon-share-alt'></i>Queue Next")
             .click(function() {
-                var i = $("#queue").children().index(li);
                 socket.emit("moveMedia", {
-                    from: i,
-                    to: i < POSITION ? POSITION : POSITION + 1,
+                    from: li.data("hash"),
+                    after: MEDIA.hash,
                     moveby: null
                 });
             })
@@ -263,10 +262,9 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-tmp")
             .html("<i class='icon-flag'></i>" + tempstr)
             .click(function() {
-                var i = $("#queue").children().index(li);
                 var temp = li.find(".qbtn-tmp").data("temp");
                 socket.emit("setTemp", {
-                    position: i,
+                    hash: li.data("hash"),
                     temp: !temp
                 });
             })
@@ -277,8 +275,7 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-delete")
             .html("<i class='icon-trash'></i>Delete")
             .click(function() {
-                var i = $("#queue").children().index(li);
-                socket.emit("delete", i);
+                socket.emit("delete", li.data("hash"));
             })
             .appendTo(menu);
     }
@@ -947,24 +944,39 @@ function addLibraryButtons(li, id, type) {
 
 /* queue stuff */
 
-function playlistMove(from, to) {
-    if(from < 0 || to < 0)
-        return false;
+function playlistMove(from, after) {
+    var lifrom = false;
+    var liafter = false;
     var q = $("#queue");
-    if(from >= q.children().length)
-        return false;
-
-    MOVING = true;
-    var old = $(q.children()[from]);
-    old.hide("blind", function() {
-        old.detach();
-        if(to >= q.children().length)
-            old.appendTo(q);
-        else
-            old.insertBefore(q.children()[to]);
-        old.show("blind");
-        MOVING = false;
-    });
+    var qli = $("#queue li");
+    for(var i = 0; i < qli.length; i++) {
+        if($(qli[i]).data("hash") == from) {
+            lifrom = $(qli[i]);
+            if(after === "" || liafter)
+                break;
+        }
+        else if($(qli[i]).data("hash") == after) {
+            liafter = qli[i];
+            if(lifrom)
+                break;
+        }
+    }
+    if(!lifrom)
+        return;
+    if(after === "") {
+        lifrom.hide("blind", function() {
+            lifrom.detach();
+            lifrom.prependTo(q);
+            lifrom.show("blind");
+        });
+    }
+    else {
+        lifrom.hide("blind", function() {
+            lifrom.detach();
+            lifrom.insertAfter(liafter);
+            lifrom.show("blind");
+        });
+    }
 }
 
 function parseMediaLink(url) {
