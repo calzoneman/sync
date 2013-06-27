@@ -208,6 +208,7 @@ Channel.prototype.loadDump = function() {
                     else {
                         var filt = new Filter(f.name, f.source, f.flags, f.replace);
                         filt.active = f.active;
+                        filt.filterlinks = f.filterlinks;
                         this.updateFilter(filt);
                     }
                 }
