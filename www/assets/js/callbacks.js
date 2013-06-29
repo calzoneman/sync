@@ -649,24 +649,27 @@ Callbacks = {
     },
 
     queue: function(data) {
-        var li = makeQueueEntry(data.media, true);
+        var li = makeQueueEntry(data.item, true);
         li.hide();
         var q = $("#queue");
-        li.attr("title", data.media.queueby
-                            ? ("Added by: " + data.media.queueby)
+        li.attr("title", data.item.queueby
+                            ? ("Added by: " + data.item.queueby)
                             : "Added by: Unknown");
-        if(data.after == "") {
+        if(data.after === "prepend") {
             li.prependTo(q);
             li.show("blind");
             return;
         }
-        var qli = q.find("li");
-        for(var i = 0; i < qli.length; i++) {
-            if($(qli[i]).data("hash") == data.after) {
-                li.insertAfter(qli[i]);
-                li.show("blind");
-                return;
-            }
+        else if(data.after === "append") {
+            li.appendTo(q);
+            li.show("blind");
+        }
+        else {
+            var liafter = $(".pluid-" + data.after);
+            if(liafter.length == 0)
+                return false;
+            li.insertAfter(liafter);
+            li.show("blind");
         }
     },
 
@@ -680,20 +683,15 @@ Callbacks = {
     },
 
     setTemp: function(data) {
-        var li = false;
-        var qli = $("#queue li");
-        for(var i = 0; i < qli.length; i++) {
-            if($(qli[i]).data("hash") == data.hash) {
-                li = $(qli[i]);
-                break;
-            }
-        }
-        if(!li)
-            return;
+        var li = $(".pluid-" + data.uid);
+        if(li.length == 0)
+            return false;
+
         if(data.temp)
             li.addClass("queue_temp");
         else
             li.removeClass("queue_temp");
+
         var btn = li.find(".qbtn-tmp");
         if(btn.length > 0) {
             btn.data("temp", data.temp);
@@ -709,16 +707,7 @@ Callbacks = {
     },
 
     "delete": function(data) {
-        var li = false;
-        var qli = $("#queue li");
-        for(var i = 0; i < qli.length; i++) {
-            if($(qli[i]).data("hash") == data.hash) {
-                li = $(qli[i]);
-                break;
-            }
-        }
-        if(!li)
-            return;
+        var li = $(".pluid-" + data.uid);
         li.hide("blind", function() {
             li.remove();
         });
@@ -730,23 +719,17 @@ Callbacks = {
     },
 
     changeMedia: function(data) {
-        MEDIA = data;
+        PL_CURRENT = data.uid;
         var qli = $("#queue li");
-        var li = false;
         $("#queue li").removeClass("queue_active");
-        for(var i = 0; i < qli.length; i++) {
-            if($(qli[i]).data("hash") == MEDIA.hash) {
-                $(qli[i]).addClass("queue_active");
-                li = $(qli[i]);
-                break;
-            }
-        }
+        var li = $(".pluid-" + data.uid);
+        if(li.length == 0)
+            return false;
 
-        if(li) {
-            $("#queue").scrollTop(0);
-            var scroll = li.position().top - $("#queue").position().top;
-            $("#queue").scrollTop(scroll);
-        }
+        li.addClass("queue_active");
+        $("#queue").scrollTop(0);
+        var scroll = li.position().top - $("#queue").position().top;
+        $("#queue").scrollTop(scroll);
 
         if(CHANNEL.opts.allow_voteskip)
             $("#voteskip").attr("disabled", false);
@@ -978,10 +961,14 @@ Callbacks = {
         }
     }
 }
+
+var SOCKET_DEBUG = true;
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
         socket.on(key, function(data) {
+            if(SOCKET_DEBUG)
+                console.log(key, data);
             Callbacks[key](data);
         });
         })(key);

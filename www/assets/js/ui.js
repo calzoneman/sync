@@ -203,14 +203,14 @@ $("#userpl_save").click(function() {
 
 $("#queue").sortable({
     start: function(ev, ui) {
-        PL_FROM = ui.item.data("hash");
+        PL_FROM = ui.item.data("uid");
     },
     update: function(ev, ui) {
         var prev = ui.item.prevAll();
         if(prev.length == 0)
-            PL_AFTER = "";
+            PL_AFTER = "prepend";
         else
-            PL_AFTER = $(prev[0]).data("hash");
+            PL_AFTER = $(prev[0]).data("uid");
         socket.emit("moveMedia", {
             from: PL_FROM,
             after: PL_AFTER

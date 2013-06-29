@@ -25,6 +25,7 @@ var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
 var Filter = require("./filter.js").Filter;
 var ActionLog = require("./actionlog");
+var Playlist = require("./playlist");
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
@@ -34,10 +35,9 @@ var Channel = function(name) {
     // Initialize defaults
     this.registered = false;
     this.users = [];
-    this.queue = [];
+    this.playlist = new Playlist();
     this.library = {};
     this.position = -1;
-    this.media = null;
     this.drinks = 0;
     this.leader = null;
     this.chatbuffer = [];
@@ -155,17 +155,25 @@ Channel.prototype.loadDump = function() {
         try {
             this.logger.log("*** Loading channel dump from disk");
             data = JSON.parse(data);
-            for(var i = 0; i < data.queue.length; i++) {
-                var e = data.queue[i];
-                var m = new Media(e.id, e.title, e.seconds, e.type);
-                m.queueby = data.queue[i].queueby ? data.queue[i].queueby
-                                                  : "";
-                if(e.temp !== undefined) {
-                    m.temp = e.temp;
+            // TODO fix loading
+            if(data.queue) {
+                for(var i = 0; i < data.queue.length; i++) {
+                    var e = data.queue[i];
+                    var m = new Media(e.id, e.title, e.seconds, e.type);
+                    var p = this.playlist.makeItem(m);
+                    p.queueby = data.queue[i].queueby ? data.queue[i].queueby
+                                                      : "";
+                    if(e.temp !== undefined) {
+                        p.temp = e.temp;
+                    }
+                    //this.playlist.append(p);
                 }
-                this.queue.push(m);
             }
-            this.sendAll("playlist", this.queue);
+            else if(data.playlist) {
+                this.playlist = new Playlist(data.playlist);
+                this.playlist.current = this.playlist.find(data.currentUID) || null;
+            }
+            this.sendAll("playlist", this.playlist.toArray());
             this.broadcastPlaylistMeta();
             // Backwards compatibility
             if(data.currentPosition != undefined) {
@@ -176,11 +184,6 @@ Channel.prototype.loadDump = function() {
             }
             if(this.position < -1)
                 this.position = -1;
-            if(this.queue.length > 0)
-                this.playNext();
-            if(this.media && data.currentTime) {
-                this.media.currentTime = data.currentTime;
-            }
             for(var key in data.opts) {
                 // Gotta love backwards compatibility
                 if(key == "customcss" || key == "customjs") {
@@ -246,7 +249,7 @@ Channel.prototype.saveDump = function() {
     var dump = {
         position: this.position,
         currentTime: this.media ? this.media.currentTime : 0,
-        queue: this.queue,
+        playlist: this.playlist.toArray(),
         opts: this.opts,
         permissions: this.permissions,
         filters: filts,
@@ -727,13 +730,13 @@ Channel.prototype.sendChannelRanks = function(user) {
 }
 
 Channel.prototype.sendPlaylist = function(user) {
-    user.socket.emit("playlist", this.queue);
+    user.socket.emit("playlist", this.playlist.toArray());
     user.socket.emit("setPlaylistMeta", this.plmeta);
 }
 
 Channel.prototype.sendMediaUpdate = function(user) {
-    if(this.media != null) {
-        user.socket.emit("changeMedia", this.media.fullupdate());
+    if(this.playlist.current != null) {
+        user.socket.emit("changeMedia", this.playlist.current.media.fullupdate());
     }
 }
 
@@ -778,12 +781,14 @@ Channel.prototype.sendAllWithPermission = function(perm, msg, data) {
 
 Channel.prototype.broadcastPlaylistMeta = function() {
     var total = 0;
-    for(var i = 0; i < this.queue.length; i++) {
-        total += this.queue[i].seconds;
+    var iter = this.playlist.first;
+    while(iter != null) {
+        total += iter.media.seconds;
+        iter = iter.next;
     }
     var timestr = formatTime(total);
     var packet = {
-        count: this.queue.length,
+        count: this.playlist.length,
         time: timestr
     };
     this.plmeta = packet;
@@ -1001,44 +1006,41 @@ function isLive(type) {
         || type == "im";// Imgur album
 }
 
-Channel.prototype.queueAdd = function(media, after) {
-    if(after === "") {
-        this.queue.splice(0, 0, media);
-    }
-    else {
-        for(var i = 0; i < this.queue.length; i++) {
-            if(this.queue[i].hash == after) {
-                this.queue.splice(i+1, 0, media);
-                break;
-            }
-        }
-    }
+Channel.prototype.queueAdd = function(item, after) {
+    if(after === "prepend")
+        this.playlist.prepend(item);
+    else if(after === "append")
+        this.playlist.append(item);
+    else
+        this.playlist.insertAfter(item, after);
+
     this.sendAll("queue", {
-        media: media.pack(),
+        item: item.pack(),
         after: after
     });
+
     this.broadcastPlaylistMeta();
-    if(this.queue.length == 1) {
-        this.jumpTo(media.hash);
-    }
+    if(this.playlist.length == 1)
+        this.sendAll("changeMedia", this.playlist.current.media.fullupdate());
 }
 
-Channel.prototype.autoTemp = function(media, user) {
-    if(isLive(media.type)) {
-        media.temp = true;
+Channel.prototype.autoTemp = function(item, user) {
+    if(isLive(item.media.type)) {
+        item.temp = true;
     }
     if(!this.hasPermission(user, "addnontemp")) {
-        media.temp = true;
+        item.temp = true;
     }
 }
 
 Channel.prototype.enqueue = function(data, user, callback) {
     var after = "";
-    if(data.pos == "next" && this.queue.length > 0 && this.position >= 0) {
-        after = this.queue[this.position].hash;
+    var current = this.playlist.current;
+    if(data.pos == "next") {
+        after = current ? current.uid : "prepend";
     }
-    else if(data.pos == "end" && this.queue.length > 0) {
-        after = this.queue[this.queue.length - 1].hash;
+    else if(data.pos == "end") {
+        after = "append";
     }
 
     if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
@@ -1049,9 +1051,10 @@ Channel.prototype.enqueue = function(data, user, callback) {
     // Prefer cache over looking up new data
     if(data.id in this.library) {
         var media = this.library[data.id].dup();
-        media.queueby = user ? user.name : "";
-        this.autoTemp(media, user);
-        this.queueAdd(media, after);
+        var item = this.playlist.makeItem(media);
+        item.queueby = user ? user.name : "";
+        this.autoTemp(item, user);
+        this.queueAdd(item, after);
         this.logger.log("*** Queued from cache: id=" + data.id);
         if(callback)
             callback();
@@ -1072,71 +1075,79 @@ Channel.prototype.enqueue = function(data, user, callback) {
                         user.socket.emit("queueFail", err);
                         return;
                     }
-                    media.queueby = user ? user.name : "";
-                    this.autoTemp(media, user);
-                    this.queueAdd(media, after);
+                    var item = this.playlist.makeItem(item);
+                    item.queueby = user ? user.name : "";
+                    this.autoTemp(item, user);
+                    this.queueAdd(item, after);
                     this.cacheMedia(media);
                     if(data.type == "yp")
-                        after = media.hash;
+                        after = item.uid;
                     if(callback)
                         callback();
                 }.bind(this));
                 break;
             case "li":
-                var media = new Media(data.id, "Livestream - " + data.id, "--:--", "li");
-                media.queueby = user ? user.name : "";
-                this.autoTemp(media, user);
-                this.queueAdd(media, after);
+                var media = new Media(data.id, "Livestream.com - " + data.id, "--:--", "li");
+                var item = this.playlist.makeItem(media);
+                item.queueby = user ? user.name : "";
+                this.autoTemp(item, user);
+                this.queueAdd(item, after);
                 if(callback)
                     callback();
                 break;
             case "tw":
-                var media = new Media(data.id, "Twitch - " + data.id, "--:--", "tw");
-                media.queueby = user ? user.name : "";
-                this.autoTemp(media, user);
-                this.queueAdd(media, after);
+                var media = new Media(data.id, "Twitch.tv - " + data.id, "--:--", "tw");
+                var item = this.playlist.makeItem(media);
+                item.queueby = user ? user.name : "";
+                this.autoTemp(item, user);
+                this.queueAdd(item, after);
                 if(callback)
                     callback();
                 break;
             case "jt":
-                var media = new Media(data.id, "JustinTV - " + data.id, "--:--", "jt");
-                media.queueby = user ? user.name : "";
-                this.autoTemp(media, user);
-                this.queueAdd(media, after);
+                var media = new Media(data.id, "Justin.tv - " + data.id, "--:--", "jt");
+                var item = this.playlist.makeItem(media);
+                item.queueby = user ? user.name : "";
+                this.autoTemp(item, user);
+                this.queueAdd(item, after);
                 if(callback)
                     callback();
                 break;
             case "us":
                 InfoGetter.getUstream(data.id, function(id) {
-                    var media = new Media(id, "Ustream - " + data.id, "--:--", "us");
-                    media.queueby = user ? user.name : "";
-                    this.autoTemp(media, user);
-                    this.queueAdd(media, after);
+                    var media = new Media(id, "Ustream.tv - " + data.id, "--:--", "us");
+                    var item = this.playlist.makeItem(media);
+                    item.queueby = user ? user.name : "";
+                    this.autoTemp(item, user);
+                    this.queueAdd(item, after);
                     if(callback)
                         callback();
                 }.bind(this));
                 break;
             case "rt":
                 var media = new Media(data.id, "Livestream", "--:--", "rt");
-                media.queueby = user ? user.name : "";
-                this.autoTemp(media, user);
-                this.queueAdd(media, after);
+                var item = this.playlist.makeItem(media);
+                item.queueby = user ? user.name : "";
+                this.autoTemp(item, user);
+                this.queueAdd(item, after);
                 if(callback)
                     callback();
                 break;
             case "jw":
                 var media = new Media(data.id, "JWPlayer Stream - " + data.id, "--:--", "jw");
-                media.queueby = user ? user.name : "";
-                this.autoTemp(media, user);
-                this.queueAdd(media, after);
+                var item = this.playlist.makeItem(media);
+                item.queueby = user ? user.name : "";
+                this.autoTemp(item, user);
+                this.queueAdd(item, after);
                 if(callback)
                     callback();
                 break;
             case "im":
                 var media = new Media(data.id, "Imgur Album", "--:--", "im");
-                media.queueby = user ? user.name : "";
-                this.autoTemp(media, user);
-                this.queueAdd(media, after);
+                var item = this.playlist.makeItem(media);
+                item.queueby = user ? user.name : "";
+                this.autoTemp(item, user);
+                this.queueAdd(item, after);
                 if(callback)
                     callback();
                 break;
@@ -1223,19 +1234,13 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
     this.enqueueList(data, user);
 }
 
-Channel.prototype.setTemp = function(hash, temp) {
-    var m = false;
-    for(var i = 0; i < this.queue.length; i++) {
-        if(this.queue[i].hash == hash) {
-            m = this.queue[i];
-            break;
-        }
-    }
-    if(!m)
+Channel.prototype.setTemp = function(uid, temp) {
+    var item = this.playlist.find(uid);
+    if(!item)
         return;
-    m.temp = temp;
+    item.temp = temp;
     this.sendAll("setTemp", {
-        hash: hash,
+        uid: uid,
         temp: temp
     });
 
@@ -1248,47 +1253,24 @@ Channel.prototype.trySetTemp = function(user, data) {
     if(!this.hasPermission(user, "settemp")) {
         return;
     }
-    if(typeof data.hash != "string" || typeof data.temp != "boolean") {
+    if(typeof data.uid != "number" || typeof data.temp != "boolean") {
         return;
     }
 
-    this.setTemp(data.hash, data.temp);
+    this.setTemp(data.uid, data.temp);
 }
 
 
-Channel.prototype.dequeue = function(hash, removeonly) {
-    var m = false;
-    var mpos = 0;
-    for(var i = 0; i < this.queue.length; i++) {
-        if(this.queue[i].hash == hash) {
-            mpos = i;
-            m = this.queue[i];
-            break;
-        }
-    }
-    if(!m) {
+Channel.prototype.dequeue = function(uid, removeonly) {
+    if(!this.playlist.remove(uid))
         return;
-    }
-    this.queue.splice(mpos, 1);
     this.sendAll("delete", {
-        hash: hash
+        uid: uid
     });
     this.broadcastPlaylistMeta();
 
     if(removeonly)
         return;
-
-    // If you remove the currently playing video, play the next one
-    if(mpos == this.position) {
-        this.position--;
-        this.playNext();
-        return;
-    }
-    // If you remove a video whose position is before the one currently
-    // playing, you have to reduce the position of the one playing
-    if(mpos < this.position) {
-        this.position--;
-    }
 }
 
 Channel.prototype.tryDequeue = function(user, data) {
@@ -1296,7 +1278,7 @@ Channel.prototype.tryDequeue = function(user, data) {
         return;
      }
 
-     if(typeof data !== "string")
+     if(typeof data !== "number")
          return;
 
      this.dequeue(data);
@@ -1314,9 +1296,22 @@ Channel.prototype.tryUncache = function(user, data) {
     }
 }
 
+Channel.prototype.resetVideoMeta = function() {
+    this.voteskip = false;
+    this.broadcastVoteskipUpdate();
+    this.drinks = 0;
+    this.broadcastDrinks();
+    if(this.playlist.current) {
+        this.playlist.current.media["currentTime"];
+        this.playlist.current.media["paused"];
+    }
+}
+
 Channel.prototype.playNext = function() {
-    var pos = this.position + 1 >= this.queue.length ? 0 : this.position + 1;
-    this.jumpTo(this.queue[pos].hash);
+    this.resetVideoMeta();
+    this.playlist.next();
+    if(this.playlist.current)
+        this.sendAll("changeMedia", this.playlist.current.media.fullupdate());
 }
 
 Channel.prototype.tryPlayNext = function(user) {
@@ -1327,50 +1322,19 @@ Channel.prototype.tryPlayNext = function(user) {
      this.playNext();
 }
 
-Channel.prototype.jumpTo = function(hash) {
-    var m = false;
-    var mpos = 0;
-    for(var i = 0; i < this.queue.length; i++) {
-        if(this.queue[i].hash == hash) {
-            m = this.queue[i];
-            mpos = i;
-            break;
-        }
-    }
-
-    if(!m)
+Channel.prototype.jumpTo = function(uid) {
+    this.resetVideoMeta();
+    var oid = this.playlist.current ? this.playlist.current.uid : -1;
+    if(!this.playlist.jump(uid))
         return;
 
-    // Reset voteskip
-    this.voteskip = false;
-    this.broadcastVoteskipUpdate();
-    this.drinks = 0;
-    this.broadcastDrinks();
-
-    var old = this.position;
-    if(this.media && this.media.temp) {
-        this.dequeue(this.media.hash, true);
-        if(mpos > old && mpos > 0) {
-            mpos--;
-        }
-    }
-    if(this.media) {
-        delete this.media["currentTime"];
-        delete this.media["paused"];
-    }
-    this.position = mpos;
-    var oid = this.media ? this.media.id : "";
-    this.media = m;
-    this.media.currentTime = -1;
-    this.media.paused = false;
-
-    this.sendAll("changeMedia", this.media.fullupdate());
+    this.sendAll("changeMedia", this.playlist.current.media.fullupdate());
 
     // If it's not a livestream, enable autolead
-    if(this.leader == null && !isLive(this.media.type)) {
+    if(this.leader == null && !isLive(this.playlist.current.media.type)) {
         this.time = new Date().getTime();
-        if(this.media.id != oid) {
-            mediaUpdate(this, this.media.id);
+        if(this.playlist.current.media.uid != oid) {
+            mediaUpdate(this, this.playlist.current.media);
         }
     }
 }
@@ -1380,7 +1344,7 @@ Channel.prototype.tryJumpTo = function(user, data) {
          return;
     }
 
-    if(typeof data !== "string") {
+    if(typeof data !== "number") {
         return;
     }
 
@@ -1388,10 +1352,8 @@ Channel.prototype.tryJumpTo = function(user, data) {
 }
 
 Channel.prototype.clearqueue = function() {
-    this.queue = [];
-    for(var i = 0; i < this.users.length; i++) {
-        this.sendPlaylist(this.users[i]);
-    }
+    this.playlist.clear();
+    this.sendAll("playlist", this.playlist.toArray());
     this.broadcastPlaylistMeta();
 }
 
@@ -1404,18 +1366,17 @@ Channel.prototype.tryClearqueue = function(user) {
 
 Channel.prototype.shufflequeue = function() {
     var n = [];
-    var current = false;
-    while(this.queue.length > 0) {
-        var i = parseInt(Math.random() * this.queue.length);
-        n.push(this.queue[i]);
-        if(!current && i == this.position) {
-            this.position = n.length - 1;
-            current = true;
-        }
-        this.queue.splice(i, 1);
+    var pl = this.playlist.toArray();
+    var current = pl.current;
+    while(pl.length > 0) {
+        var i = parseInt(Math.random() * pl.length);
+        n.push(pl[i]);
+        pl.splice(i, 1);
     }
-    this.queue = n;
-    this.sendAll("playlist", this.queue);
+    this.playlist = new Playlist(n);
+    this.playlist.current = this.playlist.last;
+    this.playNext();
+    this.sendAll("playlist", this.playlist.toArray());
     this.sendAll("setPlaylistMeta", this.plmeta);
 }
 
@@ -1436,54 +1397,44 @@ Channel.prototype.tryUpdate = function(user, data) {
            return;
     }
 
-    if(this.media == null) {
+    if(this.playlist.current === null) {
         return;
     }
 
-    if(isLive(this.media.type) && this.media.type != "jw") {
+    if(isLive(this.playlist.current.media.type) && this.playlist.current.media.type != "jw") {
         return;
     }
 
-    if(this.media.id != data.id) {
+    if(this.playlist.current.media.id != data.id) {
         return;
     }
 
-    this.media.currentTime = data.currentTime;
-    this.media.paused = data.paused;
-    this.sendAll("mediaUpdate", this.media.timeupdate());
+    this.playlist.current.media.currentTime = data.currentTime;
+    this.playlist.current.media.paused = data.paused;
+    this.sendAll("mediaUpdate", this.playlist.current.media.timeupdate());
 }
 
 Channel.prototype.move = function(data, user) {
-    var mfrom = false;
-    var fromidx = false;
-    var mafter = false;
-    var toidx = false;
-    // Find the two elements
-    for(var i = 0; i < this.queue.length; i++) {
-        if(this.queue[i].hash == data.from) {
-            mfrom = this.queue[i];
-            fromidx = i;
-            if(data.after === "" || mafter)
-                break;
-        }
-        else if(this.queue[i].hash == data.after) {
-            mafter = this.queue[i];
-            toidx = i+1;
-            if(mfrom)
-                break;
-        }
+    var item = this.playlist.find(data.from);
+    if(!this.playlist.remove(data.from)) {
+        console.log("remove failed");
+        return;
     }
 
-    this.queue.splice(fromidx, 1);
-    if(data.after === "") {
-        this.queue.splice(0, 0, mfrom);
+    if(data.after === "prepend") {
+        if(!this.playlist.prepend(item)) {
+            return;
+        }
     }
-    else {
-        var to = toidx;
-        if(fromidx < toidx)
-            toidx--;
-        this.queue.splice(toidx, 0, mfrom);
+    else if(data.after === "append") {
+        if(!this.playlist.append(item)) {
+            return;
+        }
     }
+    else if(!this.playlist.insertAfter(item, data.after)) {
+        return;
+    }
+
     var moveby = user && user.name ? user.name : null;
     if(typeof data.moveby !== "undefined")
         moveby = data.moveby;
@@ -1493,18 +1444,6 @@ Channel.prototype.move = function(data, user) {
         after: data.after,
         moveby: moveby
     });
-
-    // Account for moving things around the active video
-    if(fromidx < this.position && toidx >= this.position) {
-        this.position--;
-    }
-    else if(fromidx > this.position && toidx <= this.position) {
-        this.position++
-    }
-    else if(fromidx == this.position) {
-        this.position = toidx;
-    }
-
 }
 
 Channel.prototype.tryMove = function(user, data) {
@@ -1512,7 +1451,7 @@ Channel.prototype.tryMove = function(user, data) {
         return;
     }
 
-    if(typeof data.from !== "string" || typeof data.after !== "string")
+    if(typeof data.from !== "number" || (typeof data.after !== "number" && typeof data.after !== "string"))
         return;
 
     this.move(data, user);
@@ -1981,11 +1920,11 @@ Channel.prototype.changeLeader = function(name) {
     }
     if(name == "") {
         this.logger.log("*** Resuming autolead");
-        if(this.media != null && !isLive(this.media.type)) {
-            this.media.paused = false;
+        if(this.playlist.current != null && !isLive(this.playlist.current.media.type)) {
+            this.playlist.current.media.paused = false;
             this.time = new Date().getTime();
             this.i = 0;
-            mediaUpdate(this, this.media.id);
+            mediaUpdate(this, this.playlist.current.media.id);
         }
         return;
     }
