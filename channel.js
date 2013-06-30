@@ -35,7 +35,7 @@ var Channel = function(name) {
     // Initialize defaults
     this.registered = false;
     this.users = [];
-    this.playlist = new Playlist();
+    this.playlist = new Playlist(this);
     this.library = {};
     this.position = -1;
     this.drinks = 0;
@@ -170,7 +170,7 @@ Channel.prototype.loadDump = function() {
                 }
             }
             else if(data.playlist) {
-                this.playlist = new Playlist(data.playlist);
+                //TODO fix
                 this.playlist.current = this.playlist.find(data.currentUID) || null;
             }
             this.sendAll("playlist", this.playlist.toArray());
@@ -1334,7 +1334,7 @@ Channel.prototype.jumpTo = function(uid) {
     if(this.leader == null && !isLive(this.playlist.current.media.type)) {
         this.time = new Date().getTime();
         if(this.playlist.current.media.uid != oid) {
-            mediaUpdate(this, this.playlist.current.media);
+            //mediaUpdate(this, this.playlist.current.media);
         }
     }
 }
@@ -1373,7 +1373,7 @@ Channel.prototype.shufflequeue = function() {
         n.push(pl[i]);
         pl.splice(i, 1);
     }
-    this.playlist = new Playlist(n);
+    // TODO fix
     this.playlist.current = this.playlist.last;
     this.playNext();
     this.sendAll("playlist", this.playlist.toArray());
@@ -1920,17 +1920,21 @@ Channel.prototype.changeLeader = function(name) {
     }
     if(name == "") {
         this.logger.log("*** Resuming autolead");
+        /*
         if(this.playlist.current != null && !isLive(this.playlist.current.media.type)) {
             this.playlist.current.media.paused = false;
             this.time = new Date().getTime();
             this.i = 0;
             mediaUpdate(this, this.playlist.current.media.id);
         }
+        */
+        this.playlist.lead(true);
         return;
     }
     for(var i = 0; i < this.users.length; i++) {
         if(this.users[i].name == name) {
             this.logger.log("*** Assigned leader: " + name);
+            this.playlist.lead(false);
             this.leader = this.users[i];
             if(this.users[i].rank < 1.5) {
                 this.users[i].oldrank = this.users[i].rank;

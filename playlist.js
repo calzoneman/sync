@@ -16,17 +16,42 @@ PlaylistItem.prototype.pack = function() {
     };
 }
 
-function Playlist(items) {
+function Playlist(chan) {
     this.next_uid = 0;
     this.first = null;
     this.last = null;
     this.current = null;
     this.length = 0;
+    this._leadInterval = false;
+    this._lastUpdate = 0;
+    this._counter = 0;
+    this.leading = true;
+    this.callbacks = {
+        "changeMedia": [],
+        "mediaUpdate": []
+    };
 
-    if(items !== undefined) {
-        items.forEach(function(it) {
-            this.append(it);
+    if(chan) {
+        this.on("mediaUpdate", function(m) {
+            chan.sendAll("mediaUpdate", m.timeupdate());
         });
+        this.on("changeMedia", function(m) {
+            chan.sendAll("changeMedia", m.fullupdate());
+        });
+    }
+}
+
+Playlist.prototype.on = function(ev, fn) {
+    if(typeof fn === "undefined") {
+        var pl = this;
+        return function() {
+            for(var i = 0; i < pl.callbacks[ev].length; i++) {
+                pl.callbacks[ev][i].apply(this, arguments);
+            }
+        }
+    }
+    else if(typeof fn === "function") {
+        this.callbacks[ev].push(fn);
     }
 }
 
@@ -59,6 +84,7 @@ Playlist.prototype.prepend = function(plitem) {
     else {
         this.current = plitem;
         this.last = plitem;
+        this.startPlayback();
     }
     this.first = plitem;
     this.first.prev = null;
@@ -75,6 +101,7 @@ Playlist.prototype.append = function(plitem) {
     else {
         this.first = plitem;
         this.current = plitem;
+        this.startPlayback();
     }
     this.last = plitem;
     this.last.next = null;
@@ -143,8 +170,7 @@ Playlist.prototype._next = function() {
         this.current = this.first;
 
     if(this.current) {
-        this.current.media.paused = false;
-        this.current.media.currentTime = -1;
+        this.startPlayback();
     }
 }
 
@@ -161,8 +187,7 @@ Playlist.prototype.jump = function(uid) {
     this.current = jmp;
 
     if(this.current) {
-        this.current.media.paused = false;
-        this.current.media.currentTime = -1;
+        this.startPlayback();
     }
 
     if(it.temp) {
@@ -188,6 +213,69 @@ Playlist.prototype.clear = function() {
     this.current = null;
     this.length = 0;
     this.next_uid = 0;
+    clearInterval(this._leadInterval);
+}
+
+Playlist.prototype.lead = function(lead) {
+    this.leading = lead;
+    if(!this.leading && this._leadInterval) {
+        clearInterval(this._leadInterval);
+        this._leadInterval = false;
+    }
+    else if(this.leading && !this._leadInterval) {
+        this._leadInterval = setInterval(function() {
+            pl._leadLoop();
+        }, 1000);
+    }
+}
+
+Playlist.prototype.startPlayback = function() {
+    this.current.media.paused = true;
+    this.current.media.currentTime = -2;
+    var pl = this;
+    setTimeout(function() {
+        pl.current.media.paused = false;
+        pl.on("mediaUpdate")(pl.current.media);
+    }, 2000);
+    if(this.leading && !this._leadInterval && !isLive(this.current.media.type)) {
+        this._leadInterval = setInterval(function() {
+            pl._leadLoop();
+        }, 1000);
+    }
+    else if(!this.leading && this._leadInterval) {
+        clearInterval(this._leadInterval);
+        this._leadInterval = false;
+    }
+    this.on("changeMedia")(this.current.media);
+}
+
+function isLive(type) {
+    return type == "li" // Livestream.com
+        || type == "tw" // Twitch.tv
+        || type == "jt" // Justin.tv
+        || type == "rt" // RTMP
+        || type == "jw" // JWPlayer
+        || type == "us" // Ustream.tv
+        || type == "im";// Imgur album
+}
+
+const UPDATE_INTERVAL = 5;
+
+Playlist.prototype._leadLoop = function() {
+    if(this.current == null)
+        return;
+
+    this.current.media.currentTime += (Date.now() - this._lastUpdate) / 1000.0;
+    this._lastUpdate = Date.now();
+    this._counter++;
+    console.log("lead", this._counter);
+
+    if(this.current.media.currentTime >= this.current.media.seconds + 2) {
+        this.next();
+    }
+    else if(this._counter % UPDATE_INTERVAL == 0) {
+        this.on("mediaUpdate")(this.current.media);
+    }
 }
 
 module.exports = Playlist;

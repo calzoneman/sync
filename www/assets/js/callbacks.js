@@ -723,13 +723,15 @@ Callbacks = {
         var qli = $("#queue li");
         $("#queue li").removeClass("queue_active");
         var li = $(".pluid-" + data.uid);
-        if(li.length == 0)
-            return false;
+        if(li.length == 0) {
+            console.log("couldn't find uid" + data.uid);
+        }
+        // TODO send separate frame for highlight
 
-        li.addClass("queue_active");
+        //li.addClass("queue_active");
         $("#queue").scrollTop(0);
-        var scroll = li.position().top - $("#queue").position().top;
-        $("#queue").scrollTop(scroll);
+        //var scroll = li.position().top - $("#queue").position().top;
+        //$("#queue").scrollTop(scroll);
 
         if(CHANNEL.opts.allow_voteskip)
             $("#voteskip").attr("disabled", false);
