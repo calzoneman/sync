@@ -718,21 +718,22 @@ Callbacks = {
             playlistMove(data.from, data.after);
     },
 
-    changeMedia: function(data) {
-        PL_CURRENT = data.uid;
+    setCurrent: function(uid) {
+        PL_CURRENT = uid;
         var qli = $("#queue li");
-        $("#queue li").removeClass("queue_active");
-        var li = $(".pluid-" + data.uid);
+        qli.removeClass("queue_active");
+        var li = $(".pluid-" + uid);
         if(li.length == 0) {
-            console.log("couldn't find uid" + data.uid);
+            return false;
         }
-        // TODO send separate frame for highlight
 
-        //li.addClass("queue_active");
+        li.addClass("queue_active");
         $("#queue").scrollTop(0);
-        //var scroll = li.position().top - $("#queue").position().top;
-        //$("#queue").scrollTop(scroll);
+        var scroll = li.position().top - $("#queue").position().top;
+        $("#queue").scrollTop(scroll);
+    },
 
+    changeMedia: function(data) {
         if(CHANNEL.opts.allow_voteskip)
             $("#voteskip").attr("disabled", false);
 

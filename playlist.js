@@ -28,15 +28,23 @@ function Playlist(chan) {
     this.leading = true;
     this.callbacks = {
         "changeMedia": [],
-        "mediaUpdate": []
+        "mediaUpdate": [],
+        "remove": [],
     };
 
     if(chan) {
+        var pl = this;
         this.on("mediaUpdate", function(m) {
             chan.sendAll("mediaUpdate", m.timeupdate());
         });
         this.on("changeMedia", function(m) {
+            chan.sendAll("setCurrent", pl.current.uid);
             chan.sendAll("changeMedia", m.fullupdate());
+        });
+        this.on("remove", function(item) {
+            chan.sendAll("delete", {
+                uid: item.uid
+            });
         });
     }
 }
@@ -141,6 +149,8 @@ Playlist.prototype.remove = function(uid, next) {
     if(item.next)
         item.next.prev = item.prev;
 
+    this.on("remove")(item);
+
     if(this.current == item && next)
         this._next();
 
@@ -218,6 +228,7 @@ Playlist.prototype.clear = function() {
 
 Playlist.prototype.lead = function(lead) {
     this.leading = lead;
+    var pl = this;
     if(!this.leading && this._leadInterval) {
         clearInterval(this._leadInterval);
         this._leadInterval = false;
@@ -234,6 +245,8 @@ Playlist.prototype.startPlayback = function() {
     this.current.media.currentTime = -2;
     var pl = this;
     setTimeout(function() {
+        if(!pl.current)
+            return;
         pl.current.media.paused = false;
         pl.on("mediaUpdate")(pl.current.media);
     }, 2000);

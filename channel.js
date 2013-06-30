@@ -1262,15 +1262,9 @@ Channel.prototype.trySetTemp = function(user, data) {
 
 
 Channel.prototype.dequeue = function(uid, removeonly) {
-    if(!this.playlist.remove(uid))
+    if(!this.playlist.remove(uid, true))
         return;
-    this.sendAll("delete", {
-        uid: uid
-    });
     this.broadcastPlaylistMeta();
-
-    if(removeonly)
-        return;
 }
 
 Channel.prototype.tryDequeue = function(user, data) {
@@ -1392,16 +1386,15 @@ Channel.prototype.tryUpdate = function(user, data) {
         return;
     }
 
-    if(data == null ||
-       data.id == undefined || data.currentTime == undefined) {
+    if(typeof data.id !== "string" || typeof data.currentTime !== "number")
            return;
-    }
 
     if(this.playlist.current === null) {
         return;
     }
 
-    if(isLive(this.playlist.current.media.type) && this.playlist.current.media.type != "jw") {
+    if(isLive(this.playlist.current.media.type)
+        && this.playlist.current.media.type != "jw") {
         return;
     }
 
