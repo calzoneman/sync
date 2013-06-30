@@ -58,6 +58,7 @@ var Player = function(data) {
             this.nullPlayer();
             break;
     }
+    this.load(data);
 }
 
 Player.prototype.nullPlayer = function() {
@@ -114,19 +115,23 @@ Player.prototype.initYouTube = function() {
     }
 
     this.pause = function() {
-        this.player.pauseVideo();
+        if(this.player.pauseVideo)
+            this.player.pauseVideo();
     }
 
     this.play = function() {
-        this.player.playVideo();
+        if(this.player.playVideo)
+            this.player.playVideo();
     }
 
     this.getTime = function(callback) {
-        callback(this.player.getCurrentTime());
+        if(this.player.getCurrentTime)
+            callback(this.player.getCurrentTime());
     }
 
     this.seek = function(time) {
-        this.player.seekTo(time, true);
+        if(this.player.seekTo)
+            this.player.seekTo(time, true);
     }
 }
 
