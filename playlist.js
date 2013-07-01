@@ -1,3 +1,5 @@
+var Media = require("./media").Media;
+
 function PlaylistItem(media, uid) {
     this.media = media;
     this.uid = uid;
@@ -9,7 +11,7 @@ function PlaylistItem(media, uid) {
 
 PlaylistItem.prototype.pack = function() {
     return {
-        media: this.media,
+        media: this.media.pack(),
         uid: this.uid,
         temp: this.temp,
         queueby: this.queueby
@@ -49,6 +51,49 @@ function Playlist(chan) {
     }
 }
 
+Playlist.prototype.dump = function() {
+    var arr = [];
+    var item = this.first;
+    var i = 0;
+    var pos = 0;
+    while(item != null) {
+        arr.push(item.pack());
+        if(item == this.current)
+            pos = i;
+        i++;
+        item = item.next;
+    }
+
+    var time = 0;
+    if(this.current)
+        time = this.current.media.currentTime;
+
+    return {
+        pl: arr,
+        pos: pos,
+        time: time
+    };
+}
+
+Playlist.prototype.load = function(data, callback) {
+    this.clear();
+    for(var i in data.pl) {
+        var e = data.pl[i].media;
+        var m = new Media(e.id, e.title, e.seconds, e.type);
+        var it = this.makeItem(m);
+        it.temp = data.pl[i].temp;
+        it.queueby = data.pl[i].queueby;
+        this._append(it);
+        if(i == parseInt(data.pos)) {
+            this.current = it;
+            this.startPlayback(data.time);
+        }
+    }
+
+    if(callback)
+        callback();
+}
+
 Playlist.prototype.on = function(ev, fn) {
     if(typeof fn === "undefined") {
         var pl = this;
@@ -83,7 +128,13 @@ Playlist.prototype.find = function(uid) {
         return false;
 }
 
-Playlist.prototype.prepend = function(plitem) {
+Playlist.prototype.prepend = function(plitem, callback) {
+    this._prepend(plitem, callback);
+    if(this.length == 1)
+        this.startPlayback();
+}
+
+Playlist.prototype._prepend = function(plitem, callback) {
     if(this.first !== null) {
         plitem.next = this.first;
         this.first.prev = plitem;
@@ -92,15 +143,22 @@ Playlist.prototype.prepend = function(plitem) {
     else {
         this.current = plitem;
         this.last = plitem;
-        this.startPlayback();
     }
     this.first = plitem;
     this.first.prev = null;
     this.length++;
+    if(callback)
+        callback();
     return true;
 }
 
-Playlist.prototype.append = function(plitem) {
+Playlist.prototype.append = function(plitem, callback) {
+    this._append(plitem, callback);
+    if(this.length == 1)
+        this.startPlayback();
+}
+
+Playlist.prototype._append = function(plitem, callback) {
     if(this.last != null) {
         plitem.prev = this.last;
         this.last.next = plitem;
@@ -109,15 +167,20 @@ Playlist.prototype.append = function(plitem) {
     else {
         this.first = plitem;
         this.current = plitem;
-        this.startPlayback();
     }
     this.last = plitem;
     this.last.next = null;
     this.length++;
+    if(callback)
+        callback();
     return true;
 }
 
-Playlist.prototype.insertAfter = function(plitem, uid) {
+Playlist.prototype.insertAfter = function(plitem, uid, callback) {
+    this._insertAfter(plitem, uid, callback);
+}
+
+Playlist.prototype._insertAfter = function(plitem, uid, callback) {
     var item = this.find(uid);
 
     if(item) {
@@ -128,6 +191,8 @@ Playlist.prototype.insertAfter = function(plitem, uid) {
             this.last = plitem;
         }
         this.length++;
+        if(callback)
+            callback();
         return true;
     }
 
@@ -135,6 +200,11 @@ Playlist.prototype.insertAfter = function(plitem, uid) {
 }
 
 Playlist.prototype.remove = function(uid, next) {
+    this._remove(uid, next);
+    this.on("remove")(item);
+}
+
+Playlist.prototype._remove = function(uid, next) {
     var item = this.find(uid);
     if(!item)
         return false;
@@ -149,13 +219,32 @@ Playlist.prototype.remove = function(uid, next) {
     if(item.next)
         item.next.prev = item.prev;
 
-    this.on("remove")(item);
-
     if(this.current == item && next)
         this._next();
 
     this.length--;
     return true;
+}
+
+Playlist.prototype.move = function(from, after, callback) {
+    var it = this.find(from);
+    if(!this._remove(from))
+        return;
+
+    if(after === "prepend") {
+        if(!this._prepend(it))
+            return;
+    }
+
+    else if(after === "append") {
+        if(!this._append(it))
+            return;
+    }
+
+    else if(!this._insertAfter(it, after))
+        return;
+
+    callback();
 }
 
 Playlist.prototype.next = function() {
@@ -240,9 +329,9 @@ Playlist.prototype.lead = function(lead) {
     }
 }
 
-Playlist.prototype.startPlayback = function() {
+Playlist.prototype.startPlayback = function(time) {
     this.current.media.paused = true;
-    this.current.media.currentTime = -2;
+    this.current.media.currentTime = time || -2;
     var pl = this;
     setTimeout(function() {
         if(!pl.current)
@@ -251,6 +340,7 @@ Playlist.prototype.startPlayback = function() {
         pl.on("mediaUpdate")(pl.current.media);
     }, 2000);
     if(this.leading && !this._leadInterval && !isLive(this.current.media.type)) {
+        this._lastUpdate = Date.now();
         this._leadInterval = setInterval(function() {
             pl._leadLoop();
         }, 1000);
@@ -281,7 +371,6 @@ Playlist.prototype._leadLoop = function() {
     this.current.media.currentTime += (Date.now() - this._lastUpdate) / 1000.0;
     this._lastUpdate = Date.now();
     this._counter++;
-    console.log("lead", this._counter);
 
     if(this.current.media.currentTime >= this.current.media.seconds + 2) {
         this.next();

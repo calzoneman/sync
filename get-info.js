@@ -254,7 +254,7 @@ exports.getMedia = function(id, type, callback) {
                 }
                 catch(e) {
                     Logger.errlog.log("getMedia failed: ");
-                    Logger.errlog.log(e);
+                    Logger.errlog.log(e.stack);
                     callback(true, null);
                 }
             });

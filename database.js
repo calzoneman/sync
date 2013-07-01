@@ -867,10 +867,10 @@ function saveUserPlaylist(pl, user, name) {
     var time = 0;
     for(var i = 0; i < pl.length; i++) {
         var e = {
-            id: pl[i].id,
-            type: pl[i].type
+            id: pl[i].media.id,
+            type: pl[i].media.type
         };
-        time += pl[i].seconds;
+        time += pl[i].media.seconds;
         pl2.push(e);
     }
     var count = pl2.length;

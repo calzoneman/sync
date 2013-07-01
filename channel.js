@@ -142,7 +142,7 @@ Channel.prototype.loadDump = function() {
     fs.readFile("chandump/" + this.name, function(err, data) {
         if(err) {
             if(err.code == "ENOENT") {
-                Logger.errlog.log("WARN: missing dump for " + this.name);
+                Logger.errlog.log("WARN: missing dump for.Media " + this.name);
                 this.initialized = true;
                 this.saveDump();
             }
@@ -155,7 +155,6 @@ Channel.prototype.loadDump = function() {
         try {
             this.logger.log("*** Loading channel dump from disk");
             data = JSON.parse(data);
-            // TODO fix loading
             if(data.queue) {
                 for(var i = 0; i < data.queue.length; i++) {
                     var e = data.queue[i];
@@ -166,24 +165,22 @@ Channel.prototype.loadDump = function() {
                     if(e.temp !== undefined) {
                         p.temp = e.temp;
                     }
-                    //this.playlist.append(p);
+                    this.playlist.append(p);
                 }
+                this.sendAll("playlist", this.playlist.toArray());
+                if(this.playlist.current)
+                    this.sendAll("setCurrent", this.playlist.current.uid);
+                this.broadcastPlaylistMeta();
             }
             else if(data.playlist) {
-                //TODO fix
-                this.playlist.current = this.playlist.find(data.currentUID) || null;
+                var chan = this;
+                this.playlist.load(data.playlist, function() {
+                    chan.sendAll("playlist", chan.playlist.toArray());
+                    if(chan.playlist.current)
+                        chan.sendAll("setCurrent", chan.playlist.current.uid);
+                    chan.broadcastPlaylistMeta();
+                });
             }
-            this.sendAll("playlist", this.playlist.toArray());
-            this.broadcastPlaylistMeta();
-            // Backwards compatibility
-            if(data.currentPosition != undefined) {
-                this.position = data.currentPosition - 1;
-            }
-            else {
-                this.position = data.position - 1;
-            }
-            if(this.position < -1)
-                this.position = -1;
             for(var key in data.opts) {
                 // Gotta love backwards compatibility
                 if(key == "customcss" || key == "customjs") {
@@ -234,7 +231,7 @@ Channel.prototype.loadDump = function() {
         }
         catch(e) {
             Logger.errlog.log("Channel dump load failed: ");
-            Logger.errlog.log(e);
+            Logger.errlog.log(e.stack);
         }
     }.bind(this));
 }
@@ -249,7 +246,7 @@ Channel.prototype.saveDump = function() {
     var dump = {
         position: this.position,
         currentTime: this.media ? this.media.currentTime : 0,
-        playlist: this.playlist.toArray(),
+        playlist: this.playlist.dump(),
         opts: this.opts,
         permissions: this.permissions,
         filters: filts,
@@ -731,6 +728,8 @@ Channel.prototype.sendChannelRanks = function(user) {
 
 Channel.prototype.sendPlaylist = function(user) {
     user.socket.emit("playlist", this.playlist.toArray());
+    if(this.playlist.current)
+        user.socket.emit("setCurrent", this.playlist.current.uid);
     user.socket.emit("setPlaylistMeta", this.plmeta);
 }
 
@@ -1007,21 +1006,20 @@ function isLive(type) {
 }
 
 Channel.prototype.queueAdd = function(item, after) {
+    var chan = this;
+    function afterAdd() {
+        chan.sendAll("queue", {
+            item: item.pack(),
+            after: after
+        });
+        chan.broadcastPlaylistMeta();
+    }
     if(after === "prepend")
-        this.playlist.prepend(item);
+        this.playlist.prepend(item, afterAdd);
     else if(after === "append")
-        this.playlist.append(item);
+        this.playlist.append(item, afterAdd);
     else
-        this.playlist.insertAfter(item, after);
-
-    this.sendAll("queue", {
-        item: item.pack(),
-        after: after
-    });
-
-    this.broadcastPlaylistMeta();
-    if(this.playlist.length == 1)
-        this.sendAll("changeMedia", this.playlist.current.media.fullupdate());
+        this.playlist.insertAfter(item, after, afterAdd);
 }
 
 Channel.prototype.autoTemp = function(item, user) {
@@ -1075,7 +1073,7 @@ Channel.prototype.enqueue = function(data, user, callback) {
                         user.socket.emit("queueFail", err);
                         return;
                     }
-                    var item = this.playlist.makeItem(item);
+                    var item = this.playlist.makeItem(media);
                     item.queueby = user ? user.name : "";
                     this.autoTemp(item, user);
                     this.queueAdd(item, after);
@@ -1245,7 +1243,7 @@ Channel.prototype.setTemp = function(uid, temp) {
     });
 
     if(!temp) {
-        this.cacheMedia(m);
+        this.cacheMedia(item.media);
     }
 }
 
@@ -1261,10 +1259,13 @@ Channel.prototype.trySetTemp = function(user, data) {
 }
 
 
-Channel.prototype.dequeue = function(uid, removeonly) {
-    if(!this.playlist.remove(uid, true))
+Channel.prototype.dequeue = function(uid) {
+    var chan = this;
+    function afterDelete() {
+        chan.broadcastPlaylistMeta();
+    }
+    if(!this.playlist.remove(uid, true, afterDelete))
         return;
-    this.broadcastPlaylistMeta();
 }
 
 Channel.prototype.tryDequeue = function(user, data) {
@@ -1290,47 +1291,20 @@ Channel.prototype.tryUncache = function(user, data) {
     }
 }
 
-Channel.prototype.resetVideoMeta = function() {
-    this.voteskip = false;
-    this.broadcastVoteskipUpdate();
-    this.drinks = 0;
-    this.broadcastDrinks();
-    if(this.playlist.current) {
-        this.playlist.current.media["currentTime"];
-        this.playlist.current.media["paused"];
-    }
-}
-
 Channel.prototype.playNext = function() {
-    this.resetVideoMeta();
     this.playlist.next();
-    if(this.playlist.current)
-        this.sendAll("changeMedia", this.playlist.current.media.fullupdate());
 }
 
 Channel.prototype.tryPlayNext = function(user) {
     if(!this.hasPermission(user, "playlistjump")) {
          return;
-     }
+    }
 
-     this.playNext();
+    this.playNext();
 }
 
 Channel.prototype.jumpTo = function(uid) {
-    this.resetVideoMeta();
-    var oid = this.playlist.current ? this.playlist.current.uid : -1;
-    if(!this.playlist.jump(uid))
-        return;
-
-    this.sendAll("changeMedia", this.playlist.current.media.fullupdate());
-
-    // If it's not a livestream, enable autolead
-    if(this.leader == null && !isLive(this.playlist.current.media.type)) {
-        this.time = new Date().getTime();
-        if(this.playlist.current.media.uid != oid) {
-            //mediaUpdate(this, this.playlist.current.media);
-        }
-    }
+    return this.playlist.jump(uid);
 }
 
 Channel.prototype.tryJumpTo = function(user, data) {
@@ -1408,35 +1382,20 @@ Channel.prototype.tryUpdate = function(user, data) {
 }
 
 Channel.prototype.move = function(data, user) {
-    var item = this.playlist.find(data.from);
-    if(!this.playlist.remove(data.from)) {
-        console.log("remove failed");
-        return;
+    var chan = this;
+    function afterMove() {
+        var moveby = user && user.name ? user.name : null;
+        if(typeof data.moveby !== "undefined")
+            moveby = data.moveby;
+
+        chan.sendAll("moveVideo", {
+            from: data.from,
+            after: data.after,
+            moveby: moveby
+        });
     }
 
-    if(data.after === "prepend") {
-        if(!this.playlist.prepend(item)) {
-            return;
-        }
-    }
-    else if(data.after === "append") {
-        if(!this.playlist.append(item)) {
-            return;
-        }
-    }
-    else if(!this.playlist.insertAfter(item, data.after)) {
-        return;
-    }
-
-    var moveby = user && user.name ? user.name : null;
-    if(typeof data.moveby !== "undefined")
-        moveby = data.moveby;
-
-    this.sendAll("moveVideo", {
-        from: data.from,
-        after: data.after,
-        moveby: moveby
-    });
+    this.playlist.move(data.from, data.after, afterMove);
 }
 
 Channel.prototype.tryMove = function(user, data) {
