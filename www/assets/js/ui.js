@@ -190,6 +190,8 @@ $("#userpl_save").click(function() {
             var caret = btn.find(".caret").detach();
             btn.text($(select).text());
             caret.appendTo(btn);
+            if(PLAYER.type == "yt" && PLAYER.player.setPlaybackQuality)
+                PLAYER.player.setPlaybackQuality(VIDEOQUALITY);
         });
     }
     qualHandler("#quality_240p", "small");
@@ -198,6 +200,12 @@ $("#userpl_save").click(function() {
     qualHandler("#quality_720p", "hd720");
     qualHandler("#quality_1080p", "hd1080");
 })();
+
+$("#mediarefresh").click(function() {
+    PLAYER.type = "";
+    PLAYER.id = "";
+    socket.emit("playerReady");
+});
 
 /* playlist controls */
 

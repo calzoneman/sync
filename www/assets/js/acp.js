@@ -123,6 +123,12 @@ $("#actionlog_time").click(function() {
     tableResort($("#actionlog table"), "time");
 });
 
+function reverseLog() {
+    $("#log").text($("#log").text().split("\n").reverse().join("\n"));
+}
+
+$("#log_reverse").click(reverseLog);
+
 function getSyslog() {
     $.ajax(WEB_URL+"/api/plain/readlog?type=sys&"+AUTH).done(function(data) {
         $("#log").text(data);

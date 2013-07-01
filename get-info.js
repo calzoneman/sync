@@ -30,7 +30,12 @@ function getJSON(options, callback) {
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
                 var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
-                callback(m[1] || true, res.statusCode, null);
+                if(m) {
+                    callback(m[1], res.statusCode, null);
+                }
+                else {
+                    callback(true, res.statusCode, null);
+                }
                 return;
             }
             callback(false, res.statusCode, data);
@@ -55,7 +60,12 @@ function getJSONHTTPS(options, callback) {
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
                 var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
-                callback(m[1] || true, res.statusCode, null);
+                if(m) {
+                    callback(m[1], res.statusCode, null);
+                }
+                else {
+                    callback(true, res.statusCode, null);
+                }
                 return;
             }
             callback(false, res.statusCode, data);
