@@ -167,7 +167,7 @@ Channel.prototype.loadDump = function() {
                     }
                     this.playlist.append(p);
                 }
-                this.sendAll("playlist", this.playlist.toArray());
+                this.sendAll("playlist", this.playlist.items.toArray());
                 if(this.playlist.current)
                     this.sendAll("setCurrent", this.playlist.current.uid);
                 this.broadcastPlaylistMeta();
@@ -175,7 +175,7 @@ Channel.prototype.loadDump = function() {
             else if(data.playlist) {
                 var chan = this;
                 this.playlist.load(data.playlist, function() {
-                    chan.sendAll("playlist", chan.playlist.toArray());
+                    chan.sendAll("playlist", chan.playlist.items.toArray());
                     if(chan.playlist.current)
                         chan.sendAll("setCurrent", chan.playlist.current.uid);
                     chan.broadcastPlaylistMeta();
@@ -727,7 +727,7 @@ Channel.prototype.sendChannelRanks = function(user) {
 }
 
 Channel.prototype.sendPlaylist = function(user) {
-    user.socket.emit("playlist", this.playlist.toArray());
+    user.socket.emit("playlist", this.playlist.items.toArray());
     if(this.playlist.current)
         user.socket.emit("setCurrent", this.playlist.current.uid);
     user.socket.emit("setPlaylistMeta", this.plmeta);
@@ -780,14 +780,14 @@ Channel.prototype.sendAllWithPermission = function(perm, msg, data) {
 
 Channel.prototype.broadcastPlaylistMeta = function() {
     var total = 0;
-    var iter = this.playlist.first;
-    while(iter != null) {
+    var iter = this.playlist.items.first;
+    while(iter !== null) {
         total += iter.media.seconds;
         iter = iter.next;
     }
     var timestr = formatTime(total);
     var packet = {
-        count: this.playlist.length,
+        count: this.playlist.items.length,
         time: timestr
     };
     this.plmeta = packet;
@@ -1182,7 +1182,44 @@ Channel.prototype.tryQueue = function(user, data) {
     if(data.list)
         this.enqueueList(data, user);
     else
-        this.enqueue(data, user);
+        this.addMedia(data, user);
+}
+
+Channel.prototype.addMedia = function(data, user, callback) {
+    // TODO fix caching
+    if(data.id in this.library) {
+        data.type = this.library[data.id].type;
+    }
+    if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
+        user.socket.emit("queueFail", "You don't have permission to queue livestreams");
+        return;
+    }
+
+    data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
+    data.queueby = user ? user.name : "";
+
+    var chan = this;
+    this.playlist.addMedia(data, function(err, item) {
+        if(err) {
+            if(callback)
+                callback(false);
+            if(err === true)
+                err = false;
+            if(user)
+                user.socket.emit("queueFail", err);
+            return;
+        }
+        else {
+            chan.sendAll("queue", {
+                item: item.pack(),
+                after: item.prev ? item.prev.uid : "prepend"
+            });
+            chan.broadcastPlaylistMeta();
+            chan.cacheMedia(item.media);
+            if(callback)
+                callback(true);
+        }
+    });
 }
 
 Channel.prototype.enqueueList = function(data, user) {
@@ -1233,7 +1270,7 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
 }
 
 Channel.prototype.setTemp = function(uid, temp) {
-    var item = this.playlist.find(uid);
+    var item = this.playlist.items.find(uid);
     if(!item)
         return;
     item.temp = temp;
@@ -1262,9 +1299,12 @@ Channel.prototype.trySetTemp = function(user, data) {
 Channel.prototype.dequeue = function(uid) {
     var chan = this;
     function afterDelete() {
+        chan.sendAll("delete", {
+            uid: uid
+        });
         chan.broadcastPlaylistMeta();
     }
-    if(!this.playlist.remove(uid, true, afterDelete))
+    if(!this.playlist.remove(uid, afterDelete))
         return;
 }
 
@@ -1321,7 +1361,7 @@ Channel.prototype.tryJumpTo = function(user, data) {
 
 Channel.prototype.clearqueue = function() {
     this.playlist.clear();
-    this.sendAll("playlist", this.playlist.toArray());
+    this.sendAll("playlist", this.playlist.items.toArray());
     this.broadcastPlaylistMeta();
 }
 
@@ -1334,7 +1374,7 @@ Channel.prototype.tryClearqueue = function(user) {
 
 Channel.prototype.shufflequeue = function() {
     var n = [];
-    var pl = this.playlist.toArray();
+    var pl = this.playlist.items.toArray();
     var current = pl.current;
     while(pl.length > 0) {
         var i = parseInt(Math.random() * pl.length);
@@ -1344,7 +1384,7 @@ Channel.prototype.shufflequeue = function() {
     // TODO fix
     this.playlist.current = this.playlist.last;
     this.playNext();
-    this.sendAll("playlist", this.playlist.toArray());
+    this.sendAll("playlist", this.playlist.items.toArray());
     this.sendAll("setPlaylistMeta", this.plmeta);
 }
 
