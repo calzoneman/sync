@@ -782,7 +782,8 @@ Channel.prototype.broadcastPlaylistMeta = function() {
     var total = 0;
     var iter = this.playlist.items.first;
     while(iter !== null) {
-        total += iter.media.seconds;
+        if(iter.media !== null)
+            total += iter.media.seconds;
         iter = iter.next;
     }
     var timestr = formatTime(total);
@@ -1225,29 +1226,23 @@ Channel.prototype.addMedia = function(data, user, callback) {
 Channel.prototype.enqueueList = function(data, user) {
     var pl = data.list;
     var chan = this;
-    // Queue in reverse order for qnext
-    if(data.pos == "next") {
-        var i = pl.length;
-        var cback = function() {
-            i--;
-            if(i > 0) {
-                pl[i].pos = "next";
-                chan.enqueue(pl[i], user, cback);
-            }
+    this.playlist.addMediaList(data, function(err, item) {
+        if(err) {
+            if(err === true)
+                err = false;
+            if(user)
+                user.socket.emit("queueFail", err);
+            return;
         }
-        this.enqueue(pl[0], user, cback);
-    }
-    else {
-        var i = 0;
-        var cback = function() {
-            i++;
-            if(i < pl.length) {
-                pl[i].pos = "end";
-                chan.enqueue(pl[i], user, cback);
-            }
+        else {
+            chan.sendAll("queue", {
+                item: item.pack(),
+                after: item.prev ? item.prev.uid : "prepend"
+            });
+            chan.broadcastPlaylistMeta();
+            chan.cacheMedia(item.media);
         }
-        this.enqueue(pl[i], user, cback);
-    }
+    });
 }
 
 Channel.prototype.tryQueuePlaylist = function(user, data) {

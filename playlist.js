@@ -71,9 +71,13 @@ Playlist.prototype.queueAction = function(data) {
 
 Playlist.prototype.dump = function() {
     var arr = this.items.toArray();
-    var pos = arr.indexOf(this.current);
-    if(pos < 0)
-        pos = 0;
+    var pos = 0;
+    for(var i in arr) {
+        if(arr[i].uid == this.current.uid) {
+            pos = i;
+            break;
+        }
+    }
 
     var time = 0;
     if(this.current)
@@ -133,6 +137,14 @@ Playlist.prototype.add = function(item, pos) {
 }
 
 Playlist.prototype.addMedia = function(data, callback) {
+    if(this.lock) {
+        this.queueAction({
+            fn: "addMedia",
+            args: arguments
+        });
+        return;
+    }
+    this.lock = true;
     var pos = "append";
     if(data.pos == "next") {
         if(!this.current)
@@ -145,6 +157,7 @@ Playlist.prototype.addMedia = function(data, callback) {
     InfoGetter.getMedia(data.id, data.type, function(err, media) {
         if(err) {
             callback(err, null);
+            pl.lock = false;
             return;
         }
 
@@ -155,10 +168,19 @@ Playlist.prototype.addMedia = function(data, callback) {
             callback(true, null);
         else
             callback(false, it);
+        pl.lock = false;
     });
 }
 
 Playlist.prototype.remove = function(uid, callback) {
+    if(this.lock) {
+        this.queueAction({
+            fn: "remove",
+            args: arguments
+        });
+        return;
+    }
+    this.lock = true;
     var item = this.items.find(uid);
     if(this.items.remove(uid)) {
         if(item == this.current)
@@ -166,6 +188,7 @@ Playlist.prototype.remove = function(uid, callback) {
         if(callback)
             callback();
     }
+    this.lock = false;
 }
 
 Playlist.prototype.move = function(from, after, callback) {
@@ -178,7 +201,6 @@ Playlist.prototype.move = function(from, after, callback) {
     }
     this.lock = true;
     this._move(from, after, callback);
-    this.lock = false;
     this.lock = false;
 }
 
