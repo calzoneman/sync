@@ -29,6 +29,7 @@ var CHANNEL = {
     css: "",
     js: "",
     motd: "",
+    motd_text: "",
     name: false
 };
 

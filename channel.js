@@ -25,6 +25,7 @@ var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
 var Filter = require("./filter.js").Filter;
 var ActionLog = require("./actionlog");
+var sanitize = require("validator").sanitize;
 
 var Channel = function(name) {
     Logger.syslog.log("Opening channel " + name);
@@ -1594,6 +1595,7 @@ Channel.prototype.tryUpdateFilter = function(user, f) {
 
     var re = f.source;
     var flags = f.flags;
+    f.replace = sanitize(f.replace).xss();
     try {
         new RegExp(re, flags);
     }
@@ -1696,6 +1698,7 @@ Channel.prototype.trySetJS = function(user, data) {
 
 Channel.prototype.updateMotd = function(motd) {
     var html = motd.replace(/\n/g, "<br>");
+    html = sanitize(html).xss();
     //html = this.filterMessage(html);
     this.motd = {
         motd: motd,
@@ -1782,8 +1785,7 @@ Channel.prototype.filterMessage = function(msg) {
 
 Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
     // I don't want HTML from strangers
-    msg = msg.replace(/&/g, "&amp;");
-    msg = msg.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    msg = sanitize(msg).escape();
     msg = this.filterMessage(msg);
     var msgobj = {
         username: username,

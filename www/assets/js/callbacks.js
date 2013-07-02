@@ -106,8 +106,9 @@ Callbacks = {
 
     setMotd: function(data) {
         CHANNEL.motd = data.html;
+        CHANNEL.motd_text = data.motd;
         $("#motd").html(data.html);
-        $("#motdtext").val(CHANNEL.motd);
+        $("#motdtext").val(CHANNEL.motd_text);
         if(data.motd != "")
             $("#motd").show();
         else
