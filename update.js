@@ -35,12 +35,11 @@ function populateChannelOwners() {
     var channels = res.fetchAllSync();
     channels.forEach(function(chan) {
         chan = chan.name;
-        console.log("Fixing " + chan);
         query = "SELECT name FROM `chan_"+chan+"_ranks` WHERE rank>=10 ORDER BY rank";
         res = db.querySync(query);
         if(!res) {
             console.log(db);
-            console.log("Update failed!");
+            console.log("failed to fix "+chan);
             return;
         }
 

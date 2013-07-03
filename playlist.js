@@ -360,6 +360,8 @@ Playlist.prototype.lead = function(lead) {
 }
 
 Playlist.prototype.startPlayback = function(time) {
+    if(!this.current || !this.current.media)
+        return false;
     this.current.media.paused = false;
     this.current.media.currentTime = time || -1;
     var pl = this;

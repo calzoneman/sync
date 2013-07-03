@@ -159,6 +159,8 @@ Channel.prototype.loadDump = function() {
 
             // Old
             if(data.queue) {
+                if(data.position < 0)
+                    data.position = 0;
                 for(var i = 0; i < data.queue.length; i++) {
                     var e = data.queue[i];
                     var m = new Media(e.id, e.title, e.seconds, e.type);
@@ -167,10 +169,11 @@ Channel.prototype.loadDump = function() {
                                                       : "";
                     p.temp = e.temp;
                     this.playlist.items.append(p);
+                    if(i == data.position)
+                        this.playlist.current = p;
                 }
                 this.sendAll("playlist", this.playlist.items.toArray());
                 this.broadcastPlaylistMeta();
-                this.playlist.current = this.playlist.first;
                 this.playlist.startPlayback();
             }
             // Current
