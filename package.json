@@ -12,6 +12,7 @@
         "mysql-libmysqlclient": "*",
         "node_hash": "*",
         "bcrypt": "*",
-        "nodemailer": "*"
+        "nodemailer": "*",
+        "validator": "*"
     }
 }

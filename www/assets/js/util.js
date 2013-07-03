@@ -788,7 +788,7 @@ function handleModPermissions() {
     $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
     $("#csstext").val(CHANNEL.css);
     $("#jstext").val(CHANNEL.js);
-    $("#motdtext").val(CHANNEL.motd);
+    $("#motdtext").val(CHANNEL.motd_text);
     setVisible("#permedit_tab", CLIENT.rank >= 3);
     setVisible("#banlist_tab", hasPermission("ban"));
     setVisible("#motdedit_tab", hasPermission("motdedit"));
