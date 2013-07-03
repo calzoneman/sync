@@ -1212,9 +1212,9 @@ Channel.prototype.addMedia = function(data, user) {
                     after: item.prev ? item.prev.uid : "prepend"
                 });
                 chan.broadcastPlaylistMeta();
-                chan.cacheMedia(item.media);
             }
         });
+        return;
     }
     if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
         user.socket.emit("queueFail", "You don't have permission to queue livestreams");
