@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-const VERSION = "2.0.1";
+const VERSION = "2.0.2";
 
 var fs = require("fs");
 var Logger = require("./logger.js");
@@ -185,6 +185,7 @@ exports.unload = function(chan) {
     if(chan.registered) {
         chan.saveDump();
     }
+    chan.playlist.die();
     exports.channels[chan.name] = null;
     delete exports.channels[chan.name];
 }

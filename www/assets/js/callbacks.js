@@ -720,6 +720,7 @@ Callbacks = {
                 li.hide("blind", function() {
                     li.remove();
                 });
+                return true;
             }
         });
     },
@@ -729,6 +730,7 @@ Callbacks = {
             queueAction({
                 fn: function () {
                     playlistMove(data.from, data.after);
+                    return true;
                 }
             });
         }
@@ -749,6 +751,7 @@ Callbacks = {
                 $("#queue").scrollTop(0);
                 var scroll = li.position().top - $("#queue").position().top;
                 $("#queue").scrollTop(scroll);
+                return true;
             },
             can_wait: true
         });

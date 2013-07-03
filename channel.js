@@ -142,7 +142,7 @@ Channel.prototype.loadDump = function() {
     fs.readFile("chandump/" + this.name, function(err, data) {
         if(err) {
             if(err.code == "ENOENT") {
-                Logger.errlog.log("WARN: missing dump for.Media " + this.name);
+                Logger.errlog.log("WARN: missing dump for " + this.name);
                 this.initialized = true;
                 this.saveDump();
             }
@@ -155,6 +155,9 @@ Channel.prototype.loadDump = function() {
         try {
             this.logger.log("*** Loading channel dump from disk");
             data = JSON.parse(data);
+            /* Load the playlist */
+
+            // Old
             if(data.queue) {
                 for(var i = 0; i < data.queue.length; i++) {
                     var e = data.queue[i];
@@ -162,23 +165,21 @@ Channel.prototype.loadDump = function() {
                     var p = this.playlist.makeItem(m);
                     p.queueby = data.queue[i].queueby ? data.queue[i].queueby
                                                       : "";
-                    if(e.temp !== undefined) {
-                        p.temp = e.temp;
-                    }
+                    p.temp = e.temp;
                     this.playlist.items.append(p);
                 }
                 this.sendAll("playlist", this.playlist.items.toArray());
-                if(this.playlist.current)
-                    this.sendAll("setCurrent", this.playlist.current.uid);
                 this.broadcastPlaylistMeta();
+                this.playlist.current = this.playlist.first;
+                this.playlist.startPlayback();
             }
+            // Current
             else if(data.playlist) {
                 var chan = this;
                 this.playlist.load(data.playlist, function() {
                     chan.sendAll("playlist", chan.playlist.items.toArray());
-                    if(chan.playlist.current)
-                        chan.sendAll("setCurrent", chan.playlist.current.uid);
                     chan.broadcastPlaylistMeta();
+                    chan.playlist.startPlayback(data.playlist.time);
                 });
             }
             for(var key in data.opts) {

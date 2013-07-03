@@ -98,6 +98,14 @@ Playlist.prototype.dump = function() {
     };
 }
 
+Playlist.prototype.die = function () {
+    this.clear();
+    if(this._leadInterval) {
+        clearInterval(this._leadInterval);
+        this._leadInterval = false;
+    }
+}
+
 Playlist.prototype.load = function(data, callback) {
     this.clear();
     for(var i in data.pl) {
@@ -109,7 +117,6 @@ Playlist.prototype.load = function(data, callback) {
         this.items.append(it);
         if(i == parseInt(data.pos)) {
             this.current = it;
-            this.startPlayback(data.time);
         }
     }
 
@@ -214,7 +221,6 @@ Playlist.prototype.addYouTubePlaylist = function(data, callback) {
 
     var pl = this;
     InfoGetter.getMedia(data.id, data.type, function(err, vids) {
-        console.log(vids.length);
         if(err) {
             callback(err, null);
             return;
@@ -354,26 +360,21 @@ Playlist.prototype.lead = function(lead) {
 }
 
 Playlist.prototype.startPlayback = function(time) {
-    if(this.current.media === "loading") {
-        setTimeout(function() {
-            this.startPlayback(time);
-        }.bind(this), 100);
-        return;
-    }
     this.current.media.paused = false;
     this.current.media.currentTime = time || -1;
     var pl = this;
-    if(this.leading && !this._leadInterval && !isLive(this.current.media.type)) {
+    if(this._leadInterval) {
+        clearInterval(this._leadInterval);
+        this._leadInterval = false;
+    }
+    this.on("changeMedia")(this.current.media);
+    if(this.leading && !isLive(this.current.media.type)) {
+        this.on("changeMedia")(this.current.media);
         this._lastUpdate = Date.now();
         this._leadInterval = setInterval(function() {
             pl._leadLoop();
         }, 1000);
     }
-    else if(!this.leading && this._leadInterval) {
-        clearInterval(this._leadInterval);
-        this._leadInterval = false;
-    }
-    this.on("changeMedia")(this.current.media);
 }
 
 function isLive(type) {
