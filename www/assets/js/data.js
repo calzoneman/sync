@@ -68,9 +68,18 @@ var PL_FROM = 0;
 var PL_TO = 0;
 var FILTER_FROM = 0;
 var FILTER_TO = 0;
+var NO_STORAGE = typeof localStorage == "undefined" || localStorage === null;
+
+function getOpt(k) {
+    return NO_STORAGE ? readCookie(k) : localStorage.getItem(k);
+}
+
+function setOpt(k, v) {
+    NO_STORAGE ? createCookie(k, v, 1000) : localStorage.setItem(k, v);
+}
 
 function getOrDefault(k, def) {
-    var v = localStorage.getItem(k);
+    var v = getOpt(k);
     if(v === null)
         return def;
     if(v === "true")

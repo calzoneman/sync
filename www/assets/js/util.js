@@ -507,7 +507,7 @@ function showOptionsMenu() {
 
 function saveOpts() {
     for(var key in USEROPTS) {
-        localStorage.setItem(key, USEROPTS[key]);
+        setOpt(key, USEROPTS[key]);
     }
 }
 
