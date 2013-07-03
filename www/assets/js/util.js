@@ -204,6 +204,17 @@ function addUserDropdown(entry, name) {
 
 /* queue stuff */
 
+function scrollQueue() {
+    var li = playlistFind(PL_CURRENT);
+    if(!li)
+        return;
+
+    li = $(li);
+    $("#queue").scrollTop(0);
+    var scroll = li.position().top - $("#queue").position().top;
+    $("#queue").scrollTop(scroll);
+}
+
 function makeQueueEntry(item, addbtns) {
     var video = item.media;
     var li = $("<li/>");

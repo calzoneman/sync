@@ -136,12 +136,12 @@ ULList.prototype.clear = function() {
 }
 
 /* Dump the contents of the list into an array */
-ULList.prototype.toArray = function() {
+ULList.prototype.toArray = function(pack) {
     var arr = new Array(this.length);
     var item = this.first;
     var i = 0;
     while(item !== null) {
-        if(typeof item.pack == "function")
+        if(pack !== false && typeof item.pack == "function")
             arr[i++] = item.pack();
         else
             arr[i++] = item;

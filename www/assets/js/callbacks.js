@@ -749,9 +749,7 @@ Callbacks = {
                 }
 
                 li.addClass("queue_active");
-                $("#queue").scrollTop(0);
-                var scroll = li.position().top - $("#queue").position().top;
-                $("#queue").scrollTop(scroll);
+                scrollQueue();
                 return true;
             },
             can_wait: true

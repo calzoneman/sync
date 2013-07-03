@@ -208,13 +208,13 @@ Channel.prototype.loadDump = function() {
                     if(f[0] != undefined) {
                         var filt = new Filter("", f[0], "g", f[1]);
                         filt.active = f[2];
-                        this.updateFilter(filt);
+                        this.updateFilter(filt, false);
                     }
                     else {
                         var filt = new Filter(f.name, f.source, f.flags, f.replace);
                         filt.active = f.active;
                         filt.filterlinks = f.filterlinks;
-                        this.updateFilter(filt);
+                        this.updateFilter(filt, false);
                     }
                 }
                 this.broadcastChatFilters();
@@ -1186,15 +1186,35 @@ Channel.prototype.tryQueue = function(user, data) {
     }
 
     if(data.list)
-        this.enqueueList(data, user);
+        this.addMediaList(data, user);
     else
         this.addMedia(data, user);
 }
 
-Channel.prototype.addMedia = function(data, user, callback) {
-    // TODO fix caching
+Channel.prototype.addMedia = function(data, user) {
+    data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
+    data.queueby = user ? user.name : "";
+    var chan = this;
     if(data.id in this.library) {
-        data.type = this.library[data.id].type;
+        var m = this.library[data.id].dup();
+        data.media = m;
+        this.playlist.addCachedMedia(data, function (err, item) {
+            if(err) {
+                if(err === true)
+                    err = false;
+                if(user)
+                    user.socket.emit("queueFail", err);
+                return;
+            }
+            else {
+                chan.sendAll("queue", {
+                    item: item.pack(),
+                    after: item.prev ? item.prev.uid : "prepend"
+                });
+                chan.broadcastPlaylistMeta();
+                chan.cacheMedia(item.media);
+            }
+        });
     }
     if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
         user.socket.emit("queueFail", "You don't have permission to queue livestreams");
@@ -1204,11 +1224,8 @@ Channel.prototype.addMedia = function(data, user, callback) {
     data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
     data.queueby = user ? user.name : "";
 
-    var chan = this;
     this.playlist.addMedia(data, function(err, item) {
         if(err) {
-            if(callback)
-                callback(false);
             if(err === true)
                 err = false;
             if(user)
@@ -1222,13 +1239,11 @@ Channel.prototype.addMedia = function(data, user, callback) {
             });
             chan.broadcastPlaylistMeta();
             chan.cacheMedia(item.media);
-            if(callback)
-                callback(true);
         }
     });
 }
 
-Channel.prototype.enqueueList = function(data, user) {
+Channel.prototype.addMediaList = function(data, user) {
     var pl = data.list;
     var chan = this;
     this.playlist.addMediaList(data, function(err, item) {
@@ -1266,7 +1281,7 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
 
     var pl = Database.loadUserPlaylist(user.name, data.name);
     data.list = pl;
-    this.enqueueList(data, user);
+    this.addMediaList(data, user);
 }
 
 Channel.prototype.setTemp = function(uid, temp) {
@@ -1374,18 +1389,20 @@ Channel.prototype.tryClearqueue = function(user) {
 
 Channel.prototype.shufflequeue = function() {
     var n = [];
-    var pl = this.playlist.items.toArray();
-    var current = pl.current;
+    var pl = this.playlist.items.toArray(false);
+    this.playlist.clear();
     while(pl.length > 0) {
         var i = parseInt(Math.random() * pl.length);
-        n.push(pl[i]);
+        var item = this.playlist.makeItem(pl[i].media);
+        item.temp = pl[i].temp;
+        item.queueby = pl[i].queueby;
+        this.playlist.items.append(item);
         pl.splice(i, 1);
     }
-    // TODO fix
-    this.playlist.current = this.playlist.last;
-    this.playNext();
+    this.playlist.current = this.playlist.items.first;
     this.sendAll("playlist", this.playlist.items.toArray());
     this.sendAll("setPlaylistMeta", this.plmeta);
+    this.playlist.startPlayback();
 }
 
 Channel.prototype.tryShufflequeue = function(user) {
@@ -1551,7 +1568,7 @@ Channel.prototype.removeFilter = function(filter) {
     this.broadcastChatFilters();
 }
 
-Channel.prototype.updateFilter = function(filter) {
+Channel.prototype.updateFilter = function(filter, emit) {
     if(filter.name == "")
         filter.name = filter.source;
     var found = false;
@@ -1565,7 +1582,8 @@ Channel.prototype.updateFilter = function(filter) {
     if(!found) {
         this.filters.push(filter);
     }
-    this.broadcastChatFilters();
+    if(emit !== false)
+        this.broadcastChatFilters();
 }
 
 Channel.prototype.tryUpdateFilter = function(user, f) {

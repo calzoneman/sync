@@ -1,4 +1,4 @@
-var ULList = require("./ullist").ULList;
+ULList = require("./ullist").ULList;
 var Media = require("./media").Media;
 var InfoGetter = require("./get-info");
 
@@ -33,7 +33,7 @@ function Playlist(chan) {
         "remove": [],
     };
     this.lock = false;
-    this.alter_queue = [];
+    this.action_queue = [];
     this._qaInterval = false;
 
     if(chan) {
@@ -54,25 +54,23 @@ function Playlist(chan) {
 }
 
 Playlist.prototype.queueAction = function(data) {
-    this.alter_queue.push(data);
+    this.action_queue.push(data);
     if(this._qaInterval)
         return;
     var pl = this;
     this._qaInterval = setInterval(function() {
-        if(!pl.lock) {
-            var data = pl.alter_queue.shift();
-            if(data.waiting) {
-                if(!("expire" in data))
-                    data.expire = Date.now() + 5000;
-                if(Date.now() < data.expire)
-                    pl.alter_queue.unshift(data);
-                return;
-            }
+        var data = pl.action_queue.shift();
+        if(data.waiting) {
+            if(!("expire" in data))
+                data.expire = Date.now() + 10000;
+            if(Date.now() < data.expire)
+                pl.action_queue.unshift(data);
+        }
+        else
             data.fn();
-            if(pl.alter_queue.length == 0) {
-                clearInterval(pl._qaInterval);
-                pl._qaInterval = false;
-            }
+        if(pl.action_queue.length == 0) {
+            clearInterval(pl._qaInterval);
+            pl._qaInterval = false;
         }
     }, 100);
 }
@@ -159,6 +157,31 @@ Playlist.prototype.add = function(item, pos) {
     return success;
 }
 
+Playlist.prototype.addCachedMedia = function(data, callback) {
+    var pos = "append";
+    if(data.pos == "next") {
+        if(!this.current)
+            pos = "prepend";
+        else
+            pos = this.current.uid;
+    }
+
+    var it = this.makeItem(data.media);
+    it.temp = data.temp;
+    it.queueby = data.queueby;
+
+    var pl = this;
+
+    var action = {
+        fn: function() {
+            if(pl.add(it, pos))
+                callback(false, it);
+        },
+        waiting: false
+    };
+    this.queueAction(action);
+}
+
 Playlist.prototype.addMedia = function(data, callback) {
 
     if(data.type == "yp") {
@@ -178,8 +201,9 @@ Playlist.prototype.addMedia = function(data, callback) {
     var pl = this;
     var action = {
         fn: function() {
-            if(pl.add(it, pos))
+            if(pl.add(it, pos)) {
                 callback(false, it);
+            }
         },
         waiting: true
     };
@@ -200,13 +224,30 @@ Playlist.prototype.addMedia = function(data, callback) {
 }
 
 Playlist.prototype.addMediaList = function(data, callback) {
-    if(data.pos == "next")
+    var start = false;
+    if(data.pos == "next") {
         data.list = data.list.reverse();
+        start = data.list[data.list.length - 1];
+    }
 
     var pl = this;
     data.list.forEach(function(x) {
         x.pos = data.pos;
-        pl.addMedia(x, callback);
+        if(start && x == start) {
+            pl.addMedia(x, function (err, item) {
+                if(err) {
+                    callback(err, item);
+                }
+                else {
+                    callback(err, item);
+                    pl.current = item;
+                    pl.startPlayback();
+                }
+            });
+        }
+        else {
+            pl.addMedia(x, callback);
+        }
     });
 }
 
@@ -333,7 +374,10 @@ Playlist.prototype.jump = function(uid) {
     }
 
     if(it.temp) {
-        this.remove(it.uid);
+        var pl = this;
+        this.remove(it.uid, function () {
+            pl.on("remove")(it);
+        });
     }
 
     return this.current;
@@ -342,6 +386,7 @@ Playlist.prototype.jump = function(uid) {
 Playlist.prototype.clear = function() {
     this.items.clear();
     this.next_uid = 0;
+    this.current = null;
     clearInterval(this._leadInterval);
 }
 
