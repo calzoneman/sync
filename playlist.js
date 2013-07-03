@@ -68,7 +68,6 @@ Playlist.prototype.queueAction = function(data) {
                     pl.alter_queue.unshift(data);
                 return;
             }
-            //pl[data.fn].apply(pl, data.args);
             data.fn();
             if(pl.alter_queue.length == 0) {
                 clearInterval(pl._qaInterval);
@@ -154,6 +153,12 @@ Playlist.prototype.add = function(item, pos) {
 }
 
 Playlist.prototype.addMedia = function(data, callback) {
+
+    if(data.type == "yp") {
+        this.addYouTubePlaylist(data, callback);
+        return;
+    }
+
     var pos = "append";
     if(data.pos == "next") {
         if(!this.current)
@@ -195,6 +200,37 @@ Playlist.prototype.addMediaList = function(data, callback) {
     data.list.forEach(function(x) {
         x.pos = data.pos;
         pl.addMedia(x, callback);
+    });
+}
+
+Playlist.prototype.addYouTubePlaylist = function(data, callback) {
+    var pos = "append";
+    if(data.pos == "next") {
+        if(!this.current)
+            pos = "prepend";
+        else
+            pos = this.current.uid;
+    }
+
+    var pl = this;
+    InfoGetter.getMedia(data.id, data.type, function(err, vids) {
+        console.log(vids.length);
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        vids.forEach(function(media) {
+            var it = pl.makeItem(media);
+            it.temp = data.temp;
+            it.queueby = data.queueby;
+            pl.queueAction({
+                fn: function() {
+                    if(pl.add(it, pos))
+                        callback(false, it);
+                },
+            });
+        });
     });
 }
 

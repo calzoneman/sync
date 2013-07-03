@@ -649,28 +649,35 @@ Callbacks = {
     },
 
     queue: function(data) {
-        var li = makeQueueEntry(data.item, true);
-        li.hide();
-        var q = $("#queue");
-        li.attr("title", data.item.queueby
-                            ? ("Added by: " + data.item.queueby)
-                            : "Added by: Unknown");
-        if(data.after === "prepend") {
-            li.prependTo(q);
-            li.show("blind");
-            return;
-        }
-        else if(data.after === "append") {
-            li.appendTo(q);
-            li.show("blind");
-        }
-        else {
-            var liafter = $(".pluid-" + data.after);
-            if(liafter.length == 0)
-                return false;
-            li.insertAfter(liafter);
-            li.show("blind");
-        }
+        queueAction({
+            fn: function () {
+                var li = makeQueueEntry(data.item, true);
+                li.hide();
+                var q = $("#queue");
+                li.attr("title", data.item.queueby
+                                    ? ("Added by: " + data.item.queueby)
+                                    : "Added by: Unknown");
+                if(data.after === "prepend") {
+                    li.prependTo(q);
+                    li.show("blind");
+                    return true;
+                }
+                else if(data.after === "append") {
+                    li.appendTo(q);
+                    li.show("blind");
+                    return true;
+                }
+                else {
+                    var liafter = playlistFind(data.after);
+                    if(!liafter) {
+                        return false;
+                    }
+                    li.insertAfter(liafter);
+                    li.show("blind");
+                    return true;
+                }
+            }
+        });
     },
 
     queueFail: function(data) {
@@ -707,30 +714,43 @@ Callbacks = {
     },
 
     "delete": function(data) {
-        var li = $(".pluid-" + data.uid);
-        li.hide("blind", function() {
-            li.remove();
+        queueAction({
+            fn: function () {
+                var li = $(".pluid-" + data.uid);
+                li.hide("blind", function() {
+                    li.remove();
+                });
+            }
         });
     },
 
     moveVideo: function(data) {
-        if(data.moveby != CLIENT.name)
-            playlistMove(data.from, data.after);
+        if(data.moveby != CLIENT.name) {
+            queueAction({
+                fn: function () {
+                    playlistMove(data.from, data.after);
+                }
+            });
+        }
     },
 
     setCurrent: function(uid) {
-        PL_CURRENT = uid;
-        var qli = $("#queue li");
-        qli.removeClass("queue_active");
-        var li = $(".pluid-" + uid);
-        if(li.length == 0) {
-            return false;
-        }
+        queueAction({
+            fn: function () {
+                PL_CURRENT = uid;
+                var qli = $("#queue li");
+                qli.removeClass("queue_active");
+                var li = $(".pluid-" + uid);
+                if(li.length == 0) {
+                    return false;
+                }
 
-        li.addClass("queue_active");
-        $("#queue").scrollTop(0);
-        var scroll = li.position().top - $("#queue").position().top;
-        $("#queue").scrollTop(scroll);
+                li.addClass("queue_active");
+                $("#queue").scrollTop(0);
+                var scroll = li.position().top - $("#queue").position().top;
+                $("#queue").scrollTop(scroll);
+            }
+        });
     },
 
     changeMedia: function(data) {

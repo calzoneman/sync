@@ -968,6 +968,40 @@ function addLibraryButtons(li, id, type) {
 
 /* queue stuff */
 
+var PL_QUEUED_ACTIONS = [];
+var PL_ACTION_INTERVAL = false;
+
+function queueAction(data) {
+    PL_QUEUED_ACTIONS.push(data);
+    if(PL_ACTION_INTERVAL)
+        return;
+    PL_ACTION_INTERVAL = setInterval(function () {
+        var data = PL_QUEUED_ACTIONS.shift();
+        if(!("expire" in data))
+            data.expire = Date.now() + 5000;
+        if(!data.fn()) {
+            if(Date.now() < data.expire)
+                PL_QUEUED_ACTIONS.unshift(data);
+        }
+        if(PL_QUEUED_ACTIONS.length == 0) {
+            clearInterval(PL_ACTION_INTERVAL);
+            PL_ACTION_INTERVAL = false;
+        }
+    }, 100);
+}
+
+// Because jQuery UI does weird things
+function playlistFind(uid) {
+    var children = document.getElementById("queue").children;
+    for(var i in children) {
+        if(typeof children[i].getAttribute != "function")
+            continue;
+        if(children[i].getAttribute("class").indexOf("pluid-" + uid) != -1)
+            return children[i];
+    }
+    return false;
+}
+
 function playlistMove(from, after) {
     var lifrom = $(".pluid-" + from);
     if(lifrom.length == 0)

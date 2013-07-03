@@ -326,7 +326,7 @@ exports.getMedia = function(id, type, callback) {
                 }
 
                 try {
-
+                    var vids = [];
                     for(var i = 0; i < data.feed.entry.length; i++) {
                         try {
                             var item = data.feed.entry[i];
@@ -335,13 +335,15 @@ exports.getMedia = function(id, type, callback) {
                             var title = item.title.$t;
                             var seconds = item.media$group.yt$duration.seconds;
                             var media = new Media(id, title, seconds, "yt");
-                            callback(false, media);
+                            vids.push(media);
                         }
                         catch(e) {
                             Logger.errlog.log("getMedia failed: ");
                             Logger.errlog.log(e);
                         }
                     }
+                    callback(false, vids);
+
 
                     var links = data.feed.link;
                     for(var i = 0; i < links.length; i++) {
@@ -357,6 +359,7 @@ exports.getMedia = function(id, type, callback) {
                 }
             }
             exports.getYTPlaylist(id, cback);
+            break;
         case "li":
         case "tw":
         case "jt":
