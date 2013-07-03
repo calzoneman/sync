@@ -749,7 +749,8 @@ Callbacks = {
                 $("#queue").scrollTop(0);
                 var scroll = li.position().top - $("#queue").position().top;
                 $("#queue").scrollTop(scroll);
-            }
+            },
+            can_wait: true
         });
     },
 

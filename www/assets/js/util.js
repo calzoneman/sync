@@ -980,7 +980,9 @@ function queueAction(data) {
         if(!("expire" in data))
             data.expire = Date.now() + 5000;
         if(!data.fn()) {
-            if(Date.now() < data.expire)
+            if(data.can_wait && Date.now() < data.expire)
+                PL_QUEUED_ACTIONS.push(data);
+            else if(Date.now() < data.expire)
                 PL_QUEUED_ACTIONS.unshift(data);
         }
         if(PL_QUEUED_ACTIONS.length == 0) {
