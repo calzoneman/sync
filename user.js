@@ -574,6 +574,17 @@ User.prototype.login = function(name, pw, session) {
                 });
             }
             else {
+                if(this.channel != null) {
+                    for(var i = 0; i < this.channel.users.length; i++) {
+                        if(this.channel.users[i].name == name) {
+                            this.socket.emit("login", {
+                                success: false,
+                                error: "That name is already taken on this channel"
+                            });
+                            return;
+                        }
+                    }
+                }
                 lastguestlogin[this.ip] = Date.now();
                 this.rank = Rank.Guest;
                 Logger.syslog.log(this.ip + " signed in as " + name);
