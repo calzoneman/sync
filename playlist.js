@@ -61,9 +61,18 @@ Playlist.prototype.queueAction = function(data) {
     this._qaInterval = setInterval(function() {
         if(!pl.lock) {
             var data = pl.alter_queue.shift();
-            pl[data.fn].apply(pl, data.args);
+            if(data.waiting) {
+                if(!("expire" in data))
+                    data.expire = Date.now() + 5000;
+                if(Date.now() < data.expire)
+                    pl.alter_queue.unshift(data);
+                return;
+            }
+            //pl[data.fn].apply(pl, data.args);
+            data.fn();
             if(pl.alter_queue.length == 0) {
                 clearInterval(pl._qaInterval);
+                pl._qaInterval = false;
             }
         }
     }, 100);
@@ -73,7 +82,7 @@ Playlist.prototype.dump = function() {
     var arr = this.items.toArray();
     var pos = 0;
     for(var i in arr) {
-        if(arr[i].uid == this.current.uid) {
+        if(this.current && arr[i].uid == this.current.uid) {
             pos = i;
             break;
         }
@@ -128,23 +137,23 @@ Playlist.prototype.makeItem = function(media) {
 }
 
 Playlist.prototype.add = function(item, pos) {
+    var success;
     if(pos == "append")
-        return this.items.append(item);
+        success = this.items.append(item);
     else if(pos == "prepend")
-        return this.items.prepend(item);
+        success = this.items.prepend(item);
     else
-        return this.items.insertAfter(item, pos);
+        success = this.items.insertAfter(item, pos);
+
+    if(success && this.items.length == 1) {
+        this.current = item;
+        this.startPlayback();
+    }
+
+    return success;
 }
 
 Playlist.prototype.addMedia = function(data, callback) {
-    if(this.lock) {
-        this.queueAction({
-            fn: "addMedia",
-            args: arguments
-        });
-        return;
-    }
-    this.lock = true;
     var pos = "append";
     if(data.pos == "next") {
         if(!this.current)
@@ -153,55 +162,66 @@ Playlist.prototype.addMedia = function(data, callback) {
             pos = this.current.uid;
     }
 
+    var it = this.makeItem(null);
     var pl = this;
+    var action = {
+        fn: function() {
+            if(pl.add(it, pos))
+                callback(false, it);
+        },
+        waiting: true
+    };
+    this.queueAction(action);
+
     InfoGetter.getMedia(data.id, data.type, function(err, media) {
         if(err) {
+            action.expire = 0;
             callback(err, null);
-            pl.lock = false;
             return;
         }
 
-        var it = pl.makeItem(media);
+        it.media = media;
         it.temp = data.temp;
         it.queueby = data.queueby;
-        if(!pl.add(it, pos))
-            callback(true, null);
-        else
-            callback(false, it);
-        pl.lock = false;
+        action.waiting = false;
+    });
+}
+
+Playlist.prototype.addMediaList = function(data, callback) {
+    if(data.pos == "next")
+        data.list = data.list.reverse();
+
+    var pl = this;
+    data.list.forEach(function(x) {
+        x.pos = data.pos;
+        pl.addMedia(x, callback);
     });
 }
 
 Playlist.prototype.remove = function(uid, callback) {
-    if(this.lock) {
-        this.queueAction({
-            fn: "remove",
-            args: arguments
-        });
-        return;
-    }
-    this.lock = true;
-    var item = this.items.find(uid);
-    if(this.items.remove(uid)) {
-        if(item == this.current)
-            this._next();
-        if(callback)
-            callback();
-    }
-    this.lock = false;
+    var pl = this;
+    this.queueAction({
+        fn: function() {
+            var item = pl.items.find(uid);
+            if(pl.items.remove(uid)) {
+                if(item == pl.current)
+                    pl._next();
+                if(callback)
+                    callback();
+            }
+        },
+        waiting: false
+    });
 }
 
 Playlist.prototype.move = function(from, after, callback) {
-    if(this.lock) {
-        this.queueAction({
-            fn: "move",
-            args: arguments
-        });
-        return;
-    }
-    this.lock = true;
-    this._move(from, after, callback);
-    this.lock = false;
+    var pl = this;
+    this.queueAction({
+        fn: function() {
+            pl._move(from, after, callback);
+        },
+        waiting: false
+    });
 }
 
 Playlist.prototype._move = function(from, after, callback) {

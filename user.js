@@ -484,7 +484,7 @@ User.prototype.initCallbacks = function() {
             return;
         }
 
-        var pl = this.channel.playlist.toArray();
+        var pl = this.channel.playlist.items.toArray();
         var result = Database.saveUserPlaylist(pl, this.name, data.name);
         this.socket.emit("savePlaylist", {
             success: result,

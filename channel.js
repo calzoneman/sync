@@ -165,7 +165,7 @@ Channel.prototype.loadDump = function() {
                     if(e.temp !== undefined) {
                         p.temp = e.temp;
                     }
-                    this.playlist.append(p);
+                    this.playlist.items.append(p);
                 }
                 this.sendAll("playlist", this.playlist.items.toArray());
                 if(this.playlist.current)
