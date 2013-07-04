@@ -49,9 +49,21 @@
     genPermissionsEditor();
 
     $("#chanopts_submit").click(function() {
+        var hms = $("#opt_maxlength").val().split(":");
+        var len = 0;
+        if(hms.length == 3) {
+            len = parseInt(hms[0]) * 3600 + parseInt(hms[1]) * 60 + parseInt(hms[2]);
+        }
+        else if(hms.length == 2) {
+            len = parseInt(hms[0]) * 60 + parseInt(hms[1]);
+        }
+        else {
+            len = parseInt(hms[0]);
+        }
         socket.emit("setOptions", {
             allow_voteskip: $("#opt_allow_voteskip").prop("checked"),
             voteskip_ratio: parseFloat($("#opt_voteskip_ratio").val()),
+            maxlength: len,
             pagetitle: $("#opt_pagetitle").val() || CHANNEL.name,
             externalcss: $("#opt_externalcss").val(),
             externaljs: $("#opt_externaljs").val(),

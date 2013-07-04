@@ -216,6 +216,12 @@ Playlist.prototype.addMedia = function(data, callback) {
             return;
         }
 
+        if(data.maxlength && media.seconds > data.maxlength) {
+            action.expire = 0;
+            callback("Media is too long!", null);
+            return;
+        }
+
         it.media = media;
         it.temp = data.temp;
         it.queueby = data.queueby;

@@ -59,6 +59,7 @@ var Channel = function(name) {
         playlistjump: 1.5,
         playlistaddlist: 1.5,
         playlistaddlive: 1.5,
+        exceedmaxlength: 2,
         addnontemp: 2,
         settemp: 2,
         playlistgeturl: 1.5,
@@ -78,6 +79,7 @@ var Channel = function(name) {
         allow_voteskip: true,
         voteskip_ratio: 0.5,
         pagetitle: this.name,
+        maxlength: 0,
         externalcss: "",
         externaljs: "",
         chat_antiflood: false,
@@ -1194,9 +1196,15 @@ Channel.prototype.tryQueue = function(user, data) {
 Channel.prototype.addMedia = function(data, user) {
     data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
     data.queueby = user ? user.name : "";
+    data.maxlength = this.hasPermission(user, "exceedmaxlength") ? 0 : this.opts.maxlength;
     var chan = this;
     if(data.id in this.library) {
         var m = this.library[data.id].dup();
+        if(data.maxlength && m.seconds > data.maxlength) {
+            user.socket.emit("queueFail", "Media is too long!");
+            return;
+        }
+
         data.media = m;
         this.playlist.addCachedMedia(data, function (err, item) {
             if(err) {

@@ -800,6 +800,22 @@ function handleModPermissions() {
     $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
     $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+    (function() {
+        if(typeof CHANNEL.opts.maxlength != "number") {
+            $("#opt_maxlength").val("");
+            return;
+        }
+        var h = parseInt(CHANNEL.opts.maxlength / 3600);
+        h = ""+h;
+        if(h.length < 2) h = "0" + h;
+        var m = parseInt((CHANNEL.opts.maxlength % 3600) / 60);
+        m = ""+m;
+        if(m.length < 2) m = "0" + m;
+        var s = parseInt(CHANNEL.opts.maxlength % 60);
+        s = ""+s;
+        if(s.length < 2) s = "0" + s;
+        $("#opt_maxlength").val(h + ":" + m + ":" + s);
+    })();
     $("#csstext").val(CHANNEL.css);
     $("#jstext").val(CHANNEL.js);
     $("#motdtext").val(CHANNEL.motd_text);
@@ -1388,6 +1404,7 @@ function genPermissionsEditor() {
     makeOption("Jump to video", "playlistjump", standard, CHANNEL.perms.playlistjump+"");
     makeOption("Queue playlist", "playlistaddlist", standard, CHANNEL.perms.playlistaddlist+"");
     makeOption("Queue livestream", "playlistaddlive", standard, CHANNEL.perms.playlistaddlive+"");
+    makeOption("Exceed maximum media length", "exceedmaxlength", standard, CHANNEL.perms.exceedmaxlength+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");
     makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");
