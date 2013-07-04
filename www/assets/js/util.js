@@ -574,7 +574,10 @@ function applyOpts() {
     }
 
     if(USEROPTS.hidevid) {
+        $("#qualitywrap").html("");
         $("#videowrap").remove();
+        $("#chatwrap").removeClass("span5").addClass("span12");
+        $("#chatline").removeClass().addClass("span12");
     }
 
     $("#chatbtn").remove();
@@ -1282,12 +1285,15 @@ function fluidLayout() {
     $(".container").each(function() {
         $(this).removeClass("container").addClass("container-fluid");
     });
-    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    // Video might not be there, but the playlist is
+    VWIDTH = $("#queue").css("width").replace("px", "");
     VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    if($("#ytapiplayer").length > 0) {
+        $("#ytapiplayer").attr("width", VWIDTH);
+        $("#ytapiplayer").attr("height", VHEIGHT);
+    }
     $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
     $("#userlist").css("height", (VHEIGHT - 31) + "px");
-    $("#ytapiplayer").attr("width", VWIDTH);
-    $("#ytapiplayer").attr("height", VHEIGHT);
     $("#chatline").removeClass().addClass("span12");
     $("#channelsettingswrap3").css("margin-left", "0");
 }
