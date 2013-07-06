@@ -977,6 +977,11 @@ Channel.prototype.broadcastDrinks = function() {
 
 /* REGION Playlist Stuff */
 
+Channel.prototype.onVideoChange = function () {
+    this.voteskip = false;
+    this.broadcastVoteskipUpdate();
+}
+
 // The server autolead function
 function mediaUpdate(chan, id) {
     // Bail cases - video changed, someone's leader, no video playing

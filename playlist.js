@@ -42,6 +42,7 @@ function Playlist(chan) {
             chan.sendAll("mediaUpdate", m.timeupdate());
         });
         this.on("changeMedia", function(m) {
+            chan.onVideoChange();
             chan.sendAll("setCurrent", pl.current.uid);
             chan.sendAll("changeMedia", m.fullupdate());
         });
