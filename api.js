@@ -136,7 +136,7 @@ function handleChannelData(params, req, res) {
         if(d.loaded) {
             var chan = Server.channels[cname];
             d.pagetitle = chan.opts.pagetitle;
-            d.media = chan.media ? chan.media.pack() : {};
+            d.media = chan.playlist.current ? chan.playlist.current.media.pack() : {};
             d.usercount = chan.users.length;
             d.users = [];
             for(var i = 0; i < chan.users.length; i++) {
