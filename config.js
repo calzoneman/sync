@@ -19,8 +19,8 @@ exports.MAX_PER_IP = 10;
 exports.GUEST_LOGIN_DELAY = 60; // Seconds
 
 /*
-    Set to true if you are behind a reverse proxy (e.g. Cloudflare)
-    so that client IPs are passed through correctly.
+    Set to true if your IO_URL and WEB_URL are behind a reverse proxy
+    (e.g. Cloudflare) so that client IPs are passed through correctly.
 
     If you are not behind a reverse proxy, leave it as false, otherwise
     clients can fake their IP address in the x-forwarded-for header
