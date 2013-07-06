@@ -372,7 +372,7 @@ exports.getMedia = function(id, type, callback) {
                 "us": "Ustream.tv - ",
                 "jw": "JWPlayer Stream - "
             };
-            var media = new Media(data.id, prefix[data.type] + data.id, "--:--", data.type);
+            var media = new Media(id, prefix[type] + id, "--:--", type);
             callback(false, media);
             break;
         case "rt":
@@ -381,7 +381,7 @@ exports.getMedia = function(id, type, callback) {
                 "rt": "Livestream",
                 "im": "Imgur Album"
             };
-            var media = new Media(data.id, names[data.type], "--:--", data.type);
+            var media = new Media(id, names[type], "--:--", type);
             callback(false, media);
             break;
         default:

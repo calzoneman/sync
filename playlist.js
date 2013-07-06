@@ -47,6 +47,7 @@ function Playlist(chan) {
             chan.sendAll("changeMedia", m.fullupdate());
         });
         this.on("remove", function(item) {
+            chan.broadcastPlaylistMeta();
             chan.sendAll("delete", {
                 uid: item.uid
             });
