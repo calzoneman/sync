@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-const VERSION = "2.0.2";
+const VERSION = "2.0.3";
 
 var fs = require("fs");
 var Logger = require("./logger.js");
@@ -36,15 +36,15 @@ app.get("/api/:apireq(*)", function(req, res, next) {
 });
 
 function getClientIP(req) {
-    var ip;
+    var ip = false;
+    var raw = req.connection.remoteAddress;
     var forward = req.header("x-forwarded-for");
-    if(forward) {
+    if(Config.REVERSE_PROXY && forward) {
         ip = forward.split(",")[0];
+        Logger.syslog.log("/" + ip + " is proxied by /" + raw);
+        return ip;
     }
-    if(!ip) {
-        ip = req.connection.remoteAddress;
-    }
-    return ip;
+    return raw;
 }
 
 app.get("/nws/connect", function(req, res, next) {
@@ -128,7 +128,15 @@ fs.exists("chanlogs", function(exists) {
 });
 
 function getSocketIP(socket) {
-    return socket.handshake.headers["x-forwarded-for"] || socket.handshake.address.address;
+    var raw = socket.handshake.address.address;
+    if(Config.REVERSE_PROXY) {
+        if(typeof socket.handshake.headers["x-forwarded-for"] == "string") {
+            var ip = socket.handshake.headers["x-forwarded-for"].split(",")[0];
+            Logger.syslog.log("/" + ip + " is proxied by /" + raw);
+            return ip;
+        }
+    }
+    return socket.handshake.address.address;
 }
 
 exports.io.sockets.on("connection", function(socket) {

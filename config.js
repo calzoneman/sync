@@ -18,6 +18,15 @@ exports.WEBSERVER_PORT = 8080; // Webserver port.  Binding port 80 requires root
 exports.MAX_PER_IP = 10;
 exports.GUEST_LOGIN_DELAY = 60; // Seconds
 
+/*
+    Set to true if you are behind a reverse proxy (e.g. Cloudflare)
+    so that client IPs are passed through correctly.
+
+    If you are not behind a reverse proxy, leave it as false, otherwise
+    clients can fake their IP address in the x-forwarded-for header
+*/
+exports.REVERSE_PROXY = false;
+
 var nodemailer = require("nodemailer");
 exports.MAIL = false;
 /* Example for setting up email:
