@@ -345,7 +345,7 @@ Channel.prototype.saveRank = function(user) {
 Channel.prototype.getIPRank = function(ip) {
     var names = [];
     if(!(ip in this.ip_alias))
-        this.ip_alias = Database.getAliases(ip);
+        this.ip_alias[ip] = Database.getAliases(ip);
     this.ip_alias[ip].forEach(function(name) {
         names.push(name);
     });
