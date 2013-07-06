@@ -114,7 +114,7 @@ module.exports = {
                     name: c,
                     title: chan.opts.pagetitle,
                     usercount: chan.users.length,
-                    mediatitle: chan.media ? chan.media.title : "-",
+                    mediatitle: chan.playlist.current ? chan.playlist.current.media.title : "-",
                     is_public: chan.opts.show_public,
                     registered: chan.registered
                 });
