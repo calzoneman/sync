@@ -650,25 +650,35 @@ Callbacks = {
     },
 
     queue: function(data) {
-        // Wait until pending movements are completed
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks.queue(data);
-            }, 100);
-            return;
-        }
-        var li = makeQueueEntry(data.media, true);
-        li.hide();
-        var idx = data.pos;
-        var q = $("#queue");
-        li.attr("title", data.media.queueby
-                            ? ("Added by: " + data.media.queueby)
-                            : "Added by: Unknown");
-        if(idx < q.children().length - 1)
-            li.insertBefore(q.children()[idx])
-        else
-            li.appendTo(q);
-        li.show("blind");
+        queueAction({
+            fn: function () {
+                var li = makeQueueEntry(data.item, true);
+                li.hide();
+                var q = $("#queue");
+                li.attr("title", data.item.queueby
+                                    ? ("Added by: " + data.item.queueby)
+                                    : "Added by: Unknown");
+                if(data.after === "prepend") {
+                    li.prependTo(q);
+                    li.show("blind");
+                    return true;
+                }
+                else if(data.after === "append") {
+                    li.appendTo(q);
+                    li.show("blind");
+                    return true;
+                }
+                else {
+                    var liafter = playlistFind(data.after);
+                    if(!liafter) {
+                        return false;
+                    }
+                    li.insertAfter(liafter);
+                    li.show("blind");
+                    return true;
+                }
+            }
+        });
     },
 
     queueFail: function(data) {
@@ -681,89 +691,77 @@ Callbacks = {
     },
 
     setTemp: function(data) {
-        var li = $("#queue").children()[data.position];
-        li = $(li);
+        var li = $(".pluid-" + data.uid);
+        if(li.length == 0)
+            return false;
+
         if(data.temp)
             li.addClass("queue_temp");
         else
             li.removeClass("queue_temp");
+
         var btn = li.find(".qbtn-tmp");
-        btn.data("temp", data.temp);
-        if(data.temp) {
-            btn.html(btn.html().replace("Make Temporary",
-                                        "Make Permanent"));
-        }
-        else {
-            btn.html(btn.html().replace("Make Permanent",
-                                        "Make Temporary"));
+        if(btn.length > 0) {
+            btn.data("temp", data.temp);
+            if(data.temp) {
+                btn.html(btn.html().replace("Make Temporary",
+                                            "Make Permanent"));
+            }
+            else {
+                btn.html(btn.html().replace("Make Permanent",
+                                            "Make Temporary"));
+            }
         }
     },
 
     "delete": function(data) {
-        // Wait until any pending manipulation is finished
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks["delete"](data);
-            }, 100);
-            return;
-        }
-        var li = $("#queue").children()[data.position];
-        $(li).remove();
+        queueAction({
+            fn: function () {
+                var li = $(".pluid-" + data.uid);
+                li.hide("blind", function() {
+                    li.remove();
+                });
+                return true;
+            }
+        });
     },
 
     moveVideo: function(data) {
-        // Wait until any pending manipulation is finished
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks.moveVideo(position);
-            }, 100);
-            return;
+        if(data.moveby != CLIENT.name) {
+            queueAction({
+                fn: function () {
+                    playlistMove(data.from, data.after);
+                    return true;
+                }
+            });
         }
-        if(data.from < POSITION && data.to >= POSITION)
-            POSITION--;
-        else if(data.from > POSITION && data.to <= POSITION)
-            POSITION++;
-        else if(data.from == POSITION)
-            POSITION = data.to;
-        if(data.moveby != CLIENT.name)
-            playlistMove(data.from, data.to);
     },
 
-    setPosition: function(position) {
-        // Wait until any pending manipulation is finished
-        if(PL_MOVING || PL_ADDING || PL_DELETING) {
-            setTimeout(function() {
-                Callbacks.setPosition(position);
-            }, 100);
-            return;
-        }
-        $("#queue li").each(function() {
-            $(this).removeClass("queue_active");
+    setCurrent: function(uid) {
+        queueAction({
+            fn: function () {
+                PL_CURRENT = uid;
+                var qli = $("#queue li");
+                qli.removeClass("queue_active");
+                var li = $(".pluid-" + uid);
+                if(li.length == 0) {
+                    return false;
+                }
+
+                li.addClass("queue_active");
+                scrollQueue();
+                return true;
+            },
+            can_wait: true
         });
-        if(position < 0)
-            return;
-        POSITION = position;
-        var linew = $("#queue").children()[POSITION];
-        // jQuery UI's sortable thingy kinda fucks this up initially
-        // Wait until it's done
-        if(!$(linew).hasClass("queue_entry")) {
-            setTimeout(function() {
-                Callbacks.setPosition(position);
-            }, 100);
-            return;
-        }
-        $(linew).addClass("queue_active");
-
-        $("#queue").scrollTop(0);
-        var scroll = $(linew).position().top - $("#queue").position().top;
-        $("#queue").scrollTop(scroll);
-
-        if(CHANNEL.opts.allow_voteskip)
-            $("#voteskip").attr("disabled", false);
     },
 
     changeMedia: function(data) {
+        if(CHANNEL.opts.allow_voteskip)
+            $("#voteskip").attr("disabled", false);
+
         $("#currenttitle").text("Currently Playing: " + data.title);
+
         if(data.type != "sc" && PLAYER.type == "sc")
             // [](/goddamnitmango)
             fixSoundcloudShit();
@@ -859,7 +857,6 @@ Callbacks = {
         for(var i = 0; i < data.options.length; i++) {
             (function(i) {
             var callback = function() {
-                    console.log("vote", i);
                     socket.emit("vote", {
                         option: i
                     });
@@ -990,11 +987,14 @@ Callbacks = {
         }
     }
 }
+
+var SOCKET_DEBUG = true;
 setupCallbacks = function() {
-    console.log(socket);
     for(var key in Callbacks) {
         (function(key) {
         socket.on(key, function(data) {
+            if(SOCKET_DEBUG)
+                console.log(key, data);
             Callbacks[key](data);
         });
         })(key);

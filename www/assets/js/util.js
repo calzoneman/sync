@@ -204,7 +204,48 @@ function addUserDropdown(entry, name) {
 
 /* queue stuff */
 
-function makeQueueEntry(video, addbtns) {
+function scrollQueue() {
+    var li = playlistFind(PL_CURRENT);
+    if(!li)
+        return;
+
+    li = $(li);
+    $("#queue").scrollTop(0);
+    var scroll = li.position().top - $("#queue").position().top;
+    $("#queue").scrollTop(scroll);
+}
+
+function makeQueueEntry(item, addbtns) {
+    var video = item.media;
+    var li = $("<li/>");
+    li.addClass("queue_entry");
+    li.addClass("pluid-" + item.uid);
+    li.data("uid", item.uid);
+    li.data("media", video);
+    li.data("temp", item.temp);
+    if(video.thumb) {
+        $("<img/>").attr("src", video.thumb.url)
+            .css("float", "left")
+            .css("clear", "both")
+            .appendTo(li);
+    }
+    var title = $("<a/>").addClass("qe_title").appendTo(li)
+        .text(video.title)
+        .attr("href", formatURL(video))
+        .attr("target", "_blank");
+    var time = $("<span/>").addClass("qe_time").appendTo(li);
+    time.text(video.duration);
+    var clear = $("<div/>").addClass("qe_clear").appendTo(li);
+    if(item.temp) {
+        li.addClass("queue_temp");
+    }
+
+    if(addbtns)
+        addQueueButtons(li);
+    return li;
+}
+
+function makeSearchEntry(video) {
     var li = $("<li/>");
     li.addClass("queue_entry");
     li.data("media", video);
@@ -221,12 +262,7 @@ function makeQueueEntry(video, addbtns) {
     var time = $("<span/>").addClass("qe_time").appendTo(li);
     time.text(video.duration);
     var clear = $("<div/>").addClass("qe_clear").appendTo(li);
-    if(video.temp) {
-        li.addClass("queue_temp");
-    }
 
-    if(addbtns)
-        addQueueButtons(li);
     return li;
 }
 
@@ -238,8 +274,7 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-play")
             .html("<i class='icon-play'></i>Play")
             .click(function() {
-                var i = $("#queue").children().index(li);
-                socket.emit("jumpTo", i);
+                socket.emit("jumpTo", li.data("uid"));
             })
             .appendTo(menu);
     }
@@ -248,10 +283,9 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-next")
             .html("<i class='icon-share-alt'></i>Queue Next")
             .click(function() {
-                var i = $("#queue").children().index(li);
                 socket.emit("moveMedia", {
-                    from: i,
-                    to: i < POSITION ? POSITION : POSITION + 1,
+                    from: li.data("uid"),
+                    after: PL_CURRENT,
                     moveby: null
                 });
             })
@@ -259,14 +293,13 @@ function addQueueButtons(li) {
     }
     // Temp/Untemp
     if(hasPermission("settemp")) {
-        var tempstr = li.data("media").temp?"Make Permanent":"Make Temporary";
+        var tempstr = li.data("temp")?"Make Permanent":"Make Temporary";
         $("<button/>").addClass("btn btn-mini qbtn-tmp")
             .html("<i class='icon-flag'></i>" + tempstr)
             .click(function() {
-                var i = $("#queue").children().index(li);
                 var temp = li.find(".qbtn-tmp").data("temp");
                 socket.emit("setTemp", {
-                    position: i,
+                    uid: li.data("uid"),
                     temp: !temp
                 });
             })
@@ -277,8 +310,7 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-delete")
             .html("<i class='icon-trash'></i>Delete")
             .click(function() {
-                var i = $("#queue").children().index(li);
-                socket.emit("delete", i);
+                socket.emit("delete", li.data("uid"));
             })
             .appendTo(menu);
     }
@@ -542,7 +574,10 @@ function applyOpts() {
     }
 
     if(USEROPTS.hidevid) {
+        $("#qualitywrap").html("");
         $("#videowrap").remove();
+        $("#chatwrap").removeClass("span5").addClass("span12");
+        $("#chatline").removeClass().addClass("span12");
     }
 
     $("#chatbtn").remove();
@@ -765,6 +800,22 @@ function handleModPermissions() {
     $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
     $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+    (function() {
+        if(typeof CHANNEL.opts.maxlength != "number") {
+            $("#opt_maxlength").val("");
+            return;
+        }
+        var h = parseInt(CHANNEL.opts.maxlength / 3600);
+        h = ""+h;
+        if(h.length < 2) h = "0" + h;
+        var m = parseInt((CHANNEL.opts.maxlength % 3600) / 60);
+        m = ""+m;
+        if(m.length < 2) m = "0" + m;
+        var s = parseInt(CHANNEL.opts.maxlength % 60);
+        s = ""+s;
+        if(s.length < 2) s = "0" + s;
+        $("#opt_maxlength").val(h + ":" + m + ":" + s);
+    })();
     $("#csstext").val(CHANNEL.css);
     $("#jstext").val(CHANNEL.js);
     $("#motdtext").val(CHANNEL.motd_text);
@@ -882,7 +933,7 @@ function loadSearchPage(page) {
     var results = $("#library").data("entries");
     var start = page * 100;
     for(var i = start; i < start + 100 && i < results.length; i++) {
-        var li = makeQueueEntry(results[i], false);
+        var li = makeSearchEntry(results[i], false);
         if(hasPermission("playlistadd")) {
             if(results[i].thumb) {
                 addLibraryButtons(li, results[i].id, "yt");
@@ -947,24 +998,73 @@ function addLibraryButtons(li, id, type) {
 
 /* queue stuff */
 
-function playlistMove(from, to) {
-    if(from < 0 || to < 0)
-        return false;
-    var q = $("#queue");
-    if(from >= q.children().length)
+var PL_QUEUED_ACTIONS = [];
+var PL_ACTION_INTERVAL = false;
+
+function queueAction(data) {
+    PL_QUEUED_ACTIONS.push(data);
+    if(PL_ACTION_INTERVAL)
+        return;
+    PL_ACTION_INTERVAL = setInterval(function () {
+        var data = PL_QUEUED_ACTIONS.shift();
+        if(!("expire" in data))
+            data.expire = Date.now() + 5000;
+        if(!data.fn()) {
+            if(data.can_wait && Date.now() < data.expire)
+                PL_QUEUED_ACTIONS.push(data);
+            else if(Date.now() < data.expire)
+                PL_QUEUED_ACTIONS.unshift(data);
+        }
+        if(PL_QUEUED_ACTIONS.length == 0) {
+            clearInterval(PL_ACTION_INTERVAL);
+            PL_ACTION_INTERVAL = false;
+        }
+    }, 100);
+}
+
+// Because jQuery UI does weird things
+function playlistFind(uid) {
+    var children = document.getElementById("queue").children;
+    for(var i in children) {
+        if(typeof children[i].getAttribute != "function")
+            continue;
+        if(children[i].getAttribute("class").indexOf("pluid-" + uid) != -1)
+            return children[i];
+    }
+    return false;
+}
+
+function playlistMove(from, after) {
+    var lifrom = $(".pluid-" + from);
+    if(lifrom.length == 0)
         return false;
 
-    MOVING = true;
-    var old = $(q.children()[from]);
-    old.hide("blind", function() {
-        old.detach();
-        if(to >= q.children().length)
-            old.appendTo(q);
-        else
-            old.insertBefore(q.children()[to]);
-        old.show("blind");
-        MOVING = false;
-    });
+    var q = $("#queue");
+
+    if(after === "prepend") {
+        lifrom.hide("blind", function() {
+            lifrom.detach();
+            lifrom.prependTo(q);
+            lifrom.show("blind");
+        });
+    }
+    else if(after === "append") {
+        lifrom.hide("blind", function() {
+            lifrom.detach();
+            lifrom.appendTo(q);
+            lifrom.show("blind");
+        });
+    }
+    else {
+        var liafter = $(".pluid-" + after);
+        if(liafter.length == 0)
+            return false;
+        lifrom.hide("blind", function() {
+            lifrom.detach();
+            lifrom.insertAfter(liafter);
+            lifrom.show("blind");
+        });
+    }
 }
 
 function parseMediaLink(url) {
@@ -1201,12 +1301,15 @@ function fluidLayout() {
     $(".container").each(function() {
         $(this).removeClass("container").addClass("container-fluid");
     });
-    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
+    // Video might not be there, but the playlist is
+    VWIDTH = $("#queue").css("width").replace("px", "");
     VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    if($("#ytapiplayer").length > 0) {
+        $("#ytapiplayer").attr("width", VWIDTH);
+        $("#ytapiplayer").attr("height", VHEIGHT);
+    }
     $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
     $("#userlist").css("height", (VHEIGHT - 31) + "px");
-    $("#ytapiplayer").attr("width", VWIDTH);
-    $("#ytapiplayer").attr("height", VHEIGHT);
     $("#chatline").removeClass().addClass("span12");
     $("#channelsettingswrap3").css("margin-left", "0");
 }
@@ -1301,6 +1404,7 @@ function genPermissionsEditor() {
     makeOption("Jump to video", "playlistjump", standard, CHANNEL.perms.playlistjump+"");
     makeOption("Queue playlist", "playlistaddlist", standard, CHANNEL.perms.playlistaddlist+"");
     makeOption("Queue livestream", "playlistaddlive", standard, CHANNEL.perms.playlistaddlive+"");
+    makeOption("Exceed maximum media length", "exceedmaxlength", standard, CHANNEL.perms.exceedmaxlength+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");
     makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");

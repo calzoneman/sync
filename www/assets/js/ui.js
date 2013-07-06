@@ -211,16 +211,18 @@ $("#mediarefresh").click(function() {
 
 $("#queue").sortable({
     start: function(ev, ui) {
-        PL_FROM = ui.item.prevAll().length;
+        PL_FROM = ui.item.data("uid");
     },
     update: function(ev, ui) {
-        PL_TO = ui.item.prevAll().length;
-        if(PL_TO != PL_FROM) {
-            socket.emit("moveMedia", {
-                from: PL_FROM,
-                to: PL_TO
-            });
-        }
+        var prev = ui.item.prevAll();
+        if(prev.length == 0)
+            PL_AFTER = "prepend";
+        else
+            PL_AFTER = $(prev[0]).data("uid");
+        socket.emit("moveMedia", {
+            from: PL_FROM,
+            after: PL_AFTER
+        });
     }
 });
 $("#queue").disableSelection();
@@ -337,12 +339,14 @@ $("#shuffleplaylist").click(function() {
 
 /* layout stuff */
 $(window).resize(function() {
-    VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
-    var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+    VWIDTH = $("#queue").css("width").replace("px", "");
+    VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
     $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
     $("#userlist").css("height", (VHEIGHT - 31) + "px");
-    $("#ytapiplayer").attr("width", VWIDTH);
-    $("#ytapiplayer").attr("height", VHEIGHT);
+    if($("#ytapiplayer").length > 0) {
+        $("#ytapiplayer").attr("width", VWIDTH);
+        $("#ytapiplayer").attr("height", VHEIGHT);
+    }
 });
 
 

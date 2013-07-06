@@ -185,6 +185,7 @@ exports.unload = function(chan) {
     if(chan.registered) {
         chan.saveDump();
     }
+    chan.playlist.die();
     exports.channels[chan.name] = null;
     delete exports.channels[chan.name];
 }

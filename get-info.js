@@ -17,7 +17,7 @@ var Media = require("./media.js").Media;
 // Helper function for making an HTTP request and getting the result
 // as JSON
 function getJSON(options, callback) {
-    var req = http.request(options, function(res){
+    var req = http.request(options, function(res) {
         var buffer = "";
         res.setEncoding("utf8");
         res.on("data", function (chunk) {
@@ -47,7 +47,7 @@ function getJSON(options, callback) {
 
 // Dailymotion uses HTTPS for anonymous requests... [](/picard)
 function getJSONHTTPS(options, callback) {
-    var req = https.request(options, function(res){
+    var req = https.request(options, function(res) {
         var buffer = "";
         res.setEncoding("utf8");
         res.on("data", function (chunk) {
@@ -87,6 +87,7 @@ exports.getYTInfo = function(id, callback) {
         timeout: 1000}, callback);
 }
 
+// Look up a YouTube playlist
 exports.getYTPlaylist = function(id, callback, url) {
     var path = "/feeds/api/playlists/" + id + "?v=2&alt=json";
     if(url) {
@@ -101,6 +102,7 @@ exports.getYTPlaylist = function(id, callback, url) {
         timeout: 1000}, callback);
 }
 
+// Search YouTube
 exports.searchYT = function(terms, callback) {
     // I really miss Python's list comprehensions
     for(var i = 0; i < terms.length; i++) {
@@ -157,13 +159,8 @@ exports.getYTSearchResults = function(query, callback) {
 }
 
 // Look up Soundcloud metadata
-// Whoever designed this should rethink it.  I'll submit a feedback
-// form on their website.
 exports.getSCInfo = function(url, callback) {
     const SC_CLIENT = "2e0c82ab5a020f3a7509318146128abd";
-    // SoundCloud is dumb
-    // I have to request the API URL for the given input URL
-    // Because the sound ID isn"t in the URL
     getJSON({
         host: "api.soundcloud.com",
         port: 80,
@@ -254,7 +251,7 @@ exports.getMedia = function(id, type, callback) {
                 }
                 catch(e) {
                     Logger.errlog.log("getMedia failed: ");
-                    Logger.errlog.log(e);
+                    Logger.errlog.log(e.stack);
                     callback(true, null);
                 }
             });
@@ -329,7 +326,7 @@ exports.getMedia = function(id, type, callback) {
                 }
 
                 try {
-
+                    var vids = [];
                     for(var i = 0; i < data.feed.entry.length; i++) {
                         try {
                             var item = data.feed.entry[i];
@@ -338,13 +335,15 @@ exports.getMedia = function(id, type, callback) {
                             var title = item.title.$t;
                             var seconds = item.media$group.yt$duration.seconds;
                             var media = new Media(id, title, seconds, "yt");
-                            callback(false, media);
+                            vids.push(media);
                         }
                         catch(e) {
                             Logger.errlog.log("getMedia failed: ");
                             Logger.errlog.log(e);
                         }
                     }
+                    callback(false, vids);
+
 
                     var links = data.feed.link;
                     for(var i = 0; i < links.length; i++) {
@@ -360,6 +359,31 @@ exports.getMedia = function(id, type, callback) {
                 }
             }
             exports.getYTPlaylist(id, cback);
+            break;
+        case "li":
+        case "tw":
+        case "jt":
+        case "us":
+        case "jw":
+            const prefix = {
+                "li": "Livestream.com - ",
+                "tw": "Twitch.tv - ",
+                "jt": "Justin.tv - ",
+                "us": "Ustream.tv - ",
+                "jw": "JWPlayer Stream - "
+            };
+            var media = new Media(data.id, prefix[data.type] + data.id, "--:--", data.type);
+            callback(false, media);
+            break;
+        case "rt":
+        case "im":
+            const names = {
+                "rt": "Livestream",
+                "im": "Imgur Album"
+            };
+            var media = new Media(data.id, names[data.type], "--:--", data.type);
+            callback(false, media);
+            break;
         default:
             break;
     }

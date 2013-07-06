@@ -51,14 +51,10 @@ var Media = function(id, title, seconds, type) {
         this.seconds = 0;
     }
     this.type = type;
-    this.queueby = "";
-    this.temp = false;
 }
 
 Media.prototype.dup = function() {
     var m = new Media(this.id, this.title, this.seconds, this.type);
-    m.queueby = this.queueby;
-    m.temp = this.temp;
     return m;
 }
 
@@ -71,8 +67,6 @@ Media.prototype.pack = function() {
         seconds: this.seconds,
         duration: this.duration,
         type: this.type,
-        queueby: this.queueby,
-        temp: this.temp
     };
 }
 
@@ -87,8 +81,6 @@ Media.prototype.fullupdate = function() {
         type: this.type,
         currentTime: this.currentTime,
         paused: this.paused,
-        queueby: this.queueby,
-        temp: this.temp
     };
 }
 
