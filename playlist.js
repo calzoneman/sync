@@ -435,7 +435,6 @@ Playlist.prototype.startPlayback = function(time) {
     }
     this.on("changeMedia")(this.current.media);
     if(this.leading && !isLive(this.current.media.type)) {
-        this.on("changeMedia")(this.current.media);
         this._lastUpdate = Date.now();
         this._leadInterval = setInterval(function() {
             pl._leadLoop();
