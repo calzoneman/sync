@@ -1192,6 +1192,8 @@ Channel.prototype.tryQueue = function(user, data) {
         return;
     }
 
+    data.queueby = user ? user.name : "";
+
     if(data.list)
         this.addMediaList(data, user);
     else
@@ -1200,7 +1202,6 @@ Channel.prototype.tryQueue = function(user, data) {
 
 Channel.prototype.addMedia = function(data, user) {
     data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
-    data.queueby = user ? user.name : "";
     data.maxlength = this.hasPermission(user, "exceedmaxlength") ? 0 : this.opts.maxlength;
     var chan = this;
     if(data.id in this.library) {
@@ -1294,6 +1295,7 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
 
     var pl = Database.loadUserPlaylist(user.name, data.name);
     data.list = pl;
+    data.queueby = user.name;
     this.addMediaList(data, user);
 }
 

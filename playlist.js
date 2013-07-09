@@ -249,8 +249,12 @@ Playlist.prototype.addMediaList = function(data, callback) {
         start = data.list[data.list.length - 1];
     }
 
+    if(this.items.length != 0)
+        start = false;
+
     var pl = this;
     data.list.forEach(function(x) {
+        x.queueby = data.queueby;
         x.pos = data.pos;
         if(start && x == start) {
             pl.addMedia(x, function (err, item) {
