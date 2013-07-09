@@ -297,10 +297,9 @@ function addQueueButtons(li) {
         $("<button/>").addClass("btn btn-mini qbtn-tmp")
             .html("<i class='icon-flag'></i>" + tempstr)
             .click(function() {
-                var temp = li.find(".qbtn-tmp").data("temp");
                 socket.emit("setTemp", {
                     uid: li.data("uid"),
-                    temp: !temp
+                    temp: !li.data("temp")
                 });
             })
             .appendTo(menu);
