@@ -20,6 +20,15 @@ if(!db.querySync(query)) {
         populateChannelOwners();
     }
 }
+
+console.log("Fixing user playlist bug");
+query = "ALTER TABLE user_playlists DROP PRIMARY KEY, ADD PRIMARY KEY (user, name)";
+if(!db.querySync(query)) {
+    console.log("Something went wrong");
+}
+else {
+    console.log("fixed");
+}
 db.closeSync();
 process.exit(0);
 

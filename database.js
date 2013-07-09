@@ -168,7 +168,7 @@ function init() {
                 "`contents` MEDIUMTEXT NOT NULL,",
                 "`count` INT NOT NULL,",
                 "`time` INT NOT NULL,",
-                "PRIMARY KEY (`name`))",
+                "PRIMARY KEY (`user`, `name`))",
              "ENGINE = MyISAM;"].join("");
     results = db.querySync(query);
     if(!results) {
