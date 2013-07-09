@@ -988,7 +988,7 @@ Callbacks = {
     }
 }
 
-var SOCKET_DEBUG = true;
+var SOCKET_DEBUG = false;
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
