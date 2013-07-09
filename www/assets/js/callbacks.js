@@ -700,9 +700,9 @@ Callbacks = {
         else
             li.removeClass("queue_temp");
 
+        li.data("temp", data.temp);
         var btn = li.find(".qbtn-tmp");
         if(btn.length > 0) {
-            btn.data("temp", data.temp);
             if(data.temp) {
                 btn.html(btn.html().replace("Make Temporary",
                                             "Make Permanent"));
@@ -988,7 +988,7 @@ Callbacks = {
     }
 }
 
-var SOCKET_DEBUG = false;
+var SOCKET_DEBUG = true;
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
