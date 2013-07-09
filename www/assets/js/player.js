@@ -18,6 +18,8 @@ var Player = function(data) {
     }
     this.id = data.id;
     this.type = data.type;
+    this.length = data.length;
+    this.currentTime = data.currentTime || 0;
     this.diff = 0;
 
     switch(this.type) {
@@ -281,6 +283,7 @@ Player.prototype.initSoundcloud = function() {
 
     this.load = function(data) {
         this.id = data.id;
+        this.length = data.length;
         this.player.load(data.id, {auto_play: true});
     }
 
@@ -289,7 +292,11 @@ Player.prototype.initSoundcloud = function() {
     }
 
     this.play = function() {
-        this.player.play();
+        this.player.isPaused(function(paused) {
+            // Instead of just unpausing, this actually seeks to 0
+            // What the actual fuck
+            paused && this.player.play();
+        });
     }
 
     this.getTime = function(callback) {
@@ -507,6 +514,7 @@ Player.prototype.initImgur = function() {
 }
 
 Player.prototype.update = function(data) {
+    this.currentTime = data.currentTime;
     if(data.id && data.id != this.id) {
         if(data.currentTime < 0) {
             data.currentTime = 0;
