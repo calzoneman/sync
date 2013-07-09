@@ -33,6 +33,7 @@ PlaylistItem.prototype.pack = function() {
 
 function Playlist(chan) {
     this.items = new ULList();
+    this.current = null;
     this.next_uid = 0;
     this._leadInterval = false;
     this._lastUpdate = 0;
