@@ -30,6 +30,10 @@ function getJSON(options, callback) {
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
                 var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
+                if(m === null)
+                    m = buffer.match(/<code>([^<]+)<\/code>/);
+                if(m === null)
+                    m = buffer.match(/([0-9]+ not found)/);
                 if(m) {
                     callback(m[1], res.statusCode, null);
                 }
@@ -60,6 +64,10 @@ function getJSONHTTPS(options, callback) {
             catch(e) {
                 Logger.errlog.log("JSON fail: " + options.path);
                 var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
+                if(m === null)
+                    m = buffer.match(/<code>([^<]+)<\/code>/);
+                if(m === null)
+                    m = buffer.match(/([0-9]+ not found)/);
                 if(m) {
                     callback(m[1], res.statusCode, null);
                 }
@@ -259,7 +267,7 @@ exports.getMedia = function(id, type, callback) {
         case "vi":
             exports.getVIInfo(id, function(err, res, data) {
                 if(err || res != 200) {
-                    callback(true, null);
+                    callback(err || true, null);
                     return;
                 }
 

@@ -49,16 +49,29 @@ function Playlist(chan) {
     this._qaInterval = false;
 
     if(chan) {
+        this.channel = chan;
         var pl = this;
         this.on("mediaUpdate", function(m) {
+            if(chan != pl.channel) {
+                pl.die();
+                return;
+            }
             chan.sendAll("mediaUpdate", m.timeupdate());
         });
         this.on("changeMedia", function(m) {
+            if(chan != pl.channel) {
+                pl.die();
+                return;
+            }
             chan.onVideoChange();
             chan.sendAll("setCurrent", pl.current.uid);
             chan.sendAll("changeMedia", m.fullupdate());
         });
         this.on("remove", function(item) {
+            if(chan != pl.channel) {
+                pl.die();
+                return;
+            }
             chan.broadcastPlaylistMeta();
             chan.sendAll("delete", {
                 uid: item.uid
@@ -254,25 +267,30 @@ Playlist.prototype.addMediaList = function(data, callback) {
         start = false;
 
     var pl = this;
-    data.list.forEach(function(x) {
-        x.queueby = data.queueby;
-        x.pos = data.pos;
-        if(start && x == start) {
-            pl.addMedia(x, function (err, item) {
-                if(err) {
-                    callback(err, item);
+    for(var i = 0; i < data.list.length; i++) {
+        var x = data.list[i];
+        (function(i, x) {
+            setTimeout(function() {
+                x.queueby = data.queueby;
+                x.pos = data.pos;
+                if(start && x == start) {
+                    pl.addMedia(x, function (err, item) {
+                        if(err) {
+                            callback(err, item);
+                        }
+                        else {
+                            callback(err, item);
+                            pl.current = item;
+                            pl.startPlayback();
+                        }
+                    });
                 }
                 else {
-                    callback(err, item);
-                    pl.current = item;
-                    pl.startPlayback();
+                    pl.addMedia(x, callback);
                 }
-            });
-        }
-        else {
-            pl.addMedia(x, callback);
-        }
-    });
+            }, 500 * i);
+        })(i, x);
+    }
 }
 
 Playlist.prototype.addYouTubePlaylist = function(data, callback) {
