@@ -1608,7 +1608,10 @@ Channel.prototype.tryUpdateFilter = function(user, f) {
 
     var re = f.source;
     var flags = f.flags;
+    // Temporary fix
+    f.replace = f.replace.replace("style", "stlye");
     f.replace = sanitize(f.replace).xss();
+    f.replace = f.replace.replace("stlye", "style");
     try {
         new RegExp(re, flags);
     }
@@ -1711,7 +1714,10 @@ Channel.prototype.trySetJS = function(user, data) {
 
 Channel.prototype.updateMotd = function(motd) {
     var html = motd.replace(/\n/g, "<br>");
+    // Temporary fix
+    html = html.replace("style", "stlye");
     html = sanitize(html).xss();
+    html = html.replace("stlye", "style");
     //html = this.filterMessage(html);
     this.motd = {
         motd: motd,
