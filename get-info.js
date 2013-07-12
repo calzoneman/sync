@@ -226,8 +226,20 @@ exports.getUstream = function(name, callback) {
             html += cnk;
         });
         res.on("end", function() {
+            if(res.statusCode != 200) {
+                callback(true, null);
+                return;
+            }
             var lines = html.split("\n");
             const re = /cid":([0-9]+)/;
+            var m = html.match(re);
+            if(m) {
+                callback(false, m[1]);
+            }
+            else {
+                callback(true, null);
+            }
+            return;
             for(var i = 0; i < lines.length; i++) {
                 var m = lines[i].match(re);
                 if(m) {
@@ -371,17 +383,26 @@ exports.getMedia = function(id, type, callback) {
         case "li":
         case "tw":
         case "jt":
-        case "us":
         case "jw":
             const prefix = {
                 "li": "Livestream.com - ",
                 "tw": "Twitch.tv - ",
                 "jt": "Justin.tv - ",
-                "us": "Ustream.tv - ",
                 "jw": "JWPlayer Stream - "
             };
             var media = new Media(id, prefix[type] + id, "--:--", type);
             callback(false, media);
+            break;
+        case "us":
+            exports.getUstream(id, function(err, data) {
+                if(err) {
+                    callback(true, null);
+                    return;
+                }
+
+                var media = new Media(data, "Ustream.tv - " + id, "--:--", "us");
+                callback(false, media);
+            });
             break;
         case "rt":
         case "im":
