@@ -126,6 +126,10 @@ Player.prototype.initYouTube = function() {
             this.player.playVideo();
     }
 
+    this.isPaused = function(callback) {
+        callback(this.player.getPlayerState() != YT.PlayerState.PLAYING);
+    }
+
     this.getTime = function(callback) {
         if(this.player.getCurrentTime)
             callback(this.player.getCurrentTime());
@@ -185,6 +189,10 @@ Player.prototype.initVimeo = function() {
         this.player.api("play");
     }
 
+    this.isPaused = function(callback) {
+        callback(this.paused);
+    }
+
     this.getTime = function(callback) {
         // Vimeo api returns time as a string because fuck logic
         this.player.api("getCurrentTime", function(time) {
@@ -237,6 +245,10 @@ Player.prototype.initDailymotion = function() {
 
     this.play = function() {
         this.player.api("play");
+    }
+
+    this.isPaused = function(callback) {
+        callback(this.paused);
     }
 
     this.getTime = function(callback) {
@@ -292,12 +304,10 @@ Player.prototype.initSoundcloud = function() {
     }
 
     this.play = function() {
-        this.player.isPaused(function(paused) {
-            // Instead of just unpausing, this actually seeks to 0
-            // What the actual fuck
-            paused && this.player.play();
-        });
+        this.player.play();
     }
+
+    this.isPaused = this.player.isPaused;
 
     this.getTime = function(callback) {
         this.player.getPosition(function(pos) {
@@ -324,6 +334,8 @@ Player.prototype.initLivestream = function() {
     this.pause = function() { }
 
     this.play = function() { }
+
+    this.isPaused = function() { }
 
     this.getTime = function() { }
 
@@ -352,6 +364,8 @@ Player.prototype.initTwitch = function() {
 
     this.play = function() { }
 
+    this.isPaused = function() { }
+
     this.getTime = function() { }
 
     this.seek = function() { }
@@ -378,6 +392,8 @@ Player.prototype.initJustinTV = function() {
     this.pause = function() { }
 
     this.play = function() { }
+
+    this.isPaused = function() { }
 
     this.getTime = function() { }
 
@@ -406,6 +422,8 @@ Player.prototype.initRTMP = function() {
     this.pause = function() { }
 
     this.play = function() { }
+
+    this.isPaused = function() { }
 
     this.getTime = function() { }
 
@@ -451,6 +469,10 @@ Player.prototype.initJWPlayer = function() {
         jwplayer().play(true);
     }
 
+    this.isPaused = function(callback) {
+        callback(jwplayer().getState() !== "PLAYING");
+    }
+
     this.getTime = function(callback) {
         // Only return time for non-live media
         if(jwplayer().getDuration() != -1) {
@@ -483,6 +505,8 @@ Player.prototype.initUstream = function() {
 
     this.play = function() { }
 
+    this.isPaused = function() { }
+
     this.getTime = function() { }
 
     this.seek = function() { }
@@ -507,6 +531,8 @@ Player.prototype.initImgur = function() {
     this.pause = function() { }
 
     this.play = function() { }
+
+    this.isPaused = function() { }
 
     this.getTime = function() { }
 
@@ -533,7 +559,9 @@ Player.prototype.update = function(data) {
         this.pause();
     }
     else {
-        this.play();
+        this.isPaused(function(paused) {
+            paused && this.play();
+        }.bind(this));
     }
     this.getTime(function(seconds) {
         var time = data.currentTime;
