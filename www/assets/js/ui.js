@@ -293,7 +293,7 @@ $("#getplaylist").click(function() {
         );
         var list = [];
         for(var i = 0; i < data.length; i++) {
-            var entry = formatURL(data[i]);
+            var entry = formatURL(data[i].media);
             list.push(entry);
         }
         var urls = list.join(",");
