@@ -372,7 +372,7 @@ Player.prototype.initJustinTV = function() {
 
     this.load = function(data) {
         this.id = data.id;
-        this.initTwitch();
+        this.initJustinTV();
     }
 
     this.pause = function() { }
