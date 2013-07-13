@@ -478,7 +478,7 @@ function showOptionsMenu() {
     addOption("Send Button", sendbtncontainer);
 
     var altsocketcontainer = $("<label/>").addClass("checkbox")
-        .text("Use alternative socket connection");
+        .text("Use alternative socket connection (requires refresh)");
     var altsocket = $("<input/>").attr("type", "checkbox")
         .appendTo(altsocketcontainer);
     altsocket.prop("checked", USEROPTS.altsocket);
@@ -593,24 +593,6 @@ function applyOpts() {
                 $("#chatline").val("");
             }
         });
-    }
-
-    if(USEROPTS.altsocket) {
-        if(!socket.nws) {
-            if(socket && socket.disconnect)
-                socket.disconnect();
-            socket = new NotWebsocket();
-            setupCallbacks();
-        }
-    }
-    // Switch from NotWebsocket => Socket.io
-    else if(socket && typeof socket.poll !== "undefined") {
-        try {
-            socket = io.connect(IO_URL);
-            setupCallbacks();
-        }
-        catch(e) {
-        }
     }
 }
 

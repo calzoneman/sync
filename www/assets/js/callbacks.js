@@ -1001,23 +1001,17 @@ setupCallbacks = function() {
     }
 }
 
-if(USEROPTS.altsocket) {
-    socket = new NotWebsocket();
-    setupCallbacks();
-}
-else {
-    $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
-        try {
-            if(NO_WEBSOCKETS) {
-                var i = io.transports.indexOf("websocket");
-                if(i >= 0)
-                    io.transports.splice(i, 1);
-            }
-            socket = io.connect(IO_URL);
-            setupCallbacks();
+$.getScript(IO_URL+"/socket.io/socket.io.js", function() {
+    try {
+        if(NO_WEBSOCKETS) {
+            var i = io.transports.indexOf("websocket");
+            if(i >= 0)
+                io.transports.splice(i, 1);
         }
-        catch(e) {
-            Callbacks.disconnect();
-        }
-    });
-}
+        socket = io.connect(IO_URL);
+        setupCallbacks();
+    }
+    catch(e) {
+        Callbacks.disconnect();
+    }
+});

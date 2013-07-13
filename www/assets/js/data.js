@@ -21,6 +21,7 @@ var CLIENT = {
         text: ""
     }
 };
+var SUPERADMIN = false;
 
 var CHANNEL = {
     opts: {},
@@ -112,6 +113,8 @@ var USEROPTS = {
     ignore_channelcss    : getOrDefault("ignore_channelcss", false),
     ignore_channeljs     : getOrDefault("ignore_channeljs", false)
 };
+
+var NO_WEBSOCKETS = USEROPTS.altsocket;
 
 var Rank = {
     Guest: 0,
