@@ -103,6 +103,51 @@ $("#actionlog_filter").click(function() {
     $("#actionlog table").data("entries", entries);
     loadPage($("#actionlog table"), 0);
 });
+$("#actionlog_searchbtn").click(function() {
+    var tbl = $("#actionlog table");
+    $("#actionlog tbody").remove();
+    var actions = $("#actionlog_filter").val();
+    var sfield = $("#actionlog_sfield").val();
+    var sval = $("#actionlog_search").val().toLowerCase();
+    var sort = $("#actionlog_sort").val();
+    var desc = $("#actionlog_sortorder").val() === "true";
+    tbl.data("sort_desc", desc);
+    tbl.data("sortby", sort);
+    var entries = [];
+    tbl.data("allentries").forEach(function(e) {
+        if(actions.indexOf(e.action) == -1)
+            return;
+        entries.push(e);
+    });
+    entries = entries.filter(function (item, i, arr) {
+        var f = item[sfield];
+        if(sfield === "time")
+            f = new Date(f).toString().toLowerCase();
+        return f.indexOf(sval) > -1;
+    });
+    $("#actionlog_pagination").remove();
+    if(entries.length > 20) {
+        var pag = $("<div/>").addClass("pagination")
+            .attr("id", "actionlog_pagination")
+            .insertAfter($("#actionlog table"));
+        var btns = $("<ul/>").appendTo(pag);
+        for(var i = 0; i < entries.length / 20; i++) {
+            var li = $("<li/>").appendTo(btns);
+            (function(i) {
+            $("<a/>").attr("href", "javascript:void(0)")
+                .text(i+1)
+                .click(function() {
+                    loadPage(tbl, i);
+                })
+                .appendTo(li);
+            })(i);
+        }
+        tbl.data("pagination", pag);
+    }
+
+    $("#actionlog table").data("entries", entries);
+    loadPage($("#actionlog table"), 0);
+});
 $("#actionlog_clear").click(function() {
     socket.emit("acp-actionlog-clear", $("#actionlog_filter").val());
     getActionLog();
@@ -165,6 +210,7 @@ function getActionLog() {
                     socket.emit("acp-actionlog-clear-one", e);
                     tr.hide("blind", function () {
                         tr.remove();
+                        getActionLog();
                     });
                 });
             $("<td/>").text(e.ip).appendTo(tr);
@@ -181,7 +227,7 @@ function getActionLog() {
         actions.forEach(function(a) {
             $("<option/>").text(a).val(a).appendTo($("#actionlog_filter"));
         });
-        loadPage(tbl, 0);
+        tbl.find("tbody").remove();
     });
 }
 function getChanlog() {

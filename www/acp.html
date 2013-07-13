@@ -184,6 +184,28 @@
                 </select>
                 <button class="btn btn-danger" id="actionlog_clear">Clear Selected</button>
                 <button class="btn" id="actionlog_refresh">Refresh</button>
+                <br>
+                <form class="form-inline" action="javascript:void(0)">
+                    <input type="text" placeholder="Search" id="actionlog_search">
+                    <label for="actionlog_sfield">Search For</label>
+                    <select id="actionlog_sfield">
+                        <option value="ip">IP Address</option>
+                        <option value="name" selected="selected">Name</option>
+                        <option value="time">Time</option>
+                    </select>
+                    <label for="actionlog_sort">Sort By</label>
+                    <select id="actionlog_sort">
+                        <option value="ip">IP Address</option>
+                        <option value="name">Name</option>
+                        <option value="action">Action</option>
+                        <option value="time" selected="selected">Time</option>
+                    </select>
+                    <select id="actionlog_sortorder">
+                        <option value="true">Descending</option>
+                        <option value="false">Ascending</option>
+                    </select>
+                    <button class="btn" id="actionlog_searchbtn">Go</button>
+                </form>
                 <table class="table table-bordered table-striped table-compact">
                     <thead>
                         <tr>
