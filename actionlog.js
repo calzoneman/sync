@@ -65,6 +65,24 @@ exports.clear = function(actions) {
     return result;
 }
 
+exports.clearOne = function(e) {
+    var db = Database.getConnection();
+    if(!db)
+        return false;
+
+    var query = Database.createQuery(
+        "DELETE FROM actionlog WHERE ip=? AND time=?",
+        [e.ip, e.time]
+    );
+
+    var result = db.querySync(query);
+    if(!result) {
+        Logger.errlog.log("! Failed to clear action log");
+    }
+
+    return result;
+}
+
 exports.tooManyRegistrations = function (ip) {
     var db = Database.getConnection();
     if(!db)

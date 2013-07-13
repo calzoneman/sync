@@ -157,6 +157,16 @@ function getActionLog() {
         tbl.data("allentries", entries);
         tbl.data("generator", function(e) {
             var tr = $("<tr/>").appendTo($("#actionlog table"));
+            var rem = $("<td/>").appendTo(tr);
+            $("<button/>").addClass("btn btn-mini btn-danger")
+                .html("<i class='icon-trash'></i>")
+                .appendTo(rem)
+                .click(function () {
+                    socket.emit("acp-actionlog-clear-one", e);
+                    tr.hide("blind", function () {
+                        tr.remove();
+                    });
+                });
             $("<td/>").text(e.ip).appendTo(tr);
             $("<td/>").text(e.name).appendTo(tr);
             $("<td/>").text(e.action).appendTo(tr);

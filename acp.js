@@ -152,5 +152,10 @@ module.exports = {
             ActionLog.clear(data);
             ActionLog.record(user.ip, user.name, "acp-actionlog-clear", data);
         });
+
+        user.socket.on("acp-actionlog-clear-one", function(data) {
+            ActionLog.clearOne(data);
+            ActionLog.record(user.ip, user.name, "acp-actionlog-clear-one", data);
+        });
     }
 }
