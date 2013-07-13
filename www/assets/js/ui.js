@@ -396,6 +396,9 @@ else {
     });
 }
 
+/* custom footer */
+$("#sitefooter").load("footer.html");
+
 /* oh internet explorer, how I hate thee */
 $(":input:not(textarea)").keypress(function(ev) {
     return ev.keyCode != 13;
