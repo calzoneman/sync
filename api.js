@@ -34,12 +34,13 @@ var jsonHandlers = {
     "getprofile" : handleProfileGet,
     "setemail"   : handleEmailChange,
     "admreports" : handleAdmReports,
+    "readactionlog" : handleReadActionLog
 };
 
 function getClientIP(req) {
     var ip;
     var forward = req.header("x-forwarded-for");
-    if(forward) {
+    if(Config.REVERSE_PROXY && forward) {
         ip = forward.split(",")[0];
     }
     if(!ip) {
@@ -256,7 +257,7 @@ function handlePasswordReset(params, req, res) {
     var hash = false;
     try {
         hash = Database.generatePasswordReset(ip, name, email);
-        ActionLog.record(ip, name, "password-reset-generate");
+        ActionLog.record(ip, name, "password-reset-generate", email);
     }
     catch(e) {
         sendJSON(res, {
@@ -429,7 +430,7 @@ function handleEmailChange(params, req, res) {
     var row = Auth.login(name, pw);
     if(row) {
         var success = Database.setUserEmail(name, email);
-        ActionLog.record(getClientIP(req), name, "email-update", [email]);
+        ActionLog.record(getClientIP(req), name, "email-update", email);
         sendJSON(res, {
             success: success,
             error: success ? "" : "Email update failed",
@@ -447,6 +448,17 @@ function handleEmailChange(params, req, res) {
 function handleRegister(params, req, res) {
     var name = params.name || "";
     var pw = params.pw || "";
+    if(ActionLog.tooManyRegistrations(getClientIP(req))) {
+        ActionLog.record(getClientIP(req), name, "register-failure",
+            "Too many recent registrations from this IP");
+        sendJSON(res, {
+            success: false,
+            error: "Your IP address has registered several accounts in "+
+                   "the past 48 hours.  Please wait a while or ask an "+
+                   "administrator for assistance."
+        });
+        return;
+    }
 
     if(pw == "") {
         sendJSON(res, {
@@ -456,7 +468,8 @@ function handleRegister(params, req, res) {
         return;
     }
     else if(Auth.isRegistered(name)) {
-        ActionLog.record(getClientIP(req), name, "register-failure");
+        ActionLog.record(getClientIP(req), name, "register-failure",
+            "Name taken");
         sendJSON(res, {
             success: false,
             error: "That username is already taken"
@@ -464,7 +477,8 @@ function handleRegister(params, req, res) {
         return false;
     }
     else if(!Auth.validateName(name)) {
-        ActionLog.record(getClientIP(req), name, "register-failure");
+        ActionLog.record(getClientIP(req), name, "register-failure",
+            "Invalid name");
         sendJSON(res, {
             success: false,
             error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
@@ -493,6 +507,20 @@ function handleAdmReports(params, req, res) {
     sendJSON(res, {
         error: "Not implemented"
     });
+}
+
+function handleReadActionLog(params, req, res) {
+    var name = params.name || "";
+    var pw = params.pw || "";
+    var session = params.session || "";
+    var row = Auth.login(name, pw, session);
+    if(!row || row.global_rank < 255) {
+        res.send(403);
+        return;
+    }
+
+    var actions = ActionLog.readLog();
+    sendJSON(res, actions);
 }
 
 // Helper function
@@ -528,10 +556,6 @@ function handleReadLog(params, req, res) {
     }
     else if(type == "err") {
         pipeLast(res, "error.log", 1024*1024);
-    }
-    else if(type == "action") {
-        ActionLog.flush();
-        pipeLast(res, "action.log", 1024*1024*100);
     }
     else if(type == "channel") {
         var chan = params.channel || "";

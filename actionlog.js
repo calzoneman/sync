@@ -9,68 +9,95 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var fs = require("fs");
+var Database = require("./database");
 var Logger = require("./logger");
 
-var buffer = [];
-
 exports.record = function(ip, name, action, args) {
-    buffer.push(JSON.stringify({
-        ip: ip,
-        name: name,
-        action: action,
-        args: args ? args : [],
-        time: Date.now()
-    }));
-}
-
-exports.flush = function() {
-    if(buffer.length == 0)
-        return;
-    var text = buffer.join("\n") + "\n";
-    buffer = [];
-    fs.appendFile("action.log", text, function(err) {
-        if(err) {
-            errlog.log("Append to actionlog failed: ");
-            errlog.log(err);
+    if(typeof args === "undefined" || args === null) {
+        args = "";
+    } else {
+        try {
+            args = JSON.stringify(args);
+        } catch(e) {
+            args = "";
         }
-    });
+    }
+
+    var db = Database.getConnection();
+    if(!db)
+        return false;
+
+    var query = Database.createQuery(
+        "INSERT INTO actionlog (ip, name, action, args, time) "+
+        "VALUES (?, ?, ?, ?, ?)",
+        [ip, name, action, args, Date.now()]
+    );
+
+    var result = db.querySync(query);
+    if(!result) {
+        Logger.errlog.log("! Failed to record action");
+    }
+
+    return result;
 }
 
 exports.clear = function(actions) {
-    clearInterval(FLUSH_TMR);
-    var rs = fs.createReadStream("action.log");
-    var ws = fs.createWriteStream("action.log.tmp");
-    function handleLine(ln) {
-        try {
-            js = JSON.parse(ln);
-            if(actions.indexOf(js.action) == -1)
-                ws.write(ln + "\n");
-        }
-        catch(e) { }
+    var db = Database.getConnection();
+    if(!db)
+        return false;
+
+    var list = new Array(actions.length);
+    for(var i = 0; i < actions.length; i++)
+        list[i] = "?";
+
+    var query = Database.createQuery(
+        "DELETE FROM actionlog WHERE action IN ("+
+        list.join(",")+
+        ")",
+        actions
+    );
+
+    var result = db.querySync(query);
+    if(!result) {
+        Logger.errlog.log("! Failed to clear action log");
     }
-    var buffer = "";
-    rs.on("data", function(chunk) {
-        buffer += chunk;
-        if(buffer.indexOf("\n") != -1) {
-            var lines = buffer.split("\n");
-            buffer = lines[lines.length - 1];
-            lines.length = lines.length - 1;
-            lines.forEach(handleLine);
-        }
-    });
-    rs.on("end", function() {
-        handleLine(buffer);
-        ws.end();
-    });
-    try {
-        fs.renameSync("action.log.tmp", "action.log");
-    }
-    catch(e) {
-        Logger.errlog.log("Failed to move action.log.tmp => action.log");
-        Logger.errlog.log(e);
-    }
-    FLUSH_TMR = setInterval(exports.flush, 15000);
+
+    return result;
 }
 
-var FLUSH_TMR = setInterval(exports.flush, 15000);
+exports.tooManyRegistrations = function (ip) {
+    var db = Database.getConnection();
+    if(!db)
+        return true;
+
+    var query = Database.createQuery(
+        "SELECT * FROM actionlog WHERE ip=? AND action='register-success'"+
+        "AND time > ?",
+        [ip, Date.now() - 48 * 3600 * 1000]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to check tooManyRegistrations");
+        return true;
+    }
+
+    var rows = results.fetchAllSync();
+    // TODO Config value for this
+    return rows.length > 4;
+}
+
+exports.readLog = function () {
+    var db = Database.getConnection();
+    if(!db)
+        return false;
+
+    var query = "SELECT * FROM actionlog";
+    var result = db.querySync(query);
+    if(!result) {
+        Logger.errlog.log("! Failed to read action log");
+        return [];
+    }
+
+    return result.fetchAllSync();
+}

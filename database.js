@@ -187,6 +187,20 @@ function init() {
     if(!results) {
         Logger.errlog.log("! Failed to create aliases table");
     }
+
+    // Create action log table
+    query = ["CREATE TABLE IF NOT EXISTS `actionlog` (",
+                "`ip` VARCHAR(15) NOT NULL,",
+                "`name` VARCHAR(20) NOT NULL,",
+                "`action` VARCHAR(255) NOT NULL,",
+                "`args` TEXT NOT NULL,",
+                "`time` BIGINT NOT NULL,",
+                "PRIMARY KEY (`ip`, `time`), INDEX (`action`))",
+             "ENGINE = MyISAM;"].join("");
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create actionlog table");
+    }
 }
 
 /* REGION Global Bans */

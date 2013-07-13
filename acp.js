@@ -18,7 +18,7 @@ module.exports = {
     init: function(user) {
         ActionLog.record(user.ip, user.name, "acp-init");
         user.socket.on("acp-announce", function(data) {
-            ActionLog.record(user.ip, user.name, "acp-announce", [data]);
+            ActionLog.record(user.ip, user.name, "acp-announce", data);
             Server.announcement = data;
             Server.io.sockets.emit("announcement", data);
         });
@@ -29,13 +29,13 @@ module.exports = {
         });
 
         user.socket.on("acp-global-ban", function(data) {
-            ActionLog.record(user.ip, user.name, "acp-global-ban", [data.ip]);
+            ActionLog.record(user.ip, user.name, "acp-global-ban", data.ip);
             Database.globalBanIP(data.ip, data.note);
             user.socket.emit("acp-global-banlist", Database.refreshGlobalBans());
         });
 
         user.socket.on("acp-global-unban", function(ip) {
-            ActionLog.record(user.ip, user.name, "acp-global-unban", [ip]);
+            ActionLog.record(user.ip, user.name, "acp-global-unban", ip);
             Database.globalUnbanIP(ip);
             user.socket.emit("acp-global-banlist", Database.refreshGlobalBans());
         });
@@ -66,7 +66,7 @@ module.exports = {
                 return;
             try {
                 var hash = Database.generatePasswordReset(user.ip, data.name, data.email);
-                ActionLog.record(user.ip, user.name, "acp-reset-password", [data.name]);
+                ActionLog.record(user.ip, user.name, "acp-reset-password", data.name);
             }
             catch(e) {
                 user.socket.emit("acp-reset-password", {
@@ -101,7 +101,7 @@ module.exports = {
             if(!db)
                 return;
 
-            ActionLog.record(user.ip, user.name, "acp-set-rank", [data]);
+            ActionLog.record(user.ip, user.name, "acp-set-rank", data);
             var query = Database.createQuery(
                 "UPDATE registrations SET global_rank=? WHERE uname=?",
                 [data.rank, data.name]

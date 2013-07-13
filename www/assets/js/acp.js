@@ -142,18 +142,13 @@ function getErrlog() {
 }
 $("#errlog").click(getErrlog);
 function getActionLog() {
-    $.ajax(WEB_URL+"/api/plain/readlog?type=action&"+AUTH).done(function(data) {
-        var entries = [];
+    $.getJSON(WEB_URL+"/api/json/readactionlog?"+AUTH+"&callback=?").done(function(data) {
+        var entries = data;
         var actions = [];
-        data.split("\n").forEach(function(ln) {
-            var entry;
-            try {
-                entry = JSON.parse(ln);
-                if(actions.indexOf(entry.action) == -1)
-                    actions.push(entry.action);
-                entries.push(entry);
-            }
-            catch(e) { }
+        entries.forEach(function (e) {
+            if(actions.indexOf(e.action) == -1)
+                actions.push(e.action);
+            e.time = parseInt(e.time);
         });
         var tbl = $("#actionlog table");
         tbl.data("sortby", "time");
@@ -165,8 +160,8 @@ function getActionLog() {
             $("<td/>").text(e.ip).appendTo(tr);
             $("<td/>").text(e.name).appendTo(tr);
             $("<td/>").text(e.action).appendTo(tr);
-            $("<td/>").text(e.args.join(", ")).appendTo(tr);
-            $("<td/>").text(new Date(e.time).toTimeString()).appendTo(tr);
+            $("<td/>").text(e.args).appendTo(tr);
+            $("<td/>").text(new Date(e.time).toString()).appendTo(tr);
         });
         $("#actionlog table").data("entries", entries);
         $("#actionlog_filter").html("");
