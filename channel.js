@@ -980,6 +980,8 @@ Channel.prototype.broadcastDrinks = function() {
 Channel.prototype.onVideoChange = function () {
     this.voteskip = false;
     this.broadcastVoteskipUpdate();
+    this.drinks = 0;
+    this.broadcastDrinks();
 }
 
 // The server autolead function
