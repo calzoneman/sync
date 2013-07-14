@@ -275,6 +275,13 @@ function handlePasswordReset(params, req, res) {
         });
         return;
     }
+    if(!email) {
+        sendJSON(res, {
+            success: false,
+            error: "You don't have a recovery email address set.  Contact an administrator"
+        });
+        return;
+    }
     var msg = [
         "A password reset request was issued for your account `",
         name,

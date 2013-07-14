@@ -16,72 +16,47 @@ var Media = require("./media.js").Media;
 
 // Helper function for making an HTTP request and getting the result
 // as JSON
+function getJSONInternal(transport, options, callback) {
+    var req = transport.request(options, function(res) {
+        var buffer = "";
+        res.setEncoding("utf8");
+        res.on("data", function (chunk) {
+            buffer += chunk;
+        });
+        res.on("end", function() {
+            try {
+                var data = JSON.parse(buffer);
+            }
+            catch(e) {
+                var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
+                if(m === null)
+                    m = buffer.match(/<code>([^<]+)<\/code>/);
+                if(m === null)
+                    m = buffer.match(/([0-9]+ not found)/);
+                Logger.errlog.log("Media request failed: "+options.host+options.path);
+                if(m) {
+                    Logger.errlog.log("Reason: " + m[1]);
+                    callback(m[1], res.statusCode, null);
+                }
+                else {
+                    callback(true, res.statusCode, null);
+                }
+                return;
+            }
+            callback(false, res.statusCode, data);
+        });
+    });
+
+    req.end();
+};
+
 function getJSON(options, callback) {
-    var req = http.request(options, function(res) {
-        var buffer = "";
-        res.setEncoding("utf8");
-        res.on("data", function (chunk) {
-            buffer += chunk;
-        });
-        res.on("end", function() {
-            try {
-                var data = JSON.parse(buffer);
-            }
-            catch(e) {
-                Logger.errlog.log("JSON fail: " + options.path);
-                var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
-                if(m === null)
-                    m = buffer.match(/<code>([^<]+)<\/code>/);
-                if(m === null)
-                    m = buffer.match(/([0-9]+ not found)/);
-                if(m) {
-                    callback(m[1], res.statusCode, null);
-                }
-                else {
-                    callback(true, res.statusCode, null);
-                }
-                return;
-            }
-            callback(false, res.statusCode, data);
-        });
-    });
+    getJSONInternal(http, options, callback);
+}
 
-    req.end();
-};
-
-// Dailymotion uses HTTPS for anonymous requests... [](/picard)
 function getJSONHTTPS(options, callback) {
-    var req = https.request(options, function(res) {
-        var buffer = "";
-        res.setEncoding("utf8");
-        res.on("data", function (chunk) {
-            buffer += chunk;
-        });
-        res.on("end", function() {
-            try {
-                var data = JSON.parse(buffer);
-            }
-            catch(e) {
-                Logger.errlog.log("JSON fail: " + options.path);
-                var m = buffer.match(/<internalReason>([^<]+)<\/internalReason>/);
-                if(m === null)
-                    m = buffer.match(/<code>([^<]+)<\/code>/);
-                if(m === null)
-                    m = buffer.match(/([0-9]+ not found)/);
-                if(m) {
-                    callback(m[1], res.statusCode, null);
-                }
-                else {
-                    callback(true, res.statusCode, null);
-                }
-                return;
-            }
-            callback(false, res.statusCode, data);
-        });
-    });
-
-    req.end();
-};
+    getJSONInternal(https, options, callback);
+}
 
 // Look up YouTube metadata
 // Fairly straightforward
