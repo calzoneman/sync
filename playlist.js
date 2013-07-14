@@ -124,6 +124,10 @@ Playlist.prototype.die = function () {
         clearInterval(this._leadInterval);
         this._leadInterval = false;
     }
+    if(this._qaInterval) {
+        clearInterval(this._qaInterval);
+        this._qaInterval = false;
+    }
     for(var key in this)
         delete this[key];
 }
