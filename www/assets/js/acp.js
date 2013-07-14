@@ -1,5 +1,6 @@
 var BASE = WEB_URL + "/api/json/";
 var AUTH = "";
+var NO_WEBSOCKETS = false;
 
 /* init socket connection */
 $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
