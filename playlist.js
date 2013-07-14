@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ULList = require("./ullist").ULList;
 var Media = require("./media").Media;
 var InfoGetter = require("./get-info");
+var AllPlaylists = {};
 
 function PlaylistItem(media, uid) {
     this.media = media;
@@ -32,6 +33,11 @@ PlaylistItem.prototype.pack = function() {
 }
 
 function Playlist(chan) {
+    if(chan.name in AllPlaylists && AllPlaylists[chan.name]) {
+        var pl = AllPlaylists[chan.name];
+        if("_leadInterval" in pl)
+            pl.die();
+    }
     this.items = new ULList();
     this.current = null;
     this.next_uid = 0;
@@ -47,31 +53,20 @@ function Playlist(chan) {
     this.lock = false;
     this.action_queue = [];
     this._qaInterval = false;
+    AllPlaylists[chan.name] = this;
 
     if(chan) {
         this.channel = chan;
         var pl = this;
         this.on("mediaUpdate", function(m) {
-            if(chan != pl.channel) {
-                pl.die();
-                return;
-            }
             chan.sendAll("mediaUpdate", m.timeupdate());
         });
         this.on("changeMedia", function(m) {
-            if(chan != pl.channel) {
-                pl.die();
-                return;
-            }
             chan.onVideoChange();
             chan.sendAll("setCurrent", pl.current.uid);
             chan.sendAll("changeMedia", m.fullupdate());
         });
         this.on("remove", function(item) {
-            if(chan != pl.channel) {
-                pl.die();
-                return;
-            }
             chan.broadcastPlaylistMeta();
             chan.sendAll("delete", {
                 uid: item.uid
@@ -129,6 +124,8 @@ Playlist.prototype.die = function () {
         clearInterval(this._leadInterval);
         this._leadInterval = false;
     }
+    for(var key in this)
+        delete this[key];
 }
 
 Playlist.prototype.load = function(data, callback) {

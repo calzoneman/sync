@@ -131,11 +131,11 @@ function handleChannelData(params, req, res) {
         }
         var d = {
             name: cname,
-            loaded: (cname in Server.channels)
+            loaded: Server.getChannel(cname) !== undefined
         };
 
         if(d.loaded) {
-            var chan = Server.channels[cname];
+            var chan = Server.getChannel(cname);
             d.pagetitle = chan.opts.pagetitle;
             d.media = chan.playlist.current ? chan.playlist.current.media.pack() : {};
             d.usercount = chan.users.length;
@@ -158,9 +158,10 @@ function handleChannelData(params, req, res) {
 
 function handleChannelList(params, req, res) {
     if(params.filter == "public") {
+        var all = Server.getAllChannels();
         var clist = [];
-        for(var key in Server.channels) {
-            if(Server.channels[key].opts.show_public) {
+        for(var key in all) {
+            if(all[key].opts.show_public) {
                 clist.push(key);
             }
         }
@@ -175,7 +176,7 @@ function handleChannelList(params, req, res) {
         return;
     }
     var clist = [];
-    for(var key in Server.channels) {
+    for(var key in Server.getAllChannels()) {
         clist.push(key);
     }
     handleChannelData({channel: clist.join(",")}, req, res);
@@ -385,8 +386,9 @@ function handleProfileChange(params, req, res) {
         error: result ? "" : "Internal error.  Contact an administrator"
     });
 
-    for(var n in Server.channels) {
-        var chan = Server.channels[n];
+    var all = Server.getAllChannels();
+    for(var n in all) {
+        var chan = all[n];
         for(var i = 0; i < chan.users.length; i++) {
             if(chan.users[i].name.toLowerCase() == name) {
                 chan.users[i].profile = {

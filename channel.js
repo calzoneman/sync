@@ -650,6 +650,7 @@ Channel.prototype.userLeave = function(user) {
     this.logger.log("--- /" + user.ip + " (" + user.name + ") left");
     if(this.users.length == 0) {
         this.logger.log("*** Channel empty, unloading");
+        var name = this.name;
         Server.unload(this);
     }
 }

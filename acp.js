@@ -116,8 +116,9 @@ module.exports = {
 
         user.socket.on("acp-list-loaded", function() {
             var chans = [];
-            for(var c in Server.channels) {
-                var chan = Server.channels[c];
+            var all = Server.getAllChannels();
+            for(var c in all) {
+                var chan = all[c];
                 if(!chan)
                     continue;
 
@@ -135,8 +136,8 @@ module.exports = {
         });
 
         user.socket.on("acp-channel-unload", function(data) {
-            if(data.name in Server.channels) {
-                var c = Server.channels[data.name];
+            if(Server.getChannel(data.name) !== undefined) {
+                var c = Server.getChannel(data.name);
                 if(!c)
                     return;
                 ActionLog.record(user.ip, user.name, "acp-channel-unload");
@@ -144,7 +145,12 @@ module.exports = {
                 c.users.forEach(function(u) {
                     c.kick(u, "Channel shutting down");
                 });
-                Server.unload(c);
+
+                // At this point c should be unloaded
+                // if it's still loaded, kill it
+                c = Server.getChannel(data.name);
+                if(c !== undefined)
+                    Server.unload(c);
             }
         });
 

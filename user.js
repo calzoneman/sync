@@ -97,15 +97,7 @@ User.prototype.initCallbacks = function() {
         if(data.name.length > 100)
             return;
         data.name = data.name.toLowerCase();
-        // Channel already loaded
-        if(data.name in Server.channels && Server.channels[data.name] != null) {
-            this.channel = Server.channels[data.name];
-        }
-        // Channel not loaded
-        else {
-            Server.channels[data.name] = new Channel(data.name);
-            this.channel = Server.channels[data.name];
-        }
+        this.channel = Server.getOrCreateChannel(data.name);
         if(this.loggedIn) {
             var chanrank = this.channel.getRank(this.name);
             if(chanrank > this.rank) {
