@@ -210,7 +210,7 @@ exports.getOrCreateChannel = function (name) {
         return chan;
     else if(chan !== undefined && chan.name === undefined) {
         Logger.errlog.log("Empty channel still loaded: ", name);
-        delete exports.channels[name];
+        delete channels[name];
     }
     return exports.createChannel(name);
 }
