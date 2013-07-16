@@ -59,8 +59,8 @@ var Server = {
                 break;
             }
         }
-        for(var i in chan)
-            delete chan[i];
+        //for(var i in chan)
+        //    delete chan[i];
     },
     app: null,
     io: null,

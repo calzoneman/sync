@@ -128,8 +128,8 @@ Playlist.prototype.die = function () {
         clearInterval(this._qaInterval);
         this._qaInterval = false;
     }
-    for(var key in this)
-        delete this[key];
+    //for(var key in this)
+    //    delete this[key];
     this.dead = true;
 }
 
