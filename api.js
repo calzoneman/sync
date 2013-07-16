@@ -145,7 +145,7 @@ module.exports = function (Server) {
                 var clist = [];
                 for(var key in all) {
                     if(all[key].opts.show_public) {
-                        clist.push(key);
+                        clist.push(all[key].name);
                     }
                 }
                 this.handleChannelData({channel: clist.join(",")}, req, res);
