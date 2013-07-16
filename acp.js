@@ -160,6 +160,16 @@ module.exports = function (Server) {
                 ActionLog.clearOne(data);
                 ActionLog.record(user.ip, user.name, "acp-actionlog-clear-one", data);
             });
+
+            user.socket.on("acp-view-stats", function () {
+                var db = Server.db.getConnection();
+                if(!db)
+                    return;
+                var query = "SELECT * FROM stats WHERE 1";
+                var results = db.querySync(query);
+                if(results)
+                    user.socket.emit("acp-view-stats", results.fetchAllSync());
+            });
         }
     }
 }

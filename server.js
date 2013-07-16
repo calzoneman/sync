@@ -62,6 +62,7 @@ var Server = {
         //for(var i in chan)
         //    delete chan[i];
     },
+    stats: null,
     app: null,
     io: null,
     httpserv: null,
@@ -147,6 +148,9 @@ var Server = {
 
         // init ACP
         this.acp = require("./acp")(this);
+
+        // init stats
+        this.stats = require("./stats")(this);
     },
     shutdown: function () {
         Logger.syslog.log("Unloading channels");

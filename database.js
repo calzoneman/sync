@@ -201,6 +201,19 @@ function init() {
     if(!results) {
         Logger.errlog.log("! Failed to create actionlog table");
     }
+
+    // Create stats table
+    query = ["CREATE TABLE IF NOT EXISTS `stats` (",
+                "`time` BIGINT NOT NULL,",
+                "`usercount` INT NOT NULL,",
+                "`chancount` INT NOT NULL,",
+                "`mem` INT NOT NULL,",
+                "PRIMARY KEY (`time`))",
+             "ENGINE = MyISAM;"].join("");
+    results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to create stats table");
+    }
 }
 
 /* REGION Global Bans */

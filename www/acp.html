@@ -44,6 +44,7 @@
                       <li id="li_userlookup"><a href="javascript:void(0)" id="show_userlookup">Users</a></li>
                       <li id="li_chanloaded"><a href="javascript:void(0)" id="show_chanloaded">Loaded Channels</a></li>
                       <li id="li_actionlog"><a href="javascript:void(0)" id="show_actionlog">Action Log</a></li>
+                      <li id="li_stats"><a href="javascript:void(0)" id="show_stats">Server Stats</a></li>
                   </ul>
               </li>
             </ul>
@@ -219,6 +220,14 @@
                     </thead>
                 </table>
             </div>
+            <div class="span12" id="stats">
+                <h3>User Count</h3>
+                <canvas id="stat_users" width="1170" height="400"></canvas>
+                <h3>Channel Count</h3>
+                <canvas id="stat_channels" width="1170" height="400"></canvas>
+                <h3>Memory Usage (MB)</h3>
+                <canvas id="stat_mem" width="1170" height="400"></canvas>
+            </div>
         </div>
     </div>
     </div>
@@ -240,6 +249,7 @@
     <script src="./assets/js/bootstrap.js"></script>
     <script src="./assets/js/bootstrap-transition.js"></script>
     <script src="./assets/js/bootstrap-modal.js"></script>
+    <script src="./assets/js/chart.js"></script>
 
     <!-- Mine -->
     <script src="./assets/js/iourl.js"></script>

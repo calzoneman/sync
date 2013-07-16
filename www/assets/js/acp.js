@@ -169,6 +169,11 @@ $("#actionlog_time").click(function() {
     tableResort($("#actionlog table"), "time");
 });
 
+menuHandler("#show_stats", "#stats");
+$("#show_stats").click(function () {
+    socket.emit("acp-view-stats");
+});
+
 function reverseLog() {
     $("#log").text($("#log").text().split("\n").reverse().join("\n"));
 }
@@ -492,6 +497,72 @@ function setupCallbacks() {
         $("<td/>").appendTo(tr);
     });
 
+    socket.on("acp-view-stats", function (stats) {
+        var labels = [];
+        var ucounts = [];
+        var ccounts = [];
+        var mcounts = [];
+        var lastdate = "";
+        stats.forEach(function (s) {
+            var d = new Date(parseInt(s.time));
+            var t = "";
+            if(d.toDateString() !== lastdate) {
+                lastdate = d.toDateString();
+                t = d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+                t += " " + d.toTimeString().split(" ")[0];
+            }
+            else {
+                t = d.toTimeString().split(" ")[0];
+            }
+            labels.push(t);
+            ucounts.push(s.usercount);
+            ccounts.push(s.chancount);
+            mcounts.push(s.mem / 1000000);
+        });
+
+        var user_data = {
+            labels: labels,
+            datasets: [
+                {
+                    fillColor: "rgba(151, 187, 205, 0.5)",
+                    strokeColor: "rgba(151, 187, 205, 1)",
+                    pointColor: "rgba(151, 187, 205, 1)",
+                    pointStrokeColor: "#fff",
+                    data: ucounts
+                }
+            ]
+        };
+
+        var chan_data = {
+            labels: labels,
+            datasets: [
+                {
+                    fillColor: "rgba(151, 187, 205, 0.5)",
+                    strokeColor: "rgba(151, 187, 205, 1)",
+                    pointColor: "rgba(151, 187, 205, 1)",
+                    pointStrokeColor: "#fff",
+                    data: ccounts
+                }
+            ]
+        };
+
+        var mem_data = {
+            labels: labels,
+            datasets: [
+                {
+                    fillColor: "rgba(151, 187, 205, 0.5)",
+                    strokeColor: "rgba(151, 187, 205, 1)",
+                    pointColor: "rgba(151, 187, 205, 1)",
+                    pointStrokeColor: "#fff",
+                    data: mcounts
+                }
+            ]
+        };
+
+        new Chart($("#stat_users")[0].getContext("2d")).Line(user_data);
+        new Chart($("#stat_channels")[0].getContext("2d")).Line(chan_data);
+        new Chart($("#stat_mem")[0].getContext("2d")).Line(mem_data);
+    });
 }
 
 /* cookie util */
