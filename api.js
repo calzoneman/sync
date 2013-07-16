@@ -160,7 +160,7 @@ module.exports = function (Server) {
             }
             var clist = [];
             for(var key in Server.channels) {
-                clist.push(key);
+                clist.push(Server.channels[key].name);
             }
             handleChannelData({channel: clist.join(",")}, req, res);
         },
