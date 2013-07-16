@@ -115,14 +115,14 @@ module.exports = function (Server) {
 
             user.socket.on("acp-list-loaded", function() {
                 var chans = [];
-                var all = Server.getAllChannels();
+                var all = Server.channels;
                 for(var c in all) {
                     var chan = all[c];
                     if(!chan)
                         continue;
 
                     chans.push({
-                        name: c,
+                        name: chan.name,
                         title: chan.opts.pagetitle,
                         usercount: chan.users.length,
                         mediatitle: chan.playlist.current ? chan.playlist.current.media.title : "-",

@@ -84,7 +84,7 @@ var Server = {
         this.api = require("./api")(this);
         this.app.get("/api/:apireq(*)", function (req, res, next) {
             this.api.handle(req.url.substring(5), req, res);
-        });
+        }.bind(this));
 
         // default path
         this.app.get("/:thing(*)", function (req, res, next) {
@@ -121,7 +121,7 @@ var Server = {
 
             socket.on("disconnect", function () {
                 this.ips[ip]--;
-            });
+            }.bind(this));
 
             if(!(ip in this.ips))
                 this.ips[ip] = 0;

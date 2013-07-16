@@ -35,6 +35,11 @@ function getJSONInternal(transport, options, callback) {
                     m = buffer.match(/([0-9]+ not found)/);
                 Logger.errlog.log("Media request failed: "+options.host+options.path);
                 if(m) {
+                    if(m[1] === "too_many_recent_calls") {
+                        m[1] = "YouTube is throttling the server right "+
+                               "now for making too many requests.  "+
+                               "Please try again in a moment.";
+                    }
                     Logger.errlog.log("Reason: " + m[1]);
                     callback(m[1], res.statusCode, null);
                 }

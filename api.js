@@ -28,26 +28,10 @@ function getIP(req) {
 }
 
 module.exports = function (Server) {
-    return {
-        plainHandlers: {
-            "readlog"    : this.handleReadLog
-        },
+    var API = function () {
 
-        jsonHandlers: {
-            "channeldata"   : this.handleChannelData,
-            "listloaded"    : this.handleChannelList,
-            "login"         : this.handleLogin,
-            "register"      : this.handleRegister,
-            "changepass"    : this.handlePasswordChange,
-            "resetpass"     : this.handlePasswordReset,
-            "recoverpw"     : this.handlePasswordRecover,
-            "setprofile"    : this.handleProfileChange,
-            "getprofile"    : this.handleProfileGet,
-            "setemail"      : this.handleEmailChange,
-            "admreports"    : this.handleAdmReports,
-            "readactionlog" : this.handleReadActionLog
-        },
-
+    }
+    API.prototype = {
         handle: function (path, req, res) {
             var parts = path.split("/");
             var last = parts[parts.length - 1];
@@ -576,11 +560,34 @@ module.exports = function (Server) {
                     else {
                         res.send(404);
                     }
-                });
+                }.bind(this));
             }
             else {
                 res.send(400);
             }
         }
     };
+
+    var api = new API();
+
+    api.plainHandlers = {
+        "readlog"    : api.handleReadLog.bind(api)
+    };
+
+    api.jsonHandlers = {
+        "channeldata"   : api.handleChannelData.bind(api),
+        "listloaded"    : api.handleChannelList.bind(api),
+        "login"         : api.handleLogin.bind(api),
+        "register"      : api.handleRegister.bind(api),
+        "changepass"    : api.handlePasswordChange.bind(api),
+        "resetpass"     : api.handlePasswordReset.bind(api),
+        "recoverpw"     : api.handlePasswordRecover.bind(api),
+        "setprofile"    : api.handleProfileChange.bind(api),
+        "getprofile"    : api.handleProfileGet.bind(api),
+        "setemail"      : api.handleEmailChange.bind(api),
+        "admreports"    : api.handleAdmReports.bind(api),
+        "readactionlog" : api.handleReadActionLog.bind(api)
+    };
+
+    return api;
 }

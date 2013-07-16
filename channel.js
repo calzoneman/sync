@@ -647,8 +647,7 @@ Channel.prototype.userLeave = function(user) {
     this.logger.log("--- /" + user.ip + " (" + user.name + ") left");
     if(this.users.length == 0) {
         this.logger.log("*** Channel empty, unloading");
-        var name = this.name;
-        this.server.unload(this);
+        this.server.unloadChannel(this);
     }
 }
 
@@ -1203,6 +1202,10 @@ Channel.prototype.tryQueue = function(user, data) {
 }
 
 Channel.prototype.addMedia = function(data, user) {
+    if(data.type === "yp" && !this.hasPermission(user, "playlistaddlist")) {
+        user.socket.emit("queueFail", "You don't have permission to add playlists");
+        return;
+    }
     data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
     data.maxlength = this.hasPermission(user, "exceedmaxlength") ? 0 : this.opts.maxlength;
     var chan = this;

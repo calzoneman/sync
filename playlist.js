@@ -35,7 +35,7 @@ PlaylistItem.prototype.pack = function() {
 function Playlist(chan) {
     if(chan.name in AllPlaylists && AllPlaylists[chan.name]) {
         var pl = AllPlaylists[chan.name];
-        if("_leadInterval" in pl)
+        if(!pl.dead)
             pl.die();
     }
     this.items = new ULList();
@@ -130,6 +130,7 @@ Playlist.prototype.die = function () {
     }
     for(var key in this)
         delete this[key];
+    this.dead = true;
 }
 
 Playlist.prototype.load = function(data, callback) {
@@ -272,6 +273,8 @@ Playlist.prototype.addMediaList = function(data, callback) {
         var x = data.list[i];
         (function(i, x) {
             setTimeout(function() {
+                if(pl.dead)
+                    return;
                 x.queueby = data.queueby;
                 x.pos = data.pos;
                 if(start && x == start) {
@@ -310,7 +313,14 @@ Playlist.prototype.addYouTubePlaylist = function(data, callback) {
             return;
         }
 
+        if(data.pos === "next")
+            vids.reverse();
+
         vids.forEach(function(media) {
+            if(data.maxlength && media.seconds > data.maxlength) {
+                callback("Media is too long!", null);
+                return;
+            }
             var it = pl.makeItem(media);
             it.temp = data.temp;
             it.queueby = data.queueby;
