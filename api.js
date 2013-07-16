@@ -148,7 +148,7 @@ module.exports = function (Server) {
                         clist.push(key);
                     }
                 }
-                handleChannelData({channel: clist.join(",")}, req, res);
+                this.handleChannelData({channel: clist.join(",")}, req, res);
             }
             var session = params.session || "";
             var name = params.name || "";
