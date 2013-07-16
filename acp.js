@@ -118,8 +118,6 @@ module.exports = function (Server) {
                 var all = Server.channels;
                 for(var c in all) {
                     var chan = all[c];
-                    if(!chan)
-                        continue;
 
                     chans.push({
                         name: chan.name,

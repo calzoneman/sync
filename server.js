@@ -34,14 +34,14 @@ var Server = {
     channels: [],
     channelLoaded: function (name) {
         for(var i in this.channels) {
-            if(this.channels[i].name == name)
+            if(this.channels[i].name.toLowerCase() == name.toLowerCase())
                 return true;
         }
         return false;
     },
     getChannel: function (name) {
         for(var i in this.channels) {
-            if(this.channels[i].name == name)
+            if(this.channels[i].name.toLowerCase() == name.toLowerCase())
                 return this.channels[i];
         }
 
@@ -54,7 +54,7 @@ var Server = {
             chan.saveDump();
         chan.playlist.die();
         for(var i in this.channels) {
-            if(this.channels[i].name == chan.name) {
+            if(this.channels[i].name.toLowerCase() == chan.name.toLowerCase()) {
                 this.channels.splice(i, 1);
                 break;
             }

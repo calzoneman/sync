@@ -162,7 +162,7 @@ module.exports = function (Server) {
             for(var key in Server.channels) {
                 clist.push(Server.channels[key].name);
             }
-            handleChannelData({channel: clist.join(",")}, req, res);
+            this.handleChannelData({channel: clist.join(",")}, req, res);
         },
 
         handleLogin: function (params, req, res) {
