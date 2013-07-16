@@ -68,6 +68,7 @@ var Server = {
     ioserv: null,
     db: null,
     ips: {},
+    acp: null,
     init: function () {
         this.app = express();
         // channel path
@@ -137,12 +138,15 @@ var Server = {
             // finally a valid user
             Logger.syslog.log("Accepted socket from /" + socket._ip);
             new User(socket, this);
-        });
+        }.bind(this));
 
         // init database
         this.db = require("./database");
         this.db.setup(Config);
         this.db.init();
+
+        // init ACP
+        this.acp = require("./acp")(this);
     },
     shutdown: function () {
         Logger.syslog.log("Unloading channels");
@@ -165,5 +169,5 @@ if(!Config.DEBUG) {
     });
 
     process.on("exit", Server.shutdown);
-    process.on("SIGINT", Server.shutdown);
+    process.on("SIGINT", function () { process.exit(0); });
 }

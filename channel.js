@@ -11,15 +11,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 var fs = require("fs");
-var Database = require("./database.js");
 var Poll = require("./poll.js").Poll;
 var Media = require("./media.js").Media;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
 var InfoGetter = require("./get-info.js");
-var Server = require("./server.js");
-var io = Server.io;
-var NWS = require("./notwebsocket");
 var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
@@ -28,9 +24,10 @@ var ActionLog = require("./actionlog");
 var Playlist = require("./playlist");
 var sanitize = require("validator").sanitize;
 
-var Channel = function(name) {
+var Channel = function(name, Server) {
     Logger.syslog.log("Opening channel " + name);
     this.initialized = false;
+    this.server = Server;
 
     this.name = name;
     // Initialize defaults
@@ -118,7 +115,7 @@ var Channel = function(name) {
         this.ipkey += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[parseInt(Math.random() * 65)]
     }
 
-    Database.loadChannel(this);
+    Server.db.loadChannel(this);
     if(this.registered) {
         this.loadDump();
     }
@@ -303,7 +300,7 @@ Channel.prototype.tryRegister = function(user) {
         });
     }
     else {
-        if(Database.registerChannel(this.name, user.name)) {
+        if(this.server.db.registerChannel(this.name, user.name)) {
             ActionLog.record(user.ip, user.name, "channel-register-success", this.name);
             this.registered = true;
             this.initialized = true;
@@ -325,7 +322,7 @@ Channel.prototype.tryRegister = function(user) {
 }
 
 Channel.prototype.unregister = function() {
-    if(Database.deleteChannel(this.name)) {
+    if(this.server.db.deleteChannel(this.name)) {
         this.registered = false;
         return true;
     }
@@ -337,23 +334,23 @@ Channel.prototype.getRank = function(name) {
     if(!this.registered) {
         return global;
     }
-    var local = Database.getChannelRank(this.name, name);
+    var local = this.server.db.getChannelRank(this.name, name);
     return local > global ? local : global;
 }
 
 Channel.prototype.saveRank = function(user) {
-    return Database.setChannelRank(this.name, user.name, user.rank);
+    return this.server.db.setChannelRank(this.name, user.name, user.rank);
 }
 
 Channel.prototype.getIPRank = function(ip) {
     var names = [];
     if(!(ip in this.ip_alias))
-        this.ip_alias[ip] = Database.getAliases(ip);
+        this.ip_alias[ip] = this.server.db.getAliases(ip);
     this.ip_alias[ip].forEach(function(name) {
         names.push(name);
     });
 
-    var ranks = Database.getChannelRank(this.name, names);
+    var ranks = this.server.db.getChannelRank(this.name, names);
     var rank = 0;
     for(var i = 0; i < ranks.length; i++) {
         rank = (ranks[i] > rank) ? ranks[i] : rank;
@@ -369,7 +366,7 @@ Channel.prototype.cacheMedia = function(media) {
     }
     this.library[media.id] = media;
     if(this.registered) {
-        return Database.addToLibrary(this.name, media);
+        return this.server.db.addToLibrary(this.name, media);
     }
     return false;
 }
@@ -403,7 +400,7 @@ Channel.prototype.tryNameBan = function(actor, name) {
         return false;
     }
 
-    return Database.channelBan(this.name, "*", name, actor.name);
+    return this.server.db.channelBan(this.name, "*", name, actor.name);
 }
 
 Channel.prototype.unbanName = function(actor, name) {
@@ -419,7 +416,7 @@ Channel.prototype.unbanName = function(actor, name) {
     this.users.forEach(function(u) {
         chan.sendBanlist(u);
     });
-    return Database.channelUnbanName(this.name, name);
+    return this.server.db.channelUnbanName(this.name, name);
 }
 
 Channel.prototype.tryIPBan = function(actor, name, range) {
@@ -429,7 +426,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
     if(typeof name != "string") {
         return false;
     }
-    var ips = Database.ipForName(name);
+    var ips = this.server.db.ipForName(name);
     var chan = this;
     ips.forEach(function(ip) {
         if(chan.getIPRank(ip) >= actor.rank) {
@@ -461,7 +458,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
             return false;
 
         // Update database ban table
-        return Database.channelBan(chan.name, ip, name, actor.name);
+        return this.server.db.channelBan(chan.name, ip, name, actor.name);
     });
 
     var chan = this;
@@ -488,7 +485,7 @@ Channel.prototype.banIP = function(actor, receiver) {
         return false;
 
     // Update database ban table
-    return Database.channelBanIP(this.name, receiver.ip, receiver.name, actor.name);
+    return this.server.db.channelBanIP(this.name, receiver.ip, receiver.name, actor.name);
 }
 
 Channel.prototype.unbanIP = function(actor, ip) {
@@ -506,7 +503,7 @@ Channel.prototype.unbanIP = function(actor, ip) {
 
     //this.broadcastBanlist();
     // Update database ban table
-    return Database.channelUnbanIP(this.name, ip);
+    return this.server.db.channelUnbanIP(this.name, ip);
 }
 
 Channel.prototype.tryUnban = function(actor, data) {
@@ -651,7 +648,7 @@ Channel.prototype.userLeave = function(user) {
     if(this.users.length == 0) {
         this.logger.log("*** Channel empty, unloading");
         var name = this.name;
-        Server.unload(this);
+        this.server.unload(this);
     }
 }
 
@@ -733,7 +730,7 @@ Channel.prototype.sendRankStuff = function(user) {
 
 Channel.prototype.sendChannelRanks = function(user) {
     if(Rank.hasPermission(user, "acl")) {
-        user.socket.emit("channelRanks", Database.listChannelRanks(this.name));
+        user.socket.emit("channelRanks", this.server.db.listChannelRanks(this.name));
     }
 }
 
@@ -777,8 +774,7 @@ Channel.prototype.sendRecentChat = function(user) {
 /* REGION Broadcasts to all clients */
 
 Channel.prototype.sendAll = function(message, data) {
-    io.sockets.in(this.name).emit(message, data);
-    NWS.inRoom(this.name).emit(message, data);
+    this.server.io.sockets.in(this.name).emit(message, data);
 }
 
 Channel.prototype.sendAllWithPermission = function(perm, msg, data) {
@@ -811,7 +807,7 @@ Channel.prototype.broadcastUsercount = function() {
 }
 
 Channel.prototype.broadcastNewUser = function(user) {
-    var aliases = Database.getAliases(user.ip);
+    var aliases = this.server.db.getAliases(user.ip);
     var chan = this;
     this.ip_alias[user.ip] = aliases;
     aliases.forEach(function(alias) {
@@ -939,7 +935,7 @@ Channel.prototype.broadcastBanlist = function() {
 }
 
 Channel.prototype.broadcastRankTable = function() {
-    var ranks = Database.listChannelRanks(this.name);
+    var ranks = this.server.db.listChannelRanks(this.name);
     for(var i = 0; i < this.users.length; i++) {
         this.sendACL(this.users[i]);
     }
@@ -1299,7 +1295,7 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
         return;
     }
 
-    var pl = Database.loadUserPlaylist(user.name, data.name);
+    var pl = this.server.db.loadUserPlaylist(user.name, data.name);
     data.list = pl;
     data.queueby = user.name;
     this.addMediaList(data, user);
@@ -1362,7 +1358,7 @@ Channel.prototype.tryUncache = function(user, data) {
     if(typeof data.id != "string") {
         return;
     }
-    if(Database.removeFromLibrary(this.name, data.id)) {
+    if(this.server.db.removeFromLibrary(this.name, data.id)) {
         delete this.library[data.id];
     }
 }
@@ -1866,7 +1862,7 @@ Channel.prototype.trySetRank = function(user, data) {
         var rrank = this.getRank(data.user);
         if(rrank >= user.rank)
             return;
-        Database.setChannelRank(this.name, data.user, data.rank);
+        this.server.db.setChannelRank(this.name, data.user, data.rank);
     }
 
     this.sendAllWithPermission("acl", "setChannelRank", data);
@@ -1903,7 +1899,7 @@ Channel.prototype.tryPromoteUser = function(actor, data) {
             this.broadcastUserUpdate(receiver);
         }
         else {
-            Database.setChannelRank(this.name, data.name, rank);
+            this.server.db.setChannelRank(this.name, data.name, rank);
         }
         this.logger.log("*** " + actor.name + " promoted " + data.name + " from " + (rank - 1) + " to " + rank);
         //this.broadcastRankTable();
@@ -1940,7 +1936,7 @@ Channel.prototype.tryDemoteUser = function(actor, data) {
             this.broadcastUserUpdate(receiver);
         }
         else {
-            Database.setChannelRank(this.name, data.name, rank);
+            this.server.db.setChannelRank(this.name, data.name, rank);
         }
         this.logger.log("*** " + actor.name + " demoted " + data.name + " from " + (rank + 1) + " to " + rank);
         //this.broadcastRankTable();
@@ -1995,4 +1991,4 @@ Channel.prototype.tryChangeLeader = function(user, data) {
     this.changeLeader(data.name);
 }
 
-exports.Channel = Channel;
+module.exports = Channel;

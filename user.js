@@ -13,16 +13,14 @@ var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var Channel = require("./channel.js").Channel;
 var formatTime = require("./media.js").formatTime;
-var Server = require("./server.js");
-var Database = require("./database.js");
 var Logger = require("./logger.js");
 var Config = require("./config.js");
-var ACP = require("./acp");
 var ActionLog = require("./actionlog");
 
 // Represents a client connected via socket.io
-var User = function(socket, ip) {
-    this.ip = ip;
+var User = function(socket, Server) {
+    this.ip = socket._ip;
+    this.server = Server;
     this.socket = socket;
     this.loggedIn = false;
     this.rank = Rank.Anonymous;
@@ -92,12 +90,12 @@ User.prototype.initCallbacks = function() {
             return;
         if(typeof data.name != "string")
             return;
-        if(!data.name.match(/^[a-zA-Z0-9-_]+$/))
+        if(!data.name.match(/^[\w-_]+$/))
             return;
         if(data.name.length > 100)
             return;
         data.name = data.name.toLowerCase();
-        this.channel = Server.getOrCreateChannel(data.name);
+        this.channel = this.server.getChannel(data.name);
         if(this.loggedIn) {
             var chanrank = this.channel.getRank(this.name);
             if(chanrank > this.rank) {
@@ -115,14 +113,6 @@ User.prototype.initCallbacks = function() {
             pw = pw.substring(0, 100);
         if(this.name == "")
             this.login(name, pw, session);
-    }.bind(this));
-
-    this.socket.on("register", function(data) {
-        if(data.name == undefined || data.pw == undefined)
-            return;
-        if(data.pw.length > 100)
-            data.pw = data.pw.substring(0, 100);
-        this.register(data.name, data.pw);
     }.bind(this));
 
     this.socket.on("assignLeader", function(data) {
@@ -328,18 +318,6 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("announce", function(data) {
-        if(Rank.hasPermission(this, "announce")) {
-            if(data.clear) {
-                Server.announcement = null;
-            }
-            else {
-                Server.io.sockets.emit("announcement", data);
-                Server.announcement = data;
-            }
-        }
-    }.bind(this));
-
     this.socket.on("setOptions", function(data) {
         if(this.channel != null) {
             this.channel.tryUpdateOptions(this, data);
@@ -420,23 +398,6 @@ User.prototype.initCallbacks = function() {
         }
     }.bind(this));
 
-    this.socket.on("setProfile", function(data) {
-        if(!this.name) {
-            return;
-        }
-        data.image = data.image || "";
-        data.text = data.text || "";
-        if(data.text.length > 4000) {
-            data.text = data.text.substring(0, 4000);
-        }
-        if(Database.setProfile(this.name, data)) {
-            this.profile = data;
-            if(this.channel != null) {
-                this.channel.broadcastUserUpdate(this);
-            }
-        }
-    }.bind(this));
-
     this.socket.on("listPlaylists", function(data) {
         if(this.name == "" || this.rank < 1) {
             this.socket.emit("listPlaylists", {
@@ -446,7 +407,7 @@ User.prototype.initCallbacks = function() {
             return;
         }
 
-        var list = Database.getUserPlaylists(this.name);
+        var list = this.server.db.getUserPlaylists(this.name);
         for(var i = 0; i < list.length; i++) {
             list[i].time = formatTime(list[i].time);
         }
@@ -477,12 +438,12 @@ User.prototype.initCallbacks = function() {
         }
 
         var pl = this.channel.playlist.items.toArray();
-        var result = Database.saveUserPlaylist(pl, this.name, data.name);
+        var result = this.server.db.saveUserPlaylist(pl, this.name, data.name);
         this.socket.emit("savePlaylist", {
             success: result,
             error: result ? false : "Unknown"
         });
-        var list = Database.getUserPlaylists(this.name);
+        var list = this.server.db.getUserPlaylists(this.name);
         for(var i = 0; i < list.length; i++) {
             list[i].time = formatTime(list[i].time);
         }
@@ -502,8 +463,8 @@ User.prototype.initCallbacks = function() {
             return;
         }
 
-        Database.deleteUserPlaylist(this.name, data.name);
-        var list = Database.getUserPlaylists(this.name);
+        this.server.db.deleteUserPlaylist(this.name, data.name);
+        var list = this.server.db.getUserPlaylists(this.name);
         for(var i = 0; i < list.length; i++) {
             list[i].time = formatTime(list[i].time);
         }
@@ -514,7 +475,7 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("acp-init", function() {
         if(this.global_rank >= Rank.Siteadmin)
-            ACP.init(this);
+            this.server.acp.init(this);
     }.bind(this));
 
     this.socket.on("borrow-rank", function(rank) {
@@ -580,7 +541,7 @@ User.prototype.login = function(name, pw, session) {
                 lastguestlogin[this.ip] = Date.now();
                 this.rank = Rank.Guest;
                 Logger.syslog.log(this.ip + " signed in as " + name);
-                Database.recordVisit(this.ip, name);
+                this.server.db.recordVisit(this.ip, name);
                 this.name = name;
                 this.loggedIn = false;
                 this.socket.emit("login", {
@@ -620,7 +581,7 @@ User.prototype.login = function(name, pw, session) {
                     name: name
                 });
                 Logger.syslog.log(this.ip + " logged in as " + name);
-                Database.recordVisit(this.ip, name);
+                this.server.db.recordVisit(this.ip, name);
                 this.profile = {
                     image: row.profile_image,
                     text: row.profile_text
@@ -695,4 +656,4 @@ User.prototype.register = function(name, pw) {
     }
 }
 
-exports.User = User;
+module.exports = User;
