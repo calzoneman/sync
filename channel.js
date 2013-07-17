@@ -458,7 +458,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
             return false;
 
         // Update database ban table
-        return this.server.db.channelBan(chan.name, ip, name, actor.name);
+        return chan.server.db.channelBan(chan.name, ip, name, actor.name);
     });
 
     var chan = this;
