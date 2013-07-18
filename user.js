@@ -418,7 +418,7 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("savePlaylist", function(data) {
         if(this.rank < 1) {
-            socket.emit("savePlaylist", {
+            this.socket.emit("savePlaylist", {
                 success: false,
                 error: "You must be logged in to manage playlists"
             });
@@ -426,7 +426,7 @@ User.prototype.initCallbacks = function() {
         }
 
         if(this.channel == null) {
-            socket.emit("savePlaylist", {
+            this.socket.emit("savePlaylist", {
                 success: false,
                 error: "Not in a channel"
             });
