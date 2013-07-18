@@ -9,8 +9,12 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+var Logger = require("./logger");
+
+const STAT_INTERVAL = 60 * 60 * 1000;
+const STAT_EXPIRE = 24 * STAT_INTERVAL;
+
 module.exports = function (Server) {
-    // Check every 60 minutes
     setInterval(function () {
         var chancount = Server.channels.length;
         var usercount = 0;
@@ -29,14 +33,20 @@ module.exports = function (Server) {
             [Date.now(), usercount, chancount, mem]
         );
 
-        db.querySync(query);
+        if(!db.querySync(query)) {
+            Logger.errlog.log("! Failed to record stats");
+            Logger.errlog.log(query);
+        }
 
         query = Server.db.createQuery(
             "DELETE FROM stats WHERE time<?",
-            [Date.now() - 24 * 60 * 60 * 1000]
+            [Date.now() - STAT_EXPIRE]
         );
 
-        db.querySync(query);
+        if(!db.querySync(query)) {
+            Logger.errlog.log("! Failed to prune stats");
+            Logger.errlog.log(query);
+        }
 
-    }, 60*60*1000);
+    }, STAT_INTERVAL);
 }

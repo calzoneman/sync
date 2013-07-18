@@ -165,7 +165,7 @@ module.exports = function (Server) {
                 var db = Server.db.getConnection();
                 if(!db)
                     return;
-                var query = "SELECT * FROM stats WHERE 1";
+                var query = "SELECT * FROM stats ORDER BY time ASC";
                 var results = db.querySync(query);
                 if(results)
                     user.socket.emit("acp-view-stats", results.fetchAllSync());
