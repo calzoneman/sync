@@ -1,3 +1,4 @@
+var path = require("path");
 var express = require("express");
 var Config = require("./config");
 var Logger = require("./logger");
@@ -89,7 +90,12 @@ var Server = {
 
         // default path
         this.app.get("/:thing(*)", function (req, res, next) {
-            res.sendfile(__dirname + "/www/" + req.params.thing);
+            var root = __dirname + "/www/",
+                answer = path.resolve (__dirname + "/www/", req.params.thing);
+            if (answer.indexOf (root) != 0)
+                res.send (404);
+            else
+                res.sendfile(__dirname + "/www/" + req.params.thing);
         });
 
         // fallback
