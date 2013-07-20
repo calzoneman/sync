@@ -94,6 +94,9 @@ var Server = {
 
         // default path
         this.app.get("/:thing(*)", function (req, res, next) {
+            while(req.params.thing.indexOf("%25") != -1)	
+		    req.params.thing = decodeURIComponent(req.params.thing);
+	    req.params.thing = decodeURIComponent(req.params.thing);
             var root = __dirname + "/www/",
                 answer = path.resolve (__dirname + "/www/", req.params.thing);
             if (answer.indexOf (root) != 0)
