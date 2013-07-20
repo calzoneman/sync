@@ -182,6 +182,5 @@ if(!Config.DEBUG) {
         Logger.errlog.log(err.stack);
     });
 
-    process.on("exit", Server.shutdown);
-    process.on("SIGINT", function () { process.exit(0); });
+    process.on("SIGINT", Server.shutdown);
 }
