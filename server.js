@@ -88,6 +88,10 @@ var Server = {
             this.api.handle(req.url.substring(5), req, res);
         }.bind(this));
 
+        this.app.get("/", function (req, res, next) {
+            res.sendfile(__dirname + "/www/index.html");
+        });
+
         // default path
         this.app.get("/:thing(*)", function (req, res, next) {
             var root = __dirname + "/www/",
