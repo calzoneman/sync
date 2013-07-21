@@ -285,17 +285,17 @@ module.exports = function (Server) {
                 subject: "Password reset request",
                 text: msg
             };
-
+            var api = this;
             Config.MAIL.sendMail(mail, function(err, response) {
                 if(err) {
                     Logger.errlog.log("Mail fail: " + err);
-                    this.sendJSON(res, {
+                    api.sendJSON(res, {
                         success: false,
                         error: "Email failed.  Contact an admin if this persists."
                     });
                 }
                 else {
-                    this.sendJSON(res, {
+                    api.sendJSON(res, {
                         success: true
                     });
 
