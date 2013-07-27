@@ -35,14 +35,14 @@ var Server = {
     channels: [],
     channelLoaded: function (name) {
         for(var i in this.channels) {
-            if(this.channels[i].name.toLowerCase() == name.toLowerCase())
+            if(this.channels[i].canonical_name == name.toLowerCase())
                 return true;
         }
         return false;
     },
     getChannel: function (name) {
         for(var i in this.channels) {
-            if(this.channels[i].name.toLowerCase() == name.toLowerCase())
+            if(this.channels[i].canonical_name == name.toLowerCase())
                 return this.channels[i];
         }
 
@@ -55,13 +55,12 @@ var Server = {
             chan.saveDump();
         chan.playlist.die();
         for(var i in this.channels) {
-            if(this.channels[i].name.toLowerCase() == chan.name.toLowerCase()) {
+            if(this.channels[i].canonical_name == chan.canonical_name) {
                 this.channels.splice(i, 1);
                 break;
             }
         }
-        //for(var i in chan)
-        //    delete chan[i];
+        chan.name = "";
     },
     stats: null,
     app: null,

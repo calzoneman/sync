@@ -33,8 +33,9 @@ PlaylistItem.prototype.pack = function() {
 }
 
 function Playlist(chan) {
-    if(chan.name in AllPlaylists && AllPlaylists[chan.name]) {
-        var pl = AllPlaylists[chan.name];
+    var name = chan.canonical_name;
+    if(name in AllPlaylists && AllPlaylists[name]) {
+        var pl = AllPlaylists[name];
         if(!pl.dead)
             pl.die();
     }
@@ -53,7 +54,7 @@ function Playlist(chan) {
     this.lock = false;
     this.action_queue = [];
     this._qaInterval = false;
-    AllPlaylists[chan.name] = this;
+    AllPlaylists[name] = this;
 
     if(chan) {
         this.channel = chan;
@@ -493,6 +494,11 @@ const UPDATE_INTERVAL = 5;
 Playlist.prototype._leadLoop = function() {
     if(this.current == null)
         return;
+
+    if(this.channel.name == "") {
+        this.die();
+        return;
+    }
 
     this.current.media.currentTime += (Date.now() - this._lastUpdate) / 1000.0;
     this._lastUpdate = Date.now();

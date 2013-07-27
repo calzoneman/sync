@@ -90,10 +90,17 @@ User.prototype.initCallbacks = function() {
             return;
         if(typeof data.name != "string")
             return;
-        if(!data.name.match(/^[\w-_]+$/))
+        if(!data.name.match(/^[\w-_]{1,30}$/)) {
+            this.socket.emit("errorMsg", {
+                msg: "Invalid channel name.  Channel names may consist of"+
+                     " 1-30 characters in the set a-z, A-Z, 0-9, -, and _"
+            });
+            this.socket.emit("kick", {
+                reason: "Bad channel name"
+            });
+
             return;
-        if(data.name.length > 100)
-            return;
+        }
         data.name = data.name.toLowerCase();
         this.channel = this.server.getChannel(data.name);
         if(this.loggedIn) {

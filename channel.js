@@ -30,6 +30,7 @@ var Channel = function(name, Server) {
     this.server = Server;
 
     this.name = name;
+    this.canonical_name = name.toLowerCase();
     // Initialize defaults
     this.registered = false;
     this.users = [];
@@ -99,7 +100,7 @@ var Channel = function(name, Server) {
     this.ip_alias = {};
     this.name_alias = {};
     this.login_hist = [];
-    this.logger = new Logger.Logger("chanlogs/" + this.name + ".log");
+    this.logger = new Logger.Logger("chanlogs/" + this.canonical_name + ".log");
     this.i = 0;
     this.time = new Date().getTime();
     this.plmeta = {
@@ -773,6 +774,8 @@ Channel.prototype.sendRecentChat = function(user) {
 /* REGION Broadcasts to all clients */
 
 Channel.prototype.sendAll = function(message, data) {
+    if(this.name == "")
+        return;
     this.server.io.sockets.in(this.name).emit(message, data);
 }
 
