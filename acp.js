@@ -133,7 +133,7 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-channel-unload", function(data) {
-                if(Server.getChannel(data.name) !== undefined) {
+                if(Server.channelLoaded(data.name)) {
                     var c = Server.getChannel(data.name);
                     if(!c)
                         return;
@@ -145,9 +145,8 @@ module.exports = function (Server) {
 
                     // At this point c should be unloaded
                     // if it's still loaded, kill it
-                    c = Server.getChannel(data.name);
-                    if(c !== undefined)
-                        Server.unload(c);
+                    if(Server.channelLoaded(data.name))
+                        Server.unloadChannel(Server.getChannel(data.name));
                 }
             });
 
