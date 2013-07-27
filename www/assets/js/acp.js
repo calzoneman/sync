@@ -332,7 +332,8 @@ function setupCallbacks() {
             CLIENT.logged_in = true;
             socket.emit("acp-init");
             if(SESSION) {
-                AUTH = "name=" + CLIENT.name + "&session=" + SESSION;
+                AUTH = "name=" + encodeURIComponent(CLIENT.name)
+                     + "&session=" + SESSION;
                 createCookie("cytube_uname", CLIENT.name, 7);
                 createCookie("cytube_session", SESSION, 7);
             }

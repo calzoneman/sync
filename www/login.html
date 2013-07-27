@@ -66,7 +66,9 @@
             window.addEventListener("message", respond, false);
 
             $("#login").click(function() {
-                $.getJSON(WEB_URL+"/api/json/login?name="+$("#username").val()+"&pw="+$("#pw").val()+"&callback=?", function(data) {
+                var u = encodeURIComponent($("#username").val());
+                var p = encodeURIComponent($("#pw").val());
+                $.getJSON(WEB_URL+"/api/json/login?name="+u+"&pw="+p+"&callback=?", function(data) {
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
                 });

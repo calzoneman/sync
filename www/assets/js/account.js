@@ -15,7 +15,8 @@ var api = WEB_URL + "/api/json/";
 var loggedin = false;
 
 if(uname && session) {
-    var loginstr = "name=" + uname + "&session=" + session;
+    var loginstr = "name=" + encodeURIComponent(uname)
+                 + "&session=" + session;
     var url = api + "login?" + loginstr + "&callback=?";
     $.getJSON(url, function(data) {
         if(data.success) {
@@ -56,7 +57,7 @@ $("#email").click(makeTabCallback("#email", "#changeemailpane"));
 $("#profile").click(makeTabCallback("#profile", "#profilepane"));
 $("#profile").click(function() {
     if(uname != "") {
-        $.getJSON(api + "getprofile?name=" + uname + "&callback=?", function(data) {
+        $.getJSON(api + "getprofile?name=" + encodeURIComponent(uname) + "&callback=?", function(data) {
             if(data.success) {
                 $("#profiletext").val(data.profile_text);
                 $("#profileimg").val(data.profile_image);
@@ -107,8 +108,8 @@ $("#registerbtn").click(function() {
 
     // Input valid, try registering
     var url = api + "register?" + [
-        "name=" + name,
-        "pw=" + pw
+        "name=" + encodeURIComponent(name),
+        "pw=" + encodeURIComponent(pw)
     ].join("&") + "&callback=?";
 
     $.getJSON(url, function(data) {
@@ -142,7 +143,8 @@ $("#loginbtn").click(function() {
         return;
     }
     uname = $("#loginusername").val();
-    var loginstr = "name=" + uname + "&pw=" + $("#loginpw").val();
+    var loginstr = "name=" + encodeURIComponent(uname)
+                 + "&pw=" + encodeURIComponent($("#loginpw").val());
     var url = api + "login?" + loginstr + "&callback=?";
     $.getJSON(url, function(data) {
         if(data.success) {
@@ -202,9 +204,9 @@ $("#cpwbtn").click(function() {
 
     // Input valid, try changing password
     var url = api + "changepass?" + [
-        "name=" + name,
-        "oldpw=" + oldpw,
-        "newpw=" + newpw
+        "name=" + encodeURIComponent(name),
+        "oldpw=" + encodeURIComponent(oldpw),
+        "newpw=" + encodeURIComponent(newpw)
     ].join("&") + "&callback=?";
     $.getJSON(url, function(data) {
         if(data.success) {
@@ -253,11 +255,10 @@ $("#cebtn").click(function() {
         return;
     }
 
-    email = escape(email);
     var url = api + "setemail?" + [
-        "name=" + name,
-        "pw=" + pw,
-        "email=" + email
+        "name=" + encodeURIComponent(name),
+        "pw=" + encodeURIComponent(pw),
+        "email=" + encodeURIComponent(email)
     ].join("&") + "&callback=?";
     $.getJSON(url, function(data) {
         if(data.success) {
@@ -284,10 +285,9 @@ $("#rpbtn").click(function() {
     var name = $("#rpusername").val();
     var email = $("#rpemail").val();
 
-    email = escape(email);
     var url = api + "resetpass?" + [
-        "name=" + name,
-        "email=" + email
+        "name=" + encodeURIComponent(name),
+        "email=" + encodeURIComponent(email)
     ].join("&") + "&callback=?";
     $.getJSON(url, function(data) {
         $("#rpbtn").text("Send Reset");
@@ -309,15 +309,17 @@ $("#profilesave").click(function() {
     $("#profilepane").find(".alert-error").remove();
     $("#profilepane").find(".alert-success").remove();
     var img = $("#profileimg").val();
+    /*
     img = escape(img).replace(/\//g, "%2F")
         .replace(/&/g, "%26")
         .replace(/=/g, "%3D")
         .replace(/\?/g, "%3F");
+    */
     var url = api + "setprofile?" + [
-        "name=" + uname,
+        "name=" + encodeURIComponent(uname),
         "session=" + session,
-        "profile_image=" + img,
-        "profile_text=" + escape($("#profiletext").val())
+        "profile_image=" + encodeURIComponent(img),
+        "profile_text=" + encodeURIComponent($("#profiletext").val())
     ].join("&") + "&callback=?";
 
     $.getJSON(url, function(data) {

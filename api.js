@@ -235,7 +235,7 @@ module.exports = function (Server) {
 
         handlePasswordReset: function (params, req, res) {
             var name = params.name || "";
-            var email = unescape(params.email || "");
+            var email = params.email || "";
             var ip = getIP(req);
 
             var hash = false;
@@ -353,8 +353,11 @@ module.exports = function (Server) {
             var name = params.name || "";
             var pw = params.pw || "";
             var session = params.session || "";
-            var img = unescape(params.profile_image || "");
-            var text = unescape(params.profile_text || "");
+            var img = params.profile_image || "";
+            var text = params.profile_text || "";
+            console.log(name);
+            console.log(img);
+            console.log(text);
 
             var row = Auth.login(name, pw, session);
             if(!row) {
@@ -394,7 +397,7 @@ module.exports = function (Server) {
         handleEmailChange: function (params, req, res) {
             var name = params.name || "";
             var pw = params.pw || "";
-            var email = unescape(params.email) || "";
+            var email = params.email || "";
             // perhaps my email regex isn't perfect, but there's no freaking way
             // I'm implementing this monstrosity:
             // <http://www.ex-parrot.com/pdw/Mail-RFC822-Address.html>

@@ -86,6 +86,11 @@ function createQuery(template, args) {
         var idx = template.indexOf("?", last);
         var arg = args.shift();
         arg = sqlEscape(arg);
+        // Stupid workaround because even if I call replace() with a string
+        // and not a regex, '$' still holds special meaning
+        // this actually replaces '$' with '$$'
+        // What the hell, Javascript?
+        arg = arg.replace(/\$/g, "$$$$");
         var first = template.substring(0, idx);
         template = first + template.substring(idx).replace("?", arg);
         last = idx + arg.length;

@@ -49,7 +49,7 @@
             var uname = readCookie("cytube_uname") || "";
             var p = "";
             if(uname && session) {
-                $.getJSON(WEB_URL+"/api/json/login?name="+uname+"&session="+session+"&callback=?", function(data) {
+                $.getJSON(WEB_URL+"/api/json/login?name="+encodeURIComponent(uname)+"&session="+session+"&callback=?", function(data) {
                     if(data.success) {
                         $(".loginform").remove();
                         createCookie("cytube_uname", uname, 7);
@@ -63,7 +63,8 @@
             var q = "";
             $("#login").click(function() {
                 uname =  $("#name").val();
-                q = "name=" + $("#name").val() + "&pw=" + $("#pw").val();
+                q = "name=" + encodeURIComponent($("#name").val())
+                  + "&pw=" + encodeURIComponent($("#pw").val());
                 $.getJSON(WEB_URL+"/api/json/login?"+q+"&callback=?", function(data) {
                     if(data.success) {
                         $(".loginform").remove();
