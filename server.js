@@ -5,7 +5,7 @@ var Logger = require("./logger");
 var Channel = require("./channel");
 var User = require("./user");
 
-const VERSION = "2.1.1";
+const VERSION = "2.1.2";
 
 function getIP(req) {
     var raw = req.connection.remoteAddress;
@@ -93,15 +93,24 @@ var Server = {
 
         // default path
         this.app.get("/:thing(*)", function (req, res, next) {
-            while(req.params.thing.indexOf("%25") != -1)	
-		    req.params.thing = decodeURIComponent(req.params.thing);
-	    req.params.thing = decodeURIComponent(req.params.thing);
-            var root = __dirname + "/www/",
-                answer = path.resolve (__dirname + "/www/", req.params.thing);
-            if (answer.indexOf (root) != 0)
-                res.send (404);
-            else
-                res.sendfile(__dirname + "/www/" + req.params.thing);
+            var opts = {
+                root: __dirname + "/www",
+            }
+            res.sendfile(req.params.thing, opts, function (err) {
+                if(err) {
+                    // Damn path traversal attacks
+                    if(req.params.thing.indexOf("%2e") != -1) {
+                        res.send("Don't try that again, I'll ban you");
+                        Logger.syslog.log("WARNING: Attempted path "+
+                                          "traversal from /" + getIP(req));
+                        Logger.syslog.log("URL: " + req.url);
+                    }
+                    // Something actually went wrong
+                    else {
+                        res.send(500);
+                    }
+                }
+            });
         });
 
         // fallback
