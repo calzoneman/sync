@@ -5,7 +5,7 @@ var Logger = require("./logger");
 var Channel = require("./channel");
 var User = require("./user");
 
-const VERSION = "2.1.0";
+const VERSION = "2.1.1";
 
 function getIP(req) {
     var raw = req.connection.remoteAddress;
@@ -168,8 +168,10 @@ var Server = {
     shutdown: function () {
         Logger.syslog.log("Unloading channels");
         for(var i in this.channels) {
-            if(this.channels[i].registered)
+            if(this.channels[i].registered) {
+                Logger.syslog.log("Saving /r/" + this.channels[i].name);
                 this.channels[i].saveDump();
+            }
         }
         Logger.syslog.log("Goodbye");
         process.exit(0);
@@ -185,5 +187,7 @@ if(!Config.DEBUG) {
         Logger.errlog.log(err.stack);
     });
 
-    process.on("SIGINT", Server.shutdown);
+    process.on("SIGINT", function () {
+        Server.shutdown();
+    });
 }
