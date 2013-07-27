@@ -11,6 +11,31 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 Callbacks = {
 
+    error: function (reason) {
+        var d = $("<div/>").addClass("alert alert-error span12")
+            .appendTo($("#announcements"));
+        $("<h3/>").text("Uh-oh!").appendTo(d);
+        $("<p/>").html("The socket.io connection failed."+
+                       "Try going to the "+
+                       "'Options' menu and enabling 'Alternate socket "+
+                       " connection'.  If that doesn't help, talk to "+
+                       "someone on <a href='http://webchat.6irc.net/?"+
+                       "channels=synchtube'>IRC</a>").appendTo(d);
+        var data = {
+            iourl: IO_URL,
+            weburl: WEB_URL,
+            transports: io.transports,
+            fallback: USEROPTS.altsocket,
+            reason: reason
+        };
+
+        var r = JSON.stringify(data);
+        $("<em/>").text("When asking for help, give the following "+
+                        "information to an administrator:").appendTo(d);
+        $("<code/>").text(r).appendTo(d)
+            .css("white-space", "pre-wrap");
+    },
+
     /* fired when socket connection completes */
     connect: function() {
         socket.emit("joinChannel", {
@@ -779,6 +804,12 @@ Callbacks = {
             $("#ytapiplayer_wrapper").remove();
         }
         if(data.type != PLAYER.type) {
+            if(data.type === "vi" && typeof $f !== "function") {
+                setTimeout(function () {
+                    Callbacks.changeMedia(data);
+                }, 100);
+                return;
+            }
             PLAYER = new Player(data);
         }
         if(PLAYER.update) {
