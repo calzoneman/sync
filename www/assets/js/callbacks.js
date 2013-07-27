@@ -717,9 +717,11 @@ Callbacks = {
     "delete": function(data) {
         queueAction({
             fn: function () {
+                PL_WAIT_SCROLL = true;
                 var li = $(".pluid-" + data.uid);
                 li.hide("blind", function() {
                     li.remove();
+                    PL_WAIT_SCROLL = false;
                 });
                 return true;
             }
@@ -749,7 +751,12 @@ Callbacks = {
                 }
 
                 li.addClass("queue_active");
-                scrollQueue();
+                var timer = setInterval(function () {
+                    if(!PL_WAIT_SCROLL) {
+                        scrollQueue();
+                        clearInterval(timer);
+                    }
+                }, 100);
                 return true;
             },
             can_wait: true

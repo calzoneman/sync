@@ -67,6 +67,7 @@ var SESSION = readCookie("cytube_session");
 var LEADTMR = false;
 var PL_FROM = "";
 var PL_AFTER = "";
+var PL_WAIT_SCROLL = false;
 var FILTER_FROM = 0;
 var FILTER_TO = 0;
 var NO_STORAGE = typeof localStorage == "undefined" || localStorage === null;

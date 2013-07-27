@@ -340,10 +340,10 @@ Playlist.prototype.remove = function(uid, callback) {
         fn: function() {
             var item = pl.items.find(uid);
             if(pl.items.remove(uid)) {
-                if(item == pl.current)
-                    pl._next();
                 if(callback)
                     callback();
+                if(item == pl.current)
+                    pl._next();
             }
         },
         waiting: false
@@ -386,13 +386,15 @@ Playlist.prototype.next = function() {
         return;
 
     var it = this.current;
-    this._next();
 
     if(it.temp) {
         var pl = this;
         this.remove(it.uid, function() {
             pl.on("remove")(it);
         });
+    }
+    else {
+        this._next();
     }
 
     return this.current;
