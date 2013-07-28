@@ -193,6 +193,15 @@ var Server = {
 };
 
 Logger.syslog.log("Starting CyTube v" + VERSION);
+
+fs.exists("chanlogs", function (exists) {
+    exists || fs.mkdir("chanlogs");
+});
+
+fs.exists("chandump", function (exists) {
+    exists || fs.mkdir("chandump");
+});
+
 Config.load(Server, "cfg.json", function () {
     Server.init();
     if(!Server.cfg["debug"]) {
