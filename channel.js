@@ -34,6 +34,7 @@ var Channel = function(name, Server) {
     // Initialize defaults
     this.registered = false;
     this.users = [];
+    this.afkcount = 0;
     this.playlist = new Playlist(this);
     this.library = {};
     this.position = -1;
@@ -958,6 +959,7 @@ Channel.prototype.broadcastChatFilters = function() {
 Channel.prototype.broadcastVoteskipUpdate = function() {
     var amt = this.voteskip ? this.voteskip.counts[0] : 0;
     var need = this.voteskip ? parseInt(this.users.length * this.opts.voteskip_ratio) : 0;
+    need -= this.afkcount;
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "seeVoteskip") ||
                 this.leader == this.users[i]) {
@@ -1536,12 +1538,20 @@ Channel.prototype.tryVoteskip = function(user) {
     if(!this.opts.allow_voteskip) {
         return;
     }
+    // Voteskip = auto-unafk
+    if(user.meta.afk) {
+        user.meta.afk = false;
+        this.broadcastUserUpdate(user);
+        this.afkcount--;
+    }
     if(!this.voteskip) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }
     this.voteskip.vote(user.ip, 0);
     this.broadcastVoteskipUpdate();
-    if(this.voteskip.counts[0] >= parseInt(this.users.length * this.opts.voteskip_ratio)) {
+    var need = parseInt(this.users.length * this.opts.voteskip_ratio);
+    need -= this.afkcount;
+    if(this.voteskip.counts[0] >= need) {
         this.playNext();
     }
 }
