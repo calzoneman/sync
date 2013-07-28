@@ -39,7 +39,12 @@ var defaults = {
 }
 
 function save(cfg, file) {
-    fs.writeFile(file, JSON.stringify(cfg, null, 4), function (err) {
+    var x = {};
+    for(var k in cfg) {
+        if(k !== "nodemailer")
+            x[k] = cfg[k];
+    }
+    fs.writeFile(file, JSON.stringify(x, null, 4), function (err) {
         if(err) {
             Logger.errlog.log("Failed to save config");
             Logger.errlog.log(err);

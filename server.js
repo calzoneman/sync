@@ -5,7 +5,7 @@ var Logger = require("./logger");
 var Channel = require("./channel");
 var User = require("./user");
 
-const VERSION = "2.1.2";
+const VERSION = "2.1.3";
 
 function getIP(req) {
     var raw = req.connection.remoteAddress;
@@ -95,6 +95,7 @@ var Server = {
         this.app.get("/:thing(*)", function (req, res, next) {
             var opts = {
                 root: __dirname + "/www",
+                maxAge: this.cfg["asset-cache-ttl"]
             }
             res.sendfile(req.params.thing, opts, function (err) {
                 if(err) {
@@ -114,7 +115,7 @@ var Server = {
                     }
                 }
             });
-        });
+        }.bind(this));
 
         // fallback
         this.app.use(function (err, req, res, next) {

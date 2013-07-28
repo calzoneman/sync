@@ -286,7 +286,7 @@ module.exports = function (Server) {
                 text: msg
             };
             var api = this;
-            cfg["nodemailer"].sendMail(mail, function(err, response) {
+            Server.cfg["nodemailer"].sendMail(mail, function(err, response) {
                 if(err) {
                     Logger.errlog.log("Mail fail: " + err);
                     api.sendJSON(res, {
@@ -317,12 +317,12 @@ module.exports = function (Server) {
                     name: info[0],
                     pw: info[1]
                 });
-                ActionLog.record(ip, name, "password-recover-success");
-                Logger.syslog.log(ip + " recovered password for " + name);
+                ActionLog.record(ip, info[0], "password-recover-success");
+                Logger.syslog.log(ip + " recovered password for " + info[0]);
                 return;
             }
             catch(e) {
-                ActionLog.record(ip, name, "password-recover-failure");
+                ActionLog.record(ip, "", "password-recover-failure");
                 this.sendJSON(res, {
                     success: false,
                     error: e
