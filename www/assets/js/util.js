@@ -279,7 +279,7 @@ function addQueueButtons(li) {
             .appendTo(menu);
     }
     // Queue next
-    if(hasPermission("playlistnext")) {
+    if(hasPermission("playlistmove")) {
         $("<button/>").addClass("btn btn-mini qbtn-next")
             .html("<i class='icon-share-alt'></i>Queue Next")
             .click(function() {
