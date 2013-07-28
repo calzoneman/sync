@@ -10,7 +10,7 @@ const VERSION = "2.1.2";
 function getIP(req) {
     var raw = req.connection.remoteAddress;
     var forward = req.header("x-forwarded-for");
-    if(Config.REVERSE_PROXY && forward) {
+    if(Server.cfg["trust-x-forward"] && forward) {
         var ip = forward.split(",")[0];
         Logger.syslog.log("REVPROXY " + raw + " => " + ip);
         return ip;
@@ -20,7 +20,7 @@ function getIP(req) {
 
 function getSocketIP(socket) {
     var raw = socket.handshake.address.address;
-    if(Config.REVERSE_PROXY) {
+    if(Server.cfg["trust-x-forward"]) {
         if(typeof socket.handshake.headers["x-forwarded-for"] == "string") {
             var ip = socket.handshake.headers["x-forwarded-for"]
                 .split(",")[0];
@@ -126,8 +126,10 @@ var Server = {
         });
 
         // bind servers
-        this.httpserv = this.app.listen(Config.WEBSERVER_PORT);
-        this.ioserv = express().listen(Config.IO_PORT);
+        this.httpserv = this.app.listen(Server.cfg["web-port"],
+                                        Server.cfg["express-host"]);
+        this.ioserv = express().listen(Server.cfg["io-port"],
+                                       Server.cfg["express-host"]);
 
         // init socket.io
         this.io = require("socket.io").listen(this.ioserv);
@@ -152,7 +154,7 @@ var Server = {
                 this.ips[ip] = 0;
             this.ips[ip]++;
 
-            if(this.ips[ip] > Config.MAX_PER_IP) {
+            if(this.ips[ip] > Server.cfg["ip-connection-limit"]) {
                 socket.emit("kick", {
                     reason: "Too many connections from your IP address"
                 });
@@ -167,7 +169,7 @@ var Server = {
 
         // init database
         this.db = require("./database");
-        this.db.setup(Config);
+        this.db.setup(Server.cfg);
         this.db.init();
 
         // init ACP
@@ -190,15 +192,16 @@ var Server = {
 };
 
 Logger.syslog.log("Starting CyTube v" + VERSION);
-Server.init();
+Config.load(Server, "cfg.json", function () {
+    Server.init();
+    if(!Server.cfg["debug"]) {
+        process.on("uncaughtException", function (err) {
+            Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
+            Logger.errlog.log(err.stack);
+        });
 
-if(!Config.DEBUG) {
-    process.on("uncaughtException", function (err) {
-        Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
-        Logger.errlog.log(err.stack);
-    });
-
-    process.on("SIGINT", function () {
-        Server.shutdown();
-    });
-}
+        process.on("SIGINT", function () {
+            Server.shutdown();
+        });
+    }
+});

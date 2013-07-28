@@ -12,22 +12,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var Auth = require("./auth");
 var Logger = require("./logger");
 var apilog = new Logger.Logger("api.log");
-var Config = require("./config");
 var ActionLog = require("./actionlog");
 var fs = require("fs");
 
-function getIP(req) {
-    var raw = req.connection.remoteAddress;
-    var forward = req.header("x-forwarded-for");
-    if(Config.REVERSE_PROXY && forward) {
-        var ip = forward.split(",")[0];
-        Logger.syslog.log("REVPROXY " + raw + " => " + ip);
-        return ip;
-    }
-    return raw;
-}
 
 module.exports = function (Server) {
+    function getIP(req) {
+        var raw = req.connection.remoteAddress;
+        var forward = req.header("x-forwarded-for");
+        if(Server.cfg["trust-x-forward"] && forward) {
+            var ip = forward.split(",")[0];
+            Logger.syslog.log("REVPROXY " + raw + " => " + ip);
+            return ip;
+        }
+        return raw;
+    }
+
     var API = function () {
 
     }
@@ -251,7 +251,7 @@ module.exports = function (Server) {
                 return;
             }
 
-            if(!Config.MAIL) {
+            if(!Server.cfg["enable-mail"]) {
                 this.sendJSON(res, {
                     success: false,
                     error: "This server does not have email enabled.  Contact an administrator"
@@ -269,24 +269,24 @@ module.exports = function (Server) {
                 "A password reset request was issued for your account `",
                 name,
                 "` on ",
-                Config.DOMAIN,
+                Server.cfg["domain"],
                 ".  This request is valid for 24 hours.  ",
                 "If you did not initiate this, there is no need to take action.  ",
                 "To reset your password, copy and paste the following link into ",
                 "your browser: ",
-                Config.DOMAIN,
+                Server.cfg["domain"],
                 "/reset.html?",
                 hash
             ].join("");
 
             var mail = {
-                from: "CyTube Services <" + Config.MAIL_FROM + ">",
+                from: "CyTube Services <" + Server.cfg["mail-from"] + ">",
                 to: email,
                 subject: "Password reset request",
                 text: msg
             };
             var api = this;
-            Config.MAIL.sendMail(mail, function(err, response) {
+            cfg["nodemailer"].sendMail(mail, function(err, response) {
                 if(err) {
                     Logger.errlog.log("Mail fail: " + err);
                     api.sendJSON(res, {
@@ -299,7 +299,7 @@ module.exports = function (Server) {
                         success: true
                     });
 
-                    if(Config.DEBUG) {
+                    if(Server.cfg["debug"]) {
                         Logger.syslog.log(response);
                     }
                 }

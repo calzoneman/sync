@@ -14,7 +14,6 @@ var Auth = require("./auth.js");
 var Channel = require("./channel.js").Channel;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
-var Config = require("./config.js");
 var ActionLog = require("./actionlog");
 
 // Represents a client connected via socket.io
@@ -506,11 +505,12 @@ User.prototype.login = function(name, pw, session) {
     if(pw == "" && session == "") {
         if(this.ip in lastguestlogin) {
             var diff = (Date.now() - lastguestlogin[this.ip])/1000;
-            if(diff < Config.GUEST_LOGIN_DELAY) {
+            if(diff < this.server.cfg["guest-login-delay"]) {
                 this.socket.emit("login", {
                     success: false,
                     error: ["Guest logins are restricted to one per ",
-                            Config.GUEST_LOGIN_DELAY + " seconds per IP.  ",
+                            this.server.cfg["guest-login-delay"]
+                            + " seconds per IP.  ",
                             "This restriction does not apply to registered users."
                             ].join("")
                 });

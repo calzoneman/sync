@@ -9,38 +9,83 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-exports.MYSQL_SERVER = "";
-exports.MYSQL_DB = "";
-exports.MYSQL_USER = "";
-exports.MYSQL_PASSWORD = "";
-exports.IO_PORT = 1337; // Socket.IO port, DO NOT USE PORT 80.
-exports.WEBSERVER_PORT = 8080; // Webserver port.  Binding port 80 requires root permissions
-exports.MAX_PER_IP = 10;
-exports.GUEST_LOGIN_DELAY = 60; // Seconds
-
-/*
-    Set to true if your IO_URL and WEB_URL are behind a reverse proxy
-    (e.g. Cloudflare) so that client IPs are passed through correctly.
-
-    If you are not behind a reverse proxy, leave it as false, otherwise
-    clients can fake their IP address in the x-forwarded-for header
-*/
-exports.REVERSE_PROXY = false;
-
+var fs = require("fs");
+var Logger = require("./logger");
 var nodemailer = require("nodemailer");
-exports.MAIL = false;
-/* Example for setting up email:
-exports.MAIL = nodemailer.createTransport("SMTP", {
-    service: "Gmail",
-    auth: {
-        user: "some.user@gmail.com",
-        pass: "supersecretpassword"
-    }
-});
 
-See https://github.com/andris9/Nodemailer
-*/
-exports.MAIL_FROM = "some.user@gmail.com";
-// Domain for password reset link
-// Email sent goes to exports.DOMAIN/reset.html?resethash
-exports.DOMAIN = "http://localhost";
+var defaults = {
+    "mysql-server"        : "localhost",
+    "mysql-db"            : "cytube",
+    "mysql-user"          : "cytube",
+    "mysql-pw"            : "supersecretpass",
+    "express-host"        : "0.0.0.0",
+    "asset-cache-ttl"     : 0,
+    "web-port"            : 8080,
+    "io-port"             : 1337,
+    "ip-connection-limit" : 10,
+    "guest-login-delay"   : 60,
+    "trust-x-forward"     : false,
+    "enable-mail"         : false,
+    "mail-transport"      : "SMTP",
+    "mail-config"         : {
+        "service"  : "Gmail",
+        "auth"     : {
+            "user" : "some.user@gmail.com",
+            "pass" : "supersecretpassword"
+        }
+    },
+    "mail-from"           : "some.user@gmail.com",
+    "domain"              : "http://localhost"
+}
+
+function save(cfg, file) {
+    fs.writeFile(file, JSON.stringify(cfg, null, 4), function (err) {
+        if(err) {
+            Logger.errlog.log("Failed to save config");
+            Logger.errlog.log(err);
+        }
+    });
+}
+
+exports.load = function (Server, file, callback) {
+    var cfg = {};
+    for(var k in defaults)
+        cfg[k] = defaults[k];
+
+    fs.readFile(file, function (err, data) {
+        if(err) {
+            if(err.code == "ENOENT") {
+                Logger.syslog.log("Config file not found, generating default");
+                Logger.syslog.log("Edit cfg.json to configure");
+                data = "{}";
+            }
+            else {
+                Logger.errlog.log("Config load failed");
+                Logger.errlog.log(err);
+                return;
+            }
+        }
+
+        try {
+            data = JSON.parse(data + "");
+        } catch(e) {
+            Logger.errlog.log("Config JSON is invalid: ");
+            Logger.errlog.log(e);
+            return;
+        }
+
+        for(var k in data)
+            cfg[k] = data[k];
+
+        if(cfg["enable-mail"]) {
+            cfg["nodemailer"] = nodemailer.createTransport(
+                cfg["mail-transport"],
+                cfg["mail-config"]
+            );
+        }
+
+        save(cfg, file);
+        Server.cfg = cfg;
+        callback();
+    });
+}

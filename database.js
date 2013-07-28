@@ -24,10 +24,10 @@ var CONFIG = {};
 var global_bans = {};
 
 function setup(cfg) {
-    SERVER = cfg.MYSQL_SERVER;
-    USER = cfg.MYSQL_USER;
-    DATABASE = cfg.MYSQL_DB;
-    PASSWORD = cfg.MYSQL_PASSWORD;
+    SERVER = cfg["mysql-server"];
+    USER = cfg["mysql-user"];
+    DATABASE = cfg["mysql-db"];
+    PASSWORD = cfg["mysql-pw"];
     CONFIG = cfg;
 }
 
@@ -41,7 +41,7 @@ function getConnection() {
         Logger.errlog.log("DB connection failed");
         return false;
     }
-    if(CONFIG.DEBUG) {
+    if(CONFIG["debug"]) {
         db._querySync = db.querySync;
         db.querySync = function(q) {
             Logger.syslog.log("DEBUG: " + q);
