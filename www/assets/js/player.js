@@ -1,13 +1,15 @@
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
+var VIMEO_FLASH = false;
 
 var Player = function(data) {
     if(!data) {
@@ -22,12 +24,20 @@ var Player = function(data) {
     this.currentTime = data.currentTime || 0;
     this.diff = 0;
 
+    function postInit() {
+        this.load(data);
+    }
+    postInit.bind(this);
+
     switch(this.type) {
         case "yt":
             this.initYouTube();
             break;
         case "vi":
-            this.initVimeo();
+            if(VIMEO_FLASH)
+                this.initVimeoFlash();
+            else
+                this.initVimeo();
             break;
         case "dm":
             this.initDailymotion();
@@ -60,7 +70,6 @@ var Player = function(data) {
             this.nullPlayer();
             break;
     }
-    this.load(data);
 }
 
 Player.prototype.nullPlayer = function() {
@@ -202,6 +211,85 @@ Player.prototype.initVimeo = function() {
 
     this.seek = function(time) {
         this.player.api("seekTo", time);
+    }
+}
+
+Player.prototype.initVimeoFlash = function() {
+    this.removeOld();
+    var url = "http://vimeo.com/moogaloop.swf?clip_id="+this.id;
+    url += "&" + [
+        "server=vimeo.com",
+        "api=2",
+        "show_title=0",
+        "show_byline=0",
+        "show_portrait=0",
+        "fullscreen=1",
+        "loop=0"
+    ].join("&");
+    var flashvars = {
+        api: 2,
+        player_id: "ytapiplayer"
+    };
+    var params = {
+        allowfullscreen: true,
+        allowScriptAccess: "always"
+    };
+    swfobject.embedSWF(url
+                      , "ytapiplayer"
+                      , VWIDTH
+                      , VHEIGHT
+                      , "9.0.0"
+                      , "expressInstall.swf"
+                      , flashvars
+                      , params);
+
+    this.player = $("#ytapiplayer")[0];
+    waitUntilDefined(this.player, "api_addEventListener", function () {
+        this.player.api_addEventListener("ready", function () {
+            socket.emit("playerReady");
+            this.player.api_play();
+
+            this.player.api_addEvent("finish", function () {
+                if(CLIENT.leader)
+                    socket.emit("playNext");
+            });
+
+            this.player.api_addEvent("pause", function() {
+                PLAYER.paused = true;
+                sendVideoUpdate();
+            });
+
+            this.player.api_addEvent("play", function() {
+                PLAYER.paused = false;
+                sendVideoUpdate();
+            });
+        }.bind(this));
+    });
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initVimeoFlash();
+    }
+
+    this.pause = function() {
+        this.player.api_pause();
+    }
+
+    this.play = function() {
+        this.player.api_play();
+    }
+
+    this.isPaused = function(callback) {
+        callback(this.paused);
+    }
+
+    this.getTime = function(callback) {
+        var t = parseFloat(this.player.api_getCurrentTime());
+        callback(t);
+    }
+
+    this.seek = function(time) {
+        this.player.api_seekTo(time);
     }
 }
 

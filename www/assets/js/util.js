@@ -1473,3 +1473,13 @@ function loadChannelRanksPage(page) {
         $($("#channelranks_pagination").find("li")[page]).addClass("active");
     }
 }
+
+function waitUntilDefined(obj, key, fn) {
+    if(typeof obj[key] === "undefined") {
+        setTimeout(function () {
+            waitUntilDefined(obj, key, fn);
+        }, 100);
+        return;
+    }
+    fn();
+}
