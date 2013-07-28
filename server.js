@@ -107,7 +107,10 @@ var Server = {
                     }
                     // Something actually went wrong
                     else {
-                        res.send(500);
+                        // Status codes over 500 are server errors
+                        if(err.status >= 500)
+                            Logger.errlog.log(err);
+                        res.send(err.status);
                     }
                 }
             });
