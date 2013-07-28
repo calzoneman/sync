@@ -69,7 +69,8 @@
             externaljs: $("#opt_externaljs").val(),
             chat_antiflood: $("#opt_chat_antiflood").prop("checked"),
             show_public: $("#opt_show_public").prop("checked"),
-            enable_link_regex: $("#opt_enable_link_regex").prop("checked")
+            enable_link_regex: $("#opt_enable_link_regex").prop("checked"),
+            afk_timeout: parseInt($("#opt_afktimeout").val())
         });
     });
 

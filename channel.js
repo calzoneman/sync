@@ -77,6 +77,7 @@ var Channel = function(name, Server) {
     this.opts = {
         allow_voteskip: true,
         voteskip_ratio: 0.5,
+        afk_timeout: 180,
         pagetitle: this.name,
         maxlength: 0,
         externalcss: "",
@@ -202,6 +203,9 @@ Channel.prototype.loadDump = function() {
             }
             this.sendAll("setPermissions", this.permissions);
             this.broadcastOpts();
+            this.users.forEach(function (u) {
+                u.autoAFK();
+            });
             if(data.filters) {
                 for(var i = 0; i < data.filters.length; i++) {
                     var f = data.filters[i];
@@ -1540,9 +1544,7 @@ Channel.prototype.tryVoteskip = function(user) {
     }
     // Voteskip = auto-unafk
     if(user.meta.afk) {
-        user.meta.afk = false;
-        this.broadcastUserUpdate(user);
-        this.afkcount--;
+        user.setAFK(false);
     }
     if(!this.voteskip) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
@@ -1690,6 +1692,11 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
         if(key in data) {
             if(key in adminonly && user.rank < Rank.Owner) {
                 continue;
+            }
+            if(key === "afk_timeout" && this.opts[key] != data[key]) {
+                this.users.forEach(function (u) {
+                    u.autoAFK();
+                });
             }
             this.opts[key] = data[key];
         }

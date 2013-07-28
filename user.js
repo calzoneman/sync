@@ -37,6 +37,8 @@ var User = function(socket, Server) {
         image: "",
         text: ""
     };
+    this.awaytimer = false;
+    this.autoAFK();
 
     this.initCallbacks();
     if(Server.announcement != null) {
@@ -76,6 +78,41 @@ User.prototype.noflood = function(name, hz) {
             return false;
         }
     }
+}
+
+User.prototype.setAFK = function (afk) {
+    if(this.channel === null)
+        return;
+    var chan = this.channel;
+    this.meta.afk = afk;
+    if(this.meta.afk)
+        chan.afkcount++;
+    else
+        chan.afkcount--;
+    if(chan.voteskip) {
+        chan.voteskip.unvote(this.ip);
+        var need = parseInt(chan.users.length * chan.opts.voteskip_ratio);
+        need -= chan.afkcount;
+        if(chan.voteskip.counts[0] >= need) {
+            chan.playNext();
+        }
+        else {
+            chan.broadcastVoteskipUpdate();
+        }
+    }
+    chan.broadcastUserUpdate(this);
+}
+
+User.prototype.autoAFK = function () {
+    if(this.awaytimer)
+        clearTimeout(this.awaytimer);
+
+    if(this.channel === null || this.channel.opts.afk_timeout == 0)
+        return;
+
+    this.awaytimer = setTimeout(function () {
+        this.setAFK(true);
+    }.bind(this), this.channel.opts.afk_timeout * 1000);
 }
 
 User.prototype.initCallbacks = function() {
@@ -165,6 +202,8 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("chatMsg", function(data) {
         if(this.channel != null) {
+            this.setAFK(false);
+            this.autoAFK();
             this.channel.tryChat(this, data);
         }
     }.bind(this));

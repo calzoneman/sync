@@ -779,6 +779,7 @@ function handleModPermissions() {
     $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
     $("#opt_show_public").attr("disabled", CLIENT.rank < 3);
     $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
+    $("#opt_afktimeout").val(CHANNEL.opts.afk_timeout);
     $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
     (function() {

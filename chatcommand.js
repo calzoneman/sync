@@ -24,22 +24,7 @@ function handle(chan, user, msg, data) {
         }
     }
     else if(msg.indexOf("/afk") == 0) {
-        user.meta.afk = !user.meta.afk;
-        if(user.meta.afk)
-            chan.afkcount++;
-        else
-            chan.afkcount--;
-        if(chan.voteskip) {
-            var need = parseInt(chan.users.length * chan.opts.voteskip_ratio);
-            need -= chan.afkcount;
-            if(chan.voteskip.counts[0] >= need) {
-                chan.playNext();
-            }
-            else {
-                chan.broadcastVoteskipUpdate();
-            }
-        }
-        chan.broadcastUserUpdate(user);
+        user.setAFK(!user.meta.afk);
     }
     else if(msg.indexOf("/m ") == 0) {
         if(user.rank >= Rank.Moderator) {
