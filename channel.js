@@ -263,7 +263,7 @@ Channel.prototype.saveDump = function() {
     };
     var text = JSON.stringify(dump);
     fs.writeFileSync("chandump/" + this.name, text);
-    this.logger.flush();
+    this.logger.close();
 }
 
 // Save channel dumps every 5 minutes, in case of crash
@@ -1829,7 +1829,8 @@ Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
     this.chatbuffer.push(msgobj);
     if(this.chatbuffer.length > 15)
         this.chatbuffer.shift();
-    this.logger.log("<" + username + "." + msgclass + "> " + msg);
+    var unescaped = sanitize(msg).entityDecode();
+    this.logger.log("<" + username + "." + msgclass + "> " + unescaped);
 };
 
 /* REGION Rank stuff */

@@ -18,28 +18,22 @@ function getTimeString() {
 
 var Logger = function(filename) {
     this.filename = filename;
-    this.buffer = [];
-
-    setInterval(function() {
-        this.flush();
-    }.bind(this), 15000);
+    this.writer = fs.createWriteStream(filename, {
+        flags: "a",
+        encoding: "utf-8"
+    });
 }
 
-Logger.prototype.log = function(what) {
-    this.buffer.push("[" + getTimeString() + "] " + what);
+Logger.prototype.log = function () {
+    var msg = "";
+    for(var i in arguments)
+        msg += arguments[i];
+    var str = "[" + getTimeString() + "] " + msg + "\n";
+    this.writer.write(str);
 }
 
-Logger.prototype.flush = function() {
-    if(this.buffer.length == 0)
-        return;
-    var text = this.buffer.join("\n") + "\n";
-    this.buffer = [];
-    fs.appendFile(this.filename, text, function(err) {
-        if(err) {
-            errlog.log("Append to " + this.filename + " failed: ");
-            errlog.log(err);
-        }
-    }.bind(this));
+Logger.prototype.close = function () {
+    this.writer.end();
 }
 
 var errlog = new Logger("error.log");
