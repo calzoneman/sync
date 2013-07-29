@@ -27,7 +27,7 @@ var Logger = function(filename) {
 
 Logger.prototype.log = function () {
     if(this.dead) {
-        Logger.errlog.log("WARNING: Attempted write to dead logger: ", this.filename);
+        errlog.log("WARNING: Attempted write to dead logger: ", this.filename);
         return;
     }
     var msg = "";
@@ -38,6 +38,10 @@ Logger.prototype.log = function () {
 }
 
 Logger.prototype.close = function () {
+    if(this.dead) {
+        errlog.log("WARNING: Attempted closure on dead logger: ", this.filename);
+        return;
+    }
     this.writer.end("", null, function () {
         this.dead = true;
     });
