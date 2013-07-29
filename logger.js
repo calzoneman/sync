@@ -26,13 +26,16 @@ var Logger = function(filename) {
 }
 
 Logger.prototype.log = function () {
-    if(this.dead) {
-        errlog.log("WARNING: Attempted write to dead logger: ", this.filename);
-        return;
-    }
     var msg = "";
     for(var i in arguments)
         msg += arguments[i];
+
+    if(this.dead) {
+        errlog.log("WARNING: Attempted write to dead logger: ", this.filename);
+        errlog.log("Message was: ", msg);
+        return;
+    }
+
     var str = "[" + getTimeString() + "] " + msg + "\n";
     this.writer.write(str);
 }
@@ -44,7 +47,7 @@ Logger.prototype.close = function () {
     }
     this.writer.end("", null, function () {
         this.dead = true;
-    });
+    }.bind(this));
 }
 
 var errlog = new Logger("error.log");
