@@ -55,6 +55,7 @@ var Server = {
         if(chan.registered)
             chan.saveDump();
         chan.playlist.die();
+        chan.logger.close();
         for(var i in this.channels) {
             if(this.channels[i].canonical_name == chan.canonical_name) {
                 this.channels.splice(i, 1);

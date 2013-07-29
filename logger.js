@@ -17,7 +17,6 @@ function getTimeString() {
 }
 
 var Logger = function(filename) {
-    this.dead = false;
     this.filename = filename;
     this.writer = fs.createWriteStream(filename, {
         flags: "a",
@@ -31,23 +30,25 @@ Logger.prototype.log = function () {
         msg += arguments[i];
 
     if(this.dead) {
-        errlog.log("WARNING: Attempted write to dead logger: ", this.filename);
-        errlog.log("Message was: ", msg);
         return;
     }
 
     var str = "[" + getTimeString() + "] " + msg + "\n";
-    this.writer.write(str);
+    try {
+        this.writer.write(str);
+    } catch(e) {
+        errlog.log("WARNING: Attempted logwrite failed: " + this.filename);
+        errlog.log("Message was: " + msg);
+        errlog.log(e);
+    }
 }
 
 Logger.prototype.close = function () {
-    if(this.dead) {
-        errlog.log("WARNING: Attempted closure on dead logger: ", this.filename);
-        return;
+    try {
+        this.writer.end();
+    } catch(e) {
+        errlog.log("Log close failed: " + this.filename);
     }
-    this.writer.end("", null, function () {
-        this.dead = true;
-    }.bind(this));
 }
 
 var errlog = new Logger("error.log");

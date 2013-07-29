@@ -268,7 +268,6 @@ Channel.prototype.saveDump = function() {
     };
     var text = JSON.stringify(dump);
     fs.writeFileSync("chandump/" + this.name, text);
-    this.logger.close();
 }
 
 // Save channel dumps every 5 minutes, in case of crash
