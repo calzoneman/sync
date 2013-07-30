@@ -6,7 +6,7 @@ var Logger = require("./logger");
 var Channel = require("./channel");
 var User = require("./user");
 
-const VERSION = "2.1.3";
+const VERSION = "2.1.4";
 
 function getIP(req) {
     var raw = req.connection.remoteAddress;

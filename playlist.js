@@ -239,6 +239,19 @@ Playlist.prototype.addMedia = function(data, callback) {
     };
     this.queueAction(action);
 
+    // Pre-cached data
+    if(typeof data.title === "string" &&
+       typeof data.seconds === "number") {
+        if(data.maxlength && data.seconds > data.maxlength) {
+            action.expire = 0;
+            callback("Media is too long!", null);
+            return;
+        }
+        it.media = new Media(data.id, data.title, data.seconds, data.type);
+        action.waiting = false;
+        return;
+    }
+
     InfoGetter.getMedia(data.id, data.type, function(err, media) {
         if(err) {
             action.expire = 0;

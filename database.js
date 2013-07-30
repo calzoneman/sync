@@ -900,6 +900,8 @@ function saveUserPlaylist(pl, user, name) {
     for(var i = 0; i < pl.length; i++) {
         var e = {
             id: pl[i].media.id,
+            title: pl[i].media.title,
+            seconds: pl[i].media.seconds,
             type: pl[i].media.type
         };
         time += pl[i].media.seconds;
