@@ -204,8 +204,10 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("chatMsg", function(data) {
         if(this.channel != null) {
-            this.setAFK(false);
-            this.autoAFK();
+            if(data.msg.indexOf("/afk") == -1) {
+                this.setAFK(false);
+                this.autoAFK();
+            }
             this.channel.tryChat(this, data);
         }
     }.bind(this));

@@ -837,7 +837,7 @@ function handlePermissionChange() {
         hasPermission("playlistjump") ||
         hasPermission("playlistdelete") ||
         hasPermission("settemp")) {
-        if(USEROPTS.first_visit) {
+        if(USEROPTS.first_visit && $("#plonotification").length == 0) {
             var al = makeAlert("Playlist Options", [
                 "From the Options menu, you can choose to automatically",
                 " hide the buttons on each entry (and show them when",
@@ -845,6 +845,7 @@ function handlePermissionChange() {
                 " style of playlist buttons.",
                 "<br>"].join(""))
                 .addClass("span12")
+                .attr("id", "plonotification")
                 .insertBefore($("#queue"));
 
             al.find(".close").remove();
