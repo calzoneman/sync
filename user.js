@@ -85,6 +85,8 @@ User.prototype.setAFK = function (afk) {
         return;
     var chan = this.channel;
     this.meta.afk = afk;
+    if(!afk)
+        this.autoAFK();
     if(this.meta.afk)
         chan.afkcount++;
     else
