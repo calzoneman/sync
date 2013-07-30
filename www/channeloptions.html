@@ -114,19 +114,6 @@
 </div>
 <div id="filteredit" class="span12">
     <p>Filters will be processed in the order that they are listed here.  Click and drag a row to rearrange the order.  Click a regex, flags, or replacement field to edit a filter.  Changes are automatically saved when you finish editing.</p>
-    <table class="table table-striped table-condensed">
-        <thead>
-            <tr>
-                <th>Delete</th>
-                <th>Name</th>
-                <th>Regex</th>
-                <th>Flags</th>
-                <th>Replacement</th>
-                <th>Affects Links</th>
-                <th>Active</th>
-            </tr>
-        </thead>
-    </table>
     <strong>Add Filter</strong>
     <form class="form-horizontal" action="javascript:void(0)">
         <div class="control-group">
@@ -175,6 +162,22 @@
             </div>
         </div>
     </form>
+    <table class="table table-striped table-condensed">
+        <thead>
+            <tr>
+                <th>Delete</th>
+                <th>Name</th>
+                <th>Regex</th>
+                <th>Flags</th>
+                <th>Replacement</th>
+                <th>Affects Links</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+    </table>
+    <p>Multi-Filter Editor (format: name regex flags replacement).  Only use this if you know what you are doing</p>
+    <textarea id="multifiltereditor" class="input-block-level" rows="10"></textarea>
+    <button class="btn btn-primary" id="multifiltersubmit">Add/Update</button>
 </div>
 <div id="cssedit" class="span12">
     <p>Max 20KB.  If you need more space, host the file externally and use the External CSS option</p>
