@@ -83,14 +83,17 @@ User.prototype.noflood = function(name, hz) {
 User.prototype.setAFK = function (afk) {
     if(this.channel === null)
         return;
+    var changed = this.meta.afk != afk;
     var chan = this.channel;
     this.meta.afk = afk;
     if(!afk)
         this.autoAFK();
-    if(this.meta.afk)
-        chan.afkcount++;
-    else
-        chan.afkcount--;
+    if(changed) {
+        if(this.meta.afk)
+            chan.afkcount++;
+        else
+            chan.afkcount--;
+    }
     if(chan.voteskip) {
         chan.voteskip.unvote(this.ip);
         var need = parseInt(chan.users.length * chan.opts.voteskip_ratio);
