@@ -72,26 +72,41 @@ var Server = {
     db: null,
     ips: {},
     acp: null,
+    httpaccess: null,
+    logHTTP: function (req, status) {
+        if(status === undefined)
+            status = 200;
+        var ip = req.connection.remoteAddress;
+        var ip2 = req.header("x-forwarded-for");
+        var ipstr = ip === ip2 ? ip : ip + " (X-Forwarded-For " + ip2 + ")";
+        this.httpaccess.log([ipstr, req.method, req.url, status, req.headers["user-agent"]].join(" "));
+    },
     init: function () {
+        this.httpaccess = new Logger.Logger("httpaccess.log");
         this.app = express();
         // channel path
         this.app.get("/r/:channel(*)", function (req, res, next) {
             var c = req.params.channel;
-            if(!c.match(/^[\w-_]+$/))
+            if(!c.match(/^[\w-_]+$/)) {
                 res.redirect("/" + c);
-            else
+            }
+            else {
+                this.logHTTP(req);
                 res.sendfile(__dirname + "/www/channel.html");
-        });
+            }
+        }.bind(this));
 
         // api path
         this.api = require("./api")(this);
         this.app.get("/api/:apireq(*)", function (req, res, next) {
+            this.logHTTP(req);
             this.api.handle(req.url.substring(5), req, res);
         }.bind(this));
 
         this.app.get("/", function (req, res, next) {
+            this.logHTTP(req);
             res.sendfile(__dirname + "/www/index.html");
-        });
+        }.bind(this));
 
         // default path
         this.app.get("/:thing(*)", function (req, res, next) {
@@ -101,6 +116,7 @@ var Server = {
             }
             res.sendfile(req.params.thing, opts, function (err) {
                 if(err) {
+                    this.logHTTP(req, err.status);
                     // Damn path traversal attacks
                     if(req.params.thing.indexOf("%2e") != -1) {
                         res.send("Don't try that again, I'll ban you");
@@ -116,17 +132,21 @@ var Server = {
                         res.send(err.status);
                     }
                 }
-            });
+                else {
+                    this.logHTTP(req);
+                }
+            }.bind(this));
         }.bind(this));
 
         // fallback
         this.app.use(function (err, req, res, next) {
+            this.logHTTP(req, err.status);
             if(err.status == 404) {
                 res.send(404);
             } else {
                 next(err);
             }
-        });
+        }.bind(this));
 
         // bind servers
         this.httpserv = this.app.listen(Server.cfg["web-port"],
