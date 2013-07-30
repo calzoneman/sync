@@ -77,9 +77,15 @@ var Server = {
         if(status === undefined)
             status = 200;
         var ip = req.connection.remoteAddress;
-        var ip2 = req.header("x-forwarded-for");
-        var ipstr = ip === ip2 ? ip : ip + " (X-Forwarded-For " + ip2 + ")";
-        this.httpaccess.log([ipstr, req.method, req.url, status, req.headers["user-agent"]].join(" "));
+        var ip2 = false;
+        if(this.cfg["trust-x-forward"])
+            ip2 = req.header("x-forwarded-for") || req.header("cf-connecting-ip");
+        var ipstr = !ip2 ? ip : ip + " (X-Forwarded-For " + ip2 + ")";
+        var url = req.url;
+        // Remove query
+        if(url.indexOf("?") != -1)
+            url = url.substring(0, url.lastIndexOf("?"));
+        this.httpaccess.log([ipstr, req.method, url, status, req.headers["user-agent"]].join(" "));
     },
     init: function () {
         this.httpaccess = new Logger.Logger("httpaccess.log");
