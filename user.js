@@ -626,7 +626,8 @@ User.prototype.login = function(name, pw, session) {
                         }
                     }
                 }
-                ActionLog.record(this.ip, name, "login-success");
+                if(this.global_rank >= 255)
+                    ActionLog.record(this.ip, name, "login-success");
                 this.loggedIn = true;
                 this.socket.emit("login", {
                     success: true,

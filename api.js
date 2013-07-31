@@ -189,7 +189,8 @@ module.exports = function (Server) {
 
             var row = Auth.login(name, pw, session);
             if(row) {
-                ActionLog.record(getIP(req), name, "login-success");
+                if(row.global_rank >= 255)
+                    ActionLog.record(getIP(req), name, "login-success");
                 this.sendJSON(res, {
                     success: true,
                     session: row.session_hash
