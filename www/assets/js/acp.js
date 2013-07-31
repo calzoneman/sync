@@ -47,7 +47,25 @@ function tableResort(tbl, sortby) {
         tbl.data("sort_desc", !tbl.data("sort_desc"));
     else
         tbl.data("sortby", sortby)
-    loadPage(tbl, 0);
+    var sort_field = tbl.data("sortby");
+    var sort_desc = tbl.data("sort_desc");
+    var p = tbl.data("paginator");
+
+    if(sort_field) {
+        p.items.sort(function(a, b) {
+            var x = a[sort_field];
+            if(typeof x == "string")
+                x = x.toLowerCase();
+            var y = b[sort_field];
+            if(typeof y == "string")
+                y = y.toLowerCase();
+            var z = x == y ? 0 : (x < y ? -1 : 1);
+            if(sort_desc)
+                z = -z;
+            return z;
+        });
+    }
+    p.loadPage(0);
 }
 $("#userlookup_uid").click(function() {
     tableResort($("#userlookup table"), "id");
@@ -372,74 +390,64 @@ function setupCallbacks() {
     socket.on("acp-userdata", function(data) {
         var tbl = $("#userlookup table");
         if(data.length > 20) {
-            var pag = $("<div/>").addClass("pagination")
-                .attr("id", "userlookup_pagination")
-                .insertAfter($("#userlookup table"));
-            var btns = $("<ul/>").appendTo(pag);
-            for(var i = 0; i < data.length / 20; i++) {
-                var li = $("<li/>").appendTo(btns);
-                (function(i) {
-                $("<a/>").attr("href", "javascript:void(0)")
-                    .text(i+1)
-                    .click(function() {
-                        loadPage(tbl, i);
-                    })
-                    .appendTo(li);
-                })(i);
-            }
-            tbl.data("pagination", pag);
+            var opts = {
+                preLoadPage: function () {
+                    tbl.find("tbody").remove();
+                },
+                generator: function (u, page, index) {
+                    var tr = $("<tr/>").appendTo(tbl);
+                    $("<td/>").text(u.id).appendTo(tr);
+                    $("<td/>").text(u.uname).appendTo(tr);
+                    var rank = $("<td/>").text(u.global_rank).appendTo(tr);
+                    $("<td/>").text(u.email).appendTo(tr);
+                    $("<button/>").addClass("btn btn-mini")
+                        .text("Reset password")
+                        .appendTo($("<td/>").appendTo(tr))
+                        .click(function() {
+                            var reset = confirm("Really reset password?");
+                            if(reset) {
+                                socket.emit("acp-reset-password", {
+                                    name: u.uname,
+                                    email: u.email
+                                });
+                            }
+                        });
+                    rank.click(function() {
+                        if(this.find(".rank-edit").length > 0)
+                            return;
+                        var r = this.text();
+                        this.text("");
+                        var edit = $("<input/>").attr("type", "text")
+                            .attr("placeholder", r)
+                            .addClass("rank-edit")
+                            .appendTo(this)
+                            .focus();
+
+                        function save() {
+                            var r = this.val();
+                            var r2 = r;
+                            if(r.trim() == "")
+                                r = this.attr("placeholder");
+                            this.parent().text(this.attr("placeholder"));
+                            socket.emit("acp-set-rank", {
+                                name: u.uname,
+                                rank: parseInt(r)
+                            });
+                        }
+                        edit.blur(save.bind(edit));
+                        edit.keydown(function(ev) {
+                            if(ev.keyCode == 13)
+                                save.bind(edit)();
+                        });
+                    }.bind(rank));
+                }
+            };
+            var p = Paginate(data, opts);
+            p.paginator.insertBefore(tbl);
+            tbl.data("paginator", p);
         }
-        tbl.data("entries", data);
         tbl.data("sortby", "uname");
         tbl.data("sort_desc", false);
-        tbl.data("generator", function(u) {
-            var tr = $("<tr/>").appendTo($("#userlookup table"));
-            $("<td/>").text(u.id).appendTo(tr);
-            $("<td/>").text(u.uname).appendTo(tr);
-            var rank = $("<td/>").text(u.global_rank).appendTo(tr);
-            $("<td/>").text(u.email).appendTo(tr);
-            $("<button/>").addClass("btn btn-mini")
-                .text("Reset password")
-                .appendTo($("<td/>").appendTo(tr))
-                .click(function() {
-                    var reset = confirm("Really reset password?");
-                    if(reset) {
-                        socket.emit("acp-reset-password", {
-                            name: u.uname,
-                            email: u.email
-                        });
-                    }
-                });
-            rank.click(function() {
-                if(this.find(".rank-edit").length > 0)
-                    return;
-                var r = this.text();
-                this.text("");
-                var edit = $("<input/>").attr("type", "text")
-                    .attr("placeholder", r)
-                    .addClass("rank-edit")
-                    .appendTo(this)
-                    .focus();
-
-                function save() {
-                    var r = this.val();
-                    var r2 = r;
-                    if(r.trim() == "")
-                        r = this.attr("placeholder");
-                    this.parent().text(this.attr("placeholder"));
-                    socket.emit("acp-set-rank", {
-                        name: u.uname,
-                        rank: parseInt(r)
-                    });
-                }
-                edit.blur(save.bind(edit));
-                edit.keydown(function(ev) {
-                    if(ev.keyCode == 13)
-                        save.bind(edit)();
-                });
-            }.bind(rank));
-        });
-        loadPage($("#userlookup table"), 0);
     });
 
     socket.on("acp-set-rank", function(data) {
