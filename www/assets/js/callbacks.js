@@ -426,25 +426,61 @@ Callbacks = {
         if(tbl.children().length > 1) {
             $(tbl.children()[1]).remove();
         }
-        $("#channelranks_pagination").remove();
-        if(entries.length > 20) {
-            var pag = $("<div/>").addClass("pagination span12")
-                .attr("id", "channelranks_pagination")
-                .prependTo($("#channelranks"));
-            var btns = $("<ul/>").appendTo(pag);
-            for(var i = 0; i < entries.length / 20; i++) {
-                var li = $("<li/>").appendTo(btns);
-                (function(i) {
-                $("<a/>").attr("href", "javascript:void(0)")
-                    .text(i+1)
-                    .click(function() {
-                        loadChannelRanksPage(i);
-                    })
-                    .appendTo(li);
-                })(i);
-            }
+        var p = tbl.data("paginator");
+        if(p) {
+            p.items = entries;
+            p.loadPage(0);
         }
-        loadChannelRanksPage(0);
+        else {
+            var opts = {
+                preLoadPage: function (p) {
+                    tbl.find("tbody").remove();
+                    tbl.data("page", p);
+                },
+                generator: function (item, page, index) {
+                    var tr = $("<tr/>").appendTo(tbl);
+                    var name = $("<td/>").text(item.name).appendTo(tr);
+                    name.addClass(getNameColor(item.rank));
+                    var rank = $("<td/>").text(item.rank)
+                        .css("min-width", "220px")
+                        .appendTo(tr);
+                    rank.click(function() {
+                        if(this.find(".rank-edit").length > 0)
+                            return;
+                        var r = this.text();
+                        this.text("");
+                        var edit = $("<input/>").attr("type", "text")
+                            .attr("placeholder", r)
+                            .addClass("rank-edit")
+                            .appendTo(this)
+                            .focus();
+                        if(parseInt(r) >= CLIENT.rank) {
+                            edit.attr("disabled", true);
+                        }
+                        function save() {
+                            var r = this.val();
+                            var r2 = r;
+                            if(r.trim() == "" || parseInt(r) >= CLIENT.rank || parseInt(r) < 1)
+                                r = this.attr("placeholder");
+                            r = parseInt(r) + "";
+                            this.parent().text(r);
+                            socket.emit("setChannelRank", {
+                                user: item.name,
+                                rank: parseInt(r)
+                            });
+                        }
+                        edit.blur(save.bind(edit));
+                        edit.keydown(function(ev) {
+                            if(ev.keyCode == 13)
+                                save.bind(edit)();
+                        });
+                    }.bind(rank));
+                }
+            };
+            var p = Paginate(entries, opts);
+            p.paginator.insertBefore($("#channelranks table"));
+            tbl.data("paginator", p);
+        }
     },
 
     setChannelRank: function(data) {
@@ -456,7 +492,9 @@ Callbacks = {
             }
         }
         $("#channelranks").data("entries", ents);
-        loadChannelRanksPage($("#channelranks").data("page"));
+        $("#channelranks table").data("paginator").loadPage(
+            $("#channelranks table").data("page")
+        );
     },
 
     voteskip: function(data) {

@@ -1419,63 +1419,6 @@ function genPermissionsEditor() {
     });
 }
 
-function loadChannelRanksPage(page) {
-    var entries = $("#channelranks").data("entries");
-    $("#channelranks").data("page", page);
-    var start = page * 20;
-    var tbl = $("#channelranks table");
-    if(tbl.children().length > 1) {
-        $(tbl.children()[1]).remove();
-    }
-    for(var i = start; i < start + 20 && i < entries.length; i++) {
-        var tr = $("<tr/>").appendTo(tbl);
-        var name = $("<td/>").text(entries[i].name).appendTo(tr);
-        name.addClass(getNameColor(entries[i].rank));
-        var rank = $("<td/>").text(entries[i].rank)
-            .css("min-width", "220px")
-            .appendTo(tr);
-        (function(name) {
-        rank.click(function() {
-            if(this.find(".rank-edit").length > 0)
-                return;
-            var r = this.text();
-            this.text("");
-            var edit = $("<input/>").attr("type", "text")
-                .attr("placeholder", r)
-                .addClass("rank-edit")
-                .appendTo(this)
-                .focus();
-            if(parseInt(r) >= CLIENT.rank) {
-                edit.attr("disabled", true);
-            }
-            function save() {
-                var r = this.val();
-                var r2 = r;
-                if(r.trim() == "" || parseInt(r) >= CLIENT.rank || parseInt(r) < 1)
-                    r = this.attr("placeholder");
-                r = parseInt(r) + "";
-                this.parent().text(r);
-                socket.emit("setChannelRank", {
-                    user: name,
-                    rank: parseInt(r)
-                });
-            }
-            edit.blur(save.bind(edit));
-            edit.keydown(function(ev) {
-                if(ev.keyCode == 13)
-                    save.bind(edit)();
-            });
-        }.bind(rank));
-        })(entries[i].name);
-    }
-    if($("#channelranks_pagination").length > 0) {
-        $("#channelranks_pagination").find("li").each(function() {
-            $(this).removeClass("active");
-        });
-        $($("#channelranks_pagination").find("li")[page]).addClass("active");
-    }
-}
-
 function waitUntilDefined(obj, key, fn) {
     if(typeof obj[key] === "undefined") {
         setTimeout(function () {
