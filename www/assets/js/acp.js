@@ -94,48 +94,23 @@ $("#show_actionlog").click(function () {
 $("#actionlog_filter").click(getActionLog);
 $("#actionlog_searchbtn").click(function() {
     var tbl = $("#actionlog table");
-    $("#actionlog tbody").remove();
-    var actions = $("#actionlog_filter").val();
     var sfield = $("#actionlog_sfield").val();
     var sval = $("#actionlog_search").val().toLowerCase();
     var sort = $("#actionlog_sort").val();
     var desc = $("#actionlog_sortorder").val() === "true";
     tbl.data("sort_desc", desc);
     tbl.data("sortby", sort);
-    var entries = [];
-    tbl.data("allentries").forEach(function(e) {
-        if(actions.indexOf(e.action) == -1)
-            return;
-        entries.push(e);
-    });
+    var entries = tbl.data("allentries");
     entries = entries.filter(function (item, i, arr) {
         var f = item[sfield];
         if(sfield === "time")
             f = new Date(f).toString().toLowerCase();
         return f.indexOf(sval) > -1;
     });
-    $("#actionlog_pagination").remove();
-    if(entries.length > 20) {
-        var pag = $("<div/>").addClass("pagination")
-            .attr("id", "actionlog_pagination")
-            .insertAfter($("#actionlog table"));
-        var btns = $("<ul/>").appendTo(pag);
-        for(var i = 0; i < entries.length / 20; i++) {
-            var li = $("<li/>").appendTo(btns);
-            (function(i) {
-            $("<a/>").attr("href", "javascript:void(0)")
-                .text(i+1)
-                .click(function() {
-                    loadPage(tbl, i);
-                })
-                .appendTo(li);
-            })(i);
-        }
-        tbl.data("pagination", pag);
-    }
-
-    $("#actionlog table").data("entries", entries);
-    loadPage($("#actionlog table"), 0);
+    tbl.data("entries", entries);
+    var p = tbl.data("paginator");
+    p.items = entries;
+    tableResort(tbl);
 });
 $("#actionlog_clear").click(function() {
     socket.emit("acp-actionlog-clear", $("#actionlog_filter").val());
@@ -143,7 +118,6 @@ $("#actionlog_clear").click(function() {
     getActionLog();
 });
 $("#actionlog_refresh").click(function() {
-    socket.emit("acp-actionlog-list");
     getActionLog();
 });
 $("#actionlog_ip").click(function() {
@@ -186,55 +160,48 @@ function getActionLog() {
     var types = "&actions=" + $("#actionlog_filter").val().join(",");
     $.getJSON(WEB_URL+"/api/json/readactionlog?"+AUTH+types+"&callback=?").done(function(entries) {
         var tbl = $("#actionlog table");
-        $("#actionlog tbody").remove();
-        $("#actionlog_pagination").remove();
-        if(entries.length > 20) {
-            var pag = $("<div/>").addClass("pagination")
-                .attr("id", "actionlog_pagination")
-                .insertAfter($("#actionlog table"));
-            var btns = $("<ul/>").appendTo(pag);
-            for(var i = 0; i < entries.length / 20; i++) {
-                var li = $("<li/>").appendTo(btns);
-                (function(i) {
-                $("<a/>").attr("href", "javascript:void(0)")
-                    .text(i+1)
-                    .click(function() {
-                        loadPage(tbl, i);
-                    })
-                    .appendTo(li);
-                })(i);
-            }
-            tbl.data("pagination", pag);
-        }
-
         entries.forEach(function (e) {
             e.time = parseInt(e.time);
         });
-        var tbl = $("#actionlog table");
+        var p = tbl.data("paginator");
+        if(p) {
+            p.items = entries;
+        }
+        else {
+            var opts = {
+                preLoadPage: function () {
+                    $("#actionlog tbody").remove();
+                },
+                generator: function (e, page, index) {
+                    var tr = $("<tr/>").appendTo($("#actionlog table"));
+                    var rem = $("<td/>").appendTo(tr);
+                    $("<button/>").addClass("btn btn-mini btn-danger")
+                        .html("<i class='icon-trash'></i>")
+                        .appendTo(rem)
+                        .click(function () {
+                            socket.emit("acp-actionlog-clear-one", e);
+                            tr.hide("blind", function () {
+                                tr.remove();
+                                getActionLog();
+                            });
+                        });
+                    $("<td/>").text(e.ip).appendTo(tr);
+                    $("<td/>").text(e.name).appendTo(tr);
+                    $("<td/>").text(e.action).appendTo(tr);
+                    $("<td/>").text(e.args).appendTo(tr);
+                    $("<td/>").text(new Date(e.time).toString()).appendTo(tr);
+                }
+            };
+            p = Paginate(entries, opts);
+            p.paginator.insertBefore($("#actionlog table"));
+            tbl.data("paginator", p);
+        }
+
         tbl.data("sortby", "time");
         tbl.data("sort_desc", true);
         tbl.data("entries", entries);
         tbl.data("allentries", entries);
-        tbl.data("generator", function(e) {
-            var tr = $("<tr/>").appendTo($("#actionlog table"));
-            var rem = $("<td/>").appendTo(tr);
-            $("<button/>").addClass("btn btn-mini btn-danger")
-                .html("<i class='icon-trash'></i>")
-                .appendTo(rem)
-                .click(function () {
-                    socket.emit("acp-actionlog-clear-one", e);
-                    tr.hide("blind", function () {
-                        tr.remove();
-                        getActionLog();
-                    });
-                });
-            $("<td/>").text(e.ip).appendTo(tr);
-            $("<td/>").text(e.name).appendTo(tr);
-            $("<td/>").text(e.action).appendTo(tr);
-            $("<td/>").text(e.args).appendTo(tr);
-            $("<td/>").text(new Date(e.time).toString()).appendTo(tr);
-        });
-        loadPage($("#actionlog table"), 0);
+        tableResort(tbl);
     });
 }
 function getChanlog() {
