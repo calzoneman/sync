@@ -880,23 +880,6 @@ Callbacks = {
         $("#search_clear").remove();
         clearSearchResults();
         $("#library").data("entries", data.results);
-        if(data.results.length > 100) {
-            var pag = $("<div/>").addClass("pagination")
-                .attr("id", "search_pagination")
-                .insertAfter($("#library"));
-            var btns = $("<ul/>").appendTo(pag);
-            for(var i = 0; i < data.results.length / 100; i++) {
-                var li = $("<li/>").appendTo(btns);
-                (function(i) {
-                $("<a/>").attr("href", "javascript:void(0)")
-                    .text(i+1)
-                    .click(function() {
-                        loadSearchPage(i);
-                    })
-                    .appendTo(li);
-                })(i);
-            }
-        }
         $("<button/>").addClass("btn btn-block")
             .addClass("span12")
             .css("margin-left", "0")
@@ -906,7 +889,38 @@ Callbacks = {
                 clearSearchResults();
             })
             .insertBefore($("#library"));
-        loadSearchPage(0);
+        var p = $("#library").data("paginator");
+        if(p) {
+            p.items = data.results;
+            p.loadPage(0);
+        }
+        else {
+            var opts = {
+                preLoadPage: function () {
+                    $("#library").html("");
+                },
+
+                generator: function (item, page, index) {
+                    var li = makeSearchEntry(item, false);
+                    if(hasPermission("playlistadd")) {
+                        if(item.thumb) {
+                            addLibraryButtons(li, item.id, "yt");
+                        }
+                        else {
+                            addLibraryButtons(li, item.id);
+                        }
+                    }
+                    $(li).appendTo($("#library"));
+                },
+
+                itemsPerPage: 100
+            };
+
+            p = Paginate(data.results, opts);
+            p.paginator.insertBefore($("#library"))
+                .attr("id", "search_pagination");
+            $("#library").data("paginator", p);
+        }
     },
 
     /* REGION Polls */

@@ -908,30 +908,9 @@ function handlePermissionChange() {
 function clearSearchResults() {
     $("#library").html("");
     $("#search_clear").remove();
-    $("#search_pagination").remove();
-}
-
-function loadSearchPage(page) {
-    $("#library").html("");
-    var results = $("#library").data("entries");
-    var start = page * 100;
-    for(var i = start; i < start + 100 && i < results.length; i++) {
-        var li = makeSearchEntry(results[i], false);
-        if(hasPermission("playlistadd")) {
-            if(results[i].thumb) {
-                addLibraryButtons(li, results[i].id, "yt");
-            }
-            else {
-                addLibraryButtons(li, results[i].id);
-            }
-        }
-        $(li).appendTo($("#library"));
-    }
-    if($("#search_pagination").length > 0) {
-        $("#search_pagination").find("li").each(function() {
-            $(this).removeClass("active");
-        });
-        $($("#search_pagination").find("li")[page]).addClass("active");
+    var p = $("#library").data("paginator");
+    if(p) {
+        p.paginator.html("");
     }
 }
 
