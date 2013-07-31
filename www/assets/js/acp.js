@@ -240,41 +240,6 @@ $("#userlookup_submit").click(function() {
     socket.emit("acp-lookup-user", $("#userlookup_name").val());
 });
 
-function loadPage(tbl, page) {
-    var sort_field = tbl.data("sortby");
-    var sort_desc = tbl.data("sort_desc");
-    var generator = tbl.data("generator");
-    var pag = tbl.data("pagination");
-    if(pag) {
-        pag.find("li").each(function() {
-            $(this).removeClass("active");
-        });
-        $(pag.find("li")[page]).addClass("active");
-    }
-    var e = tbl.data("entries");
-
-    tbl.find("tbody").remove();
-
-    if(sort_field) {
-        e.sort(function(a, b) {
-            var x = a[sort_field];
-            if(typeof x == "string")
-                x = x.toLowerCase();
-            var y = b[sort_field];
-            if(typeof y == "string")
-                y = y.toLowerCase();
-            var z = x == y ? 0 : (x < y ? -1 : 1);
-            if(sort_desc)
-                z = -z;
-            return z;
-        });
-    }
-
-    for(var i = page * 20; i < page * 20 + 20 && i < e.length; i++) {
-        generator(e[i]);
-    }
-}
-
 function setupCallbacks() {
     socket.on("connect", function() {
         if(NAME && SESSION) {
@@ -339,7 +304,11 @@ function setupCallbacks() {
 
     socket.on("acp-userdata", function(data) {
         var tbl = $("#userlookup table");
-        if(data.length > 20) {
+        var p = tbl.data("paginator");
+        if(p) {
+            p.items = data;
+        }
+        else {
             var opts = {
                 preLoadPage: function () {
                     tbl.find("tbody").remove();
@@ -392,12 +361,13 @@ function setupCallbacks() {
                     }.bind(rank));
                 }
             };
-            var p = Paginate(data, opts);
+            p = Paginate(data, opts);
             p.paginator.insertBefore(tbl);
             tbl.data("paginator", p);
         }
         tbl.data("sortby", "uname");
         tbl.data("sort_desc", false);
+        tableResort(tbl);
     });
 
     socket.on("acp-set-rank", function(data) {
