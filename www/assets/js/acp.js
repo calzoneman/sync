@@ -70,40 +70,10 @@ $("#listloaded_refresh").click(function() {
     socket.emit("acp-list-loaded");
 });
 menuHandler("#show_actionlog", "#actionlog");
-$("#show_actionlog").click(getActionLog);
-$("#actionlog_filter").click(function() {
-    var tbl = $("#actionlog table");
-    var actions = $(this).val();
-    $("#actionlog tbody").remove();
-    var entries = [];
-    tbl.data("allentries").forEach(function(e) {
-        if(actions.indexOf(e.action) == -1)
-            return;
-        entries.push(e);
-    });
-    $("#actionlog_pagination").remove();
-    if(entries.length > 20) {
-        var pag = $("<div/>").addClass("pagination")
-            .attr("id", "actionlog_pagination")
-            .insertAfter($("#actionlog table"));
-        var btns = $("<ul/>").appendTo(pag);
-        for(var i = 0; i < entries.length / 20; i++) {
-            var li = $("<li/>").appendTo(btns);
-            (function(i) {
-            $("<a/>").attr("href", "javascript:void(0)")
-                .text(i+1)
-                .click(function() {
-                    loadPage(tbl, i);
-                })
-                .appendTo(li);
-            })(i);
-        }
-        tbl.data("pagination", pag);
-    }
-
-    $("#actionlog table").data("entries", entries);
-    loadPage($("#actionlog table"), 0);
+$("#show_actionlog").click(function () {
+    socket.emit("acp-actionlog-list");
 });
+$("#actionlog_filter").click(getActionLog);
 $("#actionlog_searchbtn").click(function() {
     var tbl = $("#actionlog table");
     $("#actionlog tbody").remove();
@@ -151,9 +121,11 @@ $("#actionlog_searchbtn").click(function() {
 });
 $("#actionlog_clear").click(function() {
     socket.emit("acp-actionlog-clear", $("#actionlog_filter").val());
+    socket.emit("acp-actionlog-list");
     getActionLog();
 });
 $("#actionlog_refresh").click(function() {
+    socket.emit("acp-actionlog-list");
     getActionLog();
 });
 $("#actionlog_ip").click(function() {
@@ -193,12 +165,31 @@ function getErrlog() {
 }
 $("#errlog").click(getErrlog);
 function getActionLog() {
-    $.getJSON(WEB_URL+"/api/json/readactionlog?"+AUTH+"&callback=?").done(function(data) {
-        var entries = data;
-        var actions = [];
+    var types = "&actions=" + $("#actionlog_filter").val().join(",");
+    $.getJSON(WEB_URL+"/api/json/readactionlog?"+AUTH+types+"&callback=?").done(function(entries) {
+        var tbl = $("#actionlog table");
+        $("#actionlog tbody").remove();
+        $("#actionlog_pagination").remove();
+        if(entries.length > 20) {
+            var pag = $("<div/>").addClass("pagination")
+                .attr("id", "actionlog_pagination")
+                .insertAfter($("#actionlog table"));
+            var btns = $("<ul/>").appendTo(pag);
+            for(var i = 0; i < entries.length / 20; i++) {
+                var li = $("<li/>").appendTo(btns);
+                (function(i) {
+                $("<a/>").attr("href", "javascript:void(0)")
+                    .text(i+1)
+                    .click(function() {
+                        loadPage(tbl, i);
+                    })
+                    .appendTo(li);
+                })(i);
+            }
+            tbl.data("pagination", pag);
+        }
+
         entries.forEach(function (e) {
-            if(actions.indexOf(e.action) == -1)
-                actions.push(e.action);
             e.time = parseInt(e.time);
         });
         var tbl = $("#actionlog table");
@@ -225,15 +216,7 @@ function getActionLog() {
             $("<td/>").text(e.args).appendTo(tr);
             $("<td/>").text(new Date(e.time).toString()).appendTo(tr);
         });
-        $("#actionlog table").data("entries", entries);
-        $("#actionlog_filter").html("");
-        actions.sort(function(a, b) {
-            return a == b ? 0 : (a < b ? -1 : 1);
-        });
-        actions.forEach(function(a) {
-            $("<option/>").text(a).val(a).appendTo($("#actionlog_filter"));
-        });
-        tbl.find("tbody").remove();
+        loadPage($("#actionlog table"), 0);
     });
 }
 function getChanlog() {
@@ -563,6 +546,16 @@ function setupCallbacks() {
         new Chart($("#stat_users")[0].getContext("2d")).Line(user_data);
         new Chart($("#stat_channels")[0].getContext("2d")).Line(chan_data);
         new Chart($("#stat_mem")[0].getContext("2d")).Line(mem_data);
+    });
+
+    socket.on("acp-actionlog-list", function (alist) {
+        $("#actionlog_filter").html("");
+        alist.sort(function(a, b) {
+            return a == b ? 0 : (a < b ? -1 : 1);
+        });
+        alist.forEach(function(a) {
+            $("<option/>").text(a).val(a).appendTo($("#actionlog_filter"));
+        });
     });
 }
 

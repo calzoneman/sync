@@ -510,13 +510,15 @@ module.exports = function (Server) {
             var name = params.name || "";
             var pw = params.pw || "";
             var session = params.session || "";
+            var types = params.actions || "";
             var row = Auth.login(name, pw, session);
             if(!row || row.global_rank < 255) {
                 res.send(403);
                 return;
             }
 
-            var actions = ActionLog.readLog();
+            var actiontypes = types.split(",");
+            var actions = ActionLog.readLog(actiontypes);
             this.sendJSON(res, actions);
         },
 

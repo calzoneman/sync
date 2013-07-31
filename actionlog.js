@@ -105,12 +105,42 @@ exports.tooManyRegistrations = function (ip) {
     return rows.length > 4;
 }
 
-exports.readLog = function () {
+exports.getLogTypes = function () {
+    var db = Database.getConnection();
+    if(!db)
+        return false;
+
+    var query = "SELECT DISTINCT action FROM actionlog";
+    var result = db.querySync(query);
+    if(!result) {
+        Logger.errlog.log("! Failed to read action log");
+        return [];
+    }
+
+    result = result.fetchAllSync();
+    var actions = [];
+    for(var i in result)
+        actions.push(result[i].action);
+
+    return actions;
+}
+
+exports.readLog = function (actions) {
     var db = Database.getConnection();
     if(!db)
         return false;
 
     var query = "SELECT * FROM actionlog";
+    if(actions !== undefined) {
+        var list = new Array(actions.length);
+        for(var i in actions)
+            list[i] = "?";
+        list = list.join(",");
+        query += Database.createQuery(
+            " WHERE action IN ("+list+")",
+            actions
+        );
+    }
     var result = db.querySync(query);
     if(!result) {
         Logger.errlog.log("! Failed to read action log");
