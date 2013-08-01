@@ -18,28 +18,37 @@ function getTimeString() {
 
 var Logger = function(filename) {
     this.filename = filename;
-    this.buffer = [];
-
-    setInterval(function() {
-        this.flush();
-    }.bind(this), 15000);
+    this.writer = fs.createWriteStream(filename, {
+        flags: "a",
+        encoding: "utf-8"
+    });
 }
 
-Logger.prototype.log = function(what) {
-    this.buffer.push("[" + getTimeString() + "] " + what);
-}
+Logger.prototype.log = function () {
+    var msg = "";
+    for(var i in arguments)
+        msg += arguments[i];
 
-Logger.prototype.flush = function() {
-    if(this.buffer.length == 0)
+    if(this.dead) {
         return;
-    var text = this.buffer.join("\n") + "\n";
-    this.buffer = [];
-    fs.appendFile(this.filename, text, function(err) {
-        if(err) {
-            errlog.log("Append to " + this.filename + " failed: ");
-            errlog.log(err);
-        }
-    }.bind(this));
+    }
+
+    var str = "[" + getTimeString() + "] " + msg + "\n";
+    try {
+        this.writer.write(str);
+    } catch(e) {
+        errlog.log("WARNING: Attempted logwrite failed: " + this.filename);
+        errlog.log("Message was: " + msg);
+        errlog.log(e);
+    }
+}
+
+Logger.prototype.close = function () {
+    try {
+        this.writer.end();
+    } catch(e) {
+        errlog.log("Log close failed: " + this.filename);
+    }
 }
 
 var errlog = new Logger("error.log");

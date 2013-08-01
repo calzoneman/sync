@@ -779,6 +779,7 @@ function handleModPermissions() {
     $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
     $("#opt_show_public").attr("disabled", CLIENT.rank < 3);
     $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
+    $("#opt_afktimeout").val(CHANNEL.opts.afk_timeout);
     $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
     (function() {
@@ -836,7 +837,7 @@ function handlePermissionChange() {
         hasPermission("playlistjump") ||
         hasPermission("playlistdelete") ||
         hasPermission("settemp")) {
-        if(USEROPTS.first_visit) {
+        if(USEROPTS.first_visit && $("#plonotification").length == 0) {
             var al = makeAlert("Playlist Options", [
                 "From the Options menu, you can choose to automatically",
                 " hide the buttons on each entry (and show them when",
@@ -844,6 +845,7 @@ function handlePermissionChange() {
                 " style of playlist buttons.",
                 "<br>"].join(""))
                 .addClass("span12")
+                .attr("id", "plonotification")
                 .insertBefore($("#queue"));
 
             al.find(".close").remove();
@@ -906,30 +908,9 @@ function handlePermissionChange() {
 function clearSearchResults() {
     $("#library").html("");
     $("#search_clear").remove();
-    $("#search_pagination").remove();
-}
-
-function loadSearchPage(page) {
-    $("#library").html("");
-    var results = $("#library").data("entries");
-    var start = page * 100;
-    for(var i = start; i < start + 100 && i < results.length; i++) {
-        var li = makeSearchEntry(results[i], false);
-        if(hasPermission("playlistadd")) {
-            if(results[i].thumb) {
-                addLibraryButtons(li, results[i].id, "yt");
-            }
-            else {
-                addLibraryButtons(li, results[i].id);
-            }
-        }
-        $(li).appendTo($("#library"));
-    }
-    if($("#search_pagination").length > 0) {
-        $("#search_pagination").find("li").each(function() {
-            $(this).removeClass("active");
-        });
-        $($("#search_pagination").find("li")[page]).addClass("active");
+    var p = $("#library").data("paginator");
+    if(p) {
+        p.paginator.html("");
     }
 }
 
@@ -1415,63 +1396,6 @@ function genPermissionsEditor() {
         });
         socket.emit("setPermissions", perms);
     });
-}
-
-function loadChannelRanksPage(page) {
-    var entries = $("#channelranks").data("entries");
-    $("#channelranks").data("page", page);
-    var start = page * 20;
-    var tbl = $("#channelranks table");
-    if(tbl.children().length > 1) {
-        $(tbl.children()[1]).remove();
-    }
-    for(var i = start; i < start + 20 && i < entries.length; i++) {
-        var tr = $("<tr/>").appendTo(tbl);
-        var name = $("<td/>").text(entries[i].name).appendTo(tr);
-        name.addClass(getNameColor(entries[i].rank));
-        var rank = $("<td/>").text(entries[i].rank)
-            .css("min-width", "220px")
-            .appendTo(tr);
-        (function(name) {
-        rank.click(function() {
-            if(this.find(".rank-edit").length > 0)
-                return;
-            var r = this.text();
-            this.text("");
-            var edit = $("<input/>").attr("type", "text")
-                .attr("placeholder", r)
-                .addClass("rank-edit")
-                .appendTo(this)
-                .focus();
-            if(parseInt(r) >= CLIENT.rank) {
-                edit.attr("disabled", true);
-            }
-            function save() {
-                var r = this.val();
-                var r2 = r;
-                if(r.trim() == "" || parseInt(r) >= CLIENT.rank || parseInt(r) < 1)
-                    r = this.attr("placeholder");
-                r = parseInt(r) + "";
-                this.parent().text(r);
-                socket.emit("setChannelRank", {
-                    user: name,
-                    rank: parseInt(r)
-                });
-            }
-            edit.blur(save.bind(edit));
-            edit.keydown(function(ev) {
-                if(ev.keyCode == 13)
-                    save.bind(edit)();
-            });
-        }.bind(rank));
-        })(entries[i].name);
-    }
-    if($("#channelranks_pagination").length > 0) {
-        $("#channelranks_pagination").find("li").each(function() {
-            $(this).removeClass("active");
-        });
-        $($("#channelranks_pagination").find("li")[page]).addClass("active");
-    }
 }
 
 function waitUntilDefined(obj, key, fn) {

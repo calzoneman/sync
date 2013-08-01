@@ -24,8 +24,7 @@ function handle(chan, user, msg, data) {
         }
     }
     else if(msg.indexOf("/afk") == 0) {
-        user.meta.afk = !user.meta.afk;
-        chan.broadcastUserUpdate(user);
+        user.setAFK(!user.meta.afk);
     }
     else if(msg.indexOf("/m ") == 0) {
         if(user.rank >= Rank.Moderator) {

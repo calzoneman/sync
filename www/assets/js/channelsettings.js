@@ -69,7 +69,8 @@
             externaljs: $("#opt_externaljs").val(),
             chat_antiflood: $("#opt_chat_antiflood").prop("checked"),
             show_public: $("#opt_show_public").prop("checked"),
-            enable_link_regex: $("#opt_enable_link_regex").prop("checked")
+            enable_link_regex: $("#opt_enable_link_regex").prop("checked"),
+            afk_timeout: parseInt($("#opt_afktimeout").val())
         });
     });
 
@@ -140,5 +141,61 @@
         $("#newfilter_regex").val("");
         $("#newfilter_flags").val("g");
         $("#newfilter_replace").val("");
+    });
+    function splitreEntry(str) {
+        var split = [];
+        var current = [];
+        for(var i = 0; i < str.length; i++) {
+            if(str[i] == "\\" && i+1 < str.length && str[i+1].match(/\s/)) {
+                current.push(str[i+1]);
+                i++;
+                continue;
+            }
+            else if(str[i].match(/\s/)) {
+                split.push(current.join(""));
+                current = [];
+            }
+            else {
+                current.push(str[i]);
+            }
+        }
+        split.push(current.join(""));
+        return split;
+    }
+
+    $("#multifiltersubmit").click(function () {
+        var lines = $("#multifiltereditor").val().split("\n");
+        for(var i in lines) {
+            var ln = lines[i];
+            var fields = splitreEntry(ln);
+            if(fields.length < 3 || fields.length > 4) {
+                makeAlert("Error on line "+(parseInt(i)+1)+".  Format: name regex flags replacement", "alert-error")
+                    .insertBefore($("#multifiltereditor"));
+                return;
+            }
+
+            var name = "", re = "", f = "", replace = "";
+            if(fields.length == 3) {
+                name = fields[0];
+                re = fields[0];
+                f = fields[1];
+                replace = fields[2];
+            }
+            else if(fields.length == 4) {
+                name = fields[0];
+                re = fields[1];
+                f = fields[2];
+                replace = fields[3];
+            }
+
+            socket.emit("updateFilter", {
+                name: name,
+                source: re,
+                flags: f,
+                replace: replace,
+                filterlinks: false,
+                active: true
+            });
+        }
     });
 })();

@@ -1,16 +1,17 @@
 var path = require("path");
+var fs = require("fs");
 var express = require("express");
 var Config = require("./config");
 var Logger = require("./logger");
 var Channel = require("./channel");
 var User = require("./user");
 
-const VERSION = "2.1.2";
+const VERSION = "2.1.4";
 
 function getIP(req) {
     var raw = req.connection.remoteAddress;
     var forward = req.header("x-forwarded-for");
-    if(Config.REVERSE_PROXY && forward) {
+    if(Server.cfg["trust-x-forward"] && forward) {
         var ip = forward.split(",")[0];
         Logger.syslog.log("REVPROXY " + raw + " => " + ip);
         return ip;
@@ -20,7 +21,7 @@ function getIP(req) {
 
 function getSocketIP(socket) {
     var raw = socket.handshake.address.address;
-    if(Config.REVERSE_PROXY) {
+    if(Server.cfg["trust-x-forward"]) {
         if(typeof socket.handshake.headers["x-forwarded-for"] == "string") {
             var ip = socket.handshake.headers["x-forwarded-for"]
                 .split(",")[0];
@@ -54,6 +55,7 @@ var Server = {
         if(chan.registered)
             chan.saveDump();
         chan.playlist.die();
+        chan.logger.close();
         for(var i in this.channels) {
             if(this.channels[i].canonical_name == chan.canonical_name) {
                 this.channels.splice(i, 1);
@@ -70,34 +72,57 @@ var Server = {
     db: null,
     ips: {},
     acp: null,
+    httpaccess: null,
+    logHTTP: function (req, status) {
+        if(status === undefined)
+            status = 200;
+        var ip = req.connection.remoteAddress;
+        var ip2 = false;
+        if(this.cfg["trust-x-forward"])
+            ip2 = req.header("x-forwarded-for") || req.header("cf-connecting-ip");
+        var ipstr = !ip2 ? ip : ip + " (X-Forwarded-For " + ip2 + ")";
+        var url = req.url;
+        // Remove query
+        if(url.indexOf("?") != -1)
+            url = url.substring(0, url.lastIndexOf("?"));
+        this.httpaccess.log([ipstr, req.method, url, status, req.headers["user-agent"]].join(" "));
+    },
     init: function () {
+        this.httpaccess = new Logger.Logger("httpaccess.log");
         this.app = express();
         // channel path
         this.app.get("/r/:channel(*)", function (req, res, next) {
             var c = req.params.channel;
-            if(!c.match(/^[\w-_]+$/))
+            if(!c.match(/^[\w-_]+$/)) {
                 res.redirect("/" + c);
-            else
+            }
+            else {
+                this.logHTTP(req);
                 res.sendfile(__dirname + "/www/channel.html");
-        });
+            }
+        }.bind(this));
 
         // api path
         this.api = require("./api")(this);
         this.app.get("/api/:apireq(*)", function (req, res, next) {
+            this.logHTTP(req);
             this.api.handle(req.url.substring(5), req, res);
         }.bind(this));
 
         this.app.get("/", function (req, res, next) {
+            this.logHTTP(req);
             res.sendfile(__dirname + "/www/index.html");
-        });
+        }.bind(this));
 
         // default path
         this.app.get("/:thing(*)", function (req, res, next) {
             var opts = {
                 root: __dirname + "/www",
+                maxAge: this.cfg["asset-cache-ttl"]
             }
             res.sendfile(req.params.thing, opts, function (err) {
                 if(err) {
+                    this.logHTTP(req, err.status);
                     // Damn path traversal attacks
                     if(req.params.thing.indexOf("%2e") != -1) {
                         res.send("Don't try that again, I'll ban you");
@@ -113,21 +138,27 @@ var Server = {
                         res.send(err.status);
                     }
                 }
-            });
-        });
+                else {
+                    this.logHTTP(req);
+                }
+            }.bind(this));
+        }.bind(this));
 
         // fallback
         this.app.use(function (err, req, res, next) {
+            this.logHTTP(req, err.status);
             if(err.status == 404) {
                 res.send(404);
             } else {
                 next(err);
             }
-        });
+        }.bind(this));
 
         // bind servers
-        this.httpserv = this.app.listen(Config.WEBSERVER_PORT);
-        this.ioserv = express().listen(Config.IO_PORT);
+        this.httpserv = this.app.listen(Server.cfg["web-port"],
+                                        Server.cfg["express-host"]);
+        this.ioserv = express().listen(Server.cfg["io-port"],
+                                       Server.cfg["express-host"]);
 
         // init socket.io
         this.io = require("socket.io").listen(this.ioserv);
@@ -152,7 +183,7 @@ var Server = {
                 this.ips[ip] = 0;
             this.ips[ip]++;
 
-            if(this.ips[ip] > Config.MAX_PER_IP) {
+            if(this.ips[ip] > Server.cfg["ip-connection-limit"]) {
                 socket.emit("kick", {
                     reason: "Too many connections from your IP address"
                 });
@@ -167,7 +198,7 @@ var Server = {
 
         // init database
         this.db = require("./database");
-        this.db.setup(Config);
+        this.db.setup(Server.cfg);
         this.db.init();
 
         // init ACP
@@ -190,15 +221,25 @@ var Server = {
 };
 
 Logger.syslog.log("Starting CyTube v" + VERSION);
-Server.init();
 
-if(!Config.DEBUG) {
-    process.on("uncaughtException", function (err) {
-        Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
-        Logger.errlog.log(err.stack);
-    });
+fs.exists("chanlogs", function (exists) {
+    exists || fs.mkdir("chanlogs");
+});
 
-    process.on("SIGINT", function () {
-        Server.shutdown();
-    });
-}
+fs.exists("chandump", function (exists) {
+    exists || fs.mkdir("chandump");
+});
+
+Config.load(Server, "cfg.json", function () {
+    Server.init();
+    if(!Server.cfg["debug"]) {
+        process.on("uncaughtException", function (err) {
+            Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
+            Logger.errlog.log(err.stack);
+        });
+
+        process.on("SIGINT", function () {
+            Server.shutdown();
+        });
+    }
+});

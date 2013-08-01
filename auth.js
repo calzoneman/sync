@@ -11,7 +11,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var mysql = require("mysql-libmysqlclient");
 var Database = require("./database.js");
-var Config = require("./config.js");
 var bcrypt = require("bcrypt");
 var hashlib = require("node_hash");
 var Logger = require("./logger.js");

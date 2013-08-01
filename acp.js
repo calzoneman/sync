@@ -150,6 +150,12 @@ module.exports = function (Server) {
                 }
             });
 
+            user.socket.on("acp-actionlog-list", function () {
+                user.socket.emit("acp-actionlog-list",
+                    ActionLog.getLogTypes()
+                );
+            });
+
             user.socket.on("acp-actionlog-clear", function(data) {
                 ActionLog.clear(data);
                 ActionLog.record(user.ip, user.name, "acp-actionlog-clear", data);

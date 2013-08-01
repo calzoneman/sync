@@ -34,6 +34,7 @@ var Channel = function(name, Server) {
     // Initialize defaults
     this.registered = false;
     this.users = [];
+    this.afkcount = 0;
     this.playlist = new Playlist(this);
     this.library = {};
     this.position = -1;
@@ -76,6 +77,7 @@ var Channel = function(name, Server) {
     this.opts = {
         allow_voteskip: true,
         voteskip_ratio: 0.5,
+        afk_timeout: 180,
         pagetitle: this.name,
         maxlength: 0,
         externalcss: "",
@@ -201,6 +203,9 @@ Channel.prototype.loadDump = function() {
             }
             this.sendAll("setPermissions", this.permissions);
             this.broadcastOpts();
+            this.users.forEach(function (u) {
+                u.autoAFK();
+            });
             if(data.filters) {
                 for(var i = 0; i < data.filters.length; i++) {
                     var f = data.filters[i];
@@ -263,7 +268,6 @@ Channel.prototype.saveDump = function() {
     };
     var text = JSON.stringify(dump);
     fs.writeFileSync("chandump/" + this.name, text);
-    this.logger.flush();
 }
 
 // Save channel dumps every 5 minutes, in case of crash
@@ -958,6 +962,7 @@ Channel.prototype.broadcastChatFilters = function() {
 Channel.prototype.broadcastVoteskipUpdate = function() {
     var amt = this.voteskip ? this.voteskip.counts[0] : 0;
     var need = this.voteskip ? parseInt(this.users.length * this.opts.voteskip_ratio) : 0;
+    need -= this.afkcount;
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "seeVoteskip") ||
                 this.leader == this.users[i]) {
@@ -1536,12 +1541,18 @@ Channel.prototype.tryVoteskip = function(user) {
     if(!this.opts.allow_voteskip) {
         return;
     }
+    // Voteskip = auto-unafk
+    if(user.meta.afk) {
+        user.setAFK(false);
+    }
     if(!this.voteskip) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }
     this.voteskip.vote(user.ip, 0);
     this.broadcastVoteskipUpdate();
-    if(this.voteskip.counts[0] >= parseInt(this.users.length * this.opts.voteskip_ratio)) {
+    var need = parseInt(this.users.length * this.opts.voteskip_ratio);
+    need -= this.afkcount;
+    if(this.voteskip.counts[0] >= need) {
         this.playNext();
     }
 }
@@ -1680,6 +1691,11 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
         if(key in data) {
             if(key in adminonly && user.rank < Rank.Owner) {
                 continue;
+            }
+            if(key === "afk_timeout" && this.opts[key] != data[key]) {
+                this.users.forEach(function (u) {
+                    u.autoAFK();
+                });
             }
             this.opts[key] = data[key];
         }
@@ -1829,7 +1845,8 @@ Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
     this.chatbuffer.push(msgobj);
     if(this.chatbuffer.length > 15)
         this.chatbuffer.shift();
-    this.logger.log("<" + username + "." + msgclass + "> " + msg);
+    var unescaped = sanitize(msg).entityDecode();
+    this.logger.log("<" + username + "." + msgclass + "> " + unescaped);
 };
 
 /* REGION Rank stuff */

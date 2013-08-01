@@ -14,7 +14,6 @@ var Auth = require("./auth.js");
 var Channel = require("./channel.js").Channel;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
-var Config = require("./config.js");
 var ActionLog = require("./actionlog");
 
 // Represents a client connected via socket.io
@@ -38,6 +37,8 @@ var User = function(socket, Server) {
         image: "",
         text: ""
     };
+    this.awaytimer = false;
+    this.autoAFK();
 
     this.initCallbacks();
     if(Server.announcement != null) {
@@ -77,6 +78,46 @@ User.prototype.noflood = function(name, hz) {
             return false;
         }
     }
+}
+
+User.prototype.setAFK = function (afk) {
+    if(this.channel === null)
+        return;
+    var changed = this.meta.afk != afk;
+    var chan = this.channel;
+    this.meta.afk = afk;
+    if(!afk)
+        this.autoAFK();
+    if(changed) {
+        if(this.meta.afk)
+            chan.afkcount++;
+        else
+            chan.afkcount--;
+    }
+    if(chan.voteskip) {
+        chan.voteskip.unvote(this.ip);
+        var need = parseInt(chan.users.length * chan.opts.voteskip_ratio);
+        need -= chan.afkcount;
+        if(chan.voteskip.counts[0] >= need) {
+            chan.playNext();
+        }
+        else {
+            chan.broadcastVoteskipUpdate();
+        }
+    }
+    chan.broadcastUserUpdate(this);
+}
+
+User.prototype.autoAFK = function () {
+    if(this.awaytimer)
+        clearTimeout(this.awaytimer);
+
+    if(this.channel === null || this.channel.opts.afk_timeout == 0)
+        return;
+
+    this.awaytimer = setTimeout(function () {
+        this.setAFK(true);
+    }.bind(this), this.channel.opts.afk_timeout * 1000);
 }
 
 User.prototype.initCallbacks = function() {
@@ -166,6 +207,10 @@ User.prototype.initCallbacks = function() {
 
     this.socket.on("chatMsg", function(data) {
         if(this.channel != null) {
+            if(data.msg.indexOf("/afk") == -1) {
+                this.setAFK(false);
+                this.autoAFK();
+            }
             this.channel.tryChat(this, data);
         }
     }.bind(this));
@@ -506,11 +551,12 @@ User.prototype.login = function(name, pw, session) {
     if(pw == "" && session == "") {
         if(this.ip in lastguestlogin) {
             var diff = (Date.now() - lastguestlogin[this.ip])/1000;
-            if(diff < Config.GUEST_LOGIN_DELAY) {
+            if(diff < this.server.cfg["guest-login-delay"]) {
                 this.socket.emit("login", {
                     success: false,
                     error: ["Guest logins are restricted to one per ",
-                            Config.GUEST_LOGIN_DELAY + " seconds per IP.  ",
+                            this.server.cfg["guest-login-delay"]
+                            + " seconds per IP.  ",
                             "This restriction does not apply to registered users."
                             ].join("")
                 });
@@ -580,7 +626,8 @@ User.prototype.login = function(name, pw, session) {
                         }
                     }
                 }
-                ActionLog.record(this.ip, name, "login-success");
+                if(this.global_rank >= 255)
+                    ActionLog.record(this.ip, name, "login-success");
                 this.loggedIn = true;
                 this.socket.emit("login", {
                     success: true,
