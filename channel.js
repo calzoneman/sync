@@ -642,6 +642,8 @@ Channel.prototype.userLeave = function(user) {
     var idx = this.users.indexOf(user);
     if(idx >= 0 && idx < this.users.length)
         this.users.splice(idx, 1);
+    if(user.meta.afk)
+        this.afkcount--;
     this.broadcastVoteskipUpdate();
     this.broadcastUsercount();
     if(user.name != "") {
@@ -961,8 +963,8 @@ Channel.prototype.broadcastChatFilters = function() {
 
 Channel.prototype.broadcastVoteskipUpdate = function() {
     var amt = this.voteskip ? this.voteskip.counts[0] : 0;
-    var need = this.voteskip ? parseInt(this.users.length * this.opts.voteskip_ratio) : 0;
-    need -= this.afkcount;
+    var count = this.users.length - this.afkcount;
+    var need = this.voteskip ? parseInt(count * this.opts.voteskip_ratio) : 0;
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "seeVoteskip") ||
                 this.leader == this.users[i]) {
