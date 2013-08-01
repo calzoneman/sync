@@ -83,7 +83,8 @@ User.prototype.noflood = function(name, hz) {
 User.prototype.setAFK = function (afk) {
     if(this.channel === null)
         return;
-    var changed = this.meta.afk != afk;
+    if(this.meta.afk === afk)
+        return;
     var chan = this.channel;
     this.meta.afk = afk;
     if(afk) {
@@ -96,7 +97,10 @@ User.prototype.setAFK = function (afk) {
         this.autoAFK();
     }
     chan.checkVoteskipPass();
-    chan.broadcastUserUpdate(this);
+    chan.sendAll("setAFK", {
+        name: this.name,
+        afk: afk
+    });
 }
 
 User.prototype.autoAFK = function () {
