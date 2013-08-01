@@ -340,6 +340,20 @@ var Getters = {
         var title = "JWPlayer - " + id;
         var media = new Media(id, title, "--:--", "jw");
         callback(false, media);
+    },
+
+    /* rtmp stream */
+    rt: function (id, callback) {
+        var title = "Livestream";
+        var media = new Media(id, title, "--:--", "rt");
+        callback(false, media);
+    },
+
+    /* imgur.com albums */
+    im: function (id, callback) {
+        var title = "Imgur Album - " + id;
+        var media = new Media(id, title, "--:--", "im");
+        callback(false, media);
     }
 }
 
