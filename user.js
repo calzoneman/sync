@@ -96,8 +96,8 @@ User.prototype.setAFK = function (afk) {
     }
     if(chan.voteskip) {
         chan.voteskip.unvote(this.ip);
-        var need = parseInt(chan.users.length * chan.opts.voteskip_ratio);
-        need -= chan.afkcount;
+        var count = chan.users.length - chan.afkcount;
+        var need = parseInt(count * chan.opts.voteskip_ratio);
         if(chan.voteskip.counts[0] >= need) {
             chan.playNext();
         }

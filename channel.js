@@ -1550,8 +1550,8 @@ Channel.prototype.tryVoteskip = function(user) {
     }
     this.voteskip.vote(user.ip, 0);
     this.broadcastVoteskipUpdate();
-    var need = parseInt(this.users.length * this.opts.voteskip_ratio);
-    need -= this.afkcount;
+    var count = this.users.length - this.afkcount;
+    var need = parseInt(count * this.opts.voteskip_ratio);
     if(this.voteskip.counts[0] >= need) {
         this.playNext();
     }
