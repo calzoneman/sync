@@ -132,7 +132,106 @@ var Getters = {
         });
     },
 
-    // TODO Add youtube playlists
+    /* youtube.com playlists */
+    yp: function (id, callback, url) {
+        var path = "/feeds/api/playlists/" + id + "?v=2&alt=json";
+        // YouTube only returns 25 at a time, so I have to keep asking
+        // for more with the URL they give me
+        if(url !== undefined) {
+            path = "/" + url.split("gdata.youtube.com")[1];
+        }
+        var options = {
+            host: "gdata.youtube.com",
+            port: 443,
+            path: path,
+            method: "GET",
+            dataType: "jsonp",
+            timeout: 1000
+        };
+
+        urlRetrieve(https, options, function (status, data) {
+            if(status === 404) {
+                callback("Playlist not found", null);
+                return;
+            } else if(status === 403) {
+                callback("Playlist is private", null);
+                return;
+            } else if(status !== 200) {
+                callback(true, null);
+            }
+
+            try {
+                data = JSON.parse(data);
+                var vids = [];
+                for(var i in data.feed.entry) {
+                    try {
+                        var item = data.feed.entry[i];
+                        var id = item.media$group.yt$videoid.$t;
+                        var title = item.title.$t;
+                        var seconds = item.media$group.yt$duration.seconds;
+                        var media = new Media(id, title, seconds "yt");
+                        vids.push(media);
+                    } catch(e) {
+                    }
+                }
+
+                callback(false, vids);
+
+                var links = data.feed.link;
+                for(var i in links) {
+                    if(links[i].rel === "next")
+                        Getters["yp"](id, callback, links[i].href);
+                }
+            } catch(e) {
+                callback(true, null);
+            }
+
+        });
+    },
+
+    /* youtube.com search */
+    ytSearch: function (terms, callback) {
+        for(var i in terms)
+            terms[i] = encodeURIComponent(terms[i]);
+        var query = terms.join("+");
+
+        var options = {
+            host: "gdata.youtube.com",
+            port: 443,
+            path: "/feeds/api/videos/?q=" + query + "&v=2&alt=json",
+            method: "GET",
+            dataType: "jsonp",
+            timeout: 1000
+        };
+
+        urlRetrieve(https, options, function (status, data) {
+            if(status !== 200) {
+                callback(true, null);
+                return;
+            }
+
+            try {
+                data = JSON.parse(data);
+                var vids = [];
+                for(var i in data.feed.entry) {
+                    try {
+                        var item = data.feed.entry[i];
+                        var id = item.media$group.yt$videoid.$t;
+                        var title = item.title.$t;
+                        var seconds = item.media$group.yt$duration.seconds;
+                        var media = new Media(id, title, seconds, "yt");
+                        media.thumb = item.media$group.media$thumbnail[0];
+                        vids.push(media);
+                    } catch(e) {
+                    }
+                }
+
+                callback(false, vids);
+            } catch(e) {
+                callback(true, null);
+            }
+        });
+    },
 
     /* vimeo.com */
     vi: function (id, callback) {
