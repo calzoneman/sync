@@ -965,7 +965,7 @@ Channel.prototype.broadcastChatFilters = function() {
 Channel.prototype.broadcastVoteskipUpdate = function() {
     var amt = this.voteskip ? this.voteskip.counts[0] : 0;
     var count = this.users.length - this.afkers.length;
-    var need = this.voteskip ? parseInt(count * this.opts.voteskip_ratio) : 0;
+    var need = this.voteskip ? Math.ceil(count * this.opts.voteskip_ratio) : 0;
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "seeVoteskip") ||
                 this.leader == this.users[i]) {
@@ -1563,7 +1563,7 @@ Channel.prototype.checkVoteskipPass = function () {
         return false;
 
     var count = this.users.length - this.afkers.length;
-    var need = parseInt(count * this.opts.voteskip_ratio);
+    var need = Math.ceil(count * this.opts.voteskip_ratio);
     if(this.server.cfg["debug"]) {
         console.log("afkers=", this.afkers.length);
         console.log("users =", this.users.length);
