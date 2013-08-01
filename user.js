@@ -86,25 +86,16 @@ User.prototype.setAFK = function (afk) {
     var changed = this.meta.afk != afk;
     var chan = this.channel;
     this.meta.afk = afk;
-    if(!afk)
+    if(afk) {
+        if(chan.afkers.indexOf(this.name.toLowerCase()) == -1)
+            chan.afkers.push(this.name.toLowerCase());
+    }
+    else {
+        if(chan.afkers.indexOf(this.name.toLowerCase()) != -1)
+            chan.afkers.splice(chan.afkers.indexOf(this.name.toLowerCase()), 1);
         this.autoAFK();
-    if(changed) {
-        if(this.meta.afk)
-            chan.afkcount++;
-        else
-            chan.afkcount--;
     }
-    if(chan.voteskip) {
-        chan.voteskip.unvote(this.ip);
-        var count = chan.users.length - chan.afkcount;
-        var need = parseInt(count * chan.opts.voteskip_ratio);
-        if(chan.voteskip.counts[0] >= need) {
-            chan.playNext();
-        }
-        else {
-            chan.broadcastVoteskipUpdate();
-        }
-    }
+    chan.checkVoteskipPass();
     chan.broadcastUserUpdate(this);
 }
 

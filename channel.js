@@ -34,7 +34,7 @@ var Channel = function(name, Server) {
     // Initialize defaults
     this.registered = false;
     this.users = [];
-    this.afkcount = 0;
+    this.afkers = [];
     this.playlist = new Playlist(this);
     this.library = {};
     this.position = -1;
@@ -642,9 +642,10 @@ Channel.prototype.userLeave = function(user) {
     var idx = this.users.indexOf(user);
     if(idx >= 0 && idx < this.users.length)
         this.users.splice(idx, 1);
-    if(user.meta.afk)
-        this.afkcount--;
-    this.broadcastVoteskipUpdate();
+    idx = this.afkers.indexOf(user.name.toLowerCase());
+    if(idx >= 0 && idx < this.afkers.length)
+        this.afkers.splice(idx, 1);
+    this.checkVoteskipPass();
     this.broadcastUsercount();
     if(user.name != "") {
         this.sendAll("userLeave", {
@@ -963,7 +964,7 @@ Channel.prototype.broadcastChatFilters = function() {
 
 Channel.prototype.broadcastVoteskipUpdate = function() {
     var amt = this.voteskip ? this.voteskip.counts[0] : 0;
-    var count = this.users.length - this.afkcount;
+    var count = this.users.length - this.afkers.length;
     var need = this.voteskip ? parseInt(count * this.opts.voteskip_ratio) : 0;
     for(var i = 0; i < this.users.length; i++) {
         if(Rank.hasPermission(this.users[i], "seeVoteskip") ||
@@ -1551,12 +1552,28 @@ Channel.prototype.tryVoteskip = function(user) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }
     this.voteskip.vote(user.ip, 0);
-    this.broadcastVoteskipUpdate();
-    var count = this.users.length - this.afkcount;
+    this.checkVoteskipPass();
+}
+
+Channel.prototype.checkVoteskipPass = function () {
+    if(!this.opts.allow_voteskip)
+        return false;
+
+    if(!this.voteskip)
+        return false;
+
+    var count = this.users.length - this.afkers.length;
     var need = parseInt(count * this.opts.voteskip_ratio);
-    if(this.voteskip.counts[0] >= need) {
-        this.playNext();
+    if(this.server.cfg["debug"]) {
+        console.log("afkers=", this.afkers.length);
+        console.log("users =", this.users.length);
+        console.log("DBG", this.voteskip.counts[0], "/", need);
     }
+    if(this.voteskip.counts[0] >= need)
+        this.playNext();
+
+    this.broadcastVoteskipUpdate();
+    return true;
 }
 
 
