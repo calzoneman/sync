@@ -527,7 +527,7 @@ Channel.prototype.search = function(query, callback) {
         if(query.trim() == "") {
             return;
         }
-        InfoGetter.getYTSearchResults(query, function(err, vids) {
+        InfoGetter.Getters["ytSearch"](query, function(err, vids) {
             if(!err) {
                 callback(vids);
             }
