@@ -35,7 +35,8 @@ var defaults = {
         }
     },
     "mail-from"           : "some.user@gmail.com",
-    "domain"              : "http://localhost"
+    "domain"              : "http://localhost",
+    "afk-timeout"         : 180
 }
 
 function save(cfg, file) {
