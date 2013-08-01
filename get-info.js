@@ -91,7 +91,13 @@ var Getters = {
         };
 
         urlRetrieve(https, options, function (status, data) {
-            if(status !== 200) {
+            if(status === 404) {
+                callback("Video not found", null);
+                return;
+            } else if(status === 403) {
+                callbacK("Private video", null);
+                return;
+            } else if(status !== 200) {
                 callback(true, null);
                 return;
             }
@@ -140,7 +146,13 @@ var Getters = {
         };
 
         urlRetrieve(https, options, function (status, data) {
-            if(status !== 200) {
+            if(status === 404) {
+                callback("Video not found", null);
+                return;
+            } else if(status === 403) {
+                callbacK("Private video", null);
+                return;
+            } else if(status !== 200) {
                 callback(true, null);
                 return;
             }
@@ -161,7 +173,7 @@ var Getters = {
             }
         });
     },
-    
+
     /* dailymotion.com */
     dm: function (id, callback) {
         // Dailymotion's API is an example of an API done right
@@ -189,11 +201,13 @@ var Getters = {
                 data = JSON.parse(data);
                 var title = data.title;
                 var seconds = data.duration;
+                if(title === "Deleted video" && seconds === 10) {
+                    callback("Video not found", null);
+                    return;
+                }
                 var media = new Media(id, title, seconds, "dm");
                 callback(false, media);
             } catch(e) {
-                // TODO See what kinds of errors DM returns
-                var err = true;
                 callback(err, null);
             }
         });
@@ -219,7 +233,10 @@ var Getters = {
         };
 
         urlRetrieve(https, options, function (status, data) {
-            if(status !== 302) {
+            if(status === 404) {
+                callback("Sound not found", null);
+                return;
+            } else if(status !== 302) {
                 callback(true, null);
                 return;
             }
@@ -260,10 +277,10 @@ var Getters = {
                     callback(true, null);
                 }
             });
-                
+
         });
     },
-    
+
     /* livestream.com */
     li: function (id, callback) {
         var title = "Livestream.com - " + id;
@@ -313,7 +330,7 @@ var Getters = {
                 var media = new Media(m[1], title, "--:--", "us");
                 callback(false, media);
             }
-            
+
             callback(true, null);
         });
     },
