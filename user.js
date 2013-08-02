@@ -117,6 +117,7 @@ User.prototype.autoAFK = function () {
 
 User.prototype.initCallbacks = function() {
     this.socket.on("disconnect", function() {
+        this.awaytimer && clearTimeout(this.awaytimer);
         if(this.channel != null)
             this.channel.userLeave(this);
     }.bind(this));
