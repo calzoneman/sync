@@ -13,6 +13,7 @@ var http = require("http");
 var https = require("https");
 var Logger = require("./logger.js");
 var Media = require("./media.js").Media;
+var CustomEmbedFilter = require("./customembed").filter;
 
 module.exports = function (Server) {
     function urlRetrieve(transport, options, callback) {
@@ -456,6 +457,13 @@ module.exports = function (Server) {
         im: function (id, callback) {
             var title = "Imgur Album - " + id;
             var media = new Media(id, title, "--:--", "im");
+            callback(false, media);
+        },
+
+        /* custom embed */
+        cu: function (id, callback) {
+            id = CustomEmbedFilter(id);
+            var media = new Media(id, "Custom Media", "--:--", "cu");
             callback(false, media);
         }
     };

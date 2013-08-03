@@ -497,7 +497,8 @@ function isLive(type) {
         || type == "rt" // RTMP
         || type == "jw" // JWPlayer
         || type == "us" // Ustream.tv
-        || type == "im";// Imgur album
+        || type == "im" // Imgur album
+        || type == "cu";// Custom embed
 }
 
 const UPDATE_INTERVAL = 5;

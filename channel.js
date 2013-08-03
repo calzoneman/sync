@@ -56,6 +56,7 @@ var Channel = function(name, Server) {
         playlistdelete: 2,
         playlistjump: 1.5,
         playlistaddlist: 1.5,
+        playlistaddcustom: 3,
         playlistaddlive: 1.5,
         exceedmaxlength: 2,
         addnontemp: 2,
@@ -1026,7 +1027,8 @@ function isLive(type) {
         || type == "rt" // RTMP
         || type == "jw" // JWPlayer
         || type == "us" // Ustream.tv
-        || type == "im";// Imgur album
+        || type == "im" // Imgur album
+        || type == "cu";// Custom Embed
 }
 
 Channel.prototype.queueAdd = function(item, after) {
@@ -1090,6 +1092,10 @@ Channel.prototype.tryQueue = function(user, data) {
 Channel.prototype.addMedia = function(data, user) {
     if(data.type === "yp" && !this.hasPermission(user, "playlistaddlist")) {
         user.socket.emit("queueFail", "You don't have permission to add playlists");
+        return;
+    }
+    if(data.type === "cu" && !this.hasPermission(user, "playlistaddcustom")) {
+        user.socket.emit("queueFail", "You don't have permission to add cusstom embeds");
         return;
     }
     data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");

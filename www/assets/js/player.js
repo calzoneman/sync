@@ -66,6 +66,9 @@ var Player = function(data) {
         case "im":
             this.initImgur();
             break;
+        case "cu":
+            this.initCustom();
+            break;
         default:
             this.nullPlayer();
             break;
@@ -614,6 +617,33 @@ Player.prototype.initImgur = function() {
     this.load = function(data) {
         this.id = data.id;
         this.initImgur()
+    }
+
+    this.pause = function() { }
+
+    this.play = function() { }
+
+    this.isPaused = function() { }
+
+    this.getTime = function() { }
+
+    this.seek = function() { }
+}
+
+Player.prototype.initCustom = function() {
+    var div = $("<div/>").insertBefore($("#ytapiplayer"));
+    $("#ytapiplayer").remove();
+    div.append(this.id);
+
+    this.player = div.find("iframe") || div.find("object")
+        || div.find("embed") || div;
+    this.player.attr("id", "ytapiplayer");
+    this.player.attr("width", VWIDTH);
+    this.player.attr("height", VHEIGHT);
+
+    this.load = function(data) {
+        this.id = data.id;
+        this.initCustom()
     }
 
     this.pause = function() { }
