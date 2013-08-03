@@ -36,7 +36,9 @@ var defaults = {
     },
     "mail-from"           : "some.user@gmail.com",
     "domain"              : "http://localhost",
-    "ytapikey"            : ""
+    "ytv3apikey"          : "",
+    "enable-ytv3"         : false,
+    "ytv2devkey"          : ""
 }
 
 function save(cfg, file) {

@@ -34,7 +34,7 @@ module.exports = function (Server) {
     var Getters = {
         /* youtube.com */
         yt: function (id, callback) {
-            if(Server.cfg["ytapikey"]) {
+            if(Server.cfg["enable-ytv3"] && Server.cfg["ytv3apikey"]) {
                 Getters["ytv3"](id, callback);
                 return;
             }
@@ -48,12 +48,18 @@ module.exports = function (Server) {
                 timeout: 1000
             };
 
+            if(Server.cfg["ytv2devkey"]) {
+                options.headers = {
+                    "X-Gdata-Key": "key=" + Server.cfg["ytv2devkey"]
+                };
+            }
+
             urlRetrieve(https, options, function (status, data) {
                 if(status === 404) {
                     callback("Video not found", null);
                     return;
                 } else if(status === 403) {
-                    callbacK("Private video", null);
+                    callback("Private video", null);
                     return;
                 } else if(status !== 200) {
                     callback(true, null);
@@ -154,11 +160,18 @@ module.exports = function (Server) {
                 timeout: 1000
             };
 
+            if(Server.cfg["ytv2devkey"]) {
+                options.headers = {
+                    "X-Gdata-Key": "key=" + Server.cfg["ytv2devkey"]
+                };
+            }
+
             urlRetrieve(https, options, function (status, data) {
                 if(status === 404) {
                     callback("Playlist not found", null);
                     return;
                 } else if(status === 403) {
+                    console.log(options.path);
                     callback("Playlist is private", null);
                     return;
                 } else if(status !== 200) {
@@ -209,6 +222,12 @@ module.exports = function (Server) {
                 timeout: 1000
             };
 
+            if(Server.cfg["ytv2devkey"]) {
+                options.headers = {
+                    "X-Gdata-Key": "key=" + Server.cfg["ytv2devkey"]
+                };
+            }
+
             urlRetrieve(https, options, function (status, data) {
                 if(status !== 200) {
                     callback(true, null);
@@ -254,7 +273,7 @@ module.exports = function (Server) {
                     callback("Video not found", null);
                     return;
                 } else if(status === 403) {
-                    callbacK("Private video", null);
+                    callback("Private video", null);
                     return;
                 } else if(status !== 200) {
                     callback(true, null);
