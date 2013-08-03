@@ -14,6 +14,12 @@ var https = require("https");
 var Logger = require("./logger.js");
 var Media = require("./media.js").Media;
 
+var Server = false;
+function init(srv) {
+    Server = srv;
+}
+exports.init = init;
+
 function urlRetrieve(transport, options, callback) {
     var req = transport.request(options, function (res) {
         var buffer = "";
@@ -32,6 +38,11 @@ function urlRetrieve(transport, options, callback) {
 var Getters = {
     /* youtube.com */
     yt: function (id, callback) {
+        if(Server.cfg["ytapikey"]) {
+            Getters["ytv3"](id, callback);
+            return;
+        }
+
         var options = {
             host: "gdata.youtube.com",
             port: 443,
@@ -83,6 +94,53 @@ var Getters = {
         });
     },
 
+    /* youtube.com API v3 (requires API key) */
+    ytv3: function (id, callback) {
+        var params = [
+            "part=" + encodeURIComponent("id,snippet,contentDetails"),
+            "id=" + id,
+            "key=" + Server.cfg["ytapikey"]
+        ].join("&");
+        var options = {
+            host: "www.googleapis.com",
+            port: 443,
+            path: "/youtube/v3/videos?" + params,
+            method: "GET",
+            dataType: "jsonp",
+            timeout: 1000
+        };
+
+        urlRetrieve(https, options, function (status, data) {
+            if(status !== 200) {
+                callback(true, null);
+                return;
+            }
+
+            try {
+                data = JSON.parse(data);
+                // I am a bit disappointed that the API v3 just doesn't
+                // return anything in any error case
+                if(data.pageInfo.totalResults !== 1) {
+                    callback(true, null);
+                    return;
+                }
+
+                var vid = data.items[0];
+                var title = vid.snippet.title;
+                // No, it's not possible to get a number representing
+                // the video length.  Instead, I get a time of the format
+                // PT#M#S which represents
+                // "Period of Time" # Minutes, # Seconds
+                var m = vid.contentDetails.duration.match(/PT(\d+)M(\d+)S/);
+                var seconds = parseInt(m[1]) * 60 + parseInt(m[2]);
+                var media = new Media(id, title, seconds, "yt");
+                callback(false, media);
+            } catch(e) {
+                callback(true, media);
+            }
+        });
+    },
+
     /* youtube.com playlists */
     yp: function (id, callback, url) {
         var path = "/feeds/api/playlists/" + id + "?v=2&alt=json";
@@ -120,7 +178,7 @@ var Getters = {
                         var id = item.media$group.yt$videoid.$t;
                         var title = item.title.$t;
                         var seconds = item.media$group.yt$duration.seconds;
-                        var media = new Media(id, title, seconds "yt");
+                        var media = new Media(id, title, seconds, "yt");
                         vids.push(media);
                     } catch(e) {
                     }

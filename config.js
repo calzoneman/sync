@@ -35,7 +35,8 @@ var defaults = {
         }
     },
     "mail-from"           : "some.user@gmail.com",
-    "domain"              : "http://localhost"
+    "domain"              : "http://localhost",
+    "ytapikey"            : ""
 }
 
 function save(cfg, file) {
