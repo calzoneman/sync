@@ -874,6 +874,11 @@ function handlePermissionChange() {
 
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
+    setVisible("#customembed_btn", hasPermission("playlistaddcustom"));
+    if(!hasPermission("playlistaddcustom")) {
+        $("#customembed_entry").hide();
+        $("#customembed_code").val("");
+    }
 
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
@@ -1371,6 +1376,7 @@ function genPermissionsEditor() {
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");
     makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");
     makeOption("Clear playlist", "playlistclear", standard, CHANNEL.perms.playlistclear+"");
+    makeOption("Embed custom media", "playlistaddcustom", standard, CHANNEL.perms.playlistaddcustom + "");
 
     addDivider("Polls");
     makeOption("Open/Close poll", "pollctl", modleader, CHANNEL.perms.pollctl+"");

@@ -228,6 +228,15 @@ $("#queue").sortable({
 $("#queue").disableSelection();
 
 function queue(pos) {
+    if($("#customembed_code").val()) {
+        socket.emit("queue", {
+            id: $("#customembed_code").val(),
+            type: "cu",
+            pos: pos
+        });
+        $("#customembed_code").val("");
+        return;
+    }
     var links = $("#mediaurl").val().split(",");
     if(pos == "next") {
         links = links.reverse();
@@ -284,6 +293,13 @@ $("#qlockbtn").click(function() {
 $("#voteskip").click(function() {
     socket.emit("voteskip");
     $("#voteskip").attr("disabled", true);
+});
+
+$("#customembed_btn").click(function () {
+    if($("#customembed_entry").css("display") == "none")
+        $("#customembed_entry").show("blind");
+    else
+        $("#customembed_entry").hide("blind");
 });
 
 $("#getplaylist").click(function() {

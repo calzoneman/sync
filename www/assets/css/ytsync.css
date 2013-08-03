@@ -327,3 +327,7 @@ html, body {
 #channelsettingswrap3 {
     margin-top: 20px;
 }
+
+#customembed_code {
+    font-family: Monospace;
+}

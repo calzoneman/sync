@@ -635,8 +635,9 @@ Player.prototype.initCustom = function() {
     $("#ytapiplayer").remove();
     div.append(this.id);
 
-    this.player = div.find("iframe") || div.find("object")
-        || div.find("embed") || div;
+    this.player = div.find("iframe")
+    if(this.player.length === 0) this.player = div.find("object");
+    if(this.player.length === 0) this.player = div;
     this.player.attr("id", "ytapiplayer");
     this.player.attr("width", VWIDTH);
     this.player.attr("height", VHEIGHT);
