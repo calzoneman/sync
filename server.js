@@ -208,7 +208,7 @@ var Server = {
         this.stats = require("./stats")(this);
 
         // init media retriever
-        require("./get-info").init(this);
+        this.infogetter = require("./get-info")(this);
     },
     shutdown: function () {
         Logger.syslog.log("Unloading channels");

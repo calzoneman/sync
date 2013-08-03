@@ -11,7 +11,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ULList = require("./ullist").ULList;
 var Media = require("./media").Media;
-var InfoGetter = require("./get-info");
 var AllPlaylists = {};
 
 function PlaylistItem(media, uid) {
@@ -56,24 +55,23 @@ function Playlist(chan) {
     this._qaInterval = false;
     AllPlaylists[name] = this;
 
-    if(chan) {
-        this.channel = chan;
-        var pl = this;
-        this.on("mediaUpdate", function(m) {
-            chan.sendAll("mediaUpdate", m.timeupdate());
+    this.channel = chan;
+    this.server = chan.server;
+    var pl = this;
+    this.on("mediaUpdate", function(m) {
+        chan.sendAll("mediaUpdate", m.timeupdate());
+    });
+    this.on("changeMedia", function(m) {
+        chan.onVideoChange();
+        chan.sendAll("setCurrent", pl.current.uid);
+        chan.sendAll("changeMedia", m.fullupdate());
+    });
+    this.on("remove", function(item) {
+        chan.broadcastPlaylistMeta();
+        chan.sendAll("delete", {
+            uid: item.uid
         });
-        this.on("changeMedia", function(m) {
-            chan.onVideoChange();
-            chan.sendAll("setCurrent", pl.current.uid);
-            chan.sendAll("changeMedia", m.fullupdate());
-        });
-        this.on("remove", function(item) {
-            chan.broadcastPlaylistMeta();
-            chan.sendAll("delete", {
-                uid: item.uid
-            });
-        });
-    }
+    });
 }
 
 Playlist.prototype.queueAction = function(data) {
@@ -252,7 +250,7 @@ Playlist.prototype.addMedia = function(data, callback) {
         return;
     }
 
-    InfoGetter.getMedia(data.id, data.type, function(err, media) {
+    this.server.infogetter.getMedia(data.id, data.type, function(err, media) {
         if(err) {
             action.expire = 0;
             callback(err, null);
@@ -321,7 +319,7 @@ Playlist.prototype.addYouTubePlaylist = function(data, callback) {
     }
 
     var pl = this;
-    InfoGetter.getMedia(data.id, data.type, function(err, vids) {
+    this.server.infogetter.getMedia(data.id, data.type, function(err, vids) {
         if(err) {
             callback(err, null);
             return;

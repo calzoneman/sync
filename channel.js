@@ -15,7 +15,6 @@ var Poll = require("./poll.js").Poll;
 var Media = require("./media.js").Media;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
-var InfoGetter = require("./get-info.js");
 var Rank = require("./rank.js");
 var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
@@ -527,7 +526,7 @@ Channel.prototype.search = function(query, callback) {
         if(query.trim() == "") {
             return;
         }
-        InfoGetter.Getters["ytSearch"](query, function(err, vids) {
+        this.server.infogetter.Getters["ytSearch"](query, function(err, vids) {
             if(!err) {
                 callback(vids);
             }
@@ -1053,130 +1052,6 @@ Channel.prototype.autoTemp = function(item, user) {
     }
     if(!this.hasPermission(user, "addnontemp")) {
         item.temp = true;
-    }
-}
-
-Channel.prototype.enqueue = function(data, user, callback) {
-    var after = "";
-    var current = this.playlist.current;
-    if(data.pos == "next") {
-        after = current ? current.uid : "prepend";
-    }
-    else if(data.pos == "end") {
-        after = "append";
-    }
-
-    if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
-        user.socket.emit("queueFail", "You don't have permission to queue livestreams");
-        return;
-    }
-
-    // Prefer cache over looking up new data
-    if(data.id in this.library) {
-        var media = this.library[data.id].dup();
-        var item = this.playlist.makeItem(media);
-        item.queueby = user ? user.name : "";
-        this.autoTemp(item, user);
-        this.queueAdd(item, after);
-        this.logger.log("*** Queued from cache: id=" + data.id);
-        if(callback)
-            callback();
-    }
-    else {
-        switch(data.type) {
-            case "yt":
-            case "yp":
-            case "vi":
-            case "dm":
-            case "sc":
-                InfoGetter.getMedia(data.id, data.type, function(err, media) {
-                    if(err) {
-                        if(callback)
-                            callback();
-                        if(err === true)
-                            err = false;
-                        user.socket.emit("queueFail", err);
-                        return;
-                    }
-                    var item = this.playlist.makeItem(media);
-                    item.queueby = user ? user.name : "";
-                    this.autoTemp(item, user);
-                    this.queueAdd(item, after);
-                    this.cacheMedia(media);
-                    if(data.type == "yp")
-                        after = item.uid;
-                    if(callback)
-                        callback();
-                }.bind(this));
-                break;
-            case "li":
-                var media = new Media(data.id, "Livestream.com - " + data.id, "--:--", "li");
-                var item = this.playlist.makeItem(media);
-                item.queueby = user ? user.name : "";
-                this.autoTemp(item, user);
-                this.queueAdd(item, after);
-                if(callback)
-                    callback();
-                break;
-            case "tw":
-                var media = new Media(data.id, "Twitch.tv - " + data.id, "--:--", "tw");
-                var item = this.playlist.makeItem(media);
-                item.queueby = user ? user.name : "";
-                this.autoTemp(item, user);
-                this.queueAdd(item, after);
-                if(callback)
-                    callback();
-                break;
-            case "jt":
-                var media = new Media(data.id, "Justin.tv - " + data.id, "--:--", "jt");
-                var item = this.playlist.makeItem(media);
-                item.queueby = user ? user.name : "";
-                this.autoTemp(item, user);
-                this.queueAdd(item, after);
-                if(callback)
-                    callback();
-                break;
-            case "us":
-                InfoGetter.getUstream(data.id, function(id) {
-                    var media = new Media(id, "Ustream.tv - " + data.id, "--:--", "us");
-                    var item = this.playlist.makeItem(media);
-                    item.queueby = user ? user.name : "";
-                    this.autoTemp(item, user);
-                    this.queueAdd(item, after);
-                    if(callback)
-                        callback();
-                }.bind(this));
-                break;
-            case "rt":
-                var media = new Media(data.id, "Livestream", "--:--", "rt");
-                var item = this.playlist.makeItem(media);
-                item.queueby = user ? user.name : "";
-                this.autoTemp(item, user);
-                this.queueAdd(item, after);
-                if(callback)
-                    callback();
-                break;
-            case "jw":
-                var media = new Media(data.id, "JWPlayer Stream - " + data.id, "--:--", "jw");
-                var item = this.playlist.makeItem(media);
-                item.queueby = user ? user.name : "";
-                this.autoTemp(item, user);
-                this.queueAdd(item, after);
-                if(callback)
-                    callback();
-                break;
-            case "im":
-                var media = new Media(data.id, "Imgur Album", "--:--", "im");
-                var item = this.playlist.makeItem(media);
-                item.queueby = user ? user.name : "";
-                this.autoTemp(item, user);
-                this.queueAdd(item, after);
-                if(callback)
-                    callback();
-                break;
-            default:
-                break;
-        }
     }
 }
 
