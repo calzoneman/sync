@@ -171,7 +171,6 @@ module.exports = function (Server) {
                     callback("Playlist not found", null);
                     return;
                 } else if(status === 403) {
-                    console.log(options.path);
                     callback("Playlist is private", null);
                     return;
                 } else if(status !== 200) {
