@@ -26,8 +26,8 @@
             return;
         var ul = $("<ul/>").appendTo(this.paginator);
         var s = p - parseInt(this.opts.maxPages / 2);
-        s = s < 0 ? 0 : s;
         s = s + this.opts.maxPages < pages ? s : pages - this.opts.maxPages;
+        s = s < 0 ? 0 : s;
         if(endcaps) {
             var li = $("<li/>").appendTo(ul);
             $("<a/>").attr("href", "javascript:void(0)")

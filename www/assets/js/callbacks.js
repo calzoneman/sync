@@ -660,6 +660,24 @@ Callbacks = {
 
     },
 
+    setAFK: function (data) {
+        var users = $("#userlist").children();
+        for(var i = 0; i < users.length; i++) {
+            var name = users[i].children[1].innerHTML;
+            // Reformat user
+            if(name == data.name) {
+                var u = $(users[i]);
+                u.find(".icon-time").remove();
+                $(users[i].children[1]).css("font-style", "");
+                if(data.afk) {
+                    $("<i/>").addClass("icon-time")
+                        .appendTo(users[i].children[0]);
+                    $(users[i].children[1]).css("font-style", "");
+                }
+            }
+        }
+    },
+
     userLeave: function(data) {
         var users = $("#userlist").children();
         for(var i = 0; i < users.length; i++) {
