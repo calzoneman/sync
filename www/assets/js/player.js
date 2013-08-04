@@ -75,6 +75,171 @@ var Player = function(data) {
     }
 }
 
+function removeOld(replace) {
+    replace = replace || $("<div/>");
+    var old = $("#ytapiplayer");
+    replace.insertBefore(old);
+    old.remove();
+    replace.attr("id", "ytapiplayer");
+}
+
+var YouTubePlayer = function (data) {
+    var self = this;
+    waitUntilDefined(window, "YT", function () {
+        removeOld();
+        self.paused = false;
+        self.videoId = data.id;
+        self.player = new YT.Player("ytapiplayer", {
+            height: VHEIGHT,
+            width: VWIDTH,
+            videoId: data.id,
+            playerVars: {
+                autohide: 1,        // Autohide controls
+                autoplay: 1,        // Autoplay video
+                controls: 1,        // Show controls
+                iv_load_policy: 3,  // No annotations
+                modestbranding: 1,  // No logo
+                rel: 0              // No related videos
+            },
+            events: {
+                onReady: function() {
+                    //socket.emit("playerReady");
+                },
+                onStateChange: function(ev) {
+                    if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED
+                        || !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
+                        self.paused = (ev.data == YT.PlayerState.PAUSED);
+                        if(CLIENT.leader)
+                            sendVideoUpdate();
+                    }
+                    else {
+                        self.paused = (ev.data == YT.PlayerState.PAUSED);
+                    }
+                    if(CLIENT.leader && ev.data == YT.PlayerState.ENDED) {
+                        socket.emit("playNext");
+                    }
+                }
+            }
+        });
+        $("#ytapiplayer").css("border", "none");
+
+        self.load = function (data) {
+            if(self.player.loadVideoById) {
+                self.player.loadVideoById(data.id, data.currentTime);
+                if(VIDEOQUALITY)
+                    self.player.setPlaybackQuality(VIDEOQUALITY);
+                self.videoId = data.id;
+            }
+        }
+
+        self.pause = function() {
+            if(self.player.pauseVideo)
+                self.player.pauseVideo();
+        }
+
+        self.play = function() {
+            if(self.player.playVideo)
+                self.player.playVideo();
+        }
+
+        self.isPaused = function(callback) {
+            if(self.player.getPlayerState) {
+                var state = self.player.getPlayerState();
+                callback(state != YT.PlayerState.PLAYING);
+            } else {
+                callback(false);
+            }
+        }
+
+        self.getTime = function(callback) {
+            if(self.player.getCurrentTime)
+                callback(self.player.getCurrentTime());
+        }
+
+        self.seek = function(time) {
+            if(self.player.seekTo)
+                self.player.seekTo(time, true);
+        }
+    });
+}
+
+var VimeoPlayer = function (data) {
+    var self = this;
+    waitUntilDefined(window, "$f", function () {
+        self.videoId = data.id;
+        self.init = function () {
+            var iframe = $("<iframe/>");
+            removeOld(iframe);
+            iframe.attr("width", VWIDTH);
+            iframe.attr("height", VHEIGHT);
+            iframe.attr("src", "http://player.vimeo.com/video/"+self.videoId+"?api=1&player_id=ytapiplayer");
+            iframe.attr("webkitAllowFullScreen", "");
+            iframe.attr("mozallowfullscreen", "");
+            iframe.attr("allowFullScreen", "");
+            iframe.css("border", "none");
+
+            $f(iframe[0]).addEvent("ready", function () {
+                //socket.emit("playerReady");
+                self.player = $f(iframe[0]);
+                self.player.api("play");
+
+                self.player.addEvent("finish", function () {
+                    if(CLIENT.leader) {
+                        socket.emit("playNext");
+                    }
+                });
+
+                self.player.addEvent("pause", function () {
+                    self.paused = true;
+                    if(CLIENT.leader)
+                        sendVideoUpdate();
+                });
+
+                self.player.addEvent("play", function () {
+                    self.paused = false;
+                    if(CLIENT.leader)
+                        sendVideoUpdate();
+                });
+            }.bind(self));
+        }
+
+        self.init();
+
+        self.load = function(data) {
+            self.videoId = data.id;
+            self.init();
+        }
+
+        self.pause = function() {
+            if(self.player && self.player.api)
+                self.player.api("pause");
+        }
+
+        self.play = function() {
+            if(self.player && self.player.api)
+                self.player.api("play");
+        }
+
+        self.isPaused = function(callback) {
+            callback(self.paused);
+        }
+
+        self.getTime = function(callback) {
+            if(self.player && self.player.api) {
+                // Vimeo api returns time as a string because fuck logic
+                self.player.api("getCurrentTime", function(time) {
+                    callback(parseFloat(time));
+                });
+            }
+        }
+
+        self.seek = function(time) {
+            if(self.player && self.player.api)
+                self.player.api("seekTo", time);
+        }
+    });
+}
+
 Player.prototype.nullPlayer = function() {
     this.player = null;
     this.load = function(data) { }
