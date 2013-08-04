@@ -340,7 +340,7 @@ $("#shuffleplaylist").click(function() {
 
 /* layout stuff */
 $(window).resize(function() {
-    VWIDTH = $("#queue").css("width").replace("px", "");
+    VWIDTH = $("#videowidth").css("width").replace("px", "");
     VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
     $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
     $("#userlist").css("height", (VHEIGHT - 31) + "px");

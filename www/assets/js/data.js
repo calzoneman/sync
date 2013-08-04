@@ -37,10 +37,8 @@ var CHANNEL = {
 var PLAYER = false;
 var VIDEOQUALITY = false;
 var FLUIDLAYOUT = false;
-if($("#ytapiplayer").length > 0) {
-    var VWIDTH = $("#ytapiplayer").parent().css("width").replace("px", "");
-    var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
-}
+var VWIDTH = $("#videowidth").css("width").replace("px", "");
+var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
 var MEDIA = { hash: "" };
 var PL_MOVING = false;
 var PL_ADDING = false;
