@@ -672,7 +672,7 @@ Callbacks = {
                 if(data.afk) {
                     $("<i/>").addClass("icon-time")
                         .appendTo(users[i].children[0]);
-                    $(users[i].children[1]).css("font-style", "");
+                    $(users[i].children[1]).css("font-style", "italic");
                 }
             }
         }
@@ -1111,7 +1111,7 @@ setupCallbacks = function() {
 
 $.getScript(IO_URL+"/socket.io/socket.io.js", function() {
     try {
-        if(NO_WEBSOCKETS) {
+        if(NO_WEBSOCKETS || USEROPTS.altsocket) {
             var i = io.transports.indexOf("websocket");
             if(i >= 0)
                 io.transports.splice(i, 1);
