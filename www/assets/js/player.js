@@ -106,8 +106,8 @@ var YouTubePlayer = function (data) {
                     //socket.emit("playerReady");
                 },
                 onStateChange: function(ev) {
-                    if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED
-                        || !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
+                    if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
+                       !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
                         self.paused = (ev.data == YT.PlayerState.PAUSED);
                         if(CLIENT.leader)
                             sendVideoUpdate();
@@ -130,17 +130,17 @@ var YouTubePlayer = function (data) {
                     self.player.setPlaybackQuality(VIDEOQUALITY);
                 self.videoId = data.id;
             }
-        }
+        };
 
         self.pause = function() {
             if(self.player.pauseVideo)
                 self.player.pauseVideo();
-        }
+        };
 
         self.play = function() {
             if(self.player.playVideo)
                 self.player.playVideo();
-        }
+        };
 
         self.isPaused = function(callback) {
             if(self.player.getPlayerState) {
@@ -149,19 +149,19 @@ var YouTubePlayer = function (data) {
             } else {
                 callback(false);
             }
-        }
+        };
 
         self.getTime = function(callback) {
             if(self.player.getCurrentTime)
                 callback(self.player.getCurrentTime());
-        }
+        };
 
         self.seek = function(time) {
             if(self.player.seekTo)
                 self.player.seekTo(time, true);
-        }
+        };
     });
-}
+};
 
 var VimeoPlayer = function (data) {
     var self = this;
@@ -201,380 +201,277 @@ var VimeoPlayer = function (data) {
                         sendVideoUpdate();
                 });
             }.bind(self));
-        }
+        };
 
         self.init();
 
-        self.load = function(data) {
+        self.load = function (data) {
             self.videoId = data.id;
             self.init();
-        }
+        };
 
-        self.pause = function() {
+        self.pause = function () {
             if(self.player && self.player.api)
                 self.player.api("pause");
-        }
+        };
 
-        self.play = function() {
+        self.play = function () {
             if(self.player && self.player.api)
                 self.player.api("play");
-        }
+        };
 
-        self.isPaused = function(callback) {
+        self.isPaused = function (callback) {
             callback(self.paused);
-        }
+        };
 
-        self.getTime = function(callback) {
+        self.getTime = function (callback) {
             if(self.player && self.player.api) {
                 // Vimeo api returns time as a string because fuck logic
-                self.player.api("getCurrentTime", function(time) {
+                self.player.api("getCurrentTime", function (time) {
                     callback(parseFloat(time));
                 });
             }
-        }
+        };
 
         self.seek = function(time) {
             if(self.player && self.player.api)
                 self.player.api("seekTo", time);
-        }
+        };
     });
-}
+};
 
-Player.prototype.nullPlayer = function() {
-    this.player = null;
-    this.load = function(data) { }
-    this.play = function() { }
-    this.pause = function() { }
-    this.getTime = function(callback) { }
-    this.seek = function(time) { }
-}
+var VimeoFlashPlayer = function (data) {
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        removeOld();
+        var url = "http://vimeo.com/moogaloop.swf?clip_id="+self.videoId;
+        url += "&" + [
+            "server=vimeo.com",
+            "api=2",
+            "show_title=0",
+            "show_byline=0",
+            "show_portrait=0",
+            "fullscreen=1",
+            "loop=0"
+        ].join("&");
+        var flashvars = {
+            api: 2,
+            player_id: "ytapiplayer"
+        };
+        var params = {
+            allowfullscreen: true,
+            allowScriptAccess: "always"
+        };
+        swfobject.embedSWF(url,
+                           "ytapiplayer",
+                           VWIDTH,
+                           VHEIGHT,
+                           "9.0.0",
+                           "expressInstall.swf",
+                           flashvars,
+                           params);
 
-Player.prototype.initYouTube = function() {
-    this.removeOld();
-    this.player = new YT.Player("ytapiplayer", {
-        height: VHEIGHT,
-        width: VWIDTH,
-        videoId: this.id,
-        playerVars: {
-            autohide: 1,        // Autohide controls
-            autoplay: 1,        // Autoplay video
-            controls: 1,        // Show controls
-            iv_load_policy: 3,  // No annotations
-            modestbranding: 1,  // No logo
-            rel: 0              // No related videos
-        },
-        events: {
-            onReady: function() {
-                socket.emit("playerReady");
-            },
-            onStateChange: function(ev) {
-                if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED
-                    || !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
-                    PLAYER.paused = (ev.data == YT.PlayerState.PAUSED);
-                    sendVideoUpdate();
-                }
-                else {
-                    PLAYER.paused = (ev.data == YT.PlayerState.PAUSED);
-                }
-                if(CLIENT.leader && ev.data == YT.PlayerState.ENDED) {
+        self.player = $("#ytapiplayer")[0];
+        waitUntilDefined(self.player, "api_addEventListener", function () {
+            self.player.api_addEventListener("ready", function () {
+                //socket.emit("playerReady");
+                self.player.api_play();
+
+                self.player.api_addEvent("finish", function () {
+                    if(CLIENT.leader)
+                        socket.emit("playNext");
+                });
+
+                self.player.api_addEvent("pause", function () {
+                    PLAYER.paused = true;
+                    if(CLIENT.leader)
+                        sendVideoUpdate();
+                });
+
+                self.player.api_addEvent("play", function () {
+                    PLAYER.paused = false;
+                    if(CLIENT.leader)
+                        sendVideoUpdate();
+                });
+            });
+        });
+    };
+
+    self.init();
+
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.init();
+    };
+
+    self.pause = function () {
+        if(self.player && self.player.api_pause)
+            self.player.api_pause();
+    };
+
+    self.play = function () {
+        if(self.player && self.player.api_play)
+            self.player.api_play();
+    };
+
+    self.isPaused = function (callback) {
+        callback(self.paused);
+    };
+
+    self.getTime = function (callback) {
+        if(self.player && self.player.api_getCurrentTime) {
+            var t = parseFloat(self.player.api_getCurrentTime());
+            callback(t);
+        }
+    };
+
+    self.seek = function (time) {
+        if(self.player.api_seekTo);
+            self.player.api_seekTo(time);
+    };
+};
+
+var DailymotionPlayer = function (data) {
+    var self = this;
+    waitUntilDefined(window, "DM", function () {
+        removeOld();
+        self.videoId = data.id;
+        self.player = DM.player("ytapiplayer", {
+            video: data.id,
+            width: parseInt(VWIDTH),
+            height: parseInt(VHEIGHT),
+            params: { autoplay: 1 }
+        });
+
+        self.player.addEventListener("apiready", function (e) {
+            //socket.emit("playerReady");
+            self.player.addEventListener("ended", function (e) {
+                if(CLIENT.leader) {
                     socket.emit("playNext");
                 }
-            }
-        }
-    });
-    $("#ytapiplayer").css("border", "none");
-
-    this.load = function(data) {
-        if(this.player.loadVideoById) {
-            this.player.loadVideoById(data.id, data.currentTime);
-            if(VIDEOQUALITY)
-                this.player.setPlaybackQuality(VIDEOQUALITY);
-            this.id = data.id;
-        }
-    }
-
-    this.pause = function() {
-        if(this.player.pauseVideo)
-            this.player.pauseVideo();
-    }
-
-    this.play = function() {
-        if(this.player.playVideo)
-            this.player.playVideo();
-    }
-
-    this.isPaused = function(callback) {
-        callback(this.player.getPlayerState() != YT.PlayerState.PLAYING);
-    }
-
-    this.getTime = function(callback) {
-        if(this.player.getCurrentTime)
-            callback(this.player.getCurrentTime());
-    }
-
-    this.seek = function(time) {
-        if(this.player.seekTo)
-            this.player.seekTo(time, true);
-    }
-}
-
-Player.prototype.initVimeo = function() {
-    var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
-    $("#ytapiplayer").remove();
-    iframe.attr("id", "ytapiplayer");
-    iframe.attr("width", VWIDTH);
-    iframe.attr("height", VHEIGHT);
-    iframe.attr("src", "http://player.vimeo.com/video/"+this.id+"?api=1&player_id=ytapiplayer");
-    iframe.attr("webkitAllowFullScreen", "");
-    iframe.attr("mozallowfullscreen", "");
-    iframe.attr("allowFullScreen", "");
-    iframe.css("border", "none");
-
-    this.player = $f(iframe[0]);
-    $f(iframe[0]).addEvent("ready", function() {
-        socket.emit("playerReady");
-        this.player = $f(iframe[0]);
-        this.player.api("play");
-
-        this.player.addEvent("finish", function() {
-            if(CLIENT.leader) {
-                socket.emit("playNext");
-            }
-        });
-
-        this.player.addEvent("pause", function() {
-            PLAYER.paused = true;
-            sendVideoUpdate();
-        });
-
-        this.player.addEvent("play", function() {
-            PLAYER.paused = false;
-            sendVideoUpdate();
-        });
-    }.bind(this));
-
-    this.load = function(data) {
-        this.id = data.id;
-        this.initVimeo();
-    }
-
-    this.pause = function() {
-        this.player.api("pause");
-    }
-
-    this.play = function() {
-        this.player.api("play");
-    }
-
-    this.isPaused = function(callback) {
-        callback(this.paused);
-    }
-
-    this.getTime = function(callback) {
-        // Vimeo api returns time as a string because fuck logic
-        this.player.api("getCurrentTime", function(time) {
-            callback(parseFloat(time));
-        });
-    }
-
-    this.seek = function(time) {
-        this.player.api("seekTo", time);
-    }
-}
-
-Player.prototype.initVimeoFlash = function() {
-    this.removeOld();
-    var url = "http://vimeo.com/moogaloop.swf?clip_id="+this.id;
-    url += "&" + [
-        "server=vimeo.com",
-        "api=2",
-        "show_title=0",
-        "show_byline=0",
-        "show_portrait=0",
-        "fullscreen=1",
-        "loop=0"
-    ].join("&");
-    var flashvars = {
-        api: 2,
-        player_id: "ytapiplayer"
-    };
-    var params = {
-        allowfullscreen: true,
-        allowScriptAccess: "always"
-    };
-    swfobject.embedSWF(url
-                      , "ytapiplayer"
-                      , VWIDTH
-                      , VHEIGHT
-                      , "9.0.0"
-                      , "expressInstall.swf"
-                      , flashvars
-                      , params);
-
-    this.player = $("#ytapiplayer")[0];
-    waitUntilDefined(this.player, "api_addEventListener", function () {
-        this.player.api_addEventListener("ready", function () {
-            socket.emit("playerReady");
-            this.player.api_play();
-
-            this.player.api_addEvent("finish", function () {
-                if(CLIENT.leader)
-                    socket.emit("playNext");
             });
 
-            this.player.api_addEvent("pause", function() {
+            self.player.addEventListener("pause", function (e) {
                 PLAYER.paused = true;
-                sendVideoUpdate();
+                if(CLIENT.leader)
+                    sendVideoUpdate();
             });
 
-            this.player.api_addEvent("play", function() {
+            self.player.addEventListener("playing", function (e) {
                 PLAYER.paused = false;
-                sendVideoUpdate();
+                if(CLIENT.leader)
+                    sendVideoUpdate();
             });
-        }.bind(this));
+        });
     });
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initVimeoFlash();
-    }
+    self.load = function (data) {
+        self.videoId = data.id;
+        if(self.player && self.player.api)
+            self.player.api("load", data.id);
+    };
 
-    this.pause = function() {
-        this.player.api_pause();
-    }
+    self.pause = function () {
+        if(self.player && self.player.api)
+            self.player.api("pause");
+    };
 
-    this.play = function() {
-        this.player.api_play();
-    }
+    self.play = function () {
+        if(self.player && self.player.api)
+            self.player.api("play");
+    };
 
-    this.isPaused = function(callback) {
-        callback(this.paused);
-    }
+    self.isPaused = function (callback) {
+        callback(self.paused);
+    };
 
-    this.getTime = function(callback) {
-        var t = parseFloat(this.player.api_getCurrentTime());
-        callback(t);
-    }
+    self.getTime = function (callback) {
+        if(self.player)
+            callback(self.player.currentTime);
+    };
 
-    this.seek = function(time) {
-        this.player.api_seekTo(time);
-    }
-}
+    self.seek = function (seconds) {
+        if(self.player && self.player.api)
+            self.player.api("seek", seconds);
+    };
+};
 
-Player.prototype.initDailymotion = function() {
-    this.removeOld();
-    this.player = DM.player("ytapiplayer", {
-        video: this.id,
-        width: parseInt(VWIDTH),
-        height: parseInt(VHEIGHT),
-        params: {autoplay: 1}
+var SoundcloudPlayer = function (data) {
+    var self = this;
+    self.videoId = data.id;
+    waitUntilDefined(window, "SC", function () {
+        unfixSoundcloudShit();
+        var iframe = $("<iframe/>");
+        removeOld(iframe);
+
+        iframe.attr("id", "ytapiplayer");
+        iframe.attr("src", "https://w.soundcloud.com/player/?url="+self.videoId);
+        iframe.css("width", "100%").attr("height", "166");
+        iframe.css("border", "none");
+
+        self.player = SC.Widget("ytapiplayer");
+
+        self.player.bind(SC.Widget.Events.READY, function () {
+            //socket.emit("playerReady");
+            self.player.load(self.videoId, { auto_play: true });
+
+            self.player.bind(SC.Widget.Events.PAUSE, function () {
+                PLAYER.paused = true;
+                if(CLIENT.leader)
+                    sendVideoUpdate();
+            });
+
+            self.player.bind(SC.Widget.Events.PLAY, function () {
+                PLAYER.paused = false;
+                if(CLIENT.leader)
+                    sendVideoUpdate();
+            });
+
+            self.player.bind(SC.Widget.Events.FINISH, function () {
+                if(CLIENT.leader) {
+                    socket.emit("playNext");
+                }
+            });
+        }.bind(self));
     });
 
-    this.player.addEventListener("apiready", function(e) {
-        socket.emit("playerReady");
-        this.player.addEventListener("ended", function(e) {
-            if(CLIENT.leader) {
-                socket.emit("playNext");
-            }
-        });
+    self.load = function (data) {
+        self.videoId = data.id;
+        if(self.player && self.player.load)
+            self.player.load(data.id, { auto_play: true });
+    };
 
-        this.player.addEventListener("pause", function(e) {
-            PLAYER.paused = true;
-            sendVideoUpdate();
-        });
+    self.pause = function () {
+        if(self.player && self.player.pause)
+            self.player.pause();
+    };
 
-        this.player.addEventListener("playing", function(e) {
-            PLAYER.paused = false;
-            sendVideoUpdate();
-        });
-    }.bind(this));
+    self.play = function () {
+        if(self.player && self.player.play)
+            self.player.play();
+    };
 
+    self.isPaused = function (callback) {
+        if(self.player && self.player.isPaused)
+            self.player.isPaused(callback);
+        else
+            callback(false);
+    };
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.player.api("load", data.id);
-    }
+    self.getTime = function (callback) {
+        if(self.player && self.player.getPosition) {
+            self.player.getPosition(function (pos) {
+                callback(pos / 1000);
+            });
+        }
+    };
 
-    this.pause = function() {
-        this.player.api("pause");
-    }
-
-    this.play = function() {
-        this.player.api("play");
-    }
-
-    this.isPaused = function(callback) {
-        callback(this.paused);
-    }
-
-    this.getTime = function(callback) {
-        callback(this.player.currentTime);
-    }
-
-    this.seek = function(seconds) {
-        this.player.api("seek", seconds);
-    }
-}
-
-Player.prototype.initSoundcloud = function() {
-    unfixSoundcloudShit();
-    var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
-    $("#ytapiplayer").remove();
-
-    iframe.attr("id", "ytapiplayer");
-    iframe.attr("src", "https://w.soundcloud.com/player/?url=" + this.id);
-    iframe.css("width", "100%").attr("height", "166");
-    iframe.css("border", "none");
-
-    this.player = SC.Widget("ytapiplayer");
-
-    this.player.bind(SC.Widget.Events.READY, function() {
-        socket.emit("playerReady");
-        this.player.load(this.id, {auto_play: true});
-
-        this.player.bind(SC.Widget.Events.PAUSE, function() {
-            PLAYER.paused = true;
-            sendVideoUpdate();
-        });
-
-        this.player.bind(SC.Widget.Events.PLAY, function() {
-            PLAYER.paused = false;
-            sendVideoUpdate();
-        });
-
-        this.player.bind(SC.Widget.Events.FINISH, function() {
-            if(CLIENT.leader) {
-                socket.emit("playNext");
-            }
-        });
-    }.bind(this));
-
-    this.load = function(data) {
-        this.id = data.id;
-        this.length = data.length;
-        this.player.load(data.id, {auto_play: true});
-    }
-
-    this.pause = function() {
-        this.player.pause();
-    }
-
-    this.play = function() {
-        this.player.play();
-    }
-
-    this.isPaused = this.player.isPaused;
-
-    this.getTime = function(callback) {
-        this.player.getPosition(function(pos) {
-            callback(pos / 1000);
-        });
-    }
-
-    this.seek = function(seconds) {
-        this.player.seekTo(seconds * 1000);
-    }
-}
+    self.seek = function (seconds) {
+        if(self.player && self.player.seekTo)
+            self.player.seekTo(seconds * 1000);
+    };
+};
 
 Player.prototype.initLivestream = function() {
     this.removeOld();
