@@ -451,9 +451,9 @@ module.exports = function (Server) {
                     var title = "Ustream.tv - " + id;
                     var media = new Media(m[1], title, "--:--", "us");
                     callback(false, media);
+                } else {
+                    callback(true, null);
                 }
-
-                callback(true, null);
             });
         },
 
