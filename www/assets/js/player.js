@@ -296,8 +296,8 @@ var DailymotionPlayer = function (data) {
         self.videoId = data.id;
         self.player = DM.player("ytapiplayer", {
             video: data.id,
-            width: parseInt(VWIDTH),
-            height: parseInt(VHEIGHT),
+            width: parseInt(VWIDTH, 10),
+            height: parseInt(VHEIGHT, 10),
             params: { autoplay: 1 }
         });
 
@@ -464,7 +464,7 @@ var LivestreamPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
-}
+};
 
 var TwitchTVPlayer = function (data) {
     removeOld();
@@ -506,7 +506,7 @@ var TwitchTVPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
-}
+};
 
 var JustinTVPlayer = function (data) {
     removeOld();
@@ -548,7 +548,7 @@ var JustinTVPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
-}
+};
 
 var RTMPPlayer = function (data) {
     removeOld();
@@ -591,7 +591,7 @@ var RTMPPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
-}
+};
 
 var JWPlayer = function (data) {
     var self = this;
@@ -619,7 +619,7 @@ var JWPlayer = function (data) {
         jwplayer().onComplete(function() {
             socket.emit("playNext");
         });
-    }
+    };
 
     waitUntilDefined(window, "jwplayer", function () { self.init(); });
 
@@ -654,7 +654,7 @@ var JWPlayer = function (data) {
         if(jwplayer)
             jwplayer().seek(time);
     };
-}
+};
 
 var UstreamPlayer = function (data) {
     var self = this;
@@ -686,7 +686,7 @@ var UstreamPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
-}
+};
 
 var ImgurPlayer = function (data) {
     var self = this;
@@ -705,7 +705,7 @@ var ImgurPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
-        self.init()
+        self.init();
     };
 
     self.pause = function () { };
@@ -717,7 +717,7 @@ var ImgurPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
-}
+};
 
 var CustomPlayer = function (data) {
     var self = this;
@@ -728,7 +728,7 @@ var CustomPlayer = function (data) {
         div.attr("id", "");
         div.append(self.videoId);
 
-        self.player = div.find("iframe")
+        self.player = div.find("iframe");
         if(self.player.length === 0) self.player = div.find("object");
         if(self.player.length === 0) self.player = div;
         self.player.attr("id", "ytapiplayer");
@@ -736,9 +736,11 @@ var CustomPlayer = function (data) {
         self.player.attr("height", VHEIGHT);
     };
 
+    self.init();
+
     self.load = function (data) {
         self.id = data.id;
-        self.initCustom()
+        self.init();
     };
 
     self.pause = function () { };
@@ -769,10 +771,10 @@ function handleMediaUpdate(data) {
     if(data.paused) {
         PLAYER.seek(data.currentTime);
         PLAYER.pause();
-    }
-    else {
+    } else {
         PLAYER.isPaused(function (paused) {
-            paused && PLAYER.play();
+            if(paused)
+                PLAYER.play();
         });
     }
 
@@ -783,8 +785,7 @@ function handleMediaUpdate(data) {
 
         if(diff > USEROPTS.sync_accuracy) {
             PLAYER.seek(time);
-        }
-        else if(diff < -USEROPTS.sync_accuracy) {
+        } else if(diff < -USEROPTS.sync_accuracy) {
             // Don't synch all the way back, causes buffering problems
             // because for some dumb reason YouTube erases the buffer
             // when you seek backwards
