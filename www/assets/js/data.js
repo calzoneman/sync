@@ -37,8 +37,12 @@ var CHANNEL = {
 var PLAYER = false;
 var VIDEOQUALITY = false;
 var FLUIDLAYOUT = false;
-var VWIDTH = $("#videowidth").css("width").replace("px", "");
-var VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+var VWIDTH;
+var VHEIGHT;
+if($("#videowidth").length > 0) {
+    VWIDTH = $("#videowidth").css("width").replace("px", "");
+    VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
+}
 var MEDIA = { hash: "" };
 var PL_MOVING = false;
 var PL_ADDING = false;
