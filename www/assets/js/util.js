@@ -451,6 +451,13 @@ function showOptionsMenu() {
     syncacc.val(USEROPTS.sync_accuracy);
     addOption("Synch Accuracy", syncacc);
 
+    var wmcontainer = $("<label/>").addClass("checkbox")
+        .text("Allow transparency over video");
+    var wmodetrans = $("<input/>").attr("type", "checkbox")
+        .appendTo(wmcontainer);
+    wmodetrans.prop("checked", USEROPTS.wmode_transparent);
+    addOption("Transparent wmode", wmcontainer);
+
     var vidcontainer = $("<label/>").addClass("checkbox")
         .text("Hide Video");
     var hidevid = $("<input/>").attr("type", "checkbox").appendTo(vidcontainer);
@@ -509,6 +516,7 @@ function showOptionsMenu() {
         USEROPTS.layout               = layoutselect.val();
         USEROPTS.synch                = synch.prop("checked");
         USEROPTS.sync_accuracy        = parseFloat(syncacc.val()) || 2;
+        USEROPTS.wmode_transparent    = wmodetrans.prop("checked");
         USEROPTS.hidevid              = hidevid.prop("checked");
         USEROPTS.show_timestamps      = showts.prop("checked");
         USEROPTS.blink_title          = blink.prop("checked");

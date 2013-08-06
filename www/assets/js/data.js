@@ -103,6 +103,7 @@ var USEROPTS = {
     modhat               : getOrDefault("modhat", false),
     blink_title          : getOrDefault("blink_title", false),
     sync_accuracy        : getOrDefault("sync_accuracy", 2),
+    wmode_transparent    : getOrDefault("wmode_transparent", true),
     chatbtn              : getOrDefault("chatbtn", false),
     altsocket            : getOrDefault("altsocket", false),
     joinmessage          : getOrDefault("joinmessage", true),

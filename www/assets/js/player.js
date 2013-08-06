@@ -22,80 +22,84 @@ function removeOld(replace) {
 var YouTubePlayer = function (data) {
     var self = this;
     waitUntilDefined(window, "YT", function () {
-        removeOld();
-        self.paused = false;
-        self.videoId = data.id;
-        self.player = new YT.Player("ytapiplayer", {
-            height: VHEIGHT,
-            width: VWIDTH,
-            videoId: data.id,
-            playerVars: {
-                autohide: 1,        // Autohide controls
-                autoplay: 1,        // Autoplay video
-                controls: 1,        // Show controls
-                iv_load_policy: 3,  // No annotations
-                modestbranding: 1,  // No logo
-                rel: 0              // No related videos
-            },
-            events: {
-                onReady: function () {
+        waitUntilDefined(YT, "Player", function () {
+            removeOld();
+            self.paused = false;
+            self.videoId = data.id;
+            var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
+            self.player = new YT.Player("ytapiplayer", {
+                height: VHEIGHT,
+                width: VWIDTH,
+                videoId: data.id,
+                playerVars: {
+                    autohide: 1,        // Autohide controls
+                    autoplay: 1,        // Autoplay video
+                    controls: 1,        // Show controls
+                    iv_load_policy: 3,  // No annotations
+                    modestbranding: 1,  // No logo
+                    rel: 0,             // No related videos
+                    wmode: wmode
                 },
-                onStateChange: function (ev) {
-                    if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
-                       !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
-                        self.paused = (ev.data == YT.PlayerState.PAUSED);
-                        if(CLIENT.leader)
-                            sendVideoUpdate();
-                    }
-                    else {
-                        self.paused = (ev.data == YT.PlayerState.PAUSED);
-                    }
-                    if(CLIENT.leader && ev.data == YT.PlayerState.ENDED) {
-                        socket.emit("playNext");
+                events: {
+                    onReady: function () {
+                    },
+                    onStateChange: function (ev) {
+                        if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
+                           !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
+                            self.paused = (ev.data == YT.PlayerState.PAUSED);
+                            if(CLIENT.leader)
+                                sendVideoUpdate();
+                        }
+                        else {
+                            self.paused = (ev.data == YT.PlayerState.PAUSED);
+                        }
+                        if(CLIENT.leader && ev.data == YT.PlayerState.ENDED) {
+                            socket.emit("playNext");
+                        }
                     }
                 }
-            }
+            });
+            $("#ytapiplayer").css("border", "none");
         });
-        $("#ytapiplayer").css("border", "none");
-
-        self.load = function (data) {
-            if(self.player.loadVideoById) {
-                self.player.loadVideoById(data.id, data.currentTime);
-                if(VIDEOQUALITY)
-                    self.player.setPlaybackQuality(VIDEOQUALITY);
-                self.videoId = data.id;
-            }
-        };
-
-        self.pause = function() {
-            if(self.player.pauseVideo)
-                self.player.pauseVideo();
-        };
-
-        self.play = function() {
-            if(self.player.playVideo)
-                self.player.playVideo();
-        };
-
-        self.isPaused = function(callback) {
-            if(self.player.getPlayerState) {
-                var state = self.player.getPlayerState();
-                callback(state != YT.PlayerState.PLAYING);
-            } else {
-                callback(false);
-            }
-        };
-
-        self.getTime = function(callback) {
-            if(self.player.getCurrentTime)
-                callback(self.player.getCurrentTime());
-        };
-
-        self.seek = function(time) {
-            if(self.player.seekTo)
-                self.player.seekTo(time, true);
-        };
     });
+
+    self.load = function (data) {
+        if(self.player && self.player.loadVideoById) {
+            self.player.loadVideoById(data.id, data.currentTime);
+            if(VIDEOQUALITY)
+                self.player.setPlaybackQuality(VIDEOQUALITY);
+            self.videoId = data.id;
+        }
+    };
+
+    self.pause = function () {
+        if(self.player && self.player.pauseVideo)
+            self.player.pauseVideo();
+    };
+
+    self.play = function () {
+        if(self.player && self.player.playVideo)
+            self.player.playVideo();
+    };
+
+    self.isPaused = function (callback) {
+        if(self.player && self.player.getPlayerState) {
+            var state = self.player.getPlayerState();
+            callback(state != YT.PlayerState.PLAYING);
+        } else {
+            callback(false);
+        }
+    };
+
+    self.getTime = function (callback) {
+        if(self.player && self.player.getCurrentTime)
+            callback(self.player.getCurrentTime());
+    };
+
+    self.seek = function (time) {
+        if(self.player && self.player.seekTo)
+            self.player.seekTo(time, true);
+    };
 };
 
 var VimeoPlayer = function (data) {
@@ -111,6 +115,8 @@ var VimeoPlayer = function (data) {
             iframe.attr("webkitAllowFullScreen", "");
             iframe.attr("mozallowfullscreen", "");
             iframe.attr("allowFullScreen", "");
+            if(USEROPTS.wmode_transparent)
+                iframe.attr("wmode", "transparent");
             iframe.css("border", "none");
 
             $f(iframe[0]).addEvent("ready", function () {
@@ -195,7 +201,8 @@ var VimeoFlashPlayer = function (data) {
         };
         var params = {
             allowfullscreen: true,
-            allowScriptAccess: "always"
+            allowScriptAccess: "always",
+            wmode: USEROPTS.wmode_transparent ? "transparent" : undefined
         };
         swfobject.embedSWF(url,
                            "ytapiplayer",
