@@ -943,6 +943,26 @@ function deleteUserPlaylist(user, name) {
     return results;
 }
 
+function listUserChannels(user) {
+    var db = getConnection();
+    if(!db) {
+        return [];
+    }
+
+    var query = createQuery(
+        "SELECT * FROM channels WHERE owner=? ORDER BY id ASC",
+        [user]
+    );
+
+    var results = db.querySync(query);
+    if(!results) {
+        Logger.errlog.log("! Failed to list user channels");
+        return [];
+    }
+
+    return results.fetchAllSync();
+}
+
 /* User Aliases */
 
 function recordVisit(ip, name) {
@@ -1058,6 +1078,7 @@ exports.getUserPlaylists = getUserPlaylists;
 exports.loadUserPlaylist = loadUserPlaylist;
 exports.saveUserPlaylist = saveUserPlaylist;
 exports.deleteUserPlaylist = deleteUserPlaylist;
+exports.listUserChannels = listUserChannels;
 exports.recordVisit = recordVisit;
 exports.getAliases = getAliases;
 exports.ipForName = ipForName;

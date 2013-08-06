@@ -356,9 +356,6 @@ module.exports = function (Server) {
             var session = params.session || "";
             var img = params.profile_image || "";
             var text = params.profile_text || "";
-            console.log(name);
-            console.log(img);
-            console.log(text);
 
             var row = Auth.login(name, pw, session);
             if(!row) {
@@ -501,6 +498,28 @@ module.exports = function (Server) {
             }
         },
 
+        handleListUserChannels: function (params, req, res) {
+            var name = params.name || "";
+            var pw = params.pw || "";
+            var session = params.session || "";
+
+            var row = Auth.login(name, pw, session);
+            if(!row) {
+                this.sendJSON(res, {
+                    success: false,
+                    error: "Invalid login"
+                });
+                return;
+            }
+
+            var channels = Server.db.listUserChannels(name);
+
+            this.sendJSON(res, {
+                success: true,
+                channels: channels
+            });
+        },
+
         handleAdmReports: function (params, req, res) {
             this.sendJSON(res, {
                 error: "Not implemented"
@@ -590,6 +609,7 @@ module.exports = function (Server) {
         "recoverpw"     : api.handlePasswordRecover.bind(api),
         "setprofile"    : api.handleProfileChange.bind(api),
         "getprofile"    : api.handleProfileGet.bind(api),
+        "listuserchannels": api.handleListUserChannels.bind(api),
         "setemail"      : api.handleEmailChange.bind(api),
         "admreports"    : api.handleAdmReports.bind(api),
         "readactionlog" : api.handleReadActionLog.bind(api)

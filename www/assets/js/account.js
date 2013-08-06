@@ -70,6 +70,33 @@ $("#profile").click(function() {
         });
     }
 });
+$("#channels").click(makeTabCallback("#channels", "#channelspane"));
+$("#channels").click(function () {
+    if(!loggedin) {
+        var error = $("<div/>").addClass("alert alert-error")
+            .text("You must be logged in to view this page")
+            .insertBefore($("#channellist"));
+        $("<button/>").addClass("close pull-right").click(function () {
+            error.remove();
+        }).html("&times;").prependTo(error);
+        return;
+    }
+
+    $.getJSON(api + "listuserchannels?name=" + encodeURIComponent(uname) +
+              "&session=" + session + "&callback=?", function(data) {
+        $("#channellist tbody").remove();
+        data.channels.forEach(function (chan) {
+            var tr = $("<tr/>").appendTo($("#channellist"));
+            var td = $("<td/>").appendTo(tr);
+            $("<a/>").attr("href", "./r/" + chan.name)
+                .attr("target", "_blank")
+                .text(chan.name)
+                .appendTo(td);
+        });
+    });
+});
+
+
 
 $("#registerbtn").click(function() {
     $("#registerpane").find(".alert-error").remove();
