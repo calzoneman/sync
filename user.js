@@ -521,6 +521,12 @@ User.prototype.initCallbacks = function() {
         });
     }.bind(this));
 
+    this.socket.on("readChanLog", function () {
+        if(this.channel !== null) {
+            this.channel.tryReadLog(this);
+        }
+    }.bind(this));
+
     this.socket.on("acp-init", function() {
         if(this.global_rank >= Rank.Siteadmin)
             this.server.acp.init(this);

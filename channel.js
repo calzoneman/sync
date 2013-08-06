@@ -278,6 +278,66 @@ function incrementalDump(chan) {
     }
 }
 
+Channel.prototype.readLog = function (filterIp, callback) {
+    var maxLen = 100000; // Most recent 100KB
+    var file = this.logger.filename;
+    fs.stat(file, function (err, data) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        var start = data.size - maxLen;
+        if(start < 0) {
+            start = 0;
+        }
+        var end = data.size - 1;
+
+        var rs = fs.createReadStream(file, {
+            start: start,
+            end: end
+        });
+
+        var buffer = "";
+        rs.on("data", function (data) {
+            buffer += data;
+        });
+
+        rs.on("end", function () {
+            if(filterIp) {
+                buffer = buffer.replace(
+                    /(\d{1,3}\.){2}(\d{1,3})\.(\d{1,3})/g,
+                    "x.x.$2.$3"
+                );
+            }
+
+            callback(false, buffer);
+        });
+    });
+}
+
+Channel.prototype.tryReadLog = function (user) {
+    if(user.rank < 3)
+        return;
+
+    var filterIp = true;
+    if(user.global_rank >= 255)
+        filterIp = false;
+
+    this.readLog(filterIp, function (err, data) {
+        if(err) {
+            user.socket.emit("readChanLog", {
+                success: false
+            });
+        } else {
+            user.socket.emit("readChanLog", {
+                success: true,
+                data: data
+            });
+        }
+    });
+}
+
 Channel.prototype.tryRegister = function(user) {
     if(this.registered) {
         ActionLog.record(user.ip, user.name, "channel-register-failure", [

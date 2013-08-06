@@ -497,6 +497,19 @@ Callbacks = {
         );
     },
 
+    readChanLog: function (data) {
+        var log = $("#chanlog_contents");
+        if(log.length == 0)
+            return;
+
+        if(data.success) {
+            log.text(data.data);
+        } else {
+            log.text("Error reading channel log");
+        }
+        log.scrollTop(log.prop("scrollHeight"));
+    },
+
     voteskip: function(data) {
         if(data.count > 0) {
             $("#voteskip").text("Voteskip ("+data.count+"/"+data.need+")");

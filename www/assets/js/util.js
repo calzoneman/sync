@@ -812,6 +812,7 @@ function handleModPermissions() {
     setVisible("#jsedit_tab", CLIENT.rank >= 3);
     setVisible("#filteredit_tab", hasPermission("filteredit"));
     setVisible("#channelranks_tab", CLIENT.rank >= 3);
+    setVisible("#chanlog_tab", CLIENT.rank >= 3);
     setVisible("#chanopts_unregister_wrap", CLIENT.rank >= 10);
 }
 

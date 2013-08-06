@@ -45,6 +45,10 @@
     $("#show_channelranks").click(function() {
         socket.emit("requestChannelRanks");
     });
+    clickHandler("#show_chanlog", "#chanlog");
+    $("#show_chanlog").click(function () {
+        socket.emit("readChanLog");
+    });
 
     genPermissionsEditor();
 
