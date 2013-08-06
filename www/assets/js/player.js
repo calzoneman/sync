@@ -778,6 +778,7 @@ var constructors = {
     "jt": JustinTVPlayer,
     "us": UstreamPlayer,
     "rt": RTMPPlayer,
+    "jw": JWPlayer,
     "im": ImgurPlayer,
     "cu": CustomPlayer
 };
