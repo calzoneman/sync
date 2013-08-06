@@ -38,10 +38,9 @@ var YouTubePlayer = function (data) {
                 rel: 0              // No related videos
             },
             events: {
-                onReady: function() {
-                    //socket.emit("playerReady");
+                onReady: function () {
                 },
-                onStateChange: function(ev) {
+                onStateChange: function (ev) {
                     if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
                        !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
                         self.paused = (ev.data == YT.PlayerState.PAUSED);
@@ -115,7 +114,6 @@ var VimeoPlayer = function (data) {
             iframe.css("border", "none");
 
             $f(iframe[0]).addEvent("ready", function () {
-                //socket.emit("playerReady");
                 self.player = $f(iframe[0]);
                 self.player.api("play");
 
@@ -211,7 +209,6 @@ var VimeoFlashPlayer = function (data) {
         self.player = $("#ytapiplayer")[0];
         waitUntilDefined(self.player, "api_addEventListener", function () {
             self.player.api_addEventListener("ready", function () {
-                //socket.emit("playerReady");
                 self.player.api_play();
 
                 self.player.api_addEvent("finish", function () {
@@ -281,7 +278,6 @@ var DailymotionPlayer = function (data) {
         });
 
         self.player.addEventListener("apiready", function (e) {
-            //socket.emit("playerReady");
             self.player.addEventListener("ended", function (e) {
                 if(CLIENT.leader) {
                     socket.emit("playNext");
@@ -349,7 +345,6 @@ var SoundcloudPlayer = function (data) {
         self.player = SC.Widget("ytapiplayer");
 
         self.player.bind(SC.Widget.Events.READY, function () {
-            //socket.emit("playerReady");
             self.player.load(self.videoId, { auto_play: true });
 
             self.player.bind(SC.Widget.Events.PAUSE, function () {
