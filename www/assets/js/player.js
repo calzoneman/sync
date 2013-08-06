@@ -713,7 +713,7 @@ var CustomPlayer = function (data) {
     self.init();
 
     self.load = function (data) {
-        self.id = data.id;
+        self.videoId = data.id;
         self.init();
     };
 
