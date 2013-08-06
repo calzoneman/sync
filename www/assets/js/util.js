@@ -370,8 +370,7 @@ function rebuildPlaylist() {
 
 /* menus */
 function showOptionsMenu() {
-    if(PLAYER)
-        PLAYER.hide();
+    hidePlayer();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -528,8 +527,7 @@ function showOptionsMenu() {
     });
 
     modal.on("hidden", function() {
-        if(PLAYER)
-            PLAYER.unhide();
+        unhidePlayer();
         applyOpts();
         modal.remove();
     });
@@ -599,8 +597,7 @@ function applyOpts() {
 applyOpts();
 
 function showLoginMenu() {
-    if(PLAYER)
-        PLAYER.hide();
+    hidePlayer();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
     var head = $("<div/>").addClass("modal-header")
@@ -671,8 +668,7 @@ function showLoginMenu() {
     }
     var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
     modal.on("hidden", function() {
-        if(PLAYER)
-            PLAYER.unhide();
+        unhidePlayer();
         modal.remove();
     });
     modal.modal();

@@ -853,30 +853,23 @@ Callbacks = {
         if(data.type != "sc" && PLAYER.type == "sc")
             // [](/goddamnitmango)
             fixSoundcloudShit();
+
         if(data.type != "jw" && PLAYER.type == "jw") {
             // Is it so hard to not mess up my DOM?
             $("<div/>").attr("id", "ytapiplayer")
                 .insertBefore($("#ytapiplayer_wrapper"));
             $("#ytapiplayer_wrapper").remove();
         }
+
         if(data.type != PLAYER.type) {
-            if(data.type === "vi" && typeof $f !== "function") {
-                setTimeout(function () {
-                    Callbacks.changeMedia(data);
-                }, 100);
-                return;
-            }
-            PLAYER = new Player(data);
+            loadMediaPlayer(data);
         }
-        if(PLAYER.update) {
-            PLAYER.update(data);
-        }
+
+        handleMediaUpdate(data);
     },
 
     mediaUpdate: function(data) {
-        if(PLAYER.update) {
-            PLAYER.update(data);
-        }
+        handleMediaUpdate(data);
     },
 
     setPlaylistLocked: function(data) {

@@ -11,67 +11,24 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var VIMEO_FLASH = false;
 
-var Player = function(data) {
-    if(!data) {
-        data = {
-            id: "",
-            type: "null"
-        };
-    }
-    this.id = data.id;
-    this.type = data.type;
-    this.length = data.length;
-    this.currentTime = data.currentTime || 0;
-    this.diff = 0;
+var constructors = {
+    "yt": YouTubePlayer,
+    "vi": VIMEO_FLASH ? VimeoFlashPlayer : VimeoPlayer,
+    "dm": DailymotionPlayer,
+    "sc": SouncloudPlayer,
+    "li": LivestreamPlayer,
+    "tw": TwitchTVPlayer,
+    "jt": JustinTVPlayer,
+    "us": UstreamPlayer,
+    "rt": RTMPPlayer,
+    "im": ImgurPlayer,
+    "cu": CustomPlayer
+};
 
-    function postInit() {
-        this.load(data);
-    }
-    postInit.bind(this);
-
-    switch(this.type) {
-        case "yt":
-            this.initYouTube();
-            break;
-        case "vi":
-            if(VIMEO_FLASH)
-                this.initVimeoFlash();
-            else
-                this.initVimeo();
-            break;
-        case "dm":
-            this.initDailymotion();
-            break;
-        case "sc":
-            this.initSoundcloud();
-            break;
-        case "li":
-            this.initLivestream();
-            break;
-        case "tw":
-            this.initTwitch();
-            break;
-        case "jt":
-            this.initJustinTV();
-            break;
-        case "rt":
-            this.initRTMP();
-            break;
-        case "jw":
-            this.initJWPlayer();
-            break;
-        case "us":
-            this.initUstream();
-            break;
-        case "im":
-            this.initImgur();
-            break;
-        case "cu":
-            this.initCustom();
-            break;
-        default:
-            this.nullPlayer();
-            break;
+function loadMediaPlayer(data) {
+    if(data.type in constructors) {
+        PLAYER = new constructors[data.type](data);
+        PLAYER.type = data.type;
     }
 }
 
@@ -473,302 +430,377 @@ var SoundcloudPlayer = function (data) {
     };
 };
 
-Player.prototype.initLivestream = function() {
-    this.removeOld();
-    var flashvars = {channel: this.id};
-    var params = {AllowScriptAccess: "always"};
-    swfobject.embedSWF("http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf", "ytapiplayer", VWIDTH, VHEIGHT, "9.0.0", "expressInstall.swf", flashvars, params);
-
-    this.load = function(data) {
-        this.id = data.id;
-        this.initLivestream();
-    }
-
-    this.pause = function() { }
-
-    this.play = function() { }
-
-    this.isPaused = function() { }
-
-    this.getTime = function() { }
-
-    this.seek = function() { }
-}
-
-Player.prototype.initTwitch = function() {
-    this.removeOld();
-    var url = "http://www.twitch.tv/widgets/live_embed_player.swf?channel="+this.id;
-    var params = {
-        allowFullScreen:"true",
-        allowScriptAccess:"always",
-        allowNetworking:"all",
-        movie:"http://www.twitch.tv/widgets/live_embed_player.swf",
-        id: "live_embed_player_flash",
-        flashvars:"hostname=www.twitch.tv&channel="+this.id+"&auto_play=true&start_volume=100"
+var LivestreamPlayer = function (data) {
+    removeOld();
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        var flashvars = { channel: self.videoId };
+        var params = { AllowScriptAccess: "always" };
+        swfobject.embedSWF(
+            "http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf",
+            "ytapiplayer",
+            VWIDTH, VHEIGHT,
+            "9.0.0",
+            "expressInstall.swf",
+            flashvars,
+            params
+        );
     };
-    swfobject.embedSWF( url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initTwitch();
-    }
+    self.init();
 
-    this.pause = function() { }
-
-    this.play = function() { }
-
-    this.isPaused = function() { }
-
-    this.getTime = function() { }
-
-    this.seek = function() { }
-}
-
-Player.prototype.initJustinTV = function() {
-    this.removeOld();
-    var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+this.id;
-    var params = {
-        allowFullScreen:"true",
-        allowScriptAccess:"always",
-        allowNetworking:"all",
-        movie:"http://www.justin.tv/widgets/live_embed_player.swf",
-        id: "live_embed_player_flash",
-        flashvars:"hostname=www.justin.tv&channel="+this.id+"&auto_play=true&start_volume=100"
+    self.load = function(data) {
+        self.videoId = data.id;
+        self.init();
     };
-    swfobject.embedSWF( url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initJustinTV();
-    }
+    self.pause = function () { };
 
-    this.pause = function() { }
+    self.play = function () { };
 
-    this.play = function() { }
+    self.isPaused = function () { };
 
-    this.isPaused = function() { }
+    self.getTime = function () { };
 
-    this.getTime = function() { }
-
-    this.seek = function() { }
+    self.seek = function () { };
 }
 
-Player.prototype.initRTMP = function() {
-    this.removeOld();
-    var url = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
-    var src = encodeURIComponent(this.id);
-    var params = {
-            allowFullScreen:"true",
-            allowScriptAccess:"always",
-            allowNetworking:"all",
-            wMode:"direct",
-            movie:"http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
-            flashvars:"src="+src+"&streamType=live&autoPlay=true"
+var TwitchTVPlayer = function (data) {
+    removeOld();
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        var url = "http://www.twitch.tv/widgets/live_embed_player.swf?channel="+self.videoId;
+        var params = {
+            allowFullScreen: "true",
+            allowScriptAccess: "always",
+            allowNetworking: "all",
+            movie: "http://www.twitch.tv/widgets/live_embed_player.swf",
+            id: "live_embed_player_flash",
+            flashvars: "hostname=www.twitch.tv&channel="+self.videoId+"&auto_play=true&start_volume=100"
         };
-    swfobject.embedSWF(url, "ytapiplayer", VWIDTH, VHEIGHT, "8", null, null, params, {} );
+        swfobject.embedSWF(url,
+            "ytapiplayer",
+            VWIDTH, VHEIGHT,
+            "8", 
+            null, null,
+            params,
+            {}
+        );
+    };
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initRTMP();
-    }
+    self.init();
 
-    this.pause = function() { }
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.init();
+    };
 
-    this.play = function() { }
+    self.pause = function () { };
 
-    this.isPaused = function() { }
+    self.play = function () { };
 
-    this.getTime = function() { }
+    self.isPaused = function () { };
 
-    this.seek = function() { }
+    self.getTime = function () { };
+
+    self.seek = function () { };
 }
 
-Player.prototype.initJWPlayer = function() {
-    if(typeof jwplayer == "undefined") {
-        setTimeout(function() {
-            this.initJWPlayer();
-        }.bind(this), 100);
-        return;
+var JustinTVPlayer = function (data) {
+    removeOld();
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+self.videoId;
+        var params = {
+            allowFullScreen: "true",
+            allowScriptAccess: "always",
+            allowNetworking: "all",
+            movie: "http://www.justin.tv/widgets/live_embed_player.swf",
+            id: "live_embed_player_flash",
+            flashvars: "hostname=www.justin.tv&channel="+self.videoId+"&auto_play=true&start_volume=100"
+        };
+        swfobject.embedSWF(url,
+            "ytapiplayer",
+            VWIDTH, VHEIGHT,
+            "8", 
+            null, null,
+            params,
+            {}
+        );
+    };
+
+    self.init();
+
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.init();
+    };
+
+    self.pause = function () { };
+
+    self.play = function () { };
+
+    self.isPaused = function () { };
+
+    self.getTime = function () { };
+
+    self.seek = function () { };
+}
+
+var RTMPPlayer = function (data) {
+    removeOld();
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        var url = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
+        var src = encodeURIComponent(self.videoId);
+        var params = {
+            allowFullScreen: "true",
+            allowScriptAccess: "always",
+            allowNetworking: "all",
+            wMode: "direct",
+            movie: "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
+            flashvars: "src="+src+"&streamType=live&autoPlay=true"
+        };
+        swfobject.embedSWF(url,
+            "ytapiplayer",
+            VWIDTH, VHEIGHT,
+            "8",
+            null, null,
+            params,
+            {}
+        );
+    };
+
+    self.init();
+
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.init();
+    };
+
+    self.pause = function () { };
+
+    self.play = function () { };
+
+    self.isPaused = function () { };
+
+    self.getTime = function () { };
+
+    self.seek = function () { };
+}
+
+var JWPlayer = function (data) {
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        removeOld();
+
+        jwplayer("ytapiplayer").setup({
+            file: self.videoId,
+            width: VWIDTH,
+            height: VHEIGHT,
+            autostart: true
+        });
+
+        jwplayer().onPlay(function() {
+            self.paused = false;
+            if(CLIENT.leader)
+                sendVideoUpdate();
+        });
+        jwplayer().onPause(function() {
+            self.paused = true;
+            if(CLIENT.leader)
+                sendVideoUpdate();
+        });
+        jwplayer().onComplete(function() {
+            socket.emit("playNext");
+        });
     }
-    this.removeOld();
 
-    jwplayer("ytapiplayer").setup({
-        file: this.id,
-        width: VWIDTH,
-        height: VHEIGHT,
-        autostart: true
-    });
+    waitUntilDefined(window, "jwplayer", function () { self.init(); });
 
-    jwplayer().onPlay(function() {
-        this.paused = false;
-    }.bind(this));
-    jwplayer().onPause(function() {
-        this.paused = true;
-    }.bind(this));
-    jwplayer().onComplete(function() {
-        socket.emit("playNext");
-    });
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.init();
+    };
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initJWPlayer();
-    }
+    self.pause = function () {
+        if(jwplayer)
+            jwplayer().pause(true);
+    };
 
-    this.pause = function() {
-        jwplayer().pause(true);
-    }
+    self.play = function () {
+        if(jwplayer)
+            jwplayer().play(true);
+    };
 
-    this.play = function() {
-        jwplayer().play(true);
-    }
+    self.isPaused = function (callback) {
+        if(jwplayer)
+            callback(jwplayer().getState() !== "PLAYING");
+    };
 
-    this.isPaused = function(callback) {
-        callback(jwplayer().getState() !== "PLAYING");
-    }
-
-    this.getTime = function(callback) {
+    self.getTime = function (callback) {
         // Only return time for non-live media
-        if(jwplayer().getDuration() != -1) {
+        if(jwplayer && jwplayer().getDuration() != -1) {
             callback(jwplayer().getPosition());
         }
-    }
+    };
 
-    this.seek = function(time) {
-        jwplayer().seek(time);
-    }
+    self.seek = function (time) {
+        if(jwplayer)
+            jwplayer().seek(time);
+    };
 }
 
-Player.prototype.initUstream = function() {
-    var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
-    $("#ytapiplayer").remove();
-    iframe.attr("id", "ytapiplayer");
-    iframe.attr("width", VWIDTH);
-    iframe.attr("height", VHEIGHT);
-    iframe.attr("src", "http://www.ustream.tv/embed/"+this.id+"?v=3&wmode=direct");
-    iframe.attr("frameborder", "0");
-    iframe.attr("scrolling", "no");
-    iframe.css("border", "none");
+var UstreamPlayer = function (data) {
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        var iframe = $("<iframe/>");
+        removeOld(iframe);
+        iframe.attr("width", VWIDTH);
+        iframe.attr("height", VHEIGHT);
+        iframe.attr("src", "http://www.ustream.tv/embed/"+self.videoId+"?v=3&wmode=direct");
+        iframe.attr("frameborder", "0");
+        iframe.attr("scrolling", "no");
+        iframe.css("border", "none");
+    };
+    
+    self.init();
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initUstream();
-    }
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.init();
+    };
 
-    this.pause = function() { }
+    self.pause = function () { };
 
-    this.play = function() { }
+    self.play = function () { };
 
-    this.isPaused = function() { }
+    self.isPaused = function () { };
 
-    this.getTime = function() { }
+    self.getTime = function () { };
 
-    this.seek = function() { }
+    self.seek = function () { };
 }
 
-Player.prototype.initImgur = function() {
-    var iframe = $("<iframe/>").insertBefore($("#ytapiplayer"));
-    $("#ytapiplayer").remove();
-    iframe.attr("id", "ytapiplayer");
-    iframe.attr("width", VWIDTH);
-    iframe.attr("height", VHEIGHT);
-    iframe.attr("src", "http://imgur.com/a/"+this.id+"/embed");
-    iframe.attr("frameborder", "0");
-    iframe.attr("scrolling", "no");
-    iframe.css("border", "none");
+var ImgurPlayer = function (data) {
+    var self = this;
+    self.init = function () {
+        var iframe = $("<iframe/>");
+        removeOld(iframe);
+        iframe.attr("width", VWIDTH);
+        iframe.attr("height", VHEIGHT);
+        iframe.attr("src", "http://imgur.com/a/"+self.videoId+"/embed");
+        iframe.attr("frameborder", "0");
+        iframe.attr("scrolling", "no");
+        iframe.css("border", "none");
+    };
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initImgur()
-    }
+    self.init();
 
-    this.pause = function() { }
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.init()
+    };
 
-    this.play = function() { }
+    self.pause = function () { };
 
-    this.isPaused = function() { }
+    self.play = function () { };
 
-    this.getTime = function() { }
+    self.isPaused = function () { };
 
-    this.seek = function() { }
+    self.getTime = function () { };
+
+    self.seek = function () { };
 }
 
-Player.prototype.initCustom = function() {
-    var div = $("<div/>").insertBefore($("#ytapiplayer"));
-    $("#ytapiplayer").remove();
-    div.append(this.id);
+var CustomPlayer = function (data) {
+    var self = this;
+    self.videoId = data.id;
+    self.init = function () {
+        removeOld();
+        var div = $("#ytapiplayer");
+        div.attr("id", "");
+        div.append(self.videoId);
 
-    this.player = div.find("iframe")
-    if(this.player.length === 0) this.player = div.find("object");
-    if(this.player.length === 0) this.player = div;
-    this.player.attr("id", "ytapiplayer");
-    this.player.attr("width", VWIDTH);
-    this.player.attr("height", VHEIGHT);
+        self.player = div.find("iframe")
+        if(self.player.length === 0) self.player = div.find("object");
+        if(self.player.length === 0) self.player = div;
+        self.player.attr("id", "ytapiplayer");
+        self.player.attr("width", VWIDTH);
+        self.player.attr("height", VHEIGHT);
+    };
 
-    this.load = function(data) {
-        this.id = data.id;
-        this.initCustom()
-    }
+    self.load = function (data) {
+        self.id = data.id;
+        self.initCustom()
+    };
 
-    this.pause = function() { }
+    self.pause = function () { };
 
-    this.play = function() { }
+    self.play = function () { };
 
-    this.isPaused = function() { }
+    self.isPaused = function () { };
 
-    this.getTime = function() { }
+    self.getTime = function () { };
 
-    this.seek = function() { }
-}
+    self.seek = function () { };
+};
 
-Player.prototype.update = function(data) {
-    this.currentTime = data.currentTime;
-    if(data.id && data.id != this.id) {
-        if(data.currentTime < 0) {
+function handleMediaUpdate(data) {
+    // Media change
+    if(data.id && data.id !== PLAYER.videoId) {
+        if(data.currentTime < 0)
             data.currentTime = 0;
-        }
-        this.load(data);
-        this.play();
+        PLAYER.load(data);
+        PLAYER.play();
     }
-    if(CLIENT.leader) {
+    
+    // Don't synch if leader or synch disabled
+    if(CLIENT.leader || !USEROPTS.synch)
         return;
-    }
-    if(!USEROPTS.synch) {
-        return;
-    }
+
+    // Handle pause/unpause
     if(data.paused) {
-        this.seek(data.currentTime);
-        this.pause();
+        PLAYER.seek(data.currentTime);
+        PLAYER.pause();
     }
     else {
-        this.isPaused(function(paused) {
-            paused && this.play();
-        }.bind(this));
+        PLAYER.isPaused(function (paused) {
+            paused && PLAYER.play();
+        });
     }
-    this.getTime(function(seconds) {
+
+    // Handle time change
+    PLAYER.getTime(function (seconds) {
         var time = data.currentTime;
         var diff = time - seconds || time;
 
         if(diff > USEROPTS.sync_accuracy) {
-            this.seek(time);
+            PLAYER.seek(time);
         }
         else if(diff < -USEROPTS.sync_accuracy) {
-            this.seek(time + 1);
+            // Don't synch all the way back, causes buffering problems
+            // because for some dumb reason YouTube erases the buffer
+            // when you seek backwards
+            PLAYER.seek(time + 1);
         }
-    }.bind(this));
+    });
 }
 
-Player.prototype.removeOld = function() {
-    var old = $("#ytapiplayer");
-    var placeholder = $("<div/>").insertBefore(old);
-    old.remove();
-    placeholder.attr("id", "ytapiplayer");
-}
-
-Player.prototype.hide = function() {
-    if(!/chrome/ig.test(navigator.userAgent)) {
+function hidePlayer() {
+    if(!PLAYER)
         return;
-    }
-    this.size = {
+
+    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
+        return;
+
+    PLAYER.size = {
         width: $("#ytapiplayer").attr("width"),
         height: $("#ytapiplayer").attr("height")
     };
@@ -776,10 +808,13 @@ Player.prototype.hide = function() {
         .attr("height", 1);
 }
 
-Player.prototype.unhide = function() {
-    if(!/chrome/ig.test(navigator.userAgent)) {
+function unhidePlayer() {
+    if(!PLAYER)
         return;
-    }
-    $("#ytapiplayer").attr("width", this.size.width)
-        .attr("height", this.size.height);
+
+    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
+        return;
+
+    $("#ytapiplayer").attr("width", PLAYER.size.width)
+        .attr("height", PLAYER.size.height);
 }
