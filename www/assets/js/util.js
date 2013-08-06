@@ -1265,7 +1265,7 @@ function fluidLayout() {
         $(this).removeClass("container").addClass("container-fluid");
     });
     // Video might not be there, but the playlist is
-    VWIDTH = $("#queue").css("width").replace("px", "");
+    VWIDTH = $("#videowidth").css("width").replace("px", "");
     VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
     if($("#ytapiplayer").length > 0) {
         $("#ytapiplayer").attr("width", VWIDTH);
@@ -1408,4 +1408,30 @@ function waitUntilDefined(obj, key, fn) {
         return;
     }
     fn();
+}
+
+function hidePlayer() {
+    if(!PLAYER)
+        return;
+
+    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
+        return;
+
+    PLAYER.size = {
+        width: $("#ytapiplayer").attr("width"),
+        height: $("#ytapiplayer").attr("height")
+    };
+    $("#ytapiplayer").attr("width", 1)
+        .attr("height", 1);
+}
+
+function unhidePlayer() {
+    if(!PLAYER)
+        return;
+
+    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
+        return;
+
+    $("#ytapiplayer").attr("width", PLAYER.size.width)
+        .attr("height", PLAYER.size.height);
 }

@@ -793,29 +793,3 @@ function handleMediaUpdate(data) {
         }
     });
 }
-
-function hidePlayer() {
-    if(!PLAYER)
-        return;
-
-    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
-        return;
-
-    PLAYER.size = {
-        width: $("#ytapiplayer").attr("width"),
-        height: $("#ytapiplayer").attr("height")
-    };
-    $("#ytapiplayer").attr("width", 1)
-        .attr("height", 1);
-}
-
-function unhidePlayer() {
-    if(!PLAYER)
-        return;
-
-    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
-        return;
-
-    $("#ytapiplayer").attr("width", PLAYER.size.width)
-        .attr("height", PLAYER.size.height);
-}
