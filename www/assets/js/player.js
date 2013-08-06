@@ -11,27 +11,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var VIMEO_FLASH = false;
 
-var constructors = {
-    "yt": YouTubePlayer,
-    "vi": VIMEO_FLASH ? VimeoFlashPlayer : VimeoPlayer,
-    "dm": DailymotionPlayer,
-    "sc": SoundcloudPlayer,
-    "li": LivestreamPlayer,
-    "tw": TwitchTVPlayer,
-    "jt": JustinTVPlayer,
-    "us": UstreamPlayer,
-    "rt": RTMPPlayer,
-    "im": ImgurPlayer,
-    "cu": CustomPlayer
-};
-
-function loadMediaPlayer(data) {
-    if(data.type in constructors) {
-        PLAYER = new constructors[data.type](data);
-        PLAYER.type = data.type;
-    }
-}
-
 function removeOld(replace) {
     replace = replace || $("<div/>");
     var old = $("#ytapiplayer");
@@ -792,4 +771,25 @@ function handleMediaUpdate(data) {
             PLAYER.seek(time + 1);
         }
     });
+}
+
+var constructors = {
+    "yt": YouTubePlayer,
+    "vi": VIMEO_FLASH ? VimeoFlashPlayer : VimeoPlayer,
+    "dm": DailymotionPlayer,
+    "sc": SoundcloudPlayer,
+    "li": LivestreamPlayer,
+    "tw": TwitchTVPlayer,
+    "jt": JustinTVPlayer,
+    "us": UstreamPlayer,
+    "rt": RTMPPlayer,
+    "im": ImgurPlayer,
+    "cu": CustomPlayer
+};
+
+function loadMediaPlayer(data) {
+    if(data.type in constructors) {
+        PLAYER = new constructors[data.type](data);
+        PLAYER.type = data.type;
+    }
 }
