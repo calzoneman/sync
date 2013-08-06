@@ -366,23 +366,6 @@ $(window).resize(function() {
     }
 });
 
-
-/* initial YouTube api */
-
-if(!USEROPTS.hidevid) {
-    var tag = document.createElement("script");
-    tag.src = "http://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName("script")[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-}
-
-function onYouTubeIframeAPIReady() {
-    if(!PLAYER)
-        PLAYER = new Player({id:"", type: "yt"});
-    if(FLUIDLAYOUT)
-        fluid();
-}
-
 /* load channel */
 
 var loc = document.location+"";

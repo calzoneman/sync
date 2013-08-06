@@ -15,7 +15,7 @@ var constructors = {
     "yt": YouTubePlayer,
     "vi": VIMEO_FLASH ? VimeoFlashPlayer : VimeoPlayer,
     "dm": DailymotionPlayer,
-    "sc": SouncloudPlayer,
+    "sc": SoundcloudPlayer,
     "li": LivestreamPlayer,
     "tw": TwitchTVPlayer,
     "jt": JustinTVPlayer,
