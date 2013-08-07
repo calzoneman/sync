@@ -1323,7 +1323,10 @@ Channel.prototype.tryUncache = function(user, data) {
         return;
     }
     if(this.server.db.removeFromLibrary(this.name, data.id)) {
-        this.logger.log("*** " + user.name + " deleted " + this.library[data.id].title + " from library");
+        var msg = data.id;
+        if(data.id in this.library)
+            msg = this.library[data.id];
+        this.logger.log("*** " + user.name + " deleted " + msg + " from library");
         delete this.library[data.id];
     }
 }
