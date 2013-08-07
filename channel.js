@@ -1680,6 +1680,12 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
         show_public: true
     };
 
+    if ("afk_timeout" in data) {
+        data.afk_timeout = parseInt(data.afk_timeout);
+        if(data.afk_timeout < 0)
+            data.afk_timeout = 0;
+    }
+
     for(var key in this.opts) {
         if(key in data) {
             if(key in adminonly && user.rank < Rank.Owner) {
