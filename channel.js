@@ -1309,7 +1309,7 @@ Channel.prototype.tryDequeue = function(user, data) {
     if(typeof data !== "number")
         return;
     
-    var plitem = this.playlist.find(data);
+    var plitem = this.playlist.items.find(data);
     if(plitem && plitem.media)
         this.logger.log("### " + user.name + " deleted " + plitem.media.title);
     this.dequeue(data);
@@ -1435,8 +1435,8 @@ Channel.prototype.move = function(data, user) {
             moveby = data.moveby;
 
         
-        var fromit = chan.playlist.find(data.from);
-        var afterit = chan.playlist.find(data.after);
+        var fromit = chan.playlist.items.find(data.from);
+        var afterit = chan.playlist.items.find(data.after);
         if(fromit) {
             chan.logger.log("### " + user.name + " moved " + fromit.media.title +
                             + afterit ? " after " + afterit.media.title : "");
