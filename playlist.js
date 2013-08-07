@@ -285,29 +285,22 @@ Playlist.prototype.addMediaList = function(data, callback) {
     var pl = this;
     for(var i = 0; i < data.list.length; i++) {
         var x = data.list[i];
-        (function(i, x) {
-            setTimeout(function() {
-                if(pl.dead)
-                    return;
-                x.queueby = data.queueby;
-                x.pos = data.pos;
-                if(start && x == start) {
-                    pl.addMedia(x, function (err, item) {
-                        if(err) {
-                            callback(err, item);
-                        }
-                        else {
-                            callback(err, item);
-                            pl.current = item;
-                            pl.startPlayback();
-                        }
-                    });
+        x.pos = data.pos;
+        if(start && x == start) {
+            pl.addMedia(x, function (err, item) {
+                if(err) {
+                    callback(err, item);
                 }
                 else {
-                    pl.addMedia(x, callback);
+                    callback(err, item);
+                    pl.current = item;
+                    pl.startPlayback();
                 }
-            }, 500 * i);
-        })(i, x);
+            });
+        }
+        else {
+            pl.addMedia(x, callback);
+        }
     }
 }
 

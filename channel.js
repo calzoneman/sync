@@ -1274,7 +1274,6 @@ Channel.prototype.addMedia = function(data, user) {
 }
 
 Channel.prototype.addMediaList = function(data, user) {
-    var pl = data.list;
     var chan = this;
     this.playlist.addMediaList(data, function(err, item) {
         if(err) {
@@ -1285,6 +1284,8 @@ Channel.prototype.addMediaList = function(data, user) {
             return;
         }
         else {
+            item.temp = data.temp;
+            item.queueby = data.queueby;
             chan.sendAll("queue", {
                 item: item.pack(),
                 after: item.prev ? item.prev.uid : "prepend"
@@ -1312,6 +1313,7 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
     var pl = this.server.db.loadUserPlaylist(user.name, data.name);
     data.list = pl;
     data.queueby = user.name;
+    data.temp = !this.hasPermission(user, "addnontemp");
     this.addMediaList(data, user);
 }
 
