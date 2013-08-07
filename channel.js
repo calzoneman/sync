@@ -456,7 +456,7 @@ Channel.prototype.tryNameBan = function(actor, name) {
             break;
         }
     }
-    this.logger.log(name + " was banned by " + actor.name);
+    this.logger.log("*** " + actor.name + " namebanned " + name);
     var chan = this;
     this.users.forEach(function(u) {
         chan.sendBanlist(u);
@@ -475,7 +475,7 @@ Channel.prototype.unbanName = function(actor, name) {
 
     this.namebans[name] = null;
     delete this.namebans[name];
-    this.logger.log(name + " was unbanned by " + actor.name);
+    this.logger.log("*** " + actor.name + " un-namebanned " + name);
 
     var chan = this;
     this.users.forEach(function(u) {
@@ -510,7 +510,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
         }
         chan.ipbans[ip] = [name, actor.name];
         //chan.broadcastBanlist();
-        chan.logger.log(ip + " (" + name + ") was banned by " + actor.name);
+        chan.logger.log("*** " + actor.name + " banned " + ip + " (" + name + ")");
 
         for(var i = 0; i < chan.users.length; i++) {
             if(chan.users[i].ip.indexOf(ip) == 0) {
@@ -562,6 +562,8 @@ Channel.prototype.unbanIP = function(actor, ip) {
     this.users.forEach(function(u) {
         chan.sendBanlist(u);
     });
+
+    this.logger.log("*** " + actor.name + " unbanned " + ip);
 
     if(!this.registered)
         return false;
@@ -673,8 +675,8 @@ Channel.prototype.userJoin = function(user) {
     // Send things that require special permission
     this.sendRankStuff(user);
 
-    this.logger.log("+++ /" + user.ip + " joined");
-    Logger.syslog.log("/" + user.ip + " joined channel " + this.name);
+    this.logger.log("+++ " + user.ip + " joined");
+    Logger.syslog.log(user.ip + " joined channel " + this.name);
 }
 
 Channel.prototype.userLeave = function(user) {
@@ -712,7 +714,7 @@ Channel.prototype.userLeave = function(user) {
             name: user.name
         });
     }
-    this.logger.log("--- /" + user.ip + " (" + user.name + ") left");
+    this.logger.log("--- " + user.ip + " (" + user.name + ") left");
     if(this.users.length == 0) {
         this.logger.log("*** Channel empty, unloading");
         this.server.unloadChannel(this);
@@ -1178,6 +1180,7 @@ Channel.prototype.addMedia = function(data, user) {
                 return;
             }
             else {
+                chan.logger.log("### " + user.name + " queued " + item.media.title);
                 chan.sendAll("queue", {
                     item: item.pack(),
                     after: item.prev ? item.prev.uid : "prepend"
@@ -1204,6 +1207,7 @@ Channel.prototype.addMedia = function(data, user) {
             return;
         }
         else {
+            chan.logger.log("### " + user.name + " queued " + item.media.title);
             chan.sendAll("queue", {
                 item: item.pack(),
                 after: item.prev ? item.prev.uid : "prepend"
@@ -1225,6 +1229,7 @@ Channel.prototype.addMediaList = function(data, user) {
             return;
         }
         else {
+            chan.logger.log("### " + user.name + " queued " + item.media.title);
             item.temp = data.temp;
             item.queueby = data.queueby;
             chan.sendAll("queue", {
@@ -1298,14 +1303,16 @@ Channel.prototype.dequeue = function(uid) {
 }
 
 Channel.prototype.tryDequeue = function(user, data) {
-    if(!this.hasPermission(user, "playlistdelete")) {
+    if(!this.hasPermission(user, "playlistdelete"))
         return;
-     }
 
-     if(typeof data !== "number")
-         return;
-
-     this.dequeue(data);
+    if(typeof data !== "number")
+        return;
+    
+    var plitem = this.playlist.find(data);
+    if(plitem && plitem.media)
+        this.logger.log("### " + user.name + " deleted " + plitem.media.title);
+    this.dequeue(data);
 }
 
 Channel.prototype.tryUncache = function(user, data) {
@@ -1316,6 +1323,7 @@ Channel.prototype.tryUncache = function(user, data) {
         return;
     }
     if(this.server.db.removeFromLibrary(this.name, data.id)) {
+        this.logger.log("*** " + user.name + " deleted " + this.library[data.id].title + " from library");
         delete this.library[data.id];
     }
 }
@@ -1328,6 +1336,8 @@ Channel.prototype.tryPlayNext = function(user) {
     if(!this.hasPermission(user, "playlistjump")) {
          return;
     }
+
+    this.logger.log("### " + user.name + " skipped the video");
 
     this.playNext();
 }
@@ -1345,6 +1355,8 @@ Channel.prototype.tryJumpTo = function(user, data) {
         return;
     }
 
+    this.logger.log("### " + user.name + " skipped the video");
+
     this.jumpTo(data);
 }
 
@@ -1358,6 +1370,8 @@ Channel.prototype.tryClearqueue = function(user) {
     if(!this.hasPermission(user, "playlistclear")) {
         return;
     }
+
+    this.logger.log("### " + user.name + " cleared the playlist");
     this.clearqueue();
 }
 
@@ -1383,6 +1397,7 @@ Channel.prototype.tryShufflequeue = function(user) {
     if(!this.hasPermission(user, "playlistshuffle")) {
         return;
     }
+    this.logger.log("### " + user.name + " shuffled the playlist");
     this.shufflequeue();
 }
 
@@ -1418,6 +1433,14 @@ Channel.prototype.move = function(data, user) {
         var moveby = user && user.name ? user.name : null;
         if(typeof data.moveby !== "undefined")
             moveby = data.moveby;
+
+        
+        var fromit = chan.playlist.find(data.from);
+        var afterit = chan.playlist.find(data.after);
+        if(fromit) {
+            chan.logger.log("### " + user.name + " moved " + fromit.media.title +
+                            + afterit ? " after " + afterit.media.title : "");
+        }
 
         chan.sendAll("moveVideo", {
             from: data.from,
@@ -1463,6 +1486,7 @@ Channel.prototype.tryClosePoll = function(user) {
     }
 
     if(this.poll) {
+        this.logger.log("*** " + user.name + " closed the active poll");
         this.poll = false;
         this.broadcastPollClose();
     }
@@ -1495,6 +1519,7 @@ Channel.prototype.tryVoteskip = function(user) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }
     this.voteskip.vote(user.ip, 0);
+    this.logger.log("### " + user.name + " voteskipped");
     this.checkVoteskipPass();
 }
 
@@ -1536,6 +1561,7 @@ Channel.prototype.trySetLock = function(user, data) {
         return;
     }
 
+    this.logger.log("*** " + user.name + " set playlist lock to " + data.locked);
     this.setLock(data.locked);
 }
 
@@ -1551,6 +1577,7 @@ Channel.prototype.tryRemoveFilter = function(user, f) {
     if(!this.hasPermission(user, "filteredit"))
         return false;
 
+    this.logger.log("%%% " + user.name + " removed filter: " + f.name);
     this.removeFilter(f);
 }
 
@@ -1602,6 +1629,7 @@ Channel.prototype.tryUpdateFilter = function(user, f) {
     var filter = new Filter(f.name, f.source, f.flags, f.replace);
     filter.active = f.active;
     filter.filterlinks = f.filterlinks;
+    this.logger.log("%%% " + user.name + " updated filter: " + f.name);
     this.updateFilter(filter);
 }
 
@@ -1634,6 +1662,7 @@ Channel.prototype.tryUpdatePermissions = function(user, perms) {
     for(var key in perms) {
         this.permissions[key] = perms[key];
     }
+    this.logger.log("%%% " + user.name + " updated permissions");
     this.sendAll("setPermissions", this.permissions);
 }
 
@@ -1663,6 +1692,7 @@ Channel.prototype.tryUpdateOptions = function(user, data) {
         }
     }
 
+    this.logger.log("%%% " + user.name + " updated channel options");
     this.broadcastOpts();
 }
 
@@ -1680,6 +1710,7 @@ Channel.prototype.trySetCSS = function(user, data) {
         css: this.css,
         js: this.js
     });
+    this.logger.log("%%% " + user.name + " set channel CSS");
 }
 
 Channel.prototype.trySetJS = function(user, data) {
@@ -1696,6 +1727,7 @@ Channel.prototype.trySetJS = function(user, data) {
         css: this.css,
         js: this.js
     });
+    this.logger.log("%%% " + user.name + " set channel JS");
 }
 
 Channel.prototype.updateMotd = function(motd) {
@@ -1719,6 +1751,7 @@ Channel.prototype.tryUpdateMotd = function(user, data) {
 
     data.motd = data.motd || "";
     this.updateMotd(data.motd);
+    this.logger.log("%%% " + user.name + " set the MOTD");
 }
 
 /* REGION Chat */
@@ -1850,6 +1883,8 @@ Channel.prototype.trySetRank = function(user, data) {
         this.server.db.setChannelRank(this.name, data.user, data.rank);
     }
 
+    this.logger.log("*** " + user.name + " set " + data.user + "'s rank to " +
+                    data.rank);
     this.sendAllWithPermission("acl", "setChannelRank", data);
 }
 
@@ -1974,6 +2009,7 @@ Channel.prototype.tryChangeLeader = function(user, data) {
     }
 
     this.changeLeader(data.name);
+    this.logger.log("### " + user.name + " assigned leader to " + data.name);
 }
 
 module.exports = Channel;
