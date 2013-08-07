@@ -1571,6 +1571,7 @@ Channel.prototype.tryToggleLock = function(user) {
         return;
     }
 
+    this.logger.log("*** " + user.name + " set playlist lock to " + this.openqueue);
     this.setLock(this.openqueue);
 }
 
