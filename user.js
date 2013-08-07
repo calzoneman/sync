@@ -90,6 +90,8 @@ User.prototype.setAFK = function (afk) {
     if(afk) {
         if(chan.afkers.indexOf(this.name.toLowerCase()) == -1)
             chan.afkers.push(this.name.toLowerCase());
+        if(chan.voteskip)
+            chan.voteskip.unvote(this.ip);
     }
     else {
         if(chan.afkers.indexOf(this.name.toLowerCase()) != -1)
