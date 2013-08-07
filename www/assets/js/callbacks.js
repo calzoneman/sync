@@ -485,6 +485,8 @@ Callbacks = {
 
     setChannelRank: function(data) {
         var ents = $("#channelranks").data("entries");
+        if(typeof ents === undefined)
+            return;
         for(var i = 0; i < ents.length; i++) {
             if(ents[i].name == data.user) {
                 ents[i].rank = data.rank;
@@ -618,11 +620,12 @@ Callbacks = {
     },
 
     addUser: function(data) {
-        var div = $("<div/>").attr("class", "userlist_item");
+        var div = $("<div/>")
+            .addClass("userlist_item userlist-" + data.name);
         var flair = $("<span/>").appendTo(div);
         var nametag = $("<span/>").text(data.name).appendTo(div);
         formatUserlistItem(div, data);
-        addUserDropdown(div, data.name);
+        addUserDropdown(div, data);
         var users = $("#userlist").children();
         for(var i = 0; i < users.length; i++) {
             var othername = users[i].children[1].innerHTML;
@@ -662,46 +665,24 @@ Callbacks = {
             }
 
         }
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerHTML;
-            // Reformat user
-            if(name == data.name) {
-                formatUserlistItem($(users[i]), data);
-            }
-        }
-
+        var user = $(".userlist-" + data.name);
+        formatUserlistItem(user, data);
+        addUserDropdown(user, data);
     },
 
     setAFK: function (data) {
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerHTML;
-            // Reformat user
-            if(name == data.name) {
-                var u = $(users[i]);
-                u.find(".icon-time").remove();
-                $(users[i].children[1]).css("font-style", "");
-                if(data.afk) {
-                    $("<i/>").addClass("icon-time")
-                        .appendTo(users[i].children[0]);
-                    $(users[i].children[1]).css("font-style", "italic");
-                }
-            }
+        var user = $(".userlist-" + data.name);
+        user.find(".icon-time").remove();
+        $(user[0].children[1]).css("font-style", "");
+        if(data.afk) {
+            $("<i/>").addClass("icon-time")
+                .appendTo(user[0].children[0]);
+            $(user[0].children[1]).css("font-style", "italic");
         }
     },
 
     userLeave: function(data) {
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerHTML;
-            if(name == data.name) {
-                $(users[i]).remove();
-                // Note: no break statement here because allowing
-                // the loop to continue means a free cleanup if something
-                // goes wrong and there's a duplicate name
-            }
-        }
+        $(".userlist-" + data.name).remove();
     },
 
     drinkCount: function(count) {

@@ -116,64 +116,107 @@ function getNameColor(rank) {
         return "";
 }
 
-function addUserDropdown(entry, name) {
+function addUserDropdown(entry, data) {
+    entry.data("dropdown-info", data);
+    var name = data.name,
+        rank = data.rank,
+        leader = data.leader;
     entry.find(".user-dropdown").remove();
-    var menu = $("<div/>").addClass("user-dropdown")
-        .appendTo(entry);
-    menu.hide();
+    var menu = $("<div/>")
+        .addClass("user-dropdown")
+        .appendTo(entry)
+        .hide();
 
     $("<strong/>").text(name).appendTo(menu);
     $("<br/>").appendTo(menu);
+
+    /* rank selector (admin+ only)
+       to prevent odd behaviour, this selector is only visible
+       when the selected user has a normal rank (e.g. not a guest
+       or a non-moderator leader
+    */
+    if(CLIENT.rank >= 3 && CLIENT.rank > rank && rank > 0 && rank != 1.5) {
+        var sel = $("<select/>")
+            .addClass("input-block-level")
+            .appendTo(menu);
+        $("<option/>").attr("value", "1").text("Regular User")
+            .appendTo(sel);
+        $("<option/>").attr("value", "2").text("Moderator")
+            .appendTo(sel);
+        if(CLIENT.rank > 3) {
+            $("<option/>").attr("value", "3").text("Channel Admin")
+                .appendTo(sel);
+            if(rank > 3) {
+                $("<option/>").attr("value", ""+rank)
+                    .text("Current Rank (" + rank + ")")
+                    .appendTo(sel);
+            }
+        }
+        sel.click(function () {
+            socket.emit("setChannelRank", {
+                user: name,
+                rank: parseInt(sel.val())
+            });
+        });
+        sel.val(""+rank);
+    }
+    
+    /* ignore button */
     var ignore = $("<button/>").addClass("btn btn-mini btn-block")
-        .appendTo(menu);
-    ignore.click(function() {
-        if(IGNORED.indexOf(name) == -1) {
-            ignore.text("Unignore User");
-            IGNORED.push(name);
-        }
-        else {
-            ignore.text("Ignore User");
-            IGNORED.splice(IGNORED.indexOf(name), 1);
-        }
-    });
+        .appendTo(menu)
+        .click(function () {
+            if(IGNORED.indexOf(name) == -1) {
+                ignore.text("Unignore User");
+                IGNORED.push(name);
+            } else {
+                ignore.text("Ignore User");
+                IGNORED.splice(IGNORED.indexOf(name), 1);
+            }
+        });
     if(IGNORED.indexOf(name) == -1) {
         ignore.text("Ignore User");
-    }
-    else {
+    } else {
         ignore.text("Unignore User");
     }
+
+    /* gib/remove leader (moderator+ only) */
+    if(CLIENT.rank >= 2) {
+        var ldr = $("<button/>").addClass("btn btn-mini btn-block")
+            .appendTo(menu);
+        if(leader) {
+            ldr.text("Remove Leader");
+            ldr.click(function () {
+                socket.emit("assignLeader", {
+                    name: ""
+                });
+            });
+        } else {
+            ldr.text("Give Leader");
+            ldr.click(function () {
+                socket.emit("assignLeader", {
+                    name: name
+                });
+            });
+        }
+    }
+
+    /* kick button */
     if(hasPermission("kick")) {
         $("<button/>").addClass("btn btn-mini btn-block")
             .text("Kick")
-            .click(function() {
+            .click(function () {
                 socket.emit("chatMsg", {
                     msg: "/kick " + name
                 });
             })
             .appendTo(menu);
     }
-    if(CLIENT.rank >= 2) {
-        $("<button/>").addClass("btn btn-mini btn-block")
-            .text("Give Leader")
-            .click(function() {
-                socket.emit("assignLeader", {
-                    name: name
-                });
-            })
-            .appendTo(menu);
-        $("<button/>").addClass("btn btn-mini btn-block")
-            .text("Take Leader")
-            .click(function() {
-                socket.emit("assignLeader", {
-                    name: ""
-                });
-            })
-            .appendTo(menu);
-    }
+
+    /* ban buttons */
     if(hasPermission("ban")) {
         $("<button/>").addClass("btn btn-mini btn-block")
             .text("Name Ban")
-            .click(function() {
+            .click(function () {
                 socket.emit("chatMsg", {
                     msg: "/ban " + name
                 });
@@ -181,7 +224,7 @@ function addUserDropdown(entry, name) {
             .appendTo(menu);
         $("<button/>").addClass("btn btn-mini btn-block")
             .text("IP Ban")
-            .click(function() {
+            .click(function () {
                 socket.emit("chatMsg", {
                     msg: "/ipban " + name
                 });
@@ -189,13 +232,11 @@ function addUserDropdown(entry, name) {
             .appendTo(menu);
     }
 
-
     entry.contextmenu(function(ev) {
         ev.preventDefault();
         if(menu.css("display") == "none") {
             menu.show();
-        }
-        else {
+        } else {
             menu.hide();
         }
         return false;
@@ -906,7 +947,7 @@ function handlePermissionChange() {
     }
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
-        addUserDropdown($(users[i]), users[i].children[1].innerHTML);
+        addUserDropdown($(users[i]), $(users[i]).data("dropdown-info"));
     }
 
     $("#chatline").attr("disabled", !hasPermission("chat"));
