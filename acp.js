@@ -60,6 +60,35 @@ module.exports = function (Server) {
                 user.socket.emit("acp-userdata", rows);
             });
 
+            user.socket.on("acp-lookup-channel", function (data) {
+                var db = Server.db.getConnection();
+                if(!db) {
+                    return;
+                }
+
+                var query;
+                if(data.field === "owner") {
+                    query = Server.db.createQuery(
+                        "SELECT * FROM channels WHERE owner LIKE ?",
+                        ["%" + data.value + "%"]
+                    );
+                } else if (data.field === "name") {
+                    query = Server.db.createQuery(
+                        "SELECT * FROM channels WHERE name LIKE ?",
+                        ["%" + data.value + "%"]
+                    );
+                } else {
+                    return;
+                }
+
+                var results = db.querySync(query);
+                if(!results)
+                    return;
+
+                var rows = results.fetchAllSync();
+                user.socket.emit("acp-channeldata", rows);
+            });
+
             user.socket.on("acp-reset-password", function(data) {
                 if(Auth.getGlobalRank(data.name) >= user.global_rank)
                     return;

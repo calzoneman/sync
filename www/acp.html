@@ -42,6 +42,7 @@
                       <li id="li_announce"><a href="javascript:void(0)" id="show_announce">Announcement Manager</a></li>
                       <li id="li_gbans"><a href="javascript:void(0)" id="show_gbans">Global Bans</a></li>
                       <li id="li_userlookup"><a href="javascript:void(0)" id="show_userlookup">Users</a></li>
+                      <li id="li_chanlookup"><a href="javascript:void(0)" id="show_chanlookup">Channels</a></li>
                       <li id="li_chanloaded"><a href="javascript:void(0)" id="show_chanloaded">Loaded Channels</a></li>
                       <li id="li_actionlog"><a href="javascript:void(0)" id="show_actionlog">Action Log</a></li>
                       <li id="li_stats"><a href="javascript:void(0)" id="show_stats">Server Stats</a></li>
@@ -159,6 +160,26 @@
                             <th id="userlookup_rank">Global Rank</th>
                             <th id="userlookup_email">Email</th>
                             <th>Password Reset</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="span12" id="chanlookup">
+              <h3>Channels</h3>
+                <form class="form-inline" action="javascript:void(0)">
+                    <input type="text" id="chanlookup_value" placeholder="Name">
+                    <select id="chanlookup_field">
+                        <option value="name">Channel Name</option>
+                        <option value="owner">Channel Owner</option>
+                    </select>
+                    <button class="btn" id="chanlookup_submit">Search</button>
+                </form>
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th id="chanlookup_id">ID</th>
+                            <th id="chanlookup_name">Name</th>
+                            <th id="chanlookup_owner">Owner</th>
                         </tr>
                     </thead>
                 </table>

@@ -80,6 +80,17 @@ $("#userlookup_email").click(function() {
     tableResort($("#userlookup table"), "email");
 });
 
+menuHandler("#show_chanlookup", "#chanlookup");
+$("#chanlookup_id").click(function() {
+    tableResort($("#chanlookup table"), "id");
+});
+$("#chanlookup_name").click(function() {
+    tableResort($("#chanlookup table"), "name");
+});
+$("#chanlookup_owner").click(function() {
+    tableResort($("#chanlookup table"), "owner");
+});
+
 menuHandler("#show_chanloaded", "#channellist");
 $("#show_chanloaded").click(function() {
     socket.emit("acp-list-loaded");
@@ -240,6 +251,13 @@ $("#userlookup_submit").click(function() {
     socket.emit("acp-lookup-user", $("#userlookup_name").val());
 });
 
+$("#chanlookup_submit").click(function () {
+    socket.emit("acp-lookup-channel", {
+        field: $("#chanlookup_field").val(),
+        value: $("#chanlookup_value").val()
+    });
+});
+
 function setupCallbacks() {
     socket.on("connect", function() {
         if(NAME && SESSION) {
@@ -382,6 +400,33 @@ function setupCallbacks() {
             alert(data.error);
         else
             alert("Password reset successful.  Reset hash: " + data.hash);
+    });
+
+    socket.on("acp-channeldata", function(data) {
+        var tbl = $("#chanlookup table");
+        var p = tbl.data("paginator");
+        if(p) {
+            p.items = data;
+        }
+        else {
+            var opts = {
+                preLoadPage: function () {
+                    tbl.find("tbody").remove();
+                },
+                generator: function (u, page, index) {
+                    var tr = $("<tr/>").appendTo(tbl);
+                    $("<td/>").text(u.id).appendTo(tr);
+                    $("<td/>").text(u.name).appendTo(tr);
+                    $("<td/>").text(u.owner).appendTo(tr);
+                }
+            };
+            p = Paginate(data, opts);
+            p.paginator.insertBefore(tbl);
+            tbl.data("paginator", p);
+        }
+        tbl.data("sortby", "id");
+        tbl.data("sort_desc", false);
+        tableResort(tbl);
     });
 
     socket.on("acp-list-loaded", function(data) {
