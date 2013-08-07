@@ -872,12 +872,18 @@ Callbacks = {
         if(CHANNEL.openqueue) {
             $("#qlockbtn").removeClass("btn-danger")
                 .addClass("btn-success")
-                .text("Lock Playlist");
+                .attr("title", "Playlist Unlocked");
+            $("#qlockbtn").find("i")
+                .removeClass("icon-lock")
+                .addClass("icon-ok");
         }
         else {
             $("#qlockbtn").removeClass("btn-success")
                 .addClass("btn-danger")
-                .text("Unlock Playlist");
+                .attr("title", "Playlist Locked");
+            $("#qlockbtn").find("i")
+                .removeClass("icon-ok")
+                .addClass("icon-lock");
         }
     },
 

@@ -876,7 +876,7 @@ function handlePermissionChange() {
 
     setVisible("#playlisttogglewrap", hasPermission("playlistadd"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
-    setVisible("#qlockbtn", CLIENT.rank >= 2);
+    $("#qlockbtn").attr("disabled", CLIENT.rank < 2);
 
     if(hasPermission("playlistadd") ||
         hasPermission("playlistmove") ||
