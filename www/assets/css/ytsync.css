@@ -331,3 +331,11 @@ html, body {
 #customembed_code {
     font-family: Monospace;
 }
+
+#sc_volume .ui-slider-range {
+    background: rgb(255, 195, 0);
+}
+
+#sc_volume .ui-slider-handle {
+    border-color: rgb(255, 195, 0);
+}

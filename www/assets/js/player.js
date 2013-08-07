@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var VIMEO_FLASH = false;
 
 function removeOld(replace) {
+    $("#sc_volume").remove();
     replace = replace || $("<div/>");
     var old = $("#ytapiplayer");
     replace.insertBefore(old);
@@ -348,6 +349,17 @@ var SoundcloudPlayer = function (data) {
         iframe.attr("src", "https://w.soundcloud.com/player/?url="+self.videoId);
         iframe.css("width", "100%").attr("height", "166");
         iframe.css("border", "none");
+
+        var volslider = $("<div/>").attr("id", "sc_volume")
+            .insertAfter(iframe);
+
+        volslider.slider({
+            range: "min",
+            value: 100,
+            stop: function (event, ui) {
+                self.player.setVolume(ui.value);
+            }
+        });
 
         self.player = SC.Widget("ytapiplayer");
 
