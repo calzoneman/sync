@@ -49,6 +49,9 @@
     $("#show_chanlog").click(function () {
         socket.emit("readChanLog");
     });
+    $("#chanlog_refresh").click(function () {
+        socket.emit("readChanLog");
+    });
 
     genPermissionsEditor();
 
