@@ -589,7 +589,7 @@ Channel.prototype.search = function(query, callback) {
         if(query.trim() == "") {
             return;
         }
-        this.server.infogetter.Getters["ytSearch"](query, function(err, vids) {
+        this.server.infogetter.Getters["ytSearch"](query.split(" "), function(err, vids) {
             if(!err) {
                 callback(vids);
             }
