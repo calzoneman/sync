@@ -1437,9 +1437,10 @@ Channel.prototype.move = function(data, user) {
         
         var fromit = chan.playlist.items.find(data.from);
         var afterit = chan.playlist.items.find(data.after);
+        var aftertitle = afterit && afterit.media ? afterit.media.title : "";
         if(fromit) {
-            chan.logger.log("### " + user.name + " moved " + fromit.media.title +
-                            + afterit ? " after " + afterit.media.title : "");
+            chan.logger.log("### " + user.name + " moved " + fromit.media.title 
+                          + (aftertitle ? " after " + aftertitle : ""));
         }
 
         chan.sendAll("moveVideo", {
