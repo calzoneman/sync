@@ -156,10 +156,20 @@ $("#library_query").keydown(function(ev) {
     }
 });
 
-$("#youtube_search").click(function() {
+$("#youtube_search").click(function () {
+    var query = $("#library_query").val().toLowerCase();
+    if(parseMediaLink(query).type !== null) {
+        makeAlert("Media Link", "If you already have the link, paste it " +
+                  "in the 'Media URL' box under Playlist Controls.  This "+
+                  "searchbar works like YouTube's search function.",
+                  "alert-error")
+            .addClass("span12")
+            .insertBefore($("#library"));
+    }
+
     socket.emit("searchMedia", {
         source: "yt",
-        query: $("#library_query").val().toLowerCase()
+        query: query
     });
 });
 
