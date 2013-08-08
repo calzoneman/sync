@@ -272,6 +272,42 @@ function calcUserBreakdown() {
     return breakdown;
 }
 
+function sortUserlist() {
+    var slice = Array.prototype.slice;
+    var list = slice.call($("#userlist .userlist_item"));
+    list.sort(function (a, b) {
+        var r1 = $(a).data("dropdown-info").rank;
+        var r2 = $(b).data("dropdown-info").rank;
+        var afk1 = $(a).find(".icon-time").length > 0;
+        var afk2 = $(b).find(".icon-time").length > 0;
+        var name1 = a.children[1].innerHTML.toLowerCase();
+        var name2 = b.children[1].innerHTML.toLowerCase();
+
+        if(USEROPTS.sort_afk) {
+            if(afk1 && !afk2)
+                return 1;
+            if(!afk1 && afk2)
+                return -1;
+        }
+
+        if(USEROPTS.sort_rank) {
+            if(r1 < r2)
+                return 1;
+            if(r1 > r2)
+                return -1;
+        }
+
+        return name1 === name2 ? 0 : (name1 < name2 ? -1 : 1);
+    });
+
+    list.forEach(function (item) {
+        $(item).detach();
+    });
+    list.forEach(function (item) {
+        $(item).appendTo($("#userlist"));
+    });
+}
+
 /* queue stuff */
 
 function scrollQueue() {
@@ -541,6 +577,18 @@ function showOptionsMenu() {
     showts.prop("checked", USEROPTS.show_timestamps);
     addOption("Show timestamps", tscontainer);
 
+    var srcontainer = $("<label/>").addClass("checkbox")
+        .text("Sort userlist by rank");
+    var sr = $("<input/>").attr("type", "checkbox").appendTo(srcontainer);
+    sr.prop("checked", USEROPTS.sort_rank);
+    addOption("Userlist sort", srcontainer);
+
+    var sacontainer = $("<label/>").addClass("checkbox")
+        .text("AFKers at bottom of userlist");
+    var sa = $("<input/>").attr("type", "checkbox").appendTo(sacontainer);
+    sa.prop("checked", USEROPTS.sort_afk);
+    addOption("Userlist sort", sacontainer);
+
     var blinkcontainer = $("<label/>").addClass("checkbox")
         .text("Flash title on every incoming message");
     var blink = $("<input/>").attr("type", "checkbox").appendTo(blinkcontainer);
@@ -596,6 +644,9 @@ function showOptionsMenu() {
         USEROPTS.qbtn_idontlikechange = oqbtn.prop("checked");
         USEROPTS.ignore_channelcss    = nocss.prop("checked");
         USEROPTS.ignore_channeljs     = nojs.prop("checked");
+        USEROPTS.sort_rank            = sr.prop("checked");
+        USEROPTS.sort_afk             = sa.prop("checked");
+        sortUserlist();
         if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
             USEROPTS.joinmessage = join.prop("checked");
@@ -1237,9 +1288,11 @@ function formatChatMessage(data) {
     }
     if(data.superadminflair)
         skip = false;
-    if(data.msgclass == "server-whisper") {
+    if(data.msgclass == "server-whisper")
         skip = true;
-    }
+    // Prevent impersonation by abuse of the bold filter
+    if(data.msg.match(/^\s*<strong>\w+\s*:\s*<\/strong>\s*/))
+        skip = false;
     LASTCHATNAME = data.username;
     LASTCHATTIME = data.time;
     var div = $("<div/>");
