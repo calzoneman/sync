@@ -1,4 +1,5 @@
 /*
+return null;
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
 
@@ -485,7 +486,7 @@ Callbacks = {
 
     setChannelRank: function(data) {
         var ents = $("#channelranks").data("entries");
-        if(typeof ents === undefined)
+        if(typeof ents === "undefined")
             return;
         for(var i = 0; i < ents.length; i++) {
             if(ents[i].name == data.user) {
@@ -621,7 +622,7 @@ Callbacks = {
 
     addUser: function(data) {
         var div = $("<div/>")
-            .addClass("userlist_item userlist-" + data.name);
+            .addClass("userlist_item");
         var flair = $("<span/>").appendTo(div);
         var nametag = $("<span/>").text(data.name).appendTo(div);
         formatUserlistItem(div, data);
@@ -658,15 +659,19 @@ Callbacks = {
             }
 
         }
-        var user = $(".userlist-" + data.name);
-        formatUserlistItem(user, data);
-        addUserDropdown(user, data);
-        if(USEROPTS.sort_rank)
-            sortUserlist();
+        var user = findUserlistItem(data.name);
+        if(user !== null) {
+            formatUserlistItem(user, data);
+            addUserDropdown(user, data);
+            if(USEROPTS.sort_rank)
+                sortUserlist();
+        }
     },
 
     setAFK: function (data) {
-        var user = $(".userlist-" + data.name);
+        var user = findUserlistItem(data.name);
+        if(user === null)
+            return;
         user.find(".icon-time").remove();
         $(user[0].children[1]).css("font-style", "");
         if(data.afk) {
@@ -679,7 +684,9 @@ Callbacks = {
     },
 
     userLeave: function(data) {
-        $(".userlist-" + data.name).remove();
+        var user = findUserlistItem(data.name);
+        if(user !== null)
+            user.remove();
     },
 
     drinkCount: function(count) {

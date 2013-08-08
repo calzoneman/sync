@@ -1161,6 +1161,7 @@ Channel.prototype.addMedia = function(data, user) {
         return;
     }
     data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
+    data.queueby = user ? user.name : "";
     data.maxlength = this.hasPermission(user, "exceedmaxlength") ? 0 : this.opts.maxlength;
     var chan = this;
     if(data.id in this.library) {
@@ -1195,9 +1196,6 @@ Channel.prototype.addMedia = function(data, user) {
         return;
     }
 
-    data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
-    data.queueby = user ? user.name : "";
-
     this.playlist.addMedia(data, function(err, item) {
         if(err) {
             if(err === true)
@@ -1213,7 +1211,8 @@ Channel.prototype.addMedia = function(data, user) {
                 after: item.prev ? item.prev.uid : "prepend"
             });
             chan.broadcastPlaylistMeta();
-            chan.cacheMedia(item.media);
+            if(!item.temp)
+                chan.cacheMedia(item.media);
         }
     });
 }
@@ -1237,7 +1236,8 @@ Channel.prototype.addMediaList = function(data, user) {
                 after: item.prev ? item.prev.uid : "prepend"
             });
             chan.broadcastPlaylistMeta();
-            chan.cacheMedia(item.media);
+            if(!item.temp)
+                chan.cacheMedia(item.media);
         }
     });
 }

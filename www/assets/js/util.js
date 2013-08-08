@@ -58,6 +58,16 @@ function formatURL(data) {
     }
 }
 
+function findUserlistItem(name) {
+    var children = $("#userlist .userlist_item");
+    for(var i in children) {
+        var child = children[i];
+        if(child.children[1].innerHTML === name)
+            return $(child);
+    }
+    return null;
+}
+
 function formatUserlistItem(div, data) {
     var name = $(div.children()[1]);
     name.removeClass();
@@ -152,7 +162,7 @@ function addUserDropdown(entry, data) {
                     .appendTo(sel);
             }
         }
-        sel.click(function () {
+        sel.change(function () {
             socket.emit("setChannelRank", {
                 user: name,
                 rank: parseInt(sel.val())
