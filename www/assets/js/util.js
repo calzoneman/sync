@@ -1499,12 +1499,12 @@ function genPermissionsEditor() {
     makeOption("Jump to video", "playlistjump", standard, CHANNEL.perms.playlistjump+"");
     makeOption("Queue playlist", "playlistaddlist", standard, CHANNEL.perms.playlistaddlist+"");
     makeOption("Queue livestream", "playlistaddlive", standard, CHANNEL.perms.playlistaddlive+"");
+    makeOption("Embed custom media", "playlistaddcustom", standard, CHANNEL.perms.playlistaddcustom + "");
     makeOption("Exceed maximum media length", "exceedmaxlength", standard, CHANNEL.perms.exceedmaxlength+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");
     makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");
     makeOption("Clear playlist", "playlistclear", standard, CHANNEL.perms.playlistclear+"");
-    makeOption("Embed custom media", "playlistaddcustom", standard, CHANNEL.perms.playlistaddcustom + "");
 
     addDivider("Polls");
     makeOption("Open/Close poll", "pollctl", modleader, CHANNEL.perms.pollctl+"");

@@ -1516,9 +1516,8 @@ Channel.prototype.tryVoteskip = function(user) {
         return;
     }
     // Voteskip = auto-unafk
-    if(user.meta.afk) {
-        user.setAFK(false);
-    }
+    user.setAFK(false);
+    user.autoAFK();
     if(!this.voteskip) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }
