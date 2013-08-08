@@ -314,7 +314,7 @@ $("#customembed_btn").click(function () {
 
 $("#getplaylist").click(function() {
     var callback = function(data) {
-        PLAYER.hide();
+        hidePlayer();
         socket.listeners("playlist").splice(
             socket.listeners("playlist").indexOf(callback)
         );
@@ -342,7 +342,7 @@ $("#getplaylist").click(function() {
         $("<div/>").addClass("modal-footer").appendTo(modal);
         modal.on("hidden", function() {
             modal.remove();
-            PLAYER.unhide();
+            unhidePlayer();
         });
         modal.modal();
     }
