@@ -42,9 +42,11 @@ var defaults = {
 }
 
 function save(cfg, file) {
+    if(!cfg.loaded)
+        return;
     var x = {};
     for(var k in cfg) {
-        if(k !== "nodemailer")
+        if(k !== "nodemailer" && k !== "loaded")
             x[k] = cfg[k];
     }
     fs.writeFile(file, JSON.stringify(x, null, 4), function (err) {
@@ -91,6 +93,8 @@ exports.load = function (Server, file, callback) {
                 cfg["mail-config"]
             );
         }
+
+        cfg["loaded"] = true;
 
         save(cfg, file);
         Server.cfg = cfg;

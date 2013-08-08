@@ -28,183 +28,144 @@ module.exports = function (Server) {
         return raw;
     }
 
-    var API = function () {
+    function getChannelData(channel) {
+        var data = {
+            name: channel.name,
+            loaded: true
+        };
 
+        data.pagetitle = channel.opts.pagetitle;
+        data.media = channel.playlist.current ?
+                     channel.playlist.current.media.pack() :
+                     {};
+        data.usercount = channel.users.length;
+        data.afkcount = channel.afkers.length;
+        data.users = [];
+        for(var i in channel.users)
+            if(channel.users[i].name !== "")
+                data.users.push(channel.users[i].name);
+
+        data.chat = [];
+        for(var i in channel.chatbuffer)
+            data.chat.push(channel.chatbuffer[i]);
+
+        return data;
     }
-    API.prototype = {
-        handle: function (path, req, res) {
-            var parts = path.split("/");
-            var last = parts[parts.length - 1];
-            var params = {};
-            if(last.indexOf("?") != -1) {
-                parts[parts.length - 1] = last.substring(0, last.indexOf("?"));
-                var plist = last.substring(last.indexOf("?") + 1).split("&");
-                for(var i = 0; i < plist.length; i++) {
-                    var kv = plist[i].split("=");
-                    if(kv.length != 2) {
-                        res.send(400);
-                        return;
-                    }
-                    params[unescape(kv[0])] = unescape(kv[1]);
-                }
-            }
-            for(var i = 0; i < parts.length; i++) {
-                parts[i] = unescape(parts[i]);
-            }
 
-            if(parts.length != 2) {
-                res.send(400);
-                return;
-            }
+    var app = Server.app;
 
-            if(parts[0] == "json") {
-                res.callback = params.callback || false;
-                if(!(parts[1] in this.jsonHandlers)) {
-                    res.end(JSON.stringify({
-                        error: "Unknown endpoint: " + parts[1]
-                    }, null, 4));
-                    return;
-                }
-                this.jsonHandlers[parts[1]](params, req, res);
-            }
-            else if(parts[0] == "plain") {
-                if(!(parts[1] in this.plainHandlers)) {
-                    res.send(404);
-                    return;
-                }
-                this.plainHandlers[parts[1]](params, req, res);
-            }
-            else {
-                res.send(400);
-            }
-        },
+    /* REGION channels */
+    
+    /* data about a specific channel */
+    app.get("/api/channels/:channel", function (req, res) {
+        var name = req.params.channel;
+        if(!name.match(/^[\w-_]+$/)) {
+            res.send(404);
+            return;
+        }
+        
+        var data = {
+            name: name,
+            loaded: false
+        };
 
-        sendJSON: function (res, obj) {
-            var response = JSON.stringify(obj, null, 4);
-            if(res.callback) {
-                response = res.callback + "(" + response + ")";
-            }
-            var len = unescape(encodeURIComponent(response)).length;
+        if(Server.channelLoaded(name))
+            data = getChannelData(name);
 
-            res.setHeader("Content-Type", "application/json");
-            res.setHeader("Content-Length", len);
-            res.end(response);
-        },
+        res.type("application/json");
+        res.jsonp(data);
+    });
 
-        sendPlain: function (res, str) {
-            if(res.callback) {
-                str = res.callback + "('" + str + "')";
-            }
-            var len = unescape(encodeURIComponent(str)).length;
+    /* data about all channels (filter= public or all) */
+    app.get("/api/allchannels/:filter", function (req, res) {
+        var filter = req.params.filter;
+        if(filter !== "public" && filter !== "all") {
+            res.send(400);
+            return;
+        }
 
-            res.setHeader("Content-Type", "text/plain");
-            res.setHeader("Content-Length", len);
-            res.end(response);
-        },
+        var query = req.query;
 
-        handleChannelData: function (params, req, res) {
-            var clist = params.channel || "";
-            clist = clist.split(",");
-            var data = [];
-            for(var j = 0; j < clist.length; j++) {
-                var cname = clist[j];
-                if(!cname.match(/^[a-zA-Z0-9-_]+$/)) {
-                    continue;
-                }
-
-                var d = {
-                    name: cname,
-                    loaded: Server.channelLoaded(cname)
-                };
-
-                if(d.loaded) {
-                    var chan = Server.getChannel(cname);
-                    d.pagetitle = chan.opts.pagetitle;
-                    d.media = chan.playlist.current ? chan.playlist.current.media.pack() : {};
-                    d.usercount = chan.users.length;
-                    d.users = [];
-                    for(var i = 0; i < chan.users.length; i++) {
-                        if(chan.users[i].name) {
-                            d.users.push(chan.users[i].name);
-                        }
-                    }
-                    d.chat = [];
-                    for(var i = 0; i < chan.chatbuffer.length; i++) {
-                        d.chat.push(chan.chatbuffer[i]);
-                    }
-                }
-                data.push(d);
-            }
-
-            this.sendJSON(res, data);
-        },
-
-        handleChannelList: function (params, req, res) {
-            if(params.filter == "public") {
-                var all = Server.channels;
-                var clist = [];
-                for(var key in all) {
-                    if(all[key].opts.show_public) {
-                        clist.push(all[key].name);
-                    }
-                }
-                this.handleChannelData({channel: clist.join(",")}, req, res);
-            }
-            var session = params.session || "";
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var row = Auth.login(name, pw, session);
+        // Listing non-public channels requires authenticating as an admin
+        if(filter !== "public") {
+            var name = query.name || "";
+            var session = query.session || "";
+            var row = Auth.login(name, "", session);
             if(!row || row.global_rank < 255) {
                 res.send(403);
                 return;
             }
-            var clist = [];
-            for(var key in Server.channels) {
-                clist.push(Server.channels[key].name);
+        }
+        
+        var channels = [];
+        for(var key in Server.channels) {
+            var channel = Server.channels[key];
+            if(channel.opts.show_public) {
+                channels.push(getChannelData(channel));
+            } else if(filter !== "public") {
+                channels.push(getChannelData(channel));
             }
-            this.handleChannelData({channel: clist.join(",")}, req, res);
-        },
+        }
 
-        handleLogin: function (params, req, res) {
-            var session = params.session || "";
-            var name = params.name || "";
-            var pw = params.pw || "";
+        res.type("application/jsonp");
+        res.jsonp(channels);
+    });
 
-            if(pw == "" && session == "") {
-                if(!Auth.isRegistered(name)) {
-                    this.sendJSON(res, {
-                        success: true,
-                        session: ""
-                    });
-                    return;
-                }
-                else {
-                    this.sendJSON(res, {
-                        success: false,
-                        error: "That username is already taken"
-                    });
-                    return;
-                }
-            }
+    /* ENDREGION channels */
 
-            var row = Auth.login(name, pw, session);
-            if(row) {
-                if(row.global_rank >= 255)
-                    ActionLog.record(getIP(req), name, "login-success");
-                this.sendJSON(res, {
-                    success: true,
-                    session: row.session_hash
+    /* REGION authentication */
+
+    /* login */
+    app.post("/api/login", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.body.name;
+        var pw = req.body.pw;
+        var session = req.body.session;
+
+        // for some reason CyTube previously allowed guest logins
+        // over the API...wat
+        if(!pw && !session) {
+            res.jsonp({
+                success: false,
+                error_code: "need_pw_or_session",
+                error: "You must provide a password"
+            });
+            return;
+        }
+
+        var row = Auth.login(name, pw, session);
+        if(!row) {
+            if(session && !pw) {
+                res.jsonp({
+                    success: false,
+                    error_code: "invalid_session",
+                    error: "Session expired"
                 });
-            }
-            else {
-                ActionLog.record(getIP(req), name, "login-failure");
-                this.sendJSON(res, {
-                    error: "Invalid username/password",
-                    success: false
+                return;
+            } else {
+                ActionLog.record(getIP(req), name, "login-failure",
+                                 "invalid_password");
+                res.jsonp({
+                    success: false,
+                    error_code: "invalid_password",
+                    error: "Provided username/password pair is invalid"
                 });
+                return;
             }
-        },
+        }
 
+        // record the login if the user is an administrator
+        if(row.global_rank >= 255)
+            ActionLog.record(getIP(req), name, "login-success");
+            
+        res.jsonp({
+            success: true,
+            name: name,
+            session: row.session_hash
+        });
+    });
+
+    var x = {
         handlePasswordChange: function (params, req, res) {
             var name = params.name || "";
             var oldpw = params.oldpw || "";
@@ -593,27 +554,5 @@ module.exports = function (Server) {
         }
     };
 
-    var api = new API();
-
-    api.plainHandlers = {
-        "readlog"    : api.handleReadLog.bind(api)
-    };
-
-    api.jsonHandlers = {
-        "channeldata"   : api.handleChannelData.bind(api),
-        "listloaded"    : api.handleChannelList.bind(api),
-        "login"         : api.handleLogin.bind(api),
-        "register"      : api.handleRegister.bind(api),
-        "changepass"    : api.handlePasswordChange.bind(api),
-        "resetpass"     : api.handlePasswordReset.bind(api),
-        "recoverpw"     : api.handlePasswordRecover.bind(api),
-        "setprofile"    : api.handleProfileChange.bind(api),
-        "getprofile"    : api.handleProfileGet.bind(api),
-        "listuserchannels": api.handleListUserChannels.bind(api),
-        "setemail"      : api.handleEmailChange.bind(api),
-        "admreports"    : api.handleAdmReports.bind(api),
-        "readactionlog" : api.handleReadActionLog.bind(api)
-    };
-
-    return api;
+    return null;
 }

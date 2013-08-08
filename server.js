@@ -90,6 +90,7 @@ var Server = {
     init: function () {
         this.httpaccess = new Logger.Logger("httpaccess.log");
         this.app = express();
+        this.app.use(express.bodyParser());
         // channel path
         this.app.get("/r/:channel(*)", function (req, res, next) {
             var c = req.params.channel;
@@ -104,10 +105,12 @@ var Server = {
 
         // api path
         this.api = require("./api")(this);
+        /*
         this.app.get("/api/:apireq(*)", function (req, res, next) {
             this.logHTTP(req);
             this.api.handle(req.url.substring(5), req, res);
         }.bind(this));
+        */
 
         this.app.get("/", function (req, res, next) {
             this.logHTTP(req);
