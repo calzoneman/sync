@@ -626,15 +626,8 @@ Callbacks = {
         var nametag = $("<span/>").text(data.name).appendTo(div);
         formatUserlistItem(div, data);
         addUserDropdown(div, data);
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            var othername = users[i].children[1].innerHTML;
-            if(othername.toLowerCase() > data.name.toLowerCase()) {
-                div.insertBefore(users[i]);
-                return;
-            }
-        }
         div.appendTo($("#userlist"));
+        sortUserlist();
     },
 
     updateUser: function(data) {
@@ -668,6 +661,8 @@ Callbacks = {
         var user = $(".userlist-" + data.name);
         formatUserlistItem(user, data);
         addUserDropdown(user, data);
+        if(USEROPTS.sort_rank)
+            sortUserlist();
     },
 
     setAFK: function (data) {
@@ -679,6 +674,8 @@ Callbacks = {
                 .appendTo(user[0].children[0]);
             $(user[0].children[1]).css("font-style", "italic");
         }
+        if(USEROPTS.sort_afk)
+            sortUserlist();
     },
 
     userLeave: function(data) {
