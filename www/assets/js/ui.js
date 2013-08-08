@@ -68,6 +68,38 @@ $("#logout").click(function() {
 });
 
 /* chatbox */
+
+$("#usercountwrap").mouseenter(function (ev) {
+    var breakdown = calcUserBreakdown();
+    // re-using profile-box class for convenience
+    var popup = $("<div/>")
+        .addClass("profile-box")
+        .css("top", (ev.pageY + 5) + "px")
+        .css("left", (ev.pageX) + "px")
+        .appendTo($("#usercountwrap"));
+
+    var contents = "";
+    for(var key in breakdown) {
+        contents += "<strong>" + key + ":&nbsp;</strong>" + breakdown[key];
+        contents += "<br>"
+    }
+
+    popup.html(contents);
+});
+
+$("#usercountwrap").mousemove(function (ev) {
+    var popup = $("#usercountwrap").find(".profile-box");
+    if(popup.length == 0)
+        return;
+
+    popup.css("top", (ev.pageY + 5) + "px");
+    popup.css("left", (ev.pageX) + "px");
+});
+
+$("#usercountwrap").mouseleave(function () {
+    $("#usercountwrap").find(".profile-box").remove();
+});
+
 $("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
 $("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 

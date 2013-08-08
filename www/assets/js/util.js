@@ -243,6 +243,35 @@ function addUserDropdown(entry, data) {
     });
 }
 
+function calcUserBreakdown() {
+    var breakdown = {
+        "Site Admins": 0,
+        "Channel Admins": 0,
+        "Moderators": 0,
+        "Regular Users": 0,
+        "Guests": 0,
+        "AFK": 0
+    };
+    $("#userlist .userlist_item").each(function (index, item) {
+        var data = $(item).data("dropdown-info");
+        if(data.rank >= 255)
+            breakdown["Site Admins"]++;
+        else if(data.rank >= 3)
+            breakdown["Channel Admins"]++;
+        else if(data.rank == 2)
+            breakdown["Moderators"]++;
+        else if(data.rank >= 1)
+            breakdown["Regular Users"]++;
+        else
+            breakdown["Guests"]++;
+
+        if($(item).find(".icon-time").length > 0)
+            breakdown["AFK"]++;
+    });
+    
+    return breakdown;
+}
+
 /* queue stuff */
 
 function scrollQueue() {
