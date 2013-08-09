@@ -1144,6 +1144,7 @@ Channel.prototype.tryQueue = function(user, data) {
     }
 
     data.queueby = user ? user.name : "";
+    data.temp = !this.hasPermission(user, "addnontemp");
 
     if(data.list)
         this.addMediaList(data, user);
@@ -1160,7 +1161,7 @@ Channel.prototype.addMedia = function(data, user) {
         user.socket.emit("queueFail", "You don't have permission to add cusstom embeds");
         return;
     }
-    data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
+    data.temp = data.temp || isLive(data.type);
     data.queueby = user ? user.name : "";
     data.maxlength = this.hasPermission(user, "exceedmaxlength") ? 0 : this.opts.maxlength;
     var chan = this;
