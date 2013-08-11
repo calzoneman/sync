@@ -17,18 +17,22 @@ var CustomEmbedFilter = require("./customembed").filter;
 
 module.exports = function (Server) {
     function urlRetrieve(transport, options, callback) {
-        var req = transport.request(options, function (res) {
-            var buffer = "";
-            res.setEncoding("utf-8");
-            res.on("data", function (chunk) {
-                buffer += chunk;
+        try {
+            var req = transport.request(options, function (res) {
+                var buffer = "";
+                res.setEncoding("utf-8");
+                res.on("data", function (chunk) {
+                    buffer += chunk;
+                });
+                res.on("end", function () {
+                    callback(res.statusCode, buffer);
+                });
             });
-            res.on("end", function () {
-                callback(res.statusCode, buffer);
-            });
-        });
 
-        req.end();
+            req.end();
+        } catch(e) {
+            callback(503, "");
+        }
     }
 
     var Getters = {
