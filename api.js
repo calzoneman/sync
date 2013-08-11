@@ -171,7 +171,7 @@ module.exports = function (Server) {
     });
 
     /* password change */
-    app.get("/api/account/passwordchange", function (req, res) {
+    app.post("/api/account/passwordchange", function (req, res) {
         res.type("application/jsonp");
 
         var name = req.body.name;
@@ -214,7 +214,7 @@ module.exports = function (Server) {
     });
 
     /* password reset */
-    app.get("/api/account/passwordreset", function (req, res) {
+    app.post("/api/account/passwordreset", function (req, res) {
         res.type("application/jsonp");
         var name = req.body.name;
         var email = req.body.email;
@@ -280,139 +280,152 @@ module.exports = function (Server) {
         });
     });
 
-    var x = {
-        handlePasswordRecover: function (params, req, res) {
-            var hash = params.hash || "";
-            var ip = getIP(req);
+    /* password recovery */
+    app.get("/api/account/passwordrecover", function (req, res) {
+        res.type("application/jsonp");
+        var hash = req.query.hash;
+        var ip = getIP(req);
 
-            try {
-                var info = Server.db.recoverPassword(hash);
-                this.sendJSON(res, {
-                    success: true,
-                    name: info[0],
-                    pw: info[1]
-                });
-                ActionLog.record(ip, info[0], "password-recover-success");
-                Logger.syslog.log(ip + " recovered password for " + info[0]);
-                return;
-            }
-            catch(e) {
-                ActionLog.record(ip, "", "password-recover-failure");
-                this.sendJSON(res, {
-                    success: false,
-                    error: e
-                });
-            }
-        },
-
-        handleProfileGet: function (params, req, res) {
-            var name = params.name || "";
-
-            try {
-                var prof = Server.db.getProfile(name);
-                this.sendJSON(res, {
-                    success: true,
-                    profile_image: prof.profile_image,
-                    profile_text: prof.profile_text
-                });
-            }
-            catch(e) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: e
-                });
-            }
-        },
-
-        handleProfileChange: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-            var img = params.profile_image || "";
-            var text = params.profile_text || "";
-
-            var row = Auth.login(name, pw, session);
-            if(!row) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid login"
-                });
-                return;
-            }
-
-            var result = Server.db.setProfile(name, {
-                image: img,
-                text: text
+        try {
+            var info = Server.db.recoverPassword(hash);
+            res.jsonp({
+                success: true,
+                name: info[0],
+                pw: info[1]
             });
-
-            this.sendJSON(res, {
-                success: result,
-                error: result ? "" : "Internal error.  Contact an administrator"
+            ActionLog.record(ip, info[0], "password-recover-success");
+        } catch(e) {
+            ActionLog.record(ip, "", "password-recover-failure", hash);
+            res.jsonp({
+                success: false,
+                error: e
             });
+        }
+    });
 
-            var all = Server.channels;
-            for(var n in all) {
-                var chan = all[n];
-                for(var i = 0; i < chan.users.length; i++) {
-                    if(chan.users[i].name.toLowerCase() == name) {
-                        chan.users[i].profile = {
-                            image: img,
-                            text: text
-                        };
-                        chan.broadcastUserUpdate(chan.users[i]);
-                        break;
-                    }
+    /* profile retrieval */
+    app.get("/api/users/:user/profile", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.params.user;
+
+        try {
+            var prof = Server.db.getProfile(name);
+            res.jsonp({
+                success: true,
+                profile_image: prof.profile_image,
+                profile_text: prof.profile_text
+            });
+        } catch(e) {
+            res.jsonp({
+                success: false,
+                error: e
+            });
+        }
+    });
+
+    /* profile change */
+    app.post("/api/account/profile", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.body.name;
+        var pw = req.body.pw;
+        var session = req.body.session;
+        var img = req.body.profile_image;
+        var text = req.body.profile_text;
+
+        var row = Auth.login(name, pw, session);
+        if(!row) {
+            res.jsonp({
+                success: false,
+                error: "Invalid login"
+            });
+            return;
+        }
+
+        var result = Server.db.setProfile(name, {
+            image: img,
+            text: text
+        });
+
+        if(!result) {
+            res.jsonp({
+                success: false,
+                error: "Server error.  Contact an administrator for assistance"
+            });
+            return;
+        }
+
+        res.jsonp({
+            success: true
+        });
+
+        // Update profile on all channels the user is connected to
+        name = name.toLowerCase();
+        for(var i in Server.channels) {
+            var chan = Server.channels[i];
+            for(var j in chan.users) {
+                var user = chan.users[j];
+                if(user.name.toLowerCase() == name) {
+                    user.profile = {
+                        image: img,
+                        text: text
+                    };
+                    chan.broadcastUserUpdate(user);
                 }
             }
-        },
+        }
 
-        handleEmailChange: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var email = params.email || "";
-            // perhaps my email regex isn't perfect, but there's no freaking way
-            // I'm implementing this monstrosity:
-            // <http://www.ex-parrot.com/pdw/Mail-RFC822-Address.html>
-            if(!email.match(/^[a-z0-9_\.]+@[a-z0-9_\.]+[a-z]+$/)) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid email"
-                });
-                return;
-            }
+    });
 
-            if(email.match(/.*@(localhost|127\.0\.0\.1)/i)) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Nice try, but no."
-                });
-                return;
-            }
+    /* set email */
+    app.post("/api/account/email", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.body.name;
+        var pw = req.body.pw;
+        var email = req.body.email;
 
-            if(pw == "") {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Password cannot be empty"
-                });
-                return;
-            }
-            var row = Auth.login(name, pw);
-            if(row) {
-                var success = Server.db.setUserEmail(name, email);
-                ActionLog.record(getIP(req), name, "email-update", email);
-                this.sendJSON(res, {
-                    success: success,
-                    error: success ? "" : "Email update failed",
-                    session: row.session_hash
-                });
-            }
-            else {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid username/password"
-                });
-            }
-        },
+        if(!email.match(/^[\w_\.]+@[\w_\.]+[a-z]+$/i)) {
+            res.jsonp({
+                success: false,
+                error: "Invalid email address"
+            });
+            return;
+        }
+
+        if(email.match(/.*@(localhost|127\.0\.0\.1)/i)) {
+            res.jsonp({
+                success: false,
+                error: "Nice try, but no"
+            });
+            return;
+        }
+
+        var row = Auth.login(name, pw);
+        if(!row) {
+            res.jsonp({
+                success: false,
+                error: "Invalid login credentials"
+            });
+            return;
+        }
+
+        var success = Server.db.setUserEmail(name, email);
+        if(!success) {
+            res.jsonp({
+                success: false,
+                error: "Email update failed.  Contact an administrator "+
+                       "for assistance."
+            });
+            return false;
+        }
+
+        ActionLog.record(getIP(req), name, "email-update", email);
+        res.jsonp({
+            success: true,
+            session: row.session_hash
+        });
+    });
+
+    var x = {
 
         handleRegister: function (params, req, res) {
             var name = params.name || "";
