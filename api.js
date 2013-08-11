@@ -54,6 +54,11 @@ module.exports = function (Server) {
 
     var app = Server.app;
 
+    /* <https://en.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol> */
+    app.get("/api/coffee", function (req, res) {
+        res.send(418); // 418 I'm a teapot
+    });
+
     /* REGION channels */
     
     /* data about a specific channel */
@@ -165,109 +170,117 @@ module.exports = function (Server) {
         });
     });
 
-    var x = {
-        handlePasswordChange: function (params, req, res) {
-            var name = params.name || "";
-            var oldpw = params.oldpw || "";
-            var newpw = params.newpw || "";
-            if(oldpw == "" || newpw == "") {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Old password and new password cannot be empty"
-                });
-                return;
-            }
-            var row = Auth.login(name, oldpw);
-            if(row) {
-                ActionLog.record(getIP(req), name, "password-change");
-                var success = Auth.setUserPassword(name, newpw);
-                this.sendJSON(res, {
-                    success: success,
-                    error: success ? "" : "Change password failed",
-                    session: row.session_hash
-                });
-            }
-            else {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid username/password"
-                });
-            }
-        },
+    /* password change */
+    app.get("/api/account/passwordchange", function (req, res) {
+        res.type("application/jsonp");
 
-        handlePasswordReset: function (params, req, res) {
-            var name = params.name || "";
-            var email = params.email || "";
-            var ip = getIP(req);
+        var name = req.body.name;
+        var oldpw = req.body.oldpw;
+        var newpw = req.body.newpw;
 
-            var hash = false;
-            try {
-                hash = Server.db.generatePasswordReset(ip, name, email);
-                ActionLog.record(ip, name, "password-reset-generate", email);
-            }
-            catch(e) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: e
-                });
-                return;
-            }
-
-            if(!Server.cfg["enable-mail"]) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "This server does not have email enabled.  Contact an administrator"
-                });
-                return;
-            }
-            if(!email) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "You don't have a recovery email address set.  Contact an administrator"
-                });
-                return;
-            }
-            var msg = [
-                "A password reset request was issued for your account `",
-                name,
-                "` on ",
-                Server.cfg["domain"],
-                ".  This request is valid for 24 hours.  ",
-                "If you did not initiate this, there is no need to take action.  ",
-                "To reset your password, copy and paste the following link into ",
-                "your browser: ",
-                Server.cfg["domain"],
-                "/reset.html?",
-                hash
-            ].join("");
-
-            var mail = {
-                from: "CyTube Services <" + Server.cfg["mail-from"] + ">",
-                to: email,
-                subject: "Password reset request",
-                text: msg
-            };
-            var api = this;
-            Server.cfg["nodemailer"].sendMail(mail, function(err, response) {
-                if(err) {
-                    Logger.errlog.log("Mail fail: " + err);
-                    api.sendJSON(res, {
-                        success: false,
-                        error: "Email failed.  Contact an admin if this persists."
-                    });
-                }
-                else {
-                    api.sendJSON(res, {
-                        success: true
-                    });
-
-                    if(Server.cfg["debug"]) {
-                        Logger.syslog.log(response);
-                    }
-                }
+        if(!oldpw || !newpw) {
+            res.jsonp({
+                success: false,
+                error: "Password cannot be empty"
             });
-        },
+            return;
+        }
 
+        var row = Auth.login(name, oldpw);
+        if(!row) {
+            res.jsonp({
+                success: false,
+                error: "Invalid username/password combination"
+            });
+            return;
+        }
+
+        ActionLog.record(getIP(req), name, "password-change");
+        var success = Auth.setUserPassword(name, newpw);
+        
+        if(!success) {
+            res.jsonp({
+                success: false,
+                error: "Server error.  Please try again or ask an "+
+                       "administrator for assistance."
+            });
+            return;
+        }
+
+        res.jsonp({
+            success: true,
+            session: row.session_hash
+        });
+    });
+
+    /* password reset */
+    app.get("/api/account/passwordreset", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.body.name;
+        var email = req.body.email;
+        var ip = getIP(req);
+        var hash = false;
+
+        try {
+            hash = Server.db.generatePasswordReset(ip, name, email);
+            ActionLog.record(ip, name, "password-reset-generate", email);
+        } catch(e) {
+            res.jsonp({
+                success: false,
+                error: e
+            });
+            return;
+        }
+
+        if(!Server.cfg["enable-mail"]) {
+            res.jsonp({
+                success: false,
+                error: "This server does not have email recovery enabled."+
+                       "  Contact an administrator for assistance."
+            });
+            return;
+        }
+
+        if(!email) {
+            res.jsonp({
+                success: false,
+                error: "You don't have a recovery email address set.  "+
+                       "Contact an administrator for assistance."
+            });
+            return;
+        }
+
+        var msg = "A password reset request was issued for your account '"+
+                  name + "' on " + Server.cfg["domain"] + ".  This request"+
+                  " is valid for 24 hours.  If you did not initiate this, "+
+                  "there is no need to take action.  To reset your "+
+                  "password, copy and paste the following link into your "+
+                  "browser: " + Server.cfg["domain"] + "/reset.html?"+hash;
+
+        var mail = {
+            from: "CyTube Services <" + Server.cfg["mail-from"] + ">",
+            to: emial,
+            subject: "Password reset request",
+            text: msg
+        };
+
+        Server.cfg["nodemailer"].sendMail(mai, function (err, response) {
+            if(err) {
+                Logger.errlog.log("mail fail: " + err);
+                res.jsonp({
+                    success: false,
+                    error: "Email send failed.  Contact an administrator "+
+                           "if this persists"
+                });
+            } else {
+                res.jsonp({
+                    success: true
+                });
+            }
+        });
+    });
+
+    var x = {
         handlePasswordRecover: function (params, req, res) {
             var hash = params.hash || "";
             var ip = getIP(req);
