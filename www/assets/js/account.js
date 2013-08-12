@@ -21,7 +21,7 @@ if(uname && session) {
     $.post(WEB_URL + "/api/login?callback=?", data, function (data) {
         if(data.success)
             onLogin();
-    });
+    }, "jsonp");
 }
 
 function onLogin() {
@@ -141,7 +141,7 @@ $("#registerbtn").click(function() {
         pw: pw
     };
     
-    $.pos(WEB_URL + "/api/register?callback=?", data, function (data) {
+    $.post(WEB_URL + "/api/register?callback=?", data, function (data) {
         if(data.success) {
             uname = name;
             session = data.session;
@@ -157,7 +157,7 @@ $("#registerbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#registerpane form"));
         }
-    });
+    }, "jsonp");
 });
 
 $("#loginbtn").click(function() {
@@ -176,7 +176,7 @@ $("#loginbtn").click(function() {
         name: uname,
         pw: $("#loginpw").val()
     };
-    $.getJSON(WEB_URL+"/api/login?callback=?", data, function(data) {
+    $.post(WEB_URL+"/api/login?callback=?", data, function(data) {
         if(data.success) {
             session = data.session;
             onLogin();
@@ -191,7 +191,7 @@ $("#loginbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#loginpane form"));
         }
-    });
+    }, "jsonp");
 });
 
 $("#cpwbtn").click(function() {
@@ -253,7 +253,7 @@ $("#cpwbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#changepwpane form"));
         }
-    });
+    }, "jsonp");
 });
 
 $("#cebtn").click(function() {
@@ -306,7 +306,7 @@ $("#cebtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#changeemailpane form"));
         }
-    });
+    }, "jsonp");
 
 });
 
@@ -334,7 +334,7 @@ $("#rpbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#pwresetpane form"));
         }
-    });
+    }, "jsonp");
 
 });
 
@@ -362,7 +362,7 @@ $("#profilesave").click(function() {
                 .text(data.error)
                 .insertBefore($("#profilepane form"));
         }
-    });
+    }, "jsonp");
 });
 
 $("#login").click(function() {

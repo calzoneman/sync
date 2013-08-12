@@ -74,7 +74,7 @@ module.exports = function (Server) {
         };
 
         if(Server.channelLoaded(name))
-            data = getChannelData(name);
+            data = getChannelData(Server.getChannel(name));
 
         res.type("application/json");
         res.jsonp(data);
@@ -137,7 +137,6 @@ module.exports = function (Server) {
         }
 
         var row = Auth.login(name, pw, session);
-        console.log(row);
         if(!row) {
             if(session && !pw) {
                 res.jsonp({
@@ -528,7 +527,7 @@ module.exports = function (Server) {
         }
 
         types = types.split(",");
-        var actions = ActionLog.readLog(actiontypes);
+        var actions = ActionLog.readLog(types);
         res.jsonp(actions);
     });
 

@@ -73,7 +73,7 @@
                 $.post(WEB_URL+"/api/login", data, function (data) {
                     data.uname = $("#username").val();
                     source.postMessage("cytube-login:"+JSON.stringify(data), document.location);
-                });
+                }, "jsonp");
             });
         </script>
     </body>
