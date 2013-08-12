@@ -281,4 +281,203 @@ Database.prototype.clearGlobalIPBan = function (ip, callback) {
 
 /* END REGION */
 
+/* REGION channels */
+Database.prototype.registerChannel = function (name, owner, callback) {
+    if(typeof callback !== "function")
+        callback = function () { }
+
+    if(!name.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var self = this;
+
+    // I'm tempted to add a promise library to the dependencies
+    // just to solve this mess
+
+    var query = "SELECT * FROM channels WHERE name=?";
+    self.query(query, [name], function (err, res) {
+        if(!err && res.length > 0) {
+            callback("Channel already exists", null);
+            return;
+        }
+
+        // Library table
+        query = ["CREATE TABLE `chan_" + name + "_library` (",
+                        "`id` VARCHAR(255) NOT NULL,",
+                        "`title` VARCHAR(255) NOT NULL,",
+                        "`seconds` INT NOT NULL,",
+                        "`type` VARCHAR(2) NOT NULL,",
+                        "PRIMARY KEY (`id`))",
+                     "ENGINE = MyISAM;"].join("");
+        self.query(query, function (err, res) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+            
+            // Rank table
+            query = ["CREATE TABLE `chan_" + name + "_ranks` (",
+                            "`name` VARCHAR(32) NOT NULL,",
+                            "`rank` INT NOT NULL,",
+                            "UNIQUE (`name`))",
+                         "ENGINE = MyISAM;"].join("");
+
+            self.query(query, function (err, res) {
+                if(err) {
+                    callback(err, null);
+                    return;
+                }
+
+                // Ban table
+                query = ["CREATE TABLE `chan_" + name + "_bans` (",
+                            "`ip` VARCHAR(15) NOT NULL,",
+                            "`name` VARCHAR(32) NOT NULL,",
+                            "`banner` VARCHAR(32) NOT NULL,",
+                            "PRIMARY KEY (`ip`))",
+                         "ENGINE = MyISAM;"].join("");
+
+                self.query(query, function (err, res) {
+                    if(err) {
+                        callback(err, null);
+                        return;
+                    }
+                    
+                    query = "INSERT INTO channels VALUES (NULL, ?, ?)";
+                    self.query(query, [name, owner], function (err, res) {
+                        callback(err, res);
+                    });
+                });
+            });
+        });
+    });
+};
+
+Database.prototype.loadChannelData = function (chan, callback) {
+    if(!chan.name.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var self = this;
+    var query = "SELECT * FROM channels WHERE name=?";
+
+    self.query(query, [chan.name], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+        
+        if(res.length == 0) {
+            callback("Channel is unregistered", null);
+            return;
+        }
+
+        if(res[0].name != chan.name)
+            chan.name = rows[0].name;
+        chan.registered = true;
+        
+        // Load bans
+        query = "SELECT * FROM `chan_" + chan.name + "_bans`";
+        self.query(query, function (err, res) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            for(var i in res) {
+                var r = res[i];
+                if(r.ip === "*")
+                    chan.namebans[r.name] = r.banner;
+                else
+                    chan.ipbans[r.ip] = [r.name, r.banner];
+            }
+
+            chan.logger.log("*** Loaded channel from database");
+            callback(null, true);
+        });
+    });
+};
+
+Database.prototype.dropChannel = function (name, callback) {
+    if(!name.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var self = this;
+    var query = "DROP TABLE `chan_?_bans`,`chan_?_ranks`,`chan_?_library`"
+        .replace(/\?/g, name);
+
+    self.query(query, function (err, res) {
+        if(err) {
+            Logger.errlog.log("! Failed to drop channel tables for "+name);
+            callback(err, null);
+            return;
+        }
+
+        query = "DELETE FROM channels WHERE name=?";
+        self.query(query, [name], function (err, res) {
+            callback(err, res);
+            if(err) {
+                Logger.errlog.log("! Failed to delete channel "+name);
+            }
+        });
+    });
+};
+
+Database.prototype.getChannelRank = function (channame, names, callback) {
+    if(typeof names === "string")
+        names = [names];
+
+    var self = this;
+
+    // Build the query template (?, ?, ?, ?, ...)
+    var nlist = [];
+    for(var i in names)
+        nlist.push("?");
+    nlist = "(" + nlist.join(",") + ")";
+
+    var query = "SELECT name, rank FROM `chan_" + channame + "_ranks`" +
+                "WHERE name IN " + nlist;
+
+    self.query(query, names, function (err, res) {
+        if(err) {
+            Logger.errlog.log("! Failed to lookup " + channame + " ranks");
+            if(names.length == 1)
+                callback(err, 0);
+            else
+                callback(err, []);
+            return;
+        }
+
+        if(names.length == 1) {
+            if(res.length == 0)
+                callback(null, 0);
+            else
+                callback(null, res[0].rank);
+            return;
+        }
+        
+        callback(null, res);
+    });
+};
+
+Database.prototype.setChannelRank = function (channame, name, rank, callback) {
+    if(!channame.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var self = this;
+    var query = "INSERT INTO `chan_" + channame + "_ranks` " +
+                "(name, rank) VALUES (?, ?) " +
+                "ON DUPLICATE KEY UPDATE rank=?";
+    
+    self.query(query, [name, rank, rank], function (err, res) {
+        callback(err, res);
+    });
+};
+
 module.exports = Database;
