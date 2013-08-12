@@ -9,7 +9,7 @@
     "dependencies": {
         "socket.io": ">=0.9",
         "express": ">=3.2",
-        "mysql-libmysqlclient": "*",
+        "mysql": "2.0.0-alpha8",
         "node_hash": "*",
         "bcrypt": "*",
         "nodemailer": "*",
