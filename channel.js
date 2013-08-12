@@ -88,7 +88,7 @@ var Channel = function(name, Server) {
     };
     this.filters = [
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
-        new Filter("bold", "(.)\\*([^\\*]+)\\*", "g", "$1<strong>$2</strong>"),
+        new Filter("bold", "(^|\\s)\\*([^\\*]+)\\*", "g", "$1<strong>$2</strong>"),
         new Filter("italic", "(^| )_([^_]+)_", "g", "$1<em>$2</em>"),
         new Filter("strikethrough", "~~([^~]+)~~", "g", "<s>$1</s>"),
         new Filter("inline spoiler", "\\[spoiler\\](.*)\\[\\/spoiler\\]", "ig", "<span class=\"spoiler\">$1</span>"),
@@ -1144,6 +1144,7 @@ Channel.prototype.tryQueue = function(user, data) {
     }
 
     data.queueby = user ? user.name : "";
+    data.temp = !this.hasPermission(user, "addnontemp");
 
     if(data.list)
         this.addMediaList(data, user);
@@ -1160,7 +1161,7 @@ Channel.prototype.addMedia = function(data, user) {
         user.socket.emit("queueFail", "You don't have permission to add cusstom embeds");
         return;
     }
-    data.temp = isLive(data.type) || !this.hasPermission(user, "addnontemp");
+    data.temp = data.temp || isLive(data.type);
     data.queueby = user ? user.name : "";
     data.maxlength = this.hasPermission(user, "exceedmaxlength") ? 0 : this.opts.maxlength;
     var chan = this;
@@ -1516,9 +1517,8 @@ Channel.prototype.tryVoteskip = function(user) {
         return;
     }
     // Voteskip = auto-unafk
-    if(user.meta.afk) {
-        user.setAFK(false);
-    }
+    user.setAFK(false);
+    user.autoAFK();
     if(!this.voteskip) {
         this.voteskip = new Poll("voteskip", "voteskip", ["yes"]);
     }

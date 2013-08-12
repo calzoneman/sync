@@ -48,7 +48,7 @@
                     .appendTo(sep);
             }
         }
-        for(var i = s; i < s + this.opts.maxPages; i++) {
+        for(var i = s; i < s + this.opts.maxPages && i < s + pages; i++) {
             (function (i) {
             var li = $("<li/>").appendTo(ul);
             if(i == p)

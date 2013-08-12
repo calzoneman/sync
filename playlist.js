@@ -458,6 +458,7 @@ Playlist.prototype.lead = function(lead) {
         this._leadInterval = false;
     }
     else if(this.leading && !this._leadInterval) {
+        this._lastUpdate = Date.now();
         this._leadInterval = setInterval(function() {
             pl._leadLoop();
         }, 1000);

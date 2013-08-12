@@ -37,7 +37,6 @@ var YouTubePlayer = function (data) {
                     autoplay: 1,        // Autoplay video
                     controls: 1,        // Show controls
                     iv_load_policy: 3,  // No annotations
-                    modestbranding: 1,  // No logo
                     rel: 0,             // No related videos
                     wmode: wmode
                 },

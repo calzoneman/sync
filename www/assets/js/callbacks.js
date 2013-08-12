@@ -627,15 +627,8 @@ Callbacks = {
         var nametag = $("<span/>").text(data.name).appendTo(div);
         formatUserlistItem(div, data);
         addUserDropdown(div, data);
-        var users = $("#userlist").children();
-        for(var i = 0; i < users.length; i++) {
-            var othername = users[i].children[1].innerHTML;
-            if(othername.toLowerCase() > data.name.toLowerCase()) {
-                div.insertBefore(users[i]);
-                return;
-            }
-        }
         div.appendTo($("#userlist"));
+        sortUserlist();
     },
 
     updateUser: function(data) {
@@ -647,16 +640,7 @@ Callbacks = {
                 // I'm a leader!  Set up sync function
                 if(LEADTMR)
                     clearInterval(LEADTMR);
-                LEADTMR = setInterval(function() {
-                    PLAYER.getTime(function(seconds) {
-                        socket.emit("mediaUpdate", {
-                            id: PLAYER.id,
-                            currentTime: seconds,
-                            paused: PLAYER.paused,
-                            type: PLAYER.type
-                        });
-                    });
-                }, 5000);
+                LEADTMR = setInterval(sendVideoUpdate, 5000);
             }
             // I'm not a leader.  Don't send syncs to the server
             else {
@@ -670,6 +654,8 @@ Callbacks = {
         if(user !== null) {
             formatUserlistItem(user, data);
             addUserDropdown(user, data);
+            if(USEROPTS.sort_rank)
+                sortUserlist();
         }
     },
 
@@ -684,6 +670,8 @@ Callbacks = {
                 .appendTo(user[0].children[0]);
             $(user[0].children[1]).css("font-style", "italic");
         }
+        if(USEROPTS.sort_afk)
+            sortUserlist();
     },
 
     userLeave: function(data) {
