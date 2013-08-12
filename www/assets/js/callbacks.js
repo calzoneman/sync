@@ -696,6 +696,7 @@ Callbacks = {
 
     /* REGION Playlist Stuff */
     playlist: function(data) {
+        PL_QUEUED_ACTIONS = [];
         // Clear the playlist first
         var q = $("#queue");
         q.html("");
@@ -741,6 +742,7 @@ Callbacks = {
                 else {
                     var liafter = playlistFind(data.after);
                     if(!liafter) {
+                        socket.emit("requestPlaylist");
                         return false;
                     }
                     li.insertAfter(liafter);
