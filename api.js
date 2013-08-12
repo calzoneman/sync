@@ -321,12 +321,12 @@ module.exports = function (Server) {
 
         var mail = {
             from: "CyTube Services <" + Server.cfg["mail-from"] + ">",
-            to: emial,
+            to: email,
             subject: "Password reset request",
             text: msg
         };
 
-        Server.cfg["nodemailer"].sendMail(mai, function (err, response) {
+        Server.cfg["nodemailer"].sendMail(mail, function (err, response) {
             if(err) {
                 Logger.errlog.log("mail fail: " + err);
                 res.jsonp({
