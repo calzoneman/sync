@@ -251,7 +251,7 @@ module.exports = function (Server) {
             return;
         }
 
-        var row = Auth.login(name, oldpw);
+        var row = Auth.login(name, oldpw, "");
         if(!row) {
             res.jsonp({
                 success: false,
@@ -464,7 +464,7 @@ module.exports = function (Server) {
             return;
         }
 
-        var row = Auth.login(name, pw);
+        var row = Auth.login(name, pw, "");
         if(!row) {
             res.jsonp({
                 success: false,
@@ -496,7 +496,7 @@ module.exports = function (Server) {
         var name = req.query.name;
         var session = req.query.session;
 
-        var row = Auth.login(name, session);
+        var row = Auth.login(name, "", session);
         if(!row) {
             res.jsonp({
                 success: false,
@@ -512,74 +512,104 @@ module.exports = function (Server) {
         });
     });
 
+    /* END REGION */
 
-    var x = {
-        handleReadActionLog: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-            var types = params.actions || "";
-            var row = Auth.login(name, pw, session);
-            if(!row || row.global_rank < 255) {
-                res.send(403);
-                return;
-            }
+    /* REGION log reading */
 
-            var actiontypes = types.split(",");
-            var actions = ActionLog.readLog(actiontypes);
-            this.sendJSON(res, actions);
-        },
+    /* action log */
+    app.get("/api/logging/actionlog", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.query.name;
+        var session = req.query.session;
+        var types = req.query.actions;
 
-        // Helper function
-        pipeLast: function (res, file, len) {
-            fs.stat(file, function(err, data) {
-                if(err) {
-                    res.send(500);
-                    return;
-                }
-                var start = data.size - len;
-                if(start < 0) {
-                    start = 0;
-                }
-                var end = data.size - 1;
-                fs.createReadStream(file, {start: start, end: end}).pipe(res);
-            });
-        },
-
-        handleReadLog: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-            var row = Auth.login(name, pw, session);
-            if(!row || row.global_rank < 255) {
-                res.send(403);
-                return;
-            }
-            res.setHeader("Access-Control-Allow-Origin", "*");
-
-            var type = params.type || "";
-            if(type == "sys") {
-                this.pipeLast(res, "sys.log", 1024*1024);
-            }
-            else if(type == "err") {
-                this.pipeLast(res, "error.log", 1024*1024);
-            }
-            else if(type == "channel") {
-                var chan = params.channel || "";
-                fs.exists("chanlogs/" + chan + ".log", function(exists) {
-                    if(exists) {
-                        this.pipeLast(res, "chanlogs/" + chan + ".log", 1024*1024);
-                    }
-                    else {
-                        res.send(404);
-                    }
-                }.bind(this));
-            }
-            else {
-                res.send(400);
-            }
+        var row = Auth.login(name, "", session);
+        if(!row || row.global_rank < 255) {
+            res.send(403);
+            return;
         }
-    };
+
+        types = types.split(",");
+        var actions = ActionLog.readLog(actiontypes);
+        res.jsonp(actions);
+    });
+
+    /* helper function to pipe the last N bytes of a file */
+    function pipeLast(res, file, len) {
+        fs.stat(file, function (err, data) {
+            if(err) {
+                res.send(500);
+                return;
+            }
+            var start = data.size - len;
+            if(start < 0) {
+                start = 0;
+            }
+            var end = data.size - 1;
+            fs.createReadStream(file, { start: start, end: end })
+                .pipe(res);
+        });
+    }
+
+    app.get("/api/logging/syslog", function (req, res) {
+        res.type("text/plain");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        var name = req.query.name;
+        var session = req.query.session;
+
+        var row = Auth.login(name, "", session);
+        if(!row || row.global_rank < 255) {
+            res.send(403);
+            return;
+        }
+
+        pipeLast(res, "sys.log", 1048576);
+    });
+
+    app.get("/api/logging/errorlog", function (req, res) {
+        res.type("text/plain");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        var name = req.query.name;
+        var session = req.query.session;
+
+        var row = Auth.login(name, "", session);
+        if(!row || row.global_rank < 255) {
+            res.send(403);
+            return;
+        }
+
+        pipeLast(res, "error.log", 1048576);
+    });
+
+    app.get("/api/logging/channels/:channel", function (req, res) {
+        res.type("text/plain");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        var name = req.query.name;
+        var session = req.query.session;
+
+        var row = Auth.login(name, "", session);
+        if(!row || row.global_rank < 255) {
+            res.send(403);
+            return;
+        }
+
+        var chan = req.params.channel || "";
+        if(!chan.match(/^[\w-_]+$/)) {
+            res.send(400);
+            return;
+        }
+
+        fs.exists("chanlogs/" + chan + ".log", function(exists) {
+            if(exists) {
+                pipeLast(res, "chanlogs/" + chan + ".log", 1048576);
+            } else {
+                res.send(404);
+            }
+        });
+    });
 
     return null;
 }
