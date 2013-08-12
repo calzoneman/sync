@@ -71,7 +71,8 @@
             hash = loc.substring(loc.indexOf("?") + 1);
         })();
 
-        var url = WEB_URL+"/api/json/recoverpw?hash="+hash+"&callback=?";
+        var url = WEB_URL+"/api/account/passwordrecover?hash="+hash+
+                  "&callback=?";
         $.getJSON(url, function(data) {
             if(data.success) {
                 $("<div/>").addClass("alert alert-success")

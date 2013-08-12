@@ -131,18 +131,17 @@ module.exports = function (Server) {
         if(!pw && !session) {
             res.jsonp({
                 success: false,
-                error_code: "need_pw_or_session",
                 error: "You must provide a password"
             });
             return;
         }
 
         var row = Auth.login(name, pw, session);
+        console.log(row);
         if(!row) {
             if(session && !pw) {
                 res.jsonp({
                     success: false,
-                    error_code: "invalid_session",
                     error: "Session expired"
                 });
                 return;
@@ -151,7 +150,6 @@ module.exports = function (Server) {
                                  "invalid_password");
                 res.jsonp({
                     success: false,
-                    error_code: "invalid_password",
                     error: "Provided username/password pair is invalid"
                 });
                 return;
