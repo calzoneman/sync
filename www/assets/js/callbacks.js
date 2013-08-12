@@ -742,7 +742,6 @@ Callbacks = {
                 else {
                     var liafter = playlistFind(data.after);
                     if(!liafter) {
-                        socket.emit("requestPlaylist");
                         return false;
                     }
                     li.insertAfter(liafter);
