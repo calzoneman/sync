@@ -11,7 +11,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var Auth = require("./auth");
 var Logger = require("./logger");
-var apilog = new Logger.Logger("api.log");
 var ActionLog = require("./actionlog");
 var fs = require("fs");
 
@@ -118,7 +117,7 @@ module.exports = function (Server) {
 
     /* ENDREGION channels */
 
-    /* REGION authentication */
+    /* REGION authentication, account management */
 
     /* login */
     app.post("/api/login", function (req, res) {
@@ -167,6 +166,72 @@ module.exports = function (Server) {
             success: true,
             name: name,
             session: row.session_hash
+        });
+    });
+
+    /* register an account */
+    app.post("/api/register", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.body.name;
+        var pw = req.body.pw;
+        var ip = getIP(req);
+
+        // Limit registrations per IP within a certain time period
+        if(ActionLog.tooManyRegistrations(ip)) {
+            ActionLog.record(ip, name, "register-failure",
+                "Too many recent registrations");
+            res.jsonp({
+                success: false,
+                error: "Your IP address has registered too many accounts "+
+                       "in the past 48 hours.  Please wait a while before"+
+                       " registering another."
+            });
+            return;
+        }
+
+        if(!pw) {
+            // costanza.jpg
+            res.jsonp({
+                success: false,
+                error: "You must provide a password"
+            });
+            return;
+        }
+
+        if(!Auth.validateName(name)) {
+            ActionLog.record(ip, name, "register-failure", "Invalid name");
+            res.jsonp({
+                success: false,
+                error: "Invalid username.  Valid usernames must be 1-20 "+
+                       "characters long and consist only of alphanumeric "+
+                       "characters and underscores (_)"
+            });
+            return;
+        }
+
+        if(Auth.isRegistered(name)) {
+            ActionLog.record(ip, name, "register-failure", "Name taken");
+            res.jsonp({
+                success: false,
+                error: "That username is already taken"
+            });
+            return;
+        }
+
+        var session = Auth.register(name, pw);
+        if(!session) {
+            res.jsonp({
+                success: false,
+                error: "Registration error.  Contact an administrator "+
+                       "for assistance."
+            });
+            return;
+        }
+
+        ActionLog.record(ip, name, "register-success");
+        res.jsonp({
+            success: true,
+            session: session
         });
     });
 
@@ -425,94 +490,30 @@ module.exports = function (Server) {
         });
     });
 
+    /* my channels */
+    app.get("/api/account/mychannels", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.query.name;
+        var session = req.query.session;
+
+        var row = Auth.login(name, session);
+        if(!row) {
+            res.jsonp({
+                success: false,
+                error: "Invalid login"
+            });
+            return;
+        }
+
+        var channels = Server.db.listUserChannels(name);
+        res.jsonp({
+            success: true,
+            channels: channels
+        });
+    });
+
+
     var x = {
-
-        handleRegister: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            if(ActionLog.tooManyRegistrations(getIP(req))) {
-                ActionLog.record(getIP(req), name, "register-failure",
-                    "Too many recent registrations from this IP");
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Your IP address has registered several accounts in "+
-                           "the past 48 hours.  Please wait a while or ask an "+
-                           "administrator for assistance."
-                });
-                return;
-            }
-
-            if(pw == "") {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "You must provide a password"
-                });
-                return;
-            }
-            else if(Auth.isRegistered(name)) {
-                ActionLog.record(getIP(req), name, "register-failure",
-                    "Name taken");
-                this.sendJSON(res, {
-                    success: false,
-                    error: "That username is already taken"
-                });
-                return false;
-            }
-            else if(!Auth.validateName(name)) {
-                ActionLog.record(getIP(req), name, "register-failure",
-                    "Invalid name");
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
-                });
-            }
-            else {
-                var session = Auth.register(name, pw);
-                if(session) {
-                    ActionLog.record(getIP(req), name, "register-success");
-                    Logger.syslog.log(getIP(req) + " registered " + name);
-                    this.sendJSON(res, {
-                        success: true,
-                        session: session
-                    });
-                }
-                else {
-                    this.sendJSON(res, {
-                        success: false,
-                        error: "Registration error.  Contact an admin for assistance."
-                    });
-                }
-            }
-        },
-
-        handleListUserChannels: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-
-            var row = Auth.login(name, pw, session);
-            if(!row) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid login"
-                });
-                return;
-            }
-
-            var channels = Server.db.listUserChannels(name);
-
-            this.sendJSON(res, {
-                success: true,
-                channels: channels
-            });
-        },
-
-        handleAdmReports: function (params, req, res) {
-            this.sendJSON(res, {
-                error: "Not implemented"
-            });
-        },
-
         handleReadActionLog: function (params, req, res) {
             var name = params.name || "";
             var pw = params.pw || "";
