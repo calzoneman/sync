@@ -1155,8 +1155,13 @@ Channel.prototype.tryQueue = function(user, data) {
 
     if(user.rank < Rank.Moderator
             && this.leader != user
-            && user.noflood("queue", 1.5)) {
+            && user.noflood("queue", 3)) {
         return;
+    }
+
+    if(user.rank < Rank.Moderator && this.playlist.count(data.id) > 10) {
+        user.socket.emit("queueFail", "That video is already on the " + 
+                         "playlist 10 times.");
     }
 
     data.queueby = user ? user.name : "";

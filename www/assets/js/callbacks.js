@@ -757,7 +757,7 @@ Callbacks = {
         }
         makeAlert("Error", data, "alert-error")
             .addClass("span12")
-            .insertAfter($("#mediaurl").parent());
+            .insertBefore($("#extended_controls"));
     },
 
     setTemp: function(data) {
