@@ -143,7 +143,9 @@ Channel.prototype.hasPermission = function(user, key) {
 /* REGION Channel data */
 Channel.prototype.loadDump = function() {
     var self = this;
-    fs.stat("chandump/" + this.name, function (err, stats) {
+    if(self.name === "")
+        return;
+    fs.stat("chandump/" + self.name, function (err, stats) {
         if(!err) {
             var mb = stats.size / 1048576;
             mb = parseInt(mb * 100) / 100;
@@ -263,7 +265,7 @@ Channel.prototype.loadDump = function() {
 }
 
 Channel.prototype.saveDump = function() {
-    if(!this.initialized)
+    if(!this.initialized || this.name === "")
         return;
     var filts = new Array(this.filters.length);
     for(var i = 0; i < this.filters.length; i++) {

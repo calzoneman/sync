@@ -63,6 +63,7 @@ var Server = {
             }
         }
         chan.name = "";
+        chan.canonical_name = "";
     },
     stats: null,
     app: null,
