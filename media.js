@@ -45,6 +45,8 @@ exports.formatTime = formatTime;
 var Media = function(id, title, seconds, type) {
     this.id = id;
     this.title = title;
+    if(this.title.length > 100)
+        this.title = this.title.substring(0, 97) + "...";
     this.seconds = seconds == "--:--" ? "--:--" : parseInt(seconds);
     this.duration = formatTime(this.seconds);
     if(seconds == "--:--") {
