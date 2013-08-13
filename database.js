@@ -228,9 +228,10 @@ Database.prototype.isGlobalIPBanned = function (ip, callback) {
 };
 
 Database.prototype.getGlobalIPBans = function (callback) {
-    if(typeof callback !== "function")
-        callback = function () { }
     var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
     self.query("SELECT * FROM global_bans WHERE 1", function (err, res) {
         if(err) {
             callback(err, null);
@@ -247,11 +248,12 @@ Database.prototype.getGlobalIPBans = function (callback) {
 };
 
 Database.prototype.setGlobalIPBan = function (ip, reason, callback) {
+    var self = this;
     if(typeof callback !== "function")
-        callback = function () { }
+        callback = function () { };
+
     var query = "INSERT INTO global_bans VALUES (?, ?)" + 
                 " ON DUPLICATE KEY UPDATE note=?";
-    var self = this;
     self.query(query, [ip, reason, reason], function (err, res) {
         if(err) {
             callback(err, null);
@@ -264,9 +266,10 @@ Database.prototype.setGlobalIPBan = function (ip, reason, callback) {
 };
 
 Database.prototype.clearGlobalIPBan = function (ip, callback) {
-    if(typeof callback !== "function")
-        callback = function () { }
     var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
 
     var query = "DELETE FROM global_bans WHERE ip=?";
     self.query(query, [ip], function (err, res) {
@@ -282,20 +285,28 @@ Database.prototype.clearGlobalIPBan = function (ip, callback) {
 /* END REGION */
 
 /* REGION channels */
-Database.prototype.registerChannel = function (name, owner, callback) {
+Database.prototype.channelExists = function (name, callback) {
+    var self = this;
     if(typeof callback !== "function")
-        callback = function () { }
+        return;
+
+    var query = "SELECT name FROM channels WHERE name=?";
+    self.query(query, [name], function (err, res) {
+        callback(err, res.length > 0);
+    });
+};
+
+Database.prototype.registerChannel = function (name, owner, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
 
     if(!name.match(/^[\w-_]+$/)) {
         callback("Invalid channel name", null);
         return;
     }
 
-    var self = this;
-
-    // I'm tempted to add a promise library to the dependencies
-    // just to solve this mess
-
+    // Messy, but I can't think of a better async solution atm
     var query = "SELECT * FROM channels WHERE name=?";
     self.query(query, [name], function (err, res) {
         if(!err && res.length > 0) {
@@ -355,12 +366,15 @@ Database.prototype.registerChannel = function (name, owner, callback) {
 };
 
 Database.prototype.loadChannelData = function (chan, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
     if(!chan.name.match(/^[\w-_]+$/)) {
         callback("Invalid channel name", null);
         return;
     }
 
-    var self = this;
     var query = "SELECT * FROM channels WHERE name=?";
 
     self.query(query, [chan.name], function (err, res) {
@@ -401,12 +415,15 @@ Database.prototype.loadChannelData = function (chan, callback) {
 };
 
 Database.prototype.dropChannel = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
     if(!name.match(/^[\w-_]+$/)) {
         callback("Invalid channel name", null);
         return;
     }
 
-    var self = this;
     var query = "DROP TABLE `chan_?_bans`,`chan_?_ranks`,`chan_?_library`"
         .replace(/\?/g, name);
 
@@ -428,10 +445,12 @@ Database.prototype.dropChannel = function (name, callback) {
 };
 
 Database.prototype.getChannelRank = function (channame, names, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
     if(typeof names === "string")
         names = [names];
-
-    var self = this;
 
     // Build the query template (?, ?, ?, ?, ...)
     var nlist = [];
@@ -465,18 +484,100 @@ Database.prototype.getChannelRank = function (channame, names, callback) {
 };
 
 Database.prototype.setChannelRank = function (channame, name, rank, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
     if(!channame.match(/^[\w-_]+$/)) {
         callback("Invalid channel name", null);
         return;
     }
 
-    var self = this;
     var query = "INSERT INTO `chan_" + channame + "_ranks` " +
                 "(name, rank) VALUES (?, ?) " +
                 "ON DUPLICATE KEY UPDATE rank=?";
     
     self.query(query, [name, rank, rank], function (err, res) {
         callback(err, res);
+    });
+};
+
+Database.prototype.listChannelRanks = function (channame, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    if(!channame.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var query = "SELECT * FROM `chan_" + channame + "_ranks` WHERE 1";
+    self.query(query, function (err, res) {
+        callback(err, res);
+    });
+};
+
+Database.prototype.addToLibrary = function (channame, media, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
+    if(!channame.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name");
+        return;
+    }
+
+    var query = "INSERT INTO `chan_" + channame + "_ranks`" +
+                "(id, title, seconds, type) " + 
+                "VALUES (?, ?, ?, ?)";
+    var params = [
+        media.id,
+        media.title,
+        media.seconds,
+        media.type
+    ];
+    self.query(query, params, function (err, res) {
+        callback(err, res);
+    });
+};
+
+Database.prototype.removeFromLibrary = function (channame, id, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
+    if(!channame.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var query = "DELETE FROM `chan_" + channame + "_library` WHERE id=?";
+    self.query(query, [id], function (err, res) {
+        callback(err, res);
+    });
+};
+
+Database.prototype.getLibraryItem = function (channame, id, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = function () { };
+
+    if(!channame.match(/^[\w-_]+$/)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var query = "SELECT id, title, seconds, type FROM " +
+                "`chan_" + channame + "_library` WHERE id=?";
+
+    self.query(query, [id], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        callback(null, res.length > 0 ? res[0] : null);
     });
 };
 
