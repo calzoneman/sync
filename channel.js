@@ -1161,11 +1161,11 @@ Channel.prototype.tryQueue = function(user, data) {
 
     var count = this.playlist.count(data.id);
 
-    if(user.rank < Rank.Moderator && count > 5) {
+    if(user.rank < Rank.Moderator && count >= 5) {
         user.socket.emit("queueFail", "That video is already on the " + 
-                         "playlist 10 times.");
+                         "playlist 5 times.");
         return;
-    } else if(user.rank < Rank.Siteadmin && count > 20) {
+    } else if(user.rank < Rank.Siteadmin && count >= 20) {
         user.socket.emit("queueFail", "That video is already on the " + 
                          "playlist 20 times.");
         return;
