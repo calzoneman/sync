@@ -998,6 +998,100 @@ Database.prototype.listIPsForName = function (name, callback) {
 
 /* END REGION */
 
+/* REGION action log */
+
+Database.prototype.recordAction = function (ip, name, action, args,
+                                            callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "INSERT INTO actionlog (ip, name, action, args, time) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+    self.query(query, [ip, name, action, args, Date.now()], callback);
+};
+
+Database.prototype.clearActions = function (actions, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var list = [];
+    for(var i in actions)
+        list.push("?");
+
+    var actionlist = "(" + list.join(",") + ")";
+
+    var query = "DELETE FROM actionlog WHERE action IN " + actionlist;
+    self.query(query, actions, callback);
+};
+
+Database.prototype.clearSingleAction = function (item, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "DELETE FROM actionlog WHERE ip=? AND time=?";
+    self.query(query, [item.ip, item.time], callback);
+};
+
+
+Database.prototype.recentRegistrationCount = function (ip, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT * FROM actionlog WHERE ip=? " +
+                "AND action='register-success' AND time > ?";
+
+    self.query(query, [ip, Date.now() - 48 * 3600 * 1000],
+               function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        callback(null, res.length);
+    });
+};
+
+Database.prototype.listActionTypes = function (callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT DISTINCT action FROM actionlog";
+    self.query(query, function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        var types = [];
+        res.forEach(function (row) {
+            types.push(row.action);
+        });
+        callback(null, types);
+    });
+};
+
+Database.prototype.listActions = function (types, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var list = [];
+    for(var i in types)
+        list.push("?");
+
+    var actionlist = "(" + list.join(",") + ")";
+    var query = "SELECT * FROM actionlog WHERE action IN " + actiontypes;
+    self.query(query, types, callback);
+};
+
+/* END REGION */
+
 /* REGION stats */
 
 Database.prototype.listStats = function (callback) {
@@ -1008,4 +1102,6 @@ Database.prototype.listStats = function (callback) {
     var query = "SELECT * FROM stats ORDER BY time ASC";
     self.query(query, callback);
 };
+
+/* END REGION */
 module.exports = Database;
