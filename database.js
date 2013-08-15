@@ -38,6 +38,9 @@ Database.prototype.query = function (query, sub, callback) {
         sub = false;
     }
 
+    if(typeof callback !== "function")
+        callback = blackHole;
+
     var self = this;
     self.pool.getConnection(function (err, conn) {
         if(err) {
@@ -667,6 +670,17 @@ Database.prototype.searchUser = function (name, callback) {
     self.query(query, [name], callback);
 };
 
+/* rank */
+
+Database.prototype.setGlobalRank = function (name, rank, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "UPDATE registrations SET global_rank=? WHERE uname=?";
+    self.query(query, [rank, name], callback);
+};
+
 /* email and profile */
 
 Database.prototype.getUserProfile = function (name, callback) {
@@ -983,4 +997,15 @@ Database.prototype.listIPsForName = function (name, callback) {
 };
 
 /* END REGION */
+
+/* REGION stats */
+
+Database.prototype.listStats = function (callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT * FROM stats ORDER BY time ASC";
+    self.query(query, callback);
+};
 module.exports = Database;

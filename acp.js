@@ -70,30 +70,23 @@ module.exports = function (Server) {
             user.socket.on("acp-reset-password", function(data) {
                 if(Auth.getGlobalRank(data.name) >= user.global_rank)
                     return;
-                try {
-                    var hash = Server.db.generatePasswordReset(user.ip, data.name, data.email);
-                    ActionLog.record(user.ip, user.name, "acp-reset-password", data.name);
-                }
-                catch(e) {
-                    user.socket.emit("acp-reset-password", {
-                        success: false,
-                        error: e
-                    });
-                    return;
-                }
-                if(hash) {
-                    user.socket.emit("acp-reset-password", {
-                        success: true,
-                        hash: hash
-                    });
-                }
-                else {
-                    user.socket.emit("acp-reset-password", {
-                        success: false,
-                        error: "Reset failed"
-                    });
-                }
 
+                db.genPasswordReset(user.ip, data.name, data.email,
+                                    function (err, hash) {
+                    var pkt = {
+                        success: !err
+                    };
+
+                    if(err) {
+                        pkt.error = err;
+                    } else {
+                        pkt.hash = hash;
+                    }
+
+                    user.socket.emit("acp-reset-password", pkt);
+                    ActionLog.record(user.ip, user.name, 
+                                     "acp-reset-password", data.name);
+                });
             });
 
             user.socket.on("acp-set-rank", function(data) {
@@ -103,21 +96,13 @@ module.exports = function (Server) {
                 if(Auth.getGlobalRank(data.name) >= user.global_rank)
                     return;
 
-                var db = Server.db.getConnection();
-                if(!db)
-                    return;
+                db.setGlobalRank(data.name, data.rank, function (err, res) {
 
-                ActionLog.record(user.ip, user.name, "acp-set-rank", data);
-                var query = Server.db.createQuery(
-                    "UPDATE registrations SET global_rank=? WHERE uname=?",
-                    [data.rank, data.name]
-                );
-
-                var res = db.querySync(query);
-                if(!res)
-                    return;
-
-                user.socket.emit("acp-set-rank", data);
+                    ActionLog.record(user.ip, user.name, "acp-set-rank",
+                                     data);
+                    if(!err)
+                        user.socket.emit("acp-set-rank", data);
+                });
             });
 
             user.socket.on("acp-list-loaded", function() {
@@ -174,13 +159,10 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-view-stats", function () {
-                var db = Server.db.getConnection();
-                if(!db)
-                    return;
-                var query = "SELECT * FROM stats ORDER BY time ASC";
-                var results = db.querySync(query);
-                if(results)
-                    user.socket.emit("acp-view-stats", results.fetchAllSync());
+                db.listStats(function (err, res) {
+                    if(!err)
+                        user.socket.emit("acp-view-stats", res);
+                });
             });
         }
     }
