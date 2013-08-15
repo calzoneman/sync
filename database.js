@@ -41,12 +41,22 @@ function getConnection() {
         Logger.errlog.log("DB connection failed");
         return false;
     }
-    if(CONFIG["debug"]) {
-        db._querySync = db.querySync;
-        db.querySync = function(q) {
-            Logger.syslog.log("DEBUG: " + q);
-            return this._querySync(q);
+    db._querySync = db.querySync;
+    db.querySync = function(q) {
+        if(!this.connectedSync()) {
+            db = false;
+            return false;
         }
+        var res = this._querySync(q);
+        if(!res) {
+            try {
+                db.closeSync();
+            } catch(e) {
+                // already disconnected   
+            }
+            db = false;
+        }
+        return res;
     }
     return db;
 }
