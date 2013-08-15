@@ -66,7 +66,7 @@ Database.prototype.query = function (query, sub, callback) {
 }
 
 function blackHole() {
-    
+
 }
 
 Database.prototype.init = function () {
@@ -230,7 +230,7 @@ Database.prototype.isGlobalIPBanned = function (ip, callback) {
     var banned = ip in this.global_ipbans ||
                  s16 in this.global_ipbans ||
                  s24 in this.global_ipbans;
-    
+
     callback(null, banned);
 };
 
@@ -259,7 +259,7 @@ Database.prototype.setGlobalIPBan = function (ip, reason, callback) {
     if(typeof callback !== "function")
         callback = blackHole;
 
-    var query = "INSERT INTO global_bans VALUES (?, ?)" + 
+    var query = "INSERT INTO global_bans VALUES (?, ?)" +
                 " ON DUPLICATE KEY UPDATE note=?";
     self.query(query, [ip, reason, reason], function (err, res) {
         if(err) {
@@ -338,7 +338,7 @@ Database.prototype.registerChannel = function (name, owner, callback) {
                 callback(err, null);
                 return;
             }
-            
+
             // Rank table
             query = ["CREATE TABLE `chan_" + name + "_ranks` (",
                             "`name` VARCHAR(32) NOT NULL,",
@@ -365,7 +365,7 @@ Database.prototype.registerChannel = function (name, owner, callback) {
                         callback(err, null);
                         return;
                     }
-                    
+
                     query = "INSERT INTO channels VALUES (NULL, ?, ?)";
                     self.query(query, [name, owner], function (err, res) {
                         callback(err, res);
@@ -393,7 +393,7 @@ Database.prototype.loadChannelData = function (chan, callback) {
             callback(err, null);
             return;
         }
-        
+
         if(res.length == 0) {
             callback("Channel is unregistered", null);
             return;
@@ -402,7 +402,7 @@ Database.prototype.loadChannelData = function (chan, callback) {
         if(res[0].name != chan.name)
             chan.name = rows[0].name;
         chan.registered = true;
-        
+
         // Load bans
         query = "SELECT * FROM `chan_" + chan.name + "_bans`";
         self.query(query, function (err, res) {
@@ -494,7 +494,7 @@ Database.prototype.getChannelRank = function (channame, names, callback) {
                 callback(null, res[0].rank);
             return;
         }
-        
+
         callback(null, res);
     });
 };
@@ -512,7 +512,7 @@ Database.prototype.setChannelRank = function (channame, name, rank, callback) {
     var query = "INSERT INTO `chan_" + channame + "_ranks` " +
                 "(name, rank) VALUES (?, ?) " +
                 "ON DUPLICATE KEY UPDATE rank=?";
-    
+
     self.query(query, [name, rank, rank], callback);
 };
 
@@ -541,7 +541,7 @@ Database.prototype.addToLibrary = function (channame, media, callback) {
     }
 
     var query = "INSERT INTO `chan_" + channame + "_ranks`" +
-                "(id, title, seconds, type) " + 
+                "(id, title, seconds, type) " +
                 "VALUES (?, ?, ?, ?)";
     var params = [
         media.id,
@@ -600,7 +600,7 @@ Database.prototype.addChannelBan = function (channame, ip, name, banBy,
         return;
     }
 
-    var query = "INSERT INTO `chan_" + channame + "_bans`" + 
+    var query = "INSERT INTO `chan_" + channame + "_bans`" +
                 "(ip, name, banner) VALUES (?, ?, ?)";
 
     self.query(query, [ip, name, banBy], callback);
@@ -615,7 +615,7 @@ Database.prototype.clearChannelIPBan = function (channame, ip, callback) {
         callback("Invalid channel name", null);
         return;
     }
-    
+
     var query = "DELETE FROM `chan_" + channame + "_bans` WHERE ip=?";
     self.query(query, [ip], callback);
 };
@@ -628,7 +628,7 @@ Database.prototype.clearChannelNameBan = function (channame, name,
         return;
     }
 
-    var query = "DELETE FROM `chan_" + channame + "_bans` WHERE ip='*'" + 
+    var query = "DELETE FROM `chan_" + channame + "_bans` WHERE ip='*'" +
                 "AND name=?";
 
     self.query(query, [name], callback);
@@ -637,6 +637,8 @@ Database.prototype.clearChannelNameBan = function (channame, name,
 /* END REGION */
 
 /* REGION users */
+
+/* email and profile */
 
 Database.prototype.getUserProfile = function (name, callback) {
     var self = this;
@@ -682,6 +684,8 @@ Database.prototype.setUserEmail = function (name, email, callback) {
     self.query(query, [email, name], callback);
 };
 
+/* password recovery */
+
 Database.prototype.genPasswordReset = function (ip, name, email, callback) {
     var self = this;
     if(typeof callback !== "function")
@@ -693,7 +697,7 @@ Database.prototype.genPasswordReset = function (ip, name, email, callback) {
             callback(err, null);
             return;
         }
-        
+
         if(res.length == 0) {
             callback("Provided username does not exist", null);
             return;
@@ -766,7 +770,7 @@ Database.prototype.resetUserPassword = function (name, callback) {
     var self = this;
     if(typeof callback !== "function")
         callback = blackHole;
-    
+
     var pwChars = "abcdefghijkmnopqrstuvwxyz023456789";
     var pw = "";
     for(var i = 0; i < 10; i++)
@@ -778,7 +782,7 @@ Database.prototype.resetUserPassword = function (name, callback) {
             callback("Password reset failure", null);
             return;
         }
-        
+
         var query = "UPDATE registrations SET pw=? WHERE uname=?";
         self.query(query, [data, name], function (err, res) {
             if(err) {
@@ -790,6 +794,8 @@ Database.prototype.resetUserPassword = function (name, callback) {
         });
     });
 };
+
+/* user playlists */
 
 Database.prototype.listUserPlaylists = function (name, callback) {
     var self = this;
@@ -835,7 +841,7 @@ Database.prototype.saveUserPlaylist = function (pl, username, plname,
     var self = this;
     if(typeof callback !== "function")
         callback = blackHole;
-    
+
     var tmp = [], time = 0;
     for(var i in pl) {
         var e = {
@@ -852,11 +858,99 @@ Database.prototype.saveUserPlaylist = function (pl, username, plname,
 
     var query = "INSERT INTO user_playlists VALUES (?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE contents=?, count=?, time=?";
-            
+
     var params = [username, plname, plText, count, time,
                   plText, count, time];
 
     self.query(query, params, callback);
+};
+
+Database.prototype.deleteUserPlaylist = function (username, plname,
+                                                  callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "DELETE FROM user_playlists WHERE user=? AND name=?";
+    self.query(query, [username, plname], callback);
+};
+
+/* user channels */
+
+Database.prototype.listUserChannels = function (username, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT * FROM channels WHERE owner=? ORDER BY id ASC";
+    self.query(query, [username], callback);
+};
+
+/* aliases */
+
+Database.prototype.recordVisit = function (ip, name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var time = Date.now();
+    var query = "DELETE FROM aliases WHERE ip=? AND name=?;" +
+                "INSERT INTO aliases VALUES (NULL, ?, ?, ?)";
+
+    self.query(query, [ip, name, ip, name, time], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        callback(null, res);
+        query = "DELETE FROM aliases WHERE ip=? AND visit_id NOT IN (" +
+                    "SELECT visit_id FROM (" +
+                        "SELECT visit_id, time FROM aliases WHERE ip=?" +
+                        "ORDER BY time DESC LIMIT 5" +
+                    ") foo" + // The 'foo' here is actually necessary
+                ")";
+
+        self.query(query, [ip, ip]);
+    });
+};
+
+Database.prototype.listAliases = function (ip, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT name FROM aliases WHERE ip=?";
+    self.query(query, [ip], function (err, res) {
+        var names = null;
+        if(!err) {
+            names = [];
+            res.forEach(function (row) {
+                names.append(row.name);
+            });
+        }
+
+        callback(err, names);
+    });
+};
+
+Database.prototype.listIPsForName = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT ip FROM aliases WHERE name=?";
+    self.query(query, [name], function (err, res) {
+        var ips = null;
+        if(!err) {
+            ips = [];
+            res.forEach(function (row) {
+                ips.push(row.ip);
+            });
+        }
+        
+        callback(err, ips);
+    });
 };
 
 module.exports = Database;
