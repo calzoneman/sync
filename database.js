@@ -593,7 +593,7 @@ Database.prototype.addChannelBan = function (channame, ip, name, banBy,
     if(typeof callback !== "function")
         callback = blackHole;
 
-    if(!$util.isValidChannelName(channame))) {
+    if(!$util.isValidChannelName(channame)) {
         callback("Invalid channel name", null);
         return;
     }
