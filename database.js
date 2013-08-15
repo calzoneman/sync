@@ -1,4 +1,5 @@
 var mysql = require("mysql");
+var $util = require("./utilities");
 
 var Logger = {
     errlog: {
@@ -60,6 +61,10 @@ Database.prototype.query = function (query, sub, callback) {
             }
         }
     });
+}
+
+function blackHole() {
+    
 }
 
 Database.prototype.init = function () {
@@ -230,7 +235,7 @@ Database.prototype.isGlobalIPBanned = function (ip, callback) {
 Database.prototype.getGlobalIPBans = function (callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
     self.query("SELECT * FROM global_bans WHERE 1", function (err, res) {
         if(err) {
@@ -250,7 +255,7 @@ Database.prototype.getGlobalIPBans = function (callback) {
 Database.prototype.setGlobalIPBan = function (ip, reason, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
     var query = "INSERT INTO global_bans VALUES (?, ?)" + 
                 " ON DUPLICATE KEY UPDATE note=?";
@@ -268,7 +273,7 @@ Database.prototype.setGlobalIPBan = function (ip, reason, callback) {
 Database.prototype.clearGlobalIPBan = function (ip, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
 
     var query = "DELETE FROM global_bans WHERE ip=?";
@@ -289,6 +294,10 @@ Database.prototype.channelExists = function (name, callback) {
     var self = this;
     if(typeof callback !== "function")
         return;
+    if(!$util.isValidChannelName(name)) {
+        callback("Invalid channel name", null);
+        return;
+    }
 
     var query = "SELECT name FROM channels WHERE name=?";
     self.query(query, [name], function (err, res) {
@@ -299,9 +308,9 @@ Database.prototype.channelExists = function (name, callback) {
 Database.prototype.registerChannel = function (name, owner, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
-    if(!name.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(name)) {
         callback("Invalid channel name", null);
         return;
     }
@@ -368,9 +377,9 @@ Database.prototype.registerChannel = function (name, owner, callback) {
 Database.prototype.loadChannelData = function (chan, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
-    if(!chan.name.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(chan.name)) {
         callback("Invalid channel name", null);
         return;
     }
@@ -417,9 +426,9 @@ Database.prototype.loadChannelData = function (chan, callback) {
 Database.prototype.dropChannel = function (name, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
-    if(!name.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(name)) {
         callback("Invalid channel name", null);
         return;
     }
@@ -448,6 +457,11 @@ Database.prototype.getChannelRank = function (channame, names, callback) {
     var self = this;
     if(typeof callback !== "function")
         return;
+
+    if(!$util.isValidChannelName(channame)) {
+        callback("Invalid channel name", null);
+        return;
+    }
 
     if(typeof names === "string")
         names = [names];
@@ -486,9 +500,9 @@ Database.prototype.getChannelRank = function (channame, names, callback) {
 Database.prototype.setChannelRank = function (channame, name, rank, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
-    if(!channame.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(channame)) {
         callback("Invalid channel name", null);
         return;
     }
@@ -497,9 +511,7 @@ Database.prototype.setChannelRank = function (channame, name, rank, callback) {
                 "(name, rank) VALUES (?, ?) " +
                 "ON DUPLICATE KEY UPDATE rank=?";
     
-    self.query(query, [name, rank, rank], function (err, res) {
-        callback(err, res);
-    });
+    self.query(query, [name, rank, rank], callback);
 };
 
 Database.prototype.listChannelRanks = function (channame, callback) {
@@ -507,23 +519,21 @@ Database.prototype.listChannelRanks = function (channame, callback) {
     if(typeof callback !== "function")
         return;
 
-    if(!channame.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(channame)) {
         callback("Invalid channel name", null);
         return;
     }
 
     var query = "SELECT * FROM `chan_" + channame + "_ranks` WHERE 1";
-    self.query(query, function (err, res) {
-        callback(err, res);
-    });
+    self.query(query, callback);
 };
 
 Database.prototype.addToLibrary = function (channame, media, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
-    if(!channame.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(channame)) {
         callback("Invalid channel name");
         return;
     }
@@ -537,33 +547,29 @@ Database.prototype.addToLibrary = function (channame, media, callback) {
         media.seconds,
         media.type
     ];
-    self.query(query, params, function (err, res) {
-        callback(err, res);
-    });
+    self.query(query, params, callback);
 };
 
 Database.prototype.removeFromLibrary = function (channame, id, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
-    if(!channame.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(channame)) {
         callback("Invalid channel name", null);
         return;
     }
 
     var query = "DELETE FROM `chan_" + channame + "_library` WHERE id=?";
-    self.query(query, [id], function (err, res) {
-        callback(err, res);
-    });
+    self.query(query, [id], callback);
 };
 
 Database.prototype.getLibraryItem = function (channame, id, callback) {
     var self = this;
     if(typeof callback !== "function")
-        callback = function () { };
+        callback = blackHole;
 
-    if(!channame.match(/^[\w-_]+$/)) {
+    if(!$util.isValidChannelName(channame)) {
         callback("Invalid channel name", null);
         return;
     }
@@ -581,4 +587,96 @@ Database.prototype.getLibraryItem = function (channame, id, callback) {
     });
 };
 
+Database.prototype.addChannelBan = function (channame, ip, name, banBy,
+                                             callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    if(!$util.isValidChannelName(channame))) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var query = "INSERT INTO `chan_" + channame + "_bans`" + 
+                "(ip, name, banner) VALUES (?, ?, ?)";
+
+    self.query(query, [ip, name, banBy], callback);
+};
+
+Database.prototype.clearChannelIPBan = function (channame, ip, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    if(!$util.isValidChannelName(channame)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+    
+    var query = "DELETE FROM `chan_" + channame + "_bans` WHERE ip=?";
+    self.query(query, [ip], callback);
+};
+
+Database.prototype.clearChannelNameBan = function (channame, name,
+                                                   callback) {
+    var self = this;
+    if(typeof callback !== "function") {
+        callback = blackHole;
+        return;
+    }
+
+    var query = "DELETE FROM `chan_" + channame + "_bans` WHERE ip='*'" + 
+                "AND name=?";
+
+    self.query(query, [name], callback);
+};
+
+/* END REGION */
+
+/* REGION users */
+
+Database.prototype.getUserProfile = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "SELECT profile_image, profile_text FROM registrations " +
+                "WHERE uname=?";
+
+    self.query(query, [name], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        var def = {
+            profile_image: "",
+            profile_text: ""
+        };
+
+        callback(null, res.length > 0 ? res[0] : def);
+    });
+};
+
+Database.prototype.setUserProfile = function (name, data, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "UPDATE registrations SET profile_image=?, profile_text=?" +
+                "WHERE uname=?";
+
+    self.query(query, [data.image, data.text, name], callback);
+};
+
+Database.prototype.setUserEmail = function (name, email, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "UPDATE registrations SET email=? WHERE uname=?";
+
+    self.query(query, [email, name], callback);
+};
 module.exports = Database;
