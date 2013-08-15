@@ -1,4 +1,6 @@
 var mysql = require("mysql");
+var hashlib = require("node_hash");
+var bcrypt = require("bcrypt");
 var $util = require("./utilities");
 
 var Logger = {
@@ -679,4 +681,182 @@ Database.prototype.setUserEmail = function (name, email, callback) {
 
     self.query(query, [email, name], callback);
 };
+
+Database.prototype.genPasswordReset = function (ip, name, email, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "SELECT email FROM registrations WHERE uname=?";
+    self.query(query, [name], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+        
+        if(res.length == 0) {
+            callback("Provided username does not exist", null);
+            return;
+        }
+
+        if(res[0].email != email) {
+            callback("Provided email does not match user's email", null);
+            return;
+        }
+
+        var hash = hashlib.sha256($util.randomSalt(32) + name);
+        var expire = Date.now() + 24*60*60*1000;
+        query = "INSERT INTO password_reset " +
+                "(ip, name, hash, email, expire) VALUES (?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE hash=?, expire=?";
+        self.query(query, [ip, name, hash, email, exp, hash, exp],
+                   function (err, res) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            callback(null, hash);
+        });
+    });
+};
+
+Database.prototype.recoverUserPassword = function (hash, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "SELECT * FROM password_reset WHERE hash=?";
+    self.query(query, [hash], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(rows.length == 0) {
+            callback("Invalid password reset link", null);
+            return;
+        }
+
+        if(Date.now() > res[0].expire) {
+            self.query("DELETE FROM password_reset WHERE hash=?", [hash]);
+            callback("Link expired.  Password resets are valid for 24hr",
+                     null);
+            return;
+        }
+
+        var name = res[0].name;
+
+        self.resetUserPassword(res[0].name, function (err, pw) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            self.query("DELETE FROM password_reset WHERE hash=?", [hash]);
+            callback(null, {
+                name: name,
+                pw: pw
+            });
+        });
+    });
+};
+
+Database.prototype.resetUserPassword = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+    
+    var pwChars = "abcdefghijkmnopqrstuvwxyz023456789";
+    var pw = "";
+    for(var i = 0; i < 10; i++)
+        pw += pwChars[parseInt(Math.random() * 33)];
+
+    bcrypt.hash(pw, 10, function (err, data) {
+        if(err) {
+            Logger.errlog.log("bcrypt error: " + err);
+            callback("Password reset failure", null);
+            return;
+        }
+        
+        var query = "UPDATE registrations SET pw=? WHERE uname=?";
+        self.query(query, [data, name], function (err, res) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            callback(null, pw);
+        });
+    });
+};
+
+Database.prototype.listUserPlaylists = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT name, count, time FROM user_playlists WHERE user=?";
+    self.query(query, [name], callback);
+};
+
+Database.prototype.getUserPlaylist = function (username, plname, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT contents FROM user_playlists WHERE " +
+                "user=? AND name=?";
+
+    self.query(query, [username, plname], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(res.length == 0) {
+            callback("Playlist does not exist", null);
+            return;
+        }
+
+        var pl = null;
+        try {
+            pl = JSON.parse(res[0].contents);
+        } catch(e) {
+            callback("Malformed playlist JSON", null);
+            return;
+        }
+        callback(null, pl);
+    });
+};
+
+Database.prototype.saveUserPlaylist = function (pl, username, plname,
+                                                callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+    
+    var tmp = [], time = 0;
+    for(var i in pl) {
+        var e = {
+            id: pl[i].media.id,
+            title: pl[i].media.title,
+            seconds: pl[i].media.seconds,
+            type: pl[i].media.type
+        };
+        time += pl[i].media.seconds;
+        tmp.push(e);
+    }
+    var count = tmp.length;
+    var plText = JSON.stringify(tmp);
+
+    var query = "INSERT INTO user_playlists VALUES (?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE contents=?, count=?, time=?";
+            
+    var params = [username, plname, plText, count, time,
+                  plText, count, time];
+
+    self.query(query, params, callback);
+};
+
 module.exports = Database;
