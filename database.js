@@ -234,7 +234,7 @@ Database.prototype.isGlobalIPBanned = function (ip, callback) {
     callback(null, banned);
 };
 
-Database.prototype.getGlobalIPBans = function (callback) {
+Database.prototype.listGlobalIPBans = function (callback) {
     var self = this;
     if(typeof callback !== "function")
         callback = blackHole;
@@ -292,6 +292,21 @@ Database.prototype.clearGlobalIPBan = function (ip, callback) {
 /* END REGION */
 
 /* REGION channels */
+
+Database.prototype.searchChannel = function (field, value, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT * FROM channels WHERE ";
+    if(field === "owner")
+        query += "owner LIKE %?%";
+    else if(field === "name")
+        query += "name LIKE %?%";
+
+    self.query(query, [value], callback);
+};
+
 Database.prototype.channelExists = function (name, callback) {
     var self = this;
     if(typeof callback !== "function")
@@ -638,6 +653,20 @@ Database.prototype.clearChannelNameBan = function (channame, name,
 
 /* REGION users */
 
+Database.prototype.searchUser = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    // NOTE: No SELECT * here because I don't want to risk exposing
+    // the user's password hash
+    var query = "SELECT id, uname, global_rank, profile_image, " +
+                "profile_text, email FROM registrations WHERE " +
+                "uname LIKE %?%";
+
+    self.query(query, [name], callback);
+};
+
 /* email and profile */
 
 Database.prototype.getUserProfile = function (name, callback) {
@@ -953,4 +982,5 @@ Database.prototype.listIPsForName = function (name, callback) {
     });
 };
 
+/* END REGION */
 module.exports = Database;
