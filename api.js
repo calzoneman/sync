@@ -401,17 +401,6 @@ module.exports = function (Server) {
         var text = req.body.profile_text;
 
         db.userLoginSession(name, session, function (err, row) {
-        var row = Auth.login(name, pw, session);
-        if(!row) {
-            res.jsonp({
-                success: false,
-                error: "Invalid login"
-            });
-            return;
-        }
-        
-        db.setUserProfile(name, { image: img, text: text },
-                          function (err, dbres) {
             if(err) {
                 res.jsonp({
                     success: false,
@@ -419,22 +408,33 @@ module.exports = function (Server) {
                 });
                 return;
             }
+        
+            db.setUserProfile(name, { image: img, text: text },
+                              function (err, dbres) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        error: err
+                    });
+                    return;
+                }
 
-            res.jsonp({ success: true });
-            name = name.toLowerCase();
-            for(var i in Server.channels) {
-                var chan = Server.channels[i];
-                for(var j in chan.users) {
-                    var user = chan.users[j];
-                    if(user.name.toLowerCase() == name) {
-                        user.profile = {
-                            image: img,
-                            text: text
-                        };
-                        chan.broadcastUserUpdate(user);
+                res.jsonp({ success: true });
+                name = name.toLowerCase();
+                for(var i in Server.channels) {
+                    var chan = Server.channels[i];
+                    for(var j in chan.users) {
+                        var user = chan.users[j];
+                        if(user.name.toLowerCase() == name) {
+                            user.profile = {
+                                image: img,
+                                text: text
+                            };
+                            chan.broadcastUserUpdate(user);
+                        }
                     }
                 }
-            }
+            });
         });
     });
 
@@ -461,16 +461,7 @@ module.exports = function (Server) {
             return;
         }
 
-        var row = Auth.login(name, pw, "");
-        if(!row) {
-            res.jsonp({
-                success: false,
-                error: "Invalid login credentials"
-            });
-            return;
-        }
-
-        db.setUserEmail(name, email, function (err, dbres) {
+        db.userLoginPassword(name, pw, function (err, row) {
             if(err) {
                 res.jsonp({
                     success: false,
@@ -479,10 +470,20 @@ module.exports = function (Server) {
                 return;
             }
 
-            ActionLog.record(getIP(req), name, "email-update", email);
-            res.jsonp({
-                success: true,
-                session: row.session_hash
+            db.setUserEmail(name, email, function (err, dbres) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        error: err
+                    });
+                    return;
+                }
+
+                ActionLog.record(getIP(req), name, "email-update", email);
+                res.jsonp({
+                    success: true,
+                    session: row.session_hash
+                });
             });
         });
     });
@@ -493,29 +494,31 @@ module.exports = function (Server) {
         var name = req.query.name;
         var session = req.query.session;
 
-        var row = Auth.login(name, "", session);
-        if(!row) {
-            res.jsonp({
-                success: false,
-                error: "Invalid login"
-            });
-            return;
-        }
-
-        db.listUserChannels(name, function (err, res) {
+        db.userLoginSession(name, session, function (err, row) {
             if(err) {
                 res.jsonp({
                     success: false,
-                    channels: []
+                    error: err
                 });
                 return;
             }
 
-            res.jsonp({
-                success: true,
-                channels: res
+            db.listUserChannels(name, function (err, res) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        channels: []
+                    });
+                    return;
+                }
+
+                res.jsonp({
+                    success: true,
+                    channels: res
+                });
             });
         });
+
     });
 
     /* END REGION */
@@ -529,15 +532,26 @@ module.exports = function (Server) {
         var session = req.query.session;
         var types = req.query.actions;
 
-        var row = Auth.login(name, "", session);
-        if(!row || row.global_rank < 255) {
-            res.send(403);
-            return;
-        }
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
+            }
 
-        types = types.split(",");
-        var actions = ActionLog.readLog(types);
-        res.jsonp(actions);
+            if(row.global_rank < 255) {
+                res.send(403);
+                return;
+            }
+
+            types = types.split(",");
+            var actions = ActionLog.readLog(types);
+            res.jsonp(actions);
+        });
     });
 
     /* helper function to pipe the last N bytes of a file */
@@ -564,13 +578,24 @@ module.exports = function (Server) {
         var name = req.query.name;
         var session = req.query.session;
 
-        var row = Auth.login(name, "", session);
-        if(!row || row.global_rank < 255) {
-            res.send(403);
-            return;
-        }
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
+            }
 
-        pipeLast(res, "sys.log", 1048576);
+            if(row.global_rank < 255) {
+                res.send(403);
+                return;
+            }
+
+            pipeLast(res, "sys.log", 1048576);
+        });
     });
 
     app.get("/api/logging/errorlog", function (req, res) {
@@ -580,13 +605,24 @@ module.exports = function (Server) {
         var name = req.query.name;
         var session = req.query.session;
 
-        var row = Auth.login(name, "", session);
-        if(!row || row.global_rank < 255) {
-            res.send(403);
-            return;
-        }
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
+            }
 
-        pipeLast(res, "error.log", 1048576);
+            if(row.global_rank < 255) {
+                res.send(403);
+                return;
+            }
+
+            pipeLast(res, "error.log", 1048576);
+        });
     });
 
     app.get("/api/logging/channels/:channel", function (req, res) {
@@ -596,24 +632,35 @@ module.exports = function (Server) {
         var name = req.query.name;
         var session = req.query.session;
 
-        var row = Auth.login(name, "", session);
-        if(!row || row.global_rank < 255) {
-            res.send(403);
-            return;
-        }
-
-        var chan = req.params.channel || "";
-        if(!chan.match(/^[\w-_]+$/)) {
-            res.send(400);
-            return;
-        }
-
-        fs.exists("chanlogs/" + chan + ".log", function(exists) {
-            if(exists) {
-                pipeLast(res, "chanlogs/" + chan + ".log", 1048576);
-            } else {
-                res.send(404);
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
             }
+
+            if(row.global_rank < 255) {
+                res.send(403);
+                return;
+            }
+
+            var chan = req.params.channel || "";
+            if(!$util.isValidChannelName(chan)) {
+                res.send(400);
+                return;
+            }
+
+            fs.exists("chanlogs/" + chan + ".log", function(exists) {
+                if(exists) {
+                    pipeLast(res, "chanlogs/" + chan + ".log", 1048576);
+                } else {
+                    res.send(404);
+                }
+            });
         });
     });
 
