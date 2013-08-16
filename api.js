@@ -14,7 +14,6 @@ var Logger = require("./logger");
 var ActionLog = require("./actionlog");
 var fs = require("fs");
 
-
 module.exports = function (Server) {
     function getIP(req) {
         var raw = req.connection.remoteAddress;
@@ -52,6 +51,7 @@ module.exports = function (Server) {
     }
 
     var app = Server.app;
+    var db = Server.db;
 
     /* <https://en.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol> */
     app.get("/api/coffee", function (req, res) {
@@ -283,62 +283,63 @@ module.exports = function (Server) {
         var ip = getIP(req);
         var hash = false;
 
-        try {
-            hash = Server.db.generatePasswordReset(ip, name, email);
-            ActionLog.record(ip, name, "password-reset-generate", email);
-        } catch(e) {
-            res.jsonp({
-                success: false,
-                error: e
-            });
-            return;
-        }
-
-        if(!Server.cfg["enable-mail"]) {
-            res.jsonp({
-                success: false,
-                error: "This server does not have email recovery enabled."+
-                       "  Contact an administrator for assistance."
-            });
-            return;
-        }
-
-        if(!email) {
-            res.jsonp({
-                success: false,
-                error: "You don't have a recovery email address set.  "+
-                       "Contact an administrator for assistance."
-            });
-            return;
-        }
-
-        var msg = "A password reset request was issued for your account '"+
-                  name + "' on " + Server.cfg["domain"] + ".  This request"+
-                  " is valid for 24 hours.  If you did not initiate this, "+
-                  "there is no need to take action.  To reset your "+
-                  "password, copy and paste the following link into your "+
-                  "browser: " + Server.cfg["domain"] + "/reset.html?"+hash;
-
-        var mail = {
-            from: "CyTube Services <" + Server.cfg["mail-from"] + ">",
-            to: email,
-            subject: "Password reset request",
-            text: msg
-        };
-
-        Server.cfg["nodemailer"].sendMail(mail, function (err, response) {
+        db.genPasswordReset(ip, name, email, function (err, hash) {
             if(err) {
-                Logger.errlog.log("mail fail: " + err);
                 res.jsonp({
                     success: false,
-                    error: "Email send failed.  Contact an administrator "+
-                           "if this persists"
+                    error: err
                 });
-            } else {
-                res.jsonp({
-                    success: true
-                });
+                return;
             }
+            ActionLog.record(ip, name, "password-reset-generate", email);
+            if(!Server.cfg["enable-mail"]) {
+                res.jsonp({
+                    success: false,
+                    error: "This server does not have email recovery " +
+                           "enabled.  Contact an administrator for " +
+                           "assistance."
+                });
+                return;
+            }
+
+            if(!email) {
+                res.jsonp({
+                    success: false,
+                    error: "You don't have a recovery email address set.  "+
+                           "Contact an administrator for assistance."
+                });
+                return;
+            }
+
+            var msg = "A password reset request was issued for your " +
+                      "account '"+ name + "' on " + Server.cfg["domain"] + 
+                      ".  This request is valid for 24 hours.  If you did "+
+                      "not initiate this, there is no need to take action."+
+                      "  To reset your password, copy and paste the " +
+                      "following link into your browser: " + 
+                      Server.cfg["domain"] + "/reset.html?"+hash;
+
+            var mail = {
+                from: "CyTube Services <" + Server.cfg["mail-from"] + ">",
+                to: email,
+                subject: "Password reset request",
+                text: msg
+            };
+
+            Server.cfg["nodemailer"].sendMail(mail, function (err, response) {
+                if(err) {
+                    Logger.errlog.log("mail fail: " + err);
+                    res.jsonp({
+                        success: false,
+                        error: "Email send failed.  Contact an administrator "+
+                               "if this persists"
+                    });
+                } else {
+                    res.jsonp({
+                        success: true
+                    });
+                }
+            });
         });
     });
 
@@ -348,21 +349,22 @@ module.exports = function (Server) {
         var hash = req.query.hash;
         var ip = getIP(req);
 
-        try {
-            var info = Server.db.recoverPassword(hash);
+        db.recoverUserPassword(hash, function (err, auth) {
+            if(err) {
+                ActionLog.record(ip, "", "password-recover-failure", hash);
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
+            ActionLog.record(ip, info[0], "password-recover-success");
             res.jsonp({
                 success: true,
-                name: info[0],
-                pw: info[1]
+                name: auth.name,
+                pw: auth.pw
             });
-            ActionLog.record(ip, info[0], "password-recover-success");
-        } catch(e) {
-            ActionLog.record(ip, "", "password-recover-failure", hash);
-            res.jsonp({
-                success: false,
-                error: e
-            });
-        }
+        });
     });
 
     /* profile retrieval */
@@ -370,19 +372,21 @@ module.exports = function (Server) {
         res.type("application/jsonp");
         var name = req.params.user;
 
-        try {
-            var prof = Server.db.getProfile(name);
+        db.getUserProfile(name, function (err, profile) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
+
             res.jsonp({
                 success: true,
-                profile_image: prof.profile_image,
-                profile_text: prof.profile_text
+                profile_image: profile.profile_image,
+                profile_text: profile.profile_text
             });
-        } catch(e) {
-            res.jsonp({
-                success: false,
-                error: e
-            });
-        }
+        });
     });
 
     /* profile change */
@@ -402,40 +406,33 @@ module.exports = function (Server) {
             });
             return;
         }
+        
+        db.setUserProfile(name, { image: img, text: text },
+                          function (err, dbres) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
 
-        var result = Server.db.setProfile(name, {
-            image: img,
-            text: text
-        });
-
-        if(!result) {
-            res.jsonp({
-                success: false,
-                error: "Server error.  Contact an administrator for assistance"
-            });
-            return;
-        }
-
-        res.jsonp({
-            success: true
-        });
-
-        // Update profile on all channels the user is connected to
-        name = name.toLowerCase();
-        for(var i in Server.channels) {
-            var chan = Server.channels[i];
-            for(var j in chan.users) {
-                var user = chan.users[j];
-                if(user.name.toLowerCase() == name) {
-                    user.profile = {
-                        image: img,
-                        text: text
-                    };
-                    chan.broadcastUserUpdate(user);
+            res.jsonp({ success: true });
+            name = name.toLowerCase();
+            for(var i in Server.channels) {
+                var chan = Server.channels[i];
+                for(var j in chan.users) {
+                    var user = chan.users[j];
+                    if(user.name.toLowerCase() == name) {
+                        user.profile = {
+                            image: img,
+                            text: text
+                        };
+                        chan.broadcastUserUpdate(user);
+                    }
                 }
             }
-        }
-
+        });
     });
 
     /* set email */
@@ -470,20 +467,20 @@ module.exports = function (Server) {
             return;
         }
 
-        var success = Server.db.setUserEmail(name, email);
-        if(!success) {
-            res.jsonp({
-                success: false,
-                error: "Email update failed.  Contact an administrator "+
-                       "for assistance."
-            });
-            return false;
-        }
+        db.setUserEmail(name, email, function (err, dbres) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
 
-        ActionLog.record(getIP(req), name, "email-update", email);
-        res.jsonp({
-            success: true,
-            session: row.session_hash
+            ActionLog.record(getIP(req), name, "email-update", email);
+            res.jsonp({
+                success: true,
+                session: row.session_hash
+            });
         });
     });
 
