@@ -185,41 +185,7 @@ module.exports = function (Server) {
         var ip = getIP(req);
 
         // Limit registrations per IP within a certain time period
-        if(ActionLog.tooManyRegistrations(ip)) {
-            ActionLog.record(ip, name, "register-failure",
-                "Too many recent registrations");
-            res.jsonp({
-                success: false,
-                error: "Your IP address has registered too many accounts "+
-                       "in the past 48 hours.  Please wait a while before"+
-                       " registering another."
-            });
-            return;
-        }
-
-        if(!pw) {
-            // costanza.jpg
-            res.jsonp({
-                success: false,
-                error: "You must provide a password"
-            });
-            return;
-        }
-
-
-        if(!$util.isValidUserName(name)) {
-            ActionLog.record(ip, name, "register-failure", "Invalid name");
-            res.jsonp({
-                success: false,
-                error: "Invalid username.  Valid usernames must be 1-20 "+
-                       "characters long and consist only of alphanumeric "+
-                       "characters and underscores (_)"
-            });
-            return;
-        }
-
-        // db.registerUser checks if the name is taken already
-        db.registerUser(name, pw, function (err, session) {
+        ActionLog.throttleRegistrations(ip, function (err, toomany) {
             if(err) {
                 res.jsonp({
                     success: false,
@@ -227,11 +193,56 @@ module.exports = function (Server) {
                 });
                 return;
             }
+            
+            if(toomany) {
+                ActionLog.record(ip, name, "register-failure",
+                                 "Too many recent registrations");
+                res.jsonp({
+                    success: false,
+                    error: "Your IP address has registered too many " +
+                           "accounts in the past 48 hours.  Please wait " +
+                           "a while before registering another."
+                });
+                return;
+            }
 
-            ActionLog.record(ip, name, "register-success");
-            res.jsonp({
-                success: true,
-                session: session
+            if(!pw) {
+                // costanza.jpg
+                res.jsonp({
+                    success: false,
+                    error: "You must provide a password"
+                });
+                return;
+            }
+
+
+            if(!$util.isValidUserName(name)) {
+                ActionLog.record(ip, name, "register-failure", 
+                                 "Invalid name");
+                res.jsonp({
+                    success: false,
+                    error: "Invalid username.  Valid usernames must be " +
+                           "1-20 characters long and consist only of " +
+                           "alphanumeric characters and underscores (_)"
+                });
+                return;
+            }
+
+            // db.registerUser checks if the name is taken already
+            db.registerUser(name, pw, function (err, session) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        error: err
+                    });
+                    return;
+                }
+
+                ActionLog.record(ip, name, "register-success");
+                res.jsonp({
+                    success: true,
+                    session: session
+                });
             });
         });
     });
@@ -549,6 +560,12 @@ module.exports = function (Server) {
             }
 
             types = types.split(",");
+            ActionLog.listActions(types, function (err, actions) {
+                if(err)
+                    actions = [];
+                
+                res.jsonp(actions);
+            });
             var actions = ActionLog.readLog(types);
             res.jsonp(actions);
         });
