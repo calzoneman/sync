@@ -654,6 +654,196 @@ Database.prototype.clearChannelNameBan = function (channame, name,
 
 /* END REGION */
 
+/* REGION Auth */
+
+Database.prototype.isUsernameTaken = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT id FROM registrations WHERE uname=?";
+    self.query(query, [name], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        callback(null, res.length > 0);
+    });
+};
+
+Database.prototype.registerUser = function (name, pw, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    if(!$util.isValidUserName(name)) {
+        callback("Invalid username", null);
+        return;
+    }
+
+    self.isUsernameTaken(name, function (err, taken) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(taken) {
+            callback("Username already taken", null);
+            return;
+        }
+
+        bcrypt.hash(pw, 10, function (err, hash) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            var query = "INSERT INTO registrations VALUES " +
+                        "(NULL, ?, ?, 1, '', 0, '', '', '')";
+
+            self.query(query, [name, hash], function (err, res) {
+                callback(err, res);
+            });
+        });
+    });
+};
+
+Database.prototype.userLogin = function (name, pw, session, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var postLogin = function (err, row) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        self.createLoginSession(name, function (err, hash) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            row.session_hash = hash;
+            callback(null, row);
+        });
+    };
+
+    if(session) {
+        self.userLoginSession(name, session, postLogin);
+    } else if(pw) {
+        self.userLoginPassword(name, pw, postLogin);
+    } else {
+        callback("Invalid login", null);
+    }
+};
+
+Database.prototype.userLoginPassword = function (name, pw, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "SELECT * FROM registrations WHERE uname=?";
+    self.query(query, [name], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(res.length == 0) {
+            callback("User does not exist", null);
+            return;
+        }
+
+        var row = res[0];
+
+        bcrypt.compare(pw, row.pw, function (err, valid) {
+            if(valid) {
+                // For security, erase the password field before returning
+                delete row["pw"];
+                callback(null, row);
+                return;
+            }
+
+            // Possibly could be a SHA256 hash from an *ancient* version
+            // of CyTube
+
+            var sha = hashlib.sha256(pw);
+            if(sha == row.pw) {
+                // Replace it
+                bcrypt.hash(pw, 10, function (err, hash) {
+                    if(!err) {
+                        self.query("UPDATE registrations SET pw=? "+
+                                   "WHERE uname=?", [hash, name]);
+                    }
+                });
+
+                // Remove password field before returning
+                delete row["pw"];
+                callback(null, row);
+            } else {
+                callback("Invalid username/password combination", null);
+            }
+        });
+    });
+};
+
+Database.prototype.userLoginSession = function (name, session, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "SELECT * FROM registrations WHERE uname=? AND " +
+                "session_hash=?";
+
+    self.query(query, [name, session], function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(res.length == 0) {
+            callback("Invalid session", null);
+            return;
+        }
+
+        var row = res[0];
+
+        if(row.expire < Date.now()) {
+            callback("Session expired", null);
+            return;
+        }
+
+        callback(null, row);
+    });
+};
+
+Database.prototype.createLoginSession = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var salt = $util.randomSalt(32);
+    var hash = hashlib.sha256(salt + name);
+
+    var query = "UPDATE registrations SET session_hash=?, expire=? " +
+                "WHERE uname=?";
+
+    self.query(query, [hash, Date.now() + 604800000, name],
+               function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        callback(null, hash);
+    });
+};
+
+/* END REGION */
+
 /* REGION users */
 
 Database.prototype.searchUser = function (name, callback) {
