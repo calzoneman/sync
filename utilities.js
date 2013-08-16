@@ -1,6 +1,10 @@
 module.exports = {
     isValidChannelName: function (name) {
-        return name.match(/^[\w-_]+$/);
+        return name.match(/^[\w-_]{1,30}$/);
+    },
+
+    isValidUserName: function (name) {
+        return name.match(/^[\w-_]{1,20}$/);
     },
 
     randomSalt: function (length) {

@@ -499,10 +499,19 @@ module.exports = function (Server) {
             return;
         }
 
-        var channels = Server.db.listUserChannels(name);
-        res.jsonp({
-            success: true,
-            channels: channels
+        db.listUserChannels(name, function (err, res) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    channels: []
+                });
+                return;
+            }
+
+            res.jsonp({
+                success: true,
+                channels: res
+            });
         });
     });
 
