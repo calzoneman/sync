@@ -10,10 +10,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 var Auth = require("./auth");
-var ActionLog = require("./actionlog");
 
 module.exports = function (Server) {
     var db = Server.db;
+    var ActionLog = require("./actionlog")(Server);
     return {
         init: function(user) {
             ActionLog.record(user.ip, user.name, "acp-init");
@@ -29,7 +29,7 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-global-ban", function(data) {
-                ActionLog.record(user.ip, user.name, "acp-global-ban", data.ip);
+                ActionLog.record(user.ip, user.name, "acp-global-ban",                                       data.ip);
                 db.setGlobalIPBan(data.ip, data.note, function (err, res) {
                     db.listGlobalIPBans(function (err, res) {
                         res = res || [];
@@ -143,9 +143,10 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-actionlog-list", function () {
-                user.socket.emit("acp-actionlog-list",
-                    ActionLog.getLogTypes()
-                );
+                ActionLog.listActionTypes(function (err, types) {
+                    if(!err)
+                        user.socket.emit("acp-actionlog-list", types);
+                });
             });
 
             user.socket.on("acp-actionlog-clear", function(data) {
