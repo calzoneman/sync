@@ -9,7 +9,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Auth = require("./auth");
 var Logger = require("./logger");
 var ActionLog = require("./actionlog");
 var fs = require("fs");
@@ -94,21 +93,40 @@ module.exports = function (Server) {
         if(filter !== "public") {
             var name = query.name || "";
             var session = query.session || "";
-            var row = Auth.login(name, "", session);
-            if(!row || row.global_rank < 255) {
-                res.send(403);
-                return;
-            }
+            db.userLoginSession(name, session, function (err, row) {
+                if(err) {
+                    if(err !== "Invalid session" &&
+                       err !== "Session expired") {
+                        res.send(500);
+                    } else {
+                        res.send(403);
+                    }
+                    return;
+                }
+
+                if(row.global_rank < 255) {
+                    res.send(403);
+                    return;
+                }
+
+                var channels = [];
+                for(var key in Server.channels) {
+                    var channel = Server.channels[key];
+                    channels.push(getChannelData(channel));
+                }
+
+                res.type("application/jsonp");
+                res.jsonp(channels);
+            });
         }
+
+        // If we get here, the filter is public channels
         
         var channels = [];
         for(var key in Server.channels) {
             var channel = Server.channels[key];
-            if(channel.opts.show_public) {
+            if(channel.opts.show_public)
                 channels.push(getChannelData(channel));
-            } else if(filter !== "public") {
-                channels.push(getChannelData(channel));
-            }
         }
 
         res.type("application/jsonp");
@@ -136,33 +154,26 @@ module.exports = function (Server) {
             return;
         }
 
-        var row = Auth.login(name, pw, session);
-        if(!row) {
-            if(session && !pw) {
+        db.userLogin(name, pw, session, function (err, row) {
+            if(err) {
+                if(err !== "Session expired")
+                    ActionLog.record(getIP(req), name, "login-failure");
                 res.jsonp({
                     success: false,
-                    error: "Session expired"
-                });
-                return;
-            } else {
-                ActionLog.record(getIP(req), name, "login-failure",
-                                 "invalid_password");
-                res.jsonp({
-                    success: false,
-                    error: "Provided username/password pair is invalid"
+                    error: err
                 });
                 return;
             }
-        }
-
-        // record the login if the user is an administrator
-        if(row.global_rank >= 255)
-            ActionLog.record(getIP(req), name, "login-success");
             
-        res.jsonp({
-            success: true,
-            name: name,
-            session: row.session_hash
+            // Only record login-success for admins
+            if(row.global_rank >= 255)
+                ActionLog.record(getIP(req), name, "login-success");
+            
+            res.jsonp({
+                success: true,
+                name: name,
+                session: row.session_hash
+            });
         });
     });
 
@@ -195,7 +206,8 @@ module.exports = function (Server) {
             return;
         }
 
-        if(!Auth.validateName(name)) {
+
+        if(!$util.isValidUserName(name)) {
             ActionLog.record(ip, name, "register-failure", "Invalid name");
             res.jsonp({
                 success: false,
@@ -206,29 +218,21 @@ module.exports = function (Server) {
             return;
         }
 
-        if(Auth.isRegistered(name)) {
-            ActionLog.record(ip, name, "register-failure", "Name taken");
-            res.jsonp({
-                success: false,
-                error: "That username is already taken"
-            });
-            return;
-        }
+        // db.registerUser checks if the name is taken already
+        db.registerUser(name, pw, function (err, session) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
 
-        var session = Auth.register(name, pw);
-        if(!session) {
+            ActionLog.record(ip, name, "register-success");
             res.jsonp({
-                success: false,
-                error: "Registration error.  Contact an administrator "+
-                       "for assistance."
+                success: true,
+                session: session
             });
-            return;
-        }
-
-        ActionLog.record(ip, name, "register-success");
-        res.jsonp({
-            success: true,
-            session: session
         });
     });
 
@@ -248,30 +252,29 @@ module.exports = function (Server) {
             return;
         }
 
-        var row = Auth.login(name, oldpw, "");
-        if(!row) {
-            res.jsonp({
-                success: false,
-                error: "Invalid username/password combination"
-            });
-            return;
-        }
+        db.userLoginPassword(name, oldpw, function (err, row) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
 
-        ActionLog.record(getIP(req), name, "password-change");
-        var success = Auth.setUserPassword(name, newpw);
-        
-        if(!success) {
-            res.jsonp({
-                success: false,
-                error: "Server error.  Please try again or ask an "+
-                       "administrator for assistance."
-            });
-            return;
-        }
+            db.setUserPassword(name, newpw, function (err, row) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        error: err
+                    });
+                    return;
+                }
 
-        res.jsonp({
-            success: true,
-            session: row.session_hash
+                ActionLog.record(getIP(req), name, "password-change");
+                res.jsonp({
+                    success: true
+                });
+            });
         });
     });
 
@@ -393,11 +396,11 @@ module.exports = function (Server) {
     app.post("/api/account/profile", function (req, res) {
         res.type("application/jsonp");
         var name = req.body.name;
-        var pw = req.body.pw;
         var session = req.body.session;
         var img = req.body.profile_image;
         var text = req.body.profile_text;
 
+        db.userLoginSession(name, session, function (err, row) {
         var row = Auth.login(name, pw, session);
         if(!row) {
             res.jsonp({

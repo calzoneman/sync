@@ -682,6 +682,24 @@ Database.prototype.registerUser = function (name, pw, callback) {
         return;
     }
 
+    var postRegister = function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        self.createLoginSession(name, function (err, hash) {
+            if(err) {
+                // Don't confuse people into thinking the registration
+                // failed when it was the session that failed
+                callback(null, "");
+                return;
+            }
+
+            callback(null, hash);
+        });
+    };
+
     self.isUsernameTaken(name, function (err, taken) {
         if(err) {
             callback(err, null);
@@ -702,9 +720,7 @@ Database.prototype.registerUser = function (name, pw, callback) {
             var query = "INSERT INTO registrations VALUES " +
                         "(NULL, ?, ?, 1, '', 0, '', '', '')";
 
-            self.query(query, [name, hash], function (err, res) {
-                callback(err, res);
-            });
+            self.query(query, [name, hash], postRegister);
         });
     });
 };
@@ -839,6 +855,43 @@ Database.prototype.createLoginSession = function (name, callback) {
         }
 
         callback(null, hash);
+    });
+};
+
+Database.prototype.setUserPassword = function (name, pw, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    bcrypt.hash(pw, 10, function (err, hash) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        var query = "UPDATE registrations SET pw=? WHERE uname=?";
+        self.query(query, [hash, name], callback);
+    });
+};
+
+Database.prototype.getGlobalRank = function (name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    var query = "SELECT global_rank FROM registrations WHERE uname=?";
+    self.query(query, function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(res.length == 0) {
+            callback("User does not exist", null);
+            return;
+        }
+
+        callback(null, res[0].global_rank);
     });
 };
 

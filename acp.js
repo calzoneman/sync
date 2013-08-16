@@ -9,8 +9,6 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Auth = require("./auth");
-
 module.exports = function (Server) {
     var db = Server.db;
     var ActionLog = require("./actionlog")(Server);
@@ -68,24 +66,26 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-reset-password", function(data) {
-                if(Auth.getGlobalRank(data.name) >= user.global_rank)
-                    return;
+                db.getGlobalRank(data.name, function (err, rank) {
+                    if(err || rank >= user.global_rank)
+                        return;
 
-                db.genPasswordReset(user.ip, data.name, data.email,
-                                    function (err, hash) {
-                    var pkt = {
-                        success: !err
-                    };
+                    db.genPasswordReset(user.ip, data.name, data.email,
+                                        function (err, hash) {
+                        var pkt = {
+                            success: !err
+                        };
 
-                    if(err) {
-                        pkt.error = err;
-                    } else {
-                        pkt.hash = hash;
-                    }
+                        if(err) {
+                            pkt.error = err;
+                        } else {
+                            pkt.hash = hash;
+                        }
 
-                    user.socket.emit("acp-reset-password", pkt);
-                    ActionLog.record(user.ip, user.name, 
-                                     "acp-reset-password", data.name);
+                        user.socket.emit("acp-reset-password", pkt);
+                        ActionLog.record(user.ip, user.name, 
+                                         "acp-reset-password", data.name);
+                    });
                 });
             });
 
@@ -93,15 +93,17 @@ module.exports = function (Server) {
                 if(data.rank < 1 || data.rank >= user.global_rank)
                     return;
 
-                if(Auth.getGlobalRank(data.name) >= user.global_rank)
-                    return;
+                db.getGlobalRank(data.name, function (err, rank) {
+                    if(err || rank >= user.global_rank)
+                        return;
 
-                db.setGlobalRank(data.name, data.rank, function (err, res) {
-
-                    ActionLog.record(user.ip, user.name, "acp-set-rank",
-                                     data);
-                    if(!err)
-                        user.socket.emit("acp-set-rank", data);
+                    db.setGlobalRank(data.name, data.rank,
+                                     function (err, res) {
+                        ActionLog.record(user.ip, user.name, "acp-set-rank",
+                                         data);
+                        if(!err)
+                            user.socket.emit("acp-set-rank", data);
+                    });
                 });
             });
 
