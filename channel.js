@@ -36,7 +36,6 @@ var Channel = function(name, Server) {
     self.users = [];
     self.afkers = [];
     self.playlist = new Playlist(self);
-    self.library = {};
     self.position = -1;
     self.drinks = 0;
     self.leader = null;
@@ -501,7 +500,6 @@ Channel.prototype.cacheMedia = function(media) {
     if(self.registered) {
         self.server.db.addToLibrary(self.name, media);
     }
-    return false;
 }
 
 Channel.prototype.tryNameBan = function(actor, name) {
@@ -655,34 +653,20 @@ Channel.prototype.tryUnban = function(actor, data) {
 }
 
 Channel.prototype.search = function(query, callback) {
-    // Search youtube
-    if(callback) {
-        if(query.trim() == "") {
-            return;
+    var self = this;
+    self.server.db.searchLibrary(self.name, query, function (err, res) {
+        if(err) {
+            res = [];
         }
-        this.server.infogetter.Getters["ytSearch"](query.split(" "), function(err, vids) {
-            if(!err) {
-                callback(vids);
-            }
+
+        results.sort(function(a, b) {
+            var x = a.title.toLowerCase();
+            var y = b.title.toLowerCase();
+
+            return (x == y) ? 0 : (x < y ? -1 : 1);
         });
-        return;
-    }
-
-    query = query.toLowerCase();
-    var results = [];
-    for(var id in this.library) {
-        if(this.library[id].title.toLowerCase().indexOf(query) != -1) {
-            results.push(this.library[id]);
-        }
-    }
-    results.sort(function(a, b) {
-        var x = a.title.toLowerCase();
-        var y = b.title.toLowerCase();
-
-        return (x == y) ? 0 : (x < y ? -1 : 1);
+        callback(results);
     });
-
-    return results;
 }
 
 /* REGION User interaction */
@@ -870,7 +854,15 @@ Channel.prototype.sendRankStuff = function(user) {
 
 Channel.prototype.sendChannelRanks = function(user) {
     if(Rank.hasPermission(user, "acl")) {
-        user.socket.emit("channelRanks", this.server.db.listChannelRanks(this.name));
+        this.server.db.listChannelRanks(this.name, function (err, res) {
+            if(err) {
+                user.socket.emit("errorMsg", {
+                    msg: "Internal error: " + err
+                });
+                return;
+            }
+            user.socket.emit("channelRanks", res);
+        });
     }
 }
 
@@ -949,50 +941,56 @@ Channel.prototype.broadcastUsercount = function() {
 }
 
 Channel.prototype.broadcastNewUser = function(user) {
-    var aliases = this.server.db.getAliases(user.ip);
-    var chan = this;
-    this.ip_alias[user.ip] = aliases;
-    aliases.forEach(function(alias) {
-        chan.name_alias[alias] = aliases;
-    });
-
-    this.login_hist.unshift({
-        name: user.name,
-        aliases: this.ip_alias[user.ip],
-        time: Date.now()
-    });
-    if(this.login_hist.length > 20)
-        this.login_hist.pop();
-
-    if(user.name.toLowerCase() in this.namebans &&
-        this.namebans[user.name.toLowerCase()] != null) {
-        this.kick(user, "You're banned!");
-        return;
-    }
-    this.sendAll("addUser", {
-        name: user.name,
-        rank: user.rank,
-        leader: this.leader == user,
-        meta: user.meta,
-        profile: user.profile
-    });
-    //this.sendRankStuff(user);
-    if(user.rank > Rank.Guest) {
-        this.saveRank(user);
-    }
-
-    var msg = user.name + " joined (aliases: ";
-    msg += this.ip_alias[user.ip].join(", ") + ")";
-    var pkt = {
-        username: "[server]",
-        msg: msg,
-        msgclass: "server-whisper",
-        time: Date.now()
-    };
-    this.users.forEach(function(u) {
-        if(u.rank >= 2) {
-            u.socket.emit("joinMessage", pkt);
+    var self = this;
+    self.server.db.listAliases(user.ip, function (err, aliases) {
+        if(err) {
+            aliases = [];
         }
+
+        self.ip_alias[user.ip] = aliases;
+        aliases.forEach(function (alias) {
+            chan.name_alias[alias] = aliases;
+        });
+
+        self.login_hist.unshift({
+            name: user.name,
+            aliases: self.ip_alias[user.ip],
+            time: Date.now()
+        });
+
+        if(self.login_hist.length > 20)
+            self.login_hist.pop();
+
+        if(user.name.toLowerCase() in self.namebans &&
+            self.namebans[user.name.toLowerCase()] !== null) {
+            self.kick(user, "You're banned!");
+            return;
+        }
+        self.sendAll("addUser", {
+            name: user.name,
+            rank: user.rank,
+            leader: self.leader == user,
+            meta: user.meta,
+            profile: user.profile
+        });
+
+        if(user.rank > Rank.Guest) {
+            self.saveRank(user);
+        }
+
+        var msg = user.name + " joined (aliases: ";
+        msg += self.ip_alias[user.ip].join(", ") + ")";
+        var pkt = {
+            username: "[server]",
+            msg: msg,
+            msgclass: "server-whisper",
+            time: Date.now()
+        };
+        self.users.forEach(function(u) {
+            if(u.rank >= 2) {
+                u.socket.emit("joinMessage", pkt);
+            }
+        });
     });
 }
 
@@ -1073,13 +1071,6 @@ Channel.prototype.broadcastBanlist = function() {
                 this.users[i].socket.emit("banlist", ents);
             }
         }
-    }
-}
-
-Channel.prototype.broadcastRankTable = function() {
-    var ranks = this.server.db.listChannelRanks(this.name);
-    for(var i = 0; i < this.users.length; i++) {
-        this.sendACL(this.users[i]);
     }
 }
 
@@ -1200,9 +1191,6 @@ Channel.prototype.tryQueue = function(user, data) {
     if(typeof data.id !== "string" && data.id !== false) {
         return;
     }
-    if(typeof data.type !== "string" && !(data.id in this.library)) {
-        return;
-    }
 
     if(data.pos == "next" && !this.hasPermission(user, "playlistnext")) {
         return;
@@ -1224,69 +1212,87 @@ Channel.prototype.tryQueue = function(user, data) {
 }
 
 Channel.prototype.addMedia = function(data, user) {
-    if(data.type === "yp" && !this.hasPermission(user, "playlistaddlist")) {
-        user.socket.emit("queueFail", "You don't have permission to add playlists");
+    var self = this;
+    if(data.type === "yp" && 
+       !self.hasPermission(user, "playlistaddlist")) {
+        user.socket.emit("queueFail", "You don't have permission to add " +
+                         "playlists");
         return;
     }
-    if(data.type === "cu" && !this.hasPermission(user, "playlistaddcustom")) {
-        user.socket.emit("queueFail", "You don't have permission to add cusstom embeds");
+    if(data.type === "cu" &&
+       !self.hasPermission(user, "playlistaddcustom")) {
+        user.socket.emit("queueFail", "You don't have permission to add " +
+                         "custom embeds");
         return;
     }
     data.temp = data.temp || isLive(data.type);
     data.queueby = user ? user.name : "";
-    data.maxlength = this.hasPermission(user, "exceedmaxlength") ? 0 : this.opts.maxlength;
-    var chan = this;
-    if(data.id in this.library) {
-        var m = this.library[data.id].dup();
-        if(data.maxlength && m.seconds > data.maxlength) {
-            user.socket.emit("queueFail", "Media is too long!");
+    data.maxlength = self.hasPermission(user, "exceedmaxlength")
+                   ? 0
+                   : this.opts.maxlength;
+    self.server.db.getLibraryItem(self.name, data.id,
+                                  function (err, item) {
+        if(err) {
+            user.socket.emit("queueFail", "Internal error: " + err);
             return;
         }
 
-        data.media = m;
-        this.playlist.addCachedMedia(data, function (err, item) {
-            if(err) {
-                if(err === true)
-                    err = false;
-                if(user)
-                    user.socket.emit("queueFail", err);
+        if(item !== null) {
+            var m = new Media(item.id, item.title, item.seconds, item.type);
+            if(data.maxlength && m.seconds > data.maxlength) {
+                user.socket.emit("queueFail", "Media is too long!");
                 return;
             }
-            else {
-                chan.logger.log("### " + user.name + " queued " + item.media.title);
-                chan.sendAll("queue", {
-                    item: item.pack(),
-                    after: item.prev ? item.prev.uid : "prepend"
-                });
-                chan.broadcastPlaylistMeta();
-            }
-        });
-        return;
-    }
-    if(isLive(data.type) && !this.hasPermission(user, "playlistaddlive")) {
-        user.socket.emit("queueFail", "You don't have permission to queue livestreams");
-        return;
-    }
 
-    this.playlist.addMedia(data, function(err, item) {
-        if(err) {
-            if(err === true)
-                err = false;
-            if(user)
-                user.socket.emit("queueFail", err);
-            return;
-        }
-        else {
-            chan.logger.log("### " + user.name + " queued " + item.media.title);
-            chan.sendAll("queue", {
-                item: item.pack(),
-                after: item.prev ? item.prev.uid : "prepend"
+            data.media = m;
+            self.playlist.addCachedMedia(data, function (err, item) {
+                if(err) {
+                    if(err === true)
+                        err = false;
+                    if(user)
+                        user.socket.emit("queueFail", err);
+                    return;
+                }
+                else {
+                    chan.logger.log("### " + user.name + " queued " + item.media.title);
+                    chan.sendAll("queue", {
+                        item: item.pack(),
+                        after: item.prev ? item.prev.uid : "prepend"
+                    });
+                    chan.broadcastPlaylistMeta();
+                }
             });
-            chan.broadcastPlaylistMeta();
-            if(!item.temp)
-                chan.cacheMedia(item.media);
+            return;
+        } else {
+            if(isLive(data.type) &&
+               !self.hasPermission(user, "playlistaddlive")) {
+                user.socket.emit("queueFail", "You don't have " +
+                                 "permission to add livestreams");
+                return;
+            }
+            self.playlist.addMedia(data, function(err, item) {
+                if(err) {
+                    if(err === true)
+                        err = false;
+                    if(user)
+                        user.socket.emit("queueFail", err);
+                    return;
+                }
+                else {
+                    chan.logger.log("### " + user.name + " queued " + item.media.title);
+                    chan.sendAll("queue", {
+                        item: item.pack(),
+                        after: item.prev ? item.prev.uid : "prepend"
+                    });
+                    chan.broadcastPlaylistMeta();
+                    if(!item.temp)
+                        chan.cacheMedia(item.media);
+                }
+            });
         }
+
     });
+
 }
 
 Channel.prototype.addMediaList = function(data, user) {
@@ -1315,6 +1321,7 @@ Channel.prototype.addMediaList = function(data, user) {
 }
 
 Channel.prototype.tryQueuePlaylist = function(user, data) {
+    var self = this;
     if(!this.hasPermission(user, "playlistaddlist")) {
         return;
     }
@@ -1328,11 +1335,19 @@ Channel.prototype.tryQueuePlaylist = function(user, data) {
         return;
     }
 
-    var pl = this.server.db.loadUserPlaylist(user.name, data.name);
-    data.list = pl;
-    data.queueby = user.name;
-    data.temp = !this.hasPermission(user, "addnontemp");
-    this.addMediaList(data, user);
+    self.server.db.getUserPlaylist(user.name, data.name,
+                                   function (err, pl) {
+        if(err) {
+            user.socket.emit("errorMsg", {
+                msg: "Playlist load failed: " + err
+            });
+            return;
+        }
+        data.list = pl;
+        data.queueby = user.name;
+        data.temp = !self.hasPermission(user, "addnontemp");
+        self.addMediaList(data, user);
+    });
 }
 
 Channel.prototype.setTemp = function(uid, temp) {
@@ -1394,13 +1409,14 @@ Channel.prototype.tryUncache = function(user, data) {
     if(typeof data.id != "string") {
         return;
     }
-    if(this.server.db.removeFromLibrary(this.name, data.id)) {
-        var msg = data.id;
-        if(data.id in this.library)
-            msg = this.library[data.id];
-        this.logger.log("*** " + user.name + " deleted " + msg + " from library");
-        delete this.library[data.id];
-    }
+    self.server.db.removeFromLibrary(self.name, data.id,
+                                     function (err, res) {
+        if(err)
+            return;
+
+        self.logger.log("*** " + user.name + " deleted " + data.id + 
+                        " from library");
+    });
 }
 
 Channel.prototype.playNext = function() {

@@ -607,6 +607,22 @@ Database.prototype.getLibraryItem = function (channame, id, callback) {
     });
 };
 
+Database.prototype.searchLibrary = function (channame, term, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    if(!$util.isValidChannelName(channame)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var query = "SELECT id, title, seconds, type FROM " +
+                "`chan_" + channame + "_library` WHERE title LIKE %?%";
+
+    self.query(query, [term], callback);
+};
+
 Database.prototype.addChannelBan = function (channame, ip, name, banBy,
                                              callback) {
     var self = this;

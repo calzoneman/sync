@@ -298,19 +298,23 @@ User.prototype.initCallbacks = function() {
     }.bind(this));
 
     this.socket.on("searchMedia", function(data) {
+        var self = this;
         if(this.channel != null) {
             if(data.source == "yt") {
-                var callback = function(vids) {
-                    this.socket.emit("searchResults", {
+                var searchfn = self.server.infogetter.Getters["ytSearch"];
+                searchfn(data.query.split(" "), function (e, vids) {
+                    if(!e) {
+                        self.socket.emit("searchResults", {
+                            results: vids
+                        });
+                    }
+                });
+            } else {
+                self.channel.search(data.query, function (vids) {
+                    self.socket.emit("searchResults", {
                         results: vids
                     });
-                }.bind(this);
-                this.channel.search(data.query, callback);
-            }
-            else {
-                this.socket.emit("searchResults", {
-                    results: this.channel.search(data.query)
-                });
+                }
             }
         }
     }.bind(this));
