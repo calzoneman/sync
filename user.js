@@ -343,29 +343,7 @@ User.prototype.initCallbacks = function() {
         if(this.channel == null) {
             return;
         }
-        if(!this.channel.registered) {
-            this.socket.emit("unregisterChannel", {
-                success: false,
-                error: "This channel is already unregistered"
-            });
-        }
-        else if(this.rank < 10) {
-            this.socket.emit("unregisterChannel", {
-                success: false,
-                error: "You don't have permission to unregister"
-            });
-        }
-        else if(this.channel.unregister()) {
-            this.socket.emit("unregisterChannel", {
-                success: true
-            });
-        }
-        else {
-            this.socket.emit("unregisterChannel", {
-                success: false,
-                error: "Unregistration failed.  Please see a site admin if this continues."
-            });
-        }
+        this.channel.unregister(this);
     }.bind(this));
 
     this.socket.on("setOptions", function(data) {

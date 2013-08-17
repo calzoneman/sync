@@ -24,26 +24,27 @@ var Playlist = require("./playlist");
 var sanitize = require("validator").sanitize;
 
 var Channel = function(name, Server) {
+    var self = this;
     Logger.syslog.log("Opening channel " + name);
-    this.initialized = false;
-    this.server = Server;
+    self.initialized = false;
+    self.server = Server;
 
-    this.name = name;
-    this.canonical_name = name.toLowerCase();
+    self.name = name;
+    self.canonical_name = name.toLowerCase();
     // Initialize defaults
-    this.registered = false;
-    this.users = [];
-    this.afkers = [];
-    this.playlist = new Playlist(this);
-    this.library = {};
-    this.position = -1;
-    this.drinks = 0;
-    this.leader = null;
-    this.chatbuffer = [];
-    this.openqueue = false;
-    this.poll = false;
-    this.voteskip = false;
-    this.permissions = {
+    self.registered = false;
+    self.users = [];
+    self.afkers = [];
+    self.playlist = new Playlist(self);
+    self.library = {};
+    self.position = -1;
+    self.drinks = 0;
+    self.leader = null;
+    self.chatbuffer = [];
+    self.openqueue = false;
+    self.poll = false;
+    self.voteskip = false;
+    self.permissions = {
         oplaylistadd: -1,
         oplaylistnext: 1.5,
         oplaylistmove: 1.5,
@@ -74,11 +75,11 @@ var Channel = function(name, Server) {
         drink: 1.5,
         chat: 0
     };
-    this.opts = {
+    self.opts = {
         allow_voteskip: true,
         voteskip_ratio: 0.5,
         afk_timeout: 180,
-        pagetitle: this.name,
+        pagetitle: self.name,
         maxlength: 0,
         externalcss: "",
         externaljs: "",
@@ -86,42 +87,43 @@ var Channel = function(name, Server) {
         show_public: false,
         enable_link_regex: true
     };
-    this.filters = [
+    self.filters = [
         new Filter("monospace", "`([^`]+)`", "g", "<code>$1</code>"),
         new Filter("bold", "(^|\\s)\\*([^\\*]+)\\*", "g", "$1<strong>$2</strong>"),
         new Filter("italic", "(^| )_([^_]+)_", "g", "$1<em>$2</em>"),
         new Filter("strikethrough", "~~([^~]+)~~", "g", "<s>$1</s>"),
         new Filter("inline spoiler", "\\[spoiler\\](.*)\\[\\/spoiler\\]", "ig", "<span class=\"spoiler\">$1</span>"),
     ];
-    this.motd = {
+    self.motd = {
         motd: "",
         html: ""
     };
-    this.ipbans = {};
-    this.namebans = {};
-    this.ip_alias = {};
-    this.name_alias = {};
-    this.login_hist = [];
-    this.logger = new Logger.Logger("chanlogs/" + this.canonical_name + ".log");
-    this.i = 0;
-    this.time = new Date().getTime();
-    this.plmeta = {
+    self.ipbans = {};
+    self.namebans = {};
+    self.ip_alias = {};
+    self.name_alias = {};
+    self.login_hist = [];
+    self.logger = new Logger.Logger("chanlogs/" + self.canonical_name + ".log");
+    self.i = 0;
+    self.time = new Date().getTime();
+    self.plmeta = {
         count: 0,
         time: "00:00"
     };
 
-    this.css = "";
-    this.js = "";
+    self.css = "";
+    self.js = "";
 
-    this.ipkey = "";
+    self.ipkey = "";
     for(var i = 0; i < 15; i++) {
-        this.ipkey += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[parseInt(Math.random() * 65)]
+        self.ipkey += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[parseInt(Math.random() * 65)]
     }
 
-    Server.db.loadChannel(this);
-    if(this.registered) {
-        this.loadDump();
-    }
+    Server.db.loadChannelData(self, function () {
+        if(self.registered) {
+            self.loadDump();
+        }
+    });
 }
 
 /* REGION Permissions */
@@ -338,18 +340,19 @@ Channel.prototype.tryReadLog = function (user) {
     });
 }
 
-Channel.prototype.tryRegister = function(user) {
-    if(this.registered) {
-        ActionLog.record(user.ip, user.name, "channel-register-failure", [
-            this.name, "Channel already registered"]);
+Channel.prototype.tryRegister = function (user) {
+    var self = this;
+    if(self.registered) {
+        ActionLog.record(user.ip, user.name, "channel-register-failure",
+                         [self.name, "Channel already registered"]);
         user.socket.emit("registerChannel", {
             success: false,
             error: "This channel is already registered"
         });
     }
     else if(!user.loggedIn) {
-        ActionLog.record(user.ip, user.name, "channel-register-failure", [
-            this.name, "Not logged in"]);
+        ActionLog.record(user.ip, user.name, "channel-register-failure",
+                         [self.name, "Not logged in"]);
         user.socket.emit("registerChannel", {
             success: false,
             error: "You must log in to register a channel"
@@ -357,70 +360,135 @@ Channel.prototype.tryRegister = function(user) {
 
     }
     else if(!Rank.hasPermission(user, "registerChannel")) {
-        ActionLog.record(user.ip, user.name, "channel-register-failure", [
-            this.name, "Insufficient permissions"]);
+        ActionLog.record(user.ip, user.name, "channel-register-failure",
+                         [self.name, "Insufficient permissions"]);
         user.socket.emit("registerChannel", {
             success: false,
-            error: "You don't have permission to register this channel"
+            error: "You don't have permission to register self channel"
         });
     }
     else {
-        if(this.server.db.registerChannel(this.name, user.name)) {
-            ActionLog.record(user.ip, user.name, "channel-register-success", this.name);
-            this.registered = true;
-            this.initialized = true;
-            this.saveDump();
-            this.saveRank(user);
+        self.server.db.registerChannel(self.name, user.name,
+                                       function (err, res) {
+            if(err) {
+                user.socket.emit("registerChannel", {
+                    success: false,
+                    error: "Unable to register channel: " + err
+                });
+                return;
+            }
+
+            ActionLog.record(user.ip, user.name, 
+                             "channel-register-success", self.name);
+            self.registered = true;
+            self.initialized = true;
+            self.saveDump();
+            self.saveRank(user);
             user.socket.emit("registerChannel", {
-                success: true,
+                success: true
             });
-            this.logger.log("*** " + user.name + " registered the channel");
-            Logger.syslog.log("Channel " + this.name + " was registered by " + user.name);
-        }
-        else {
-            user.socket.emit("registerChannel", {
+            self.logger.log("*** " + user.name + " registered the channel");
+        });
+    }
+}
+
+Channel.prototype.unregister = function (user) {
+    var self = this;
+
+    if(!self.registered) {
+        user.socket.emit("unregisterChannel", {
+            success: false,
+            error: "This channel is already unregistered"
+        });
+        return;
+    }
+
+    if(user.rank < 10) {
+        user.socket.emit("unregisterChannel", {
+            success: false,
+            error: "You must be the channel owner to unregister it"
+        });
+        return;
+    }
+    self.server.db.dropChannel(self.name, function (err, res) {
+        if(err) {
+            user.socket.emit("unregisterChannel", {
                 success: false,
-                error: "Unable to register channel, see an admin"
+                error: "Unregistration failed: " + err
             });
+            return;
         }
-    }
-}
-
-Channel.prototype.unregister = function() {
-    if(this.server.db.deleteChannel(this.name)) {
-        this.registered = false;
-        return true;
-    }
-    return false;
-}
-
-Channel.prototype.getRank = function(name) {
-    var global = Auth.getGlobalRank(name);
-    if(!this.registered) {
-        return global;
-    }
-    var local = this.server.db.getChannelRank(this.name, name);
-    return local > global ? local : global;
-}
-
-Channel.prototype.saveRank = function(user) {
-    return this.server.db.setChannelRank(this.name, user.name, user.rank);
-}
-
-Channel.prototype.getIPRank = function(ip) {
-    var names = [];
-    if(!(ip in this.ip_alias))
-        this.ip_alias[ip] = this.server.db.getAliases(ip);
-    this.ip_alias[ip].forEach(function(name) {
-        names.push(name);
+        
+        self.registered = false;
+        user.socket.emit("unregisterChannel", { success: true });
     });
+}
 
-    var ranks = this.server.db.getChannelRank(this.name, names);
-    var rank = 0;
-    for(var i = 0; i < ranks.length; i++) {
-        rank = (ranks[i] > rank) ? ranks[i] : rank;
+Channel.prototype.getRank = function (name, callback) {
+    var self = this;
+    self.server.db.getGlobalRank(name, function (err, global) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(!self.registered) {
+            callback(null, global);
+            return;
+        }
+
+        self.server.db.getChannelRank(self.name, name,
+                                      function (err, rank) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            callback(null, rank > global ? rank : global);
+        });
+    });
+}
+
+Channel.prototype.saveRank = function (user) {
+    this.server.db.setChannelRank(this.name, user.name, user.rank);
+}
+
+Channel.prototype.getIPRank = function (ip, callback) {
+    var self = this;
+    var names = [];
+    var next = function (names) {
+        self.server.db.getChannelRank(self.name, names,
+                                      function (err, res) {
+            if(err) {
+                callback(err, null);
+                return;
+            }
+
+            var rank = 0;
+            for(var i in res) {
+                rank = (res[i].rank > rank) ? res[i].rank : rank;
+            }
+            callback(null, rank);
+        });
+    };
+
+    if(ip in self.ip_alias) {
+        names = self.ip_alias[ip];
+        next(names);
+    } else if(ip.match(/^(\d+)\.(\d+)\.(\d+)$/)) {
+        // Range
+        for(var ip2 in self.ip_alias) {
+            if(ip2.indexOf(ip) == 0) {
+                for(var i in self.ip_aliases[ip2])
+                    names.push(self.ip_aliases[ip2][i]);
+        }
+        next(names);
+    } else{
+        self.server.db.listAliases(ip, function (err, names) {
+            self.ip_alias[ip] = names;
+            next(names);
+        });
     }
-    return rank;
 }
 
 Channel.prototype.cacheMedia = function(media) {
@@ -437,35 +505,46 @@ Channel.prototype.cacheMedia = function(media) {
 }
 
 Channel.prototype.tryNameBan = function(actor, name) {
-    if(!this.hasPermission(actor, "ban")) {
+    var self = this;
+    if(!self.hasPermission(actor, "ban")) {
         return false;
     }
 
     name = name.toLowerCase();
 
-    var rank = this.getRank(name);
-    if(rank >= actor.rank) {
-        actor.socket.emit("errorMsg", {msg: "You don't have permission to ban this person."});
-        return false;
-    }
-
-    this.namebans[name] = actor.name;
-    for(var i = 0; i < this.users.length; i++) {
-        if(this.users[i].name.toLowerCase() == name) {
-            this.kick(this.users[i], "You're banned!");
-            break;
+    self.getRank(name, function (err, rank) {
+        if(err) {
+            actor.socket.emit("errorMsg", {
+                msg: "Internal error"
+            });
+            return;
         }
-    }
-    this.logger.log("*** " + actor.name + " namebanned " + name);
-    var chan = this;
-    this.users.forEach(function(u) {
-        chan.sendBanlist(u);
-    });
-    if(!this.registered) {
-        return false;
-    }
 
-    return this.server.db.channelBan(this.name, "*", name, actor.name);
+        if(rank >= actor.rank) {
+            actor.socket.emit("errorMsg", {
+                msg: "You don't have permission to ban this person."
+            });
+            return;
+        }
+
+        self.namebans[name] = actor.name;
+        for(var i = 0; i < self.users.length; i++) {
+            if(self.users[i].name.toLowerCase() == name) {
+                self.kick(self.users[i], "You're banned!");
+                break;
+            }
+        }
+        self.logger.log("*** " + actor.name + " namebanned " + name);
+        self.users.forEach(function(u) {
+            self.sendBanlist(u);
+        });
+
+        if(!self.registered) {
+            return;
+        }
+
+        self.server.db.addChannelBan(self.name, "*", name, actor.name);
+    });
 }
 
 Channel.prototype.unbanName = function(actor, name) {
@@ -485,50 +564,54 @@ Channel.prototype.unbanName = function(actor, name) {
 }
 
 Channel.prototype.tryIPBan = function(actor, name, range) {
-    if(!this.hasPermission(actor, "ban")) {
-        return false;
+    var self = this;
+    if(!self.hasPermission(actor, "ban")) {
+        return;
     }
     if(typeof name != "string") {
-        return false;
+        return;
     }
-    var ips = this.server.db.ipForName(name);
-    var chan = this;
-    ips.forEach(function(ip) {
-        if(chan.getIPRank(ip) >= actor.rank) {
-            actor.socket.emit("errorMsg", {msg: "You don't have permission to ban IP: x.x." + ip.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1")});
-            return false;
-        }
-
-        if(range) {
+    var ips = self.server.db.ipForName(name);
+    ips.forEach(function (ip) {
+        if(range)
             ip = ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3");
-            for(var ip2 in chan.ip_alias) {
-                if(ip2.indexOf(ip) == 0 && chan.getIPRank(ip2) >= actor.rank) {
-                    actor.socket.emit("errorMsg", {msg: "You don't have permission to ban IP: x.x." + ip2.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1")});
-                    return false;
+        self.getIPRank(ip, function (err, rank) {
+            if(err) {
+                actor.socket.emit("errorMsg", {
+                    msg: "Internal error"
+                });
+                return;
+            }
+
+            if(rank >= actor.rank) {
+                actor.socket.emit("errorMsg", {
+                    msg: "You don't have permission to ban IP: x.x." + 
+                         ip.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1")
+                });
+                return;
+            }
+
+            self.ipbans[ip] = [name, actor.name];
+            self.logger.log("*** " + actor.name + " banned " + ip + 
+                            " (" + name + ")");
+
+            for(var i = 0; i < self.users.length; i++) {
+                if(self.users[i].ip.indexOf(ip) == 0) {
+                    self.kick(self.users[i], "Your IP is banned!");
+                    i--;
                 }
             }
-        }
-        chan.ipbans[ip] = [name, actor.name];
-        //chan.broadcastBanlist();
-        chan.logger.log("*** " + actor.name + " banned " + ip + " (" + name + ")");
 
-        for(var i = 0; i < chan.users.length; i++) {
-            if(chan.users[i].ip.indexOf(ip) == 0) {
-                chan.kick(chan.users[i], "Your IP is banned!");
-                i--;
-            }
-        }
+            if(!self.registered)
+                return;
 
-        if(!chan.registered)
-            return false;
-
-        // Update database ban table
-        return chan.server.db.channelBan(chan.name, ip, name, actor.name);
-    });
-
-    var chan = this;
-    this.users.forEach(function(u) {
-        chan.sendBanlist(u);
+            self.server.db.addChannelBan(chan.name, ip, name, actor.name
+                                         function (err, res) {
+                self.users.forEach(function(u) {
+                    self.sendBanlist(u);
+                });
+            });
+        });
     });
 }
 
@@ -1858,6 +1941,7 @@ Channel.prototype.sendMessage = function(username, msg, msgclass, data) {
 /* REGION Rank stuff */
 
 Channel.prototype.trySetRank = function(user, data) {
+    var self = this;
     if(!Rank.hasPermission(user, "promote"))
         return;
 
@@ -1871,9 +1955,9 @@ Channel.prototype.trySetRank = function(user, data) {
         return;
 
     var receiver;
-    for(var i = 0; i < this.users.length; i++) {
-        if(this.users[i].name == data.user) {
-            receiver = this.users[i];
+    for(var i = 0; i < self.users.length; i++) {
+        if(self.users[i].name == data.user) {
+            receiver = self.users[i];
             break;
         }
     }
@@ -1883,94 +1967,24 @@ Channel.prototype.trySetRank = function(user, data) {
             return;
         receiver.rank = data.rank;
         if(receiver.loggedIn) {
-            this.saveRank(receiver);
+            self.saveRank(receiver);
         }
-        this.broadcastUserUpdate(receiver);
+        self.broadcastUserUpdate(receiver);
     }
     else {
-        var rrank = this.getRank(data.user);
-        if(rrank >= user.rank)
-            return;
-        this.server.db.setChannelRank(this.name, data.user, data.rank);
-    }
-
-    this.logger.log("*** " + user.name + " set " + data.user + "'s rank to " +
-                    data.rank);
-    this.sendAllWithPermission("acl", "setChannelRank", data);
-}
-
-Channel.prototype.tryPromoteUser = function(actor, data) {
-    if(!Rank.hasPermission(actor, "promote")) {
-        return;
-    }
-
-    if(data.name == undefined) {
-        return;
-    }
-
-    var name = data.name;
-
-    var receiver;
-    for(var i = 0; i < this.users.length; i++) {
-        if(this.users[i].name == name) {
-            receiver = this.users[i];
-            break;
-        }
-    }
-
-    var rank = receiver ? receiver.rank : this.getRank(data.name);
-
-    if(actor.rank > rank + 1) {
-        rank++;
-        if(receiver) {
-            receiver.rank++;
-            if(receiver.loggedIn) {
-                this.saveRank(receiver);
-            }
-            this.broadcastUserUpdate(receiver);
-        }
-        else {
-            this.server.db.setChannelRank(this.name, data.name, rank);
-        }
-        this.logger.log("*** " + actor.name + " promoted " + data.name + " from " + (rank - 1) + " to " + rank);
-        //this.broadcastRankTable();
-    }
-}
-
-Channel.prototype.tryDemoteUser = function(actor, data) {
-    if(!Rank.hasPermission(actor, "promote")) {
-        return;
-    }
-
-    if(data.name == undefined) {
-        return;
-    }
-
-    var name = data.name;
-    var receiver;
-    for(var i = 0; i < this.users.length; i++) {
-        if(this.users[i].name == name) {
-            receiver = this.users[i];
-            break;
-        }
-    }
-
-    var rank = receiver ? receiver.rank : this.getRank(data.name);
-
-    if(actor.rank > rank) {
-        rank--;
-        if(receiver) {
-            receiver.rank--;
-            if(receiver.loggedIn) {
-                this.saveRank(receiver);
-            }
-            this.broadcastUserUpdate(receiver);
-        }
-        else {
-            this.server.db.setChannelRank(this.name, data.name, rank);
-        }
-        this.logger.log("*** " + actor.name + " demoted " + data.name + " from " + (rank + 1) + " to " + rank);
-        //this.broadcastRankTable();
+        self.getRank(data.user, function (err, rrank) {
+            if(err)
+                return;
+            if(rrank >= user.rank)
+                return;
+            self.server.db.setChannelRank(this.name, data.user,
+                                          data.rank, function (err, res) {
+            
+                self.logger.log("*** " + user.name + " set " + 
+                                data.user + "'s rank to " + data.rank);
+                self.sendAllWithPermission("acl", "setChannelRank", data);
+            });
+        });
     }
 }
 
