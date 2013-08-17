@@ -492,14 +492,14 @@ Channel.prototype.getIPRank = function (ip, callback) {
 }
 
 Channel.prototype.cacheMedia = function(media) {
+    var self = this;
     // Prevent the copy in the playlist from messing with this one
     media = media.dup();
     if(media.temp) {
         return;
     }
-    this.library[media.id] = media;
-    if(this.registered) {
-        return this.server.db.addToLibrary(this.name, media);
+    if(self.registered) {
+        self.server.db.addToLibrary(self.name, media);
     }
     return false;
 }
@@ -548,19 +548,21 @@ Channel.prototype.tryNameBan = function(actor, name) {
 }
 
 Channel.prototype.unbanName = function(actor, name) {
-    if(!this.hasPermission(actor, "ban")) {
+    var self = this;
+    if(!self.hasPermission(actor, "ban")) {
         return false;
     }
 
-    this.namebans[name] = null;
-    delete this.namebans[name];
-    this.logger.log("*** " + actor.name + " un-namebanned " + name);
+    self.namebans[name] = null;
+    delete self.namebans[name];
+    self.logger.log("*** " + actor.name + " un-namebanned " + name);
 
-    var chan = this;
-    this.users.forEach(function(u) {
-        chan.sendBanlist(u);
+    self.server.db.clearChannelNameBan(self.name, name, function (err, res) {
+
+        self.users.forEach(function(u) {
+            self.sendBanlist(u);
+        });
     });
-    return this.server.db.channelUnbanName(this.name, name);
 }
 
 Channel.prototype.tryIPBan = function(actor, name, range) {
@@ -571,89 +573,75 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
     if(typeof name != "string") {
         return;
     }
-    var ips = self.server.db.ipForName(name);
-    ips.forEach(function (ip) {
-        if(range)
-            ip = ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3");
-        self.getIPRank(ip, function (err, rank) {
-            if(err) {
-                actor.socket.emit("errorMsg", {
-                    msg: "Internal error"
-                });
-                return;
-            }
-
-            if(rank >= actor.rank) {
-                actor.socket.emit("errorMsg", {
-                    msg: "You don't have permission to ban IP: x.x." + 
-                         ip.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1")
-                });
-                return;
-            }
-
-            self.ipbans[ip] = [name, actor.name];
-            self.logger.log("*** " + actor.name + " banned " + ip + 
-                            " (" + name + ")");
-
-            for(var i = 0; i < self.users.length; i++) {
-                if(self.users[i].ip.indexOf(ip) == 0) {
-                    self.kick(self.users[i], "Your IP is banned!");
-                    i--;
+    self.server.db.listIPsForName(name, function (err, ips) {
+        if(err) {
+            actor.socket.emit("errorMsg", {
+                msg: "Internal error"
+            });
+            return;
+        }
+        ips.forEach(function (ip) {
+            if(range)
+                ip = ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.$3");
+            self.getIPRank(ip, function (err, rank) {
+                if(err) {
+                    actor.socket.emit("errorMsg", {
+                        msg: "Internal error"
+                    });
+                    return;
                 }
-            }
 
-            if(!self.registered)
-                return;
+                if(rank >= actor.rank) {
+                    actor.socket.emit("errorMsg", {
+                        msg: "You don't have permission to ban IP: x.x." + 
+                             ip.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1")
+                    });
+                    return;
+                }
 
-            self.server.db.addChannelBan(chan.name, ip, name, actor.name
-                                         function (err, res) {
-                self.users.forEach(function(u) {
-                    self.sendBanlist(u);
+                self.ipbans[ip] = [name, actor.name];
+                self.logger.log("*** " + actor.name + " banned " + ip + 
+                                " (" + name + ")");
+
+                for(var i = 0; i < self.users.length; i++) {
+                    if(self.users[i].ip.indexOf(ip) == 0) {
+                        self.kick(self.users[i], "Your IP is banned!");
+                        i--;
+                    }
+                }
+
+                if(!self.registered)
+                    return;
+
+                self.server.db.addChannelBan(chan.name, ip, name,
+                                             actor.name,
+                                             function (err, res) {
+                    self.users.forEach(function(u) {
+                        self.sendBanlist(u);
+                    });
                 });
             });
         });
     });
 }
 
-Channel.prototype.banIP = function(actor, receiver) {
-    if(!this.hasPermission(actor, "ban"))
-        return false;
-
-    this.ipbans[receiver.ip] = [receiver.name, actor.name];
-    try {
-        receiver.socket.disconnect(true);
-    }
-    catch(e) {
-        // Socket already disconnected
-    }
-    //this.broadcastBanlist();
-    this.logger.log(receiver.ip + " (" + receiver.name + ") was banned by " + actor.name);
-
-    if(!this.registered)
-        return false;
-
-    // Update database ban table
-    return this.server.db.channelBanIP(this.name, receiver.ip, receiver.name, actor.name);
-}
-
 Channel.prototype.unbanIP = function(actor, ip) {
-    if(!this.hasPermission(actor, "ban"))
+    var self = this;
+    if(!self.hasPermission(actor, "ban"))
         return false;
 
-    this.ipbans[ip] = null;
-    var chan = this;
-    this.users.forEach(function(u) {
-        chan.sendBanlist(u);
+    self.ipbans[ip] = null;
+    self.users.forEach(function(u) {
+        self.sendBanlist(u);
     });
 
-    this.logger.log("*** " + actor.name + " unbanned " + ip);
+    self.logger.log("*** " + actor.name + " unbanned " + ip);
 
-    if(!this.registered)
+    if(!self.registered)
         return false;
 
-    //this.broadcastBanlist();
     // Update database ban table
-    return this.server.db.channelUnbanIP(this.name, ip);
+    self.server.db.clearChannelIPBan(self.name, ip);
 }
 
 Channel.prototype.tryUnban = function(actor, data) {
