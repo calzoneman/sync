@@ -13,7 +13,7 @@ var Logger = require("./logger");
 var fs = require("fs");
 
 module.exports = function (Server) {
-    var ActionLog = require("./actionlog")(Server);
+    var ActionLog = Server.actionlog;
     function getIP(req) {
         var raw = req.connection.remoteAddress;
         var forward = req.header("x-forwarded-for");

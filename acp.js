@@ -11,7 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 module.exports = function (Server) {
     var db = Server.db;
-    var ActionLog = require("./actionlog")(Server);
+    var ActionLog = Server.actionlog;
     return {
         init: function(user) {
             ActionLog.record(user.ip, user.name, "acp-init");

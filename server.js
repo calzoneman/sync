@@ -73,6 +73,7 @@ var Server = {
     ips: {},
     acp: null,
     httpaccess: null,
+    actionlog: null,
     logHTTP: function (req, status) {
         if(status === undefined)
             status = 200;
@@ -88,6 +89,7 @@ var Server = {
         this.httpaccess.log([ipstr, req.method, url, status, req.headers["user-agent"]].join(" "));
     },
     init: function () {
+        this.actionlog = require("./actionlog")(this);
         this.httpaccess = new Logger.Logger("httpaccess.log");
         this.app = express();
         this.app.use(express.bodyParser());
@@ -169,14 +171,15 @@ var Server = {
         this.io.sockets.on("connection", function (socket) {
             var ip = getSocketIP(socket);
             socket._ip = ip;
-            if(this.db.checkGlobalBan(ip)) {
-                Logger.syslog.log("Disconnecting " + ip + " - gbanned");
-                socket.emit("kick", {
-                    reason: "You're globally banned."
-                });
-                socket.disconnect(true);
-                return;
-            }
+            this.db.isGlobalIPBanned(ip, function (err, bant) {
+                if(bant) {
+                    Logger.syslog.log("Disconnecting " + ip + " - gbanned");
+                    socket.emit("kick", {
+                        reason: "You're globally banned."
+                    });
+                    socket.disconnect(true);
+                }
+            });
 
             socket.on("disconnect", function () {
                 this.ips[ip]--;
@@ -200,8 +203,8 @@ var Server = {
         }.bind(this));
 
         // init database
-        this.db = require("./database");
-        this.db.setup(Server.cfg);
+        var Database = require("./database");
+        this.db = new Database(this.cfg);
         this.db.init();
 
         // init ACP

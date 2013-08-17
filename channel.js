@@ -18,7 +18,6 @@ var Logger = require("./logger.js");
 var Rank = require("./rank.js");
 var ChatCommand = require("./chatcommand.js");
 var Filter = require("./filter.js").Filter;
-var ActionLog = require("./actionlog");
 var Playlist = require("./playlist");
 var sanitize = require("validator").sanitize;
 
@@ -341,7 +340,7 @@ Channel.prototype.tryReadLog = function (user) {
 Channel.prototype.tryRegister = function (user) {
     var self = this;
     if(self.registered) {
-        ActionLog.record(user.ip, user.name, "channel-register-failure",
+        self.server.actionlog.record(user.ip, user.name, "channel-register-failure",
                          [self.name, "Channel already registered"]);
         user.socket.emit("registerChannel", {
             success: false,
@@ -349,7 +348,7 @@ Channel.prototype.tryRegister = function (user) {
         });
     }
     else if(!user.loggedIn) {
-        ActionLog.record(user.ip, user.name, "channel-register-failure",
+        self.server.actionlog.record(user.ip, user.name, "channel-register-failure",
                          [self.name, "Not logged in"]);
         user.socket.emit("registerChannel", {
             success: false,
@@ -358,7 +357,7 @@ Channel.prototype.tryRegister = function (user) {
 
     }
     else if(!Rank.hasPermission(user, "registerChannel")) {
-        ActionLog.record(user.ip, user.name, "channel-register-failure",
+        self.server.actionlog.record(user.ip, user.name, "channel-register-failure",
                          [self.name, "Insufficient permissions"]);
         user.socket.emit("registerChannel", {
             success: false,
@@ -376,7 +375,7 @@ Channel.prototype.tryRegister = function (user) {
                 return;
             }
 
-            ActionLog.record(user.ip, user.name, 
+            self.server.actionlog.record(user.ip, user.name, 
                              "channel-register-success", self.name);
             self.registered = true;
             self.initialized = true;

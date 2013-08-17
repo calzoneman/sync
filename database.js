@@ -1353,6 +1353,25 @@ Database.prototype.listActions = function (types, callback) {
 
 /* REGION stats */
 
+Database.prototype.addStatPoint = function (time, ucount, ccount, mem,
+                                            callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "INSERT INTO stats VALUES (?, ?, ?, ?)";
+    self.query(query, [time, ucount, ccount, mem], callback);
+};
+
+Database.prototype.pruneStats = function (before, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        callback = blackHole;
+
+    var query = "DELETE FROM stats WHERE time < ?";
+    self.query(query, [before], callback);
+};
+
 Database.prototype.listStats = function (callback) {
     var self = this;
     if(typeof callback !== "function")

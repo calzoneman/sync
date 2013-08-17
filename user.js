@@ -10,11 +10,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 */
 
 var Rank = require("./rank.js");
-var Auth = require("./auth.js");
 var Channel = require("./channel.js").Channel;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
-var ActionLog = require("./actionlog");
+var self.server.actionlog = require("./actionlog");
 
 // Represents a client connected via socket.io
 var User = function(socket, Server) {
@@ -605,7 +604,7 @@ User.prototype.login = function(name, pw, session) {
     } else {
         self.server.db.userLogin(name, pw, session, function (err, row) {
             if(err) {
-                ActionLog.record(self.ip, self.name, "login-failure");
+                self.server.actionlog.record(self.ip, self.name, "login-failure");
                 self.socket.emit("login", {
                     success: false,
                     error: err
@@ -620,7 +619,7 @@ User.prototype.login = function(name, pw, session) {
                 }
             }
             if(self.global_rank >= 255)
-                ActionLog.record(self.ip, name, "login-success");
+                self.server.actionlog.record(self.ip, name, "login-success");
             self.loggedIn = true;
             self.socket.emit("login", {
                 success: true,
