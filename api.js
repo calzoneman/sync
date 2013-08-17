@@ -514,7 +514,7 @@ module.exports = function (Server) {
                 return;
             }
 
-            db.listUserChannels(name, function (err, res) {
+            db.listUserChannels(name, function (err, dbres) {
                 if(err) {
                     res.jsonp({
                         success: false,
@@ -525,7 +525,7 @@ module.exports = function (Server) {
 
                 res.jsonp({
                     success: true,
-                    channels: res
+                    channels: dbres
                 });
             });
         });

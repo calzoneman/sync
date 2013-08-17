@@ -13,7 +13,6 @@ var Rank = require("./rank.js");
 var Channel = require("./channel.js").Channel;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
-var self.server.actionlog = require("./actionlog");
 
 // Represents a client connected via socket.io
 var User = function(socket, Server) {
@@ -313,7 +312,7 @@ User.prototype.initCallbacks = function() {
                     self.socket.emit("searchResults", {
                         results: vids
                     });
-                }
+                });
             }
         }
     }.bind(this));
@@ -600,7 +599,7 @@ User.prototype.login = function(name, pw, session) {
                 self.channel.logger.log(self.ip + " signed in as " + name);
                 self.channel.broadcastNewUser(self);
             }
-        }
+        });
     } else {
         self.server.db.userLogin(name, pw, session, function (err, row) {
             if(err) {

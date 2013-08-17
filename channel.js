@@ -478,9 +478,10 @@ Channel.prototype.getIPRank = function (ip, callback) {
             if(ip2.indexOf(ip) == 0) {
                 for(var i in self.ip_aliases[ip2])
                     names.push(self.ip_aliases[ip2][i]);
+            }
         }
         next(names);
-    } else{
+    } else {
         self.server.db.listAliases(ip, function (err, names) {
             self.ip_alias[ip] = names;
             next(names);

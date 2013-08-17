@@ -24,6 +24,7 @@ var Database = function (cfg) {
     this.pool.getConnection(function (err, conn) {
         if(err) {
             Logger.errlog.log("! DB connection failed");
+            return;
         }
         conn.end();
     });
@@ -45,7 +46,6 @@ Database.prototype.query = function (query, sub, callback) {
     self.pool.getConnection(function (err, conn) {
         if(err) {
             callback("Database failure", null);
-            conn.end();
         } else {
             function cback(err, res) {
                 if(err) {
@@ -217,7 +217,7 @@ Database.prototype.init = function () {
     });
 
     // Refresh global IP bans
-    self.getGlobalIPBans();
+    self.listGlobalIPBans();
 };
 
 /* REGION global bans */

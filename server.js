@@ -89,6 +89,10 @@ var Server = {
         this.httpaccess.log([ipstr, req.method, url, status, req.headers["user-agent"]].join(" "));
     },
     init: function () {
+        // init database
+        var Database = require("./database");
+        this.db = new Database(this.cfg);
+        this.db.init();
         this.actionlog = require("./actionlog")(this);
         this.httpaccess = new Logger.Logger("httpaccess.log");
         this.app = express();
@@ -202,10 +206,6 @@ var Server = {
             new User(socket, this);
         }.bind(this));
 
-        // init database
-        var Database = require("./database");
-        this.db = new Database(this.cfg);
-        this.db.init();
 
         // init ACP
         this.acp = require("./acp")(this);
