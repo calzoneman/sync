@@ -49,12 +49,7 @@ function save(cfg, file) {
         if(k !== "nodemailer" && k !== "loaded")
             x[k] = cfg[k];
     }
-    fs.writeFile(file, JSON.stringify(x, null, 4), function (err) {
-        if(err) {
-            Logger.errlog.log("Failed to save config");
-            Logger.errlog.log(err);
-        }
-    });
+    fs.writeFileSync(file, JSON.stringify(x, null, 4));
 }
 
 exports.load = function (Server, file, callback) {
