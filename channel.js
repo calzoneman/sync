@@ -16,7 +16,6 @@ var Media = require("./media.js").Media;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
 var Rank = require("./rank.js");
-var Auth = require("./auth.js");
 var ChatCommand = require("./chatcommand.js");
 var Filter = require("./filter.js").Filter;
 var ActionLog = require("./actionlog");
