@@ -1376,6 +1376,7 @@ Channel.prototype.tryDequeue = function(user, data) {
 }
 
 Channel.prototype.tryUncache = function(user, data) {
+    var self = this;
     if(!Rank.hasPermission(user, "uncache")) {
         return;
     }
