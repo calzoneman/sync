@@ -119,6 +119,14 @@ var Channel = function(name, Server) {
 
     Server.db.loadChannelData(self, function () {
         self.dbloaded = true;
+        // If the channel is empty and isn't registered, the first person
+        // gets ownership of the channel (temporarily)
+        if(self.users.length == 1 && !self.registered) {
+            var user = self.users[0];
+            user.rank = (user.rank < Rank.Owner) ? 10 : user.rank;
+            self.broadcastUserUpdate(user);
+            user.socket.emit("channelNotRegistered");
+        }
         if(self.registered) {
             self.loadDump();
         }
@@ -449,6 +457,8 @@ Channel.prototype.getRank = function (name, callback) {
 }
 
 Channel.prototype.saveRank = function (user) {
+    if(!this.registered)
+        return;
     this.server.db.setChannelRank(this.name, user.name, user.rank);
 }
 
@@ -854,7 +864,7 @@ Channel.prototype.sendRankStuff = function(user) {
 }
 
 Channel.prototype.sendChannelRanks = function(user) {
-    if(Rank.hasPermission(user, "acl")) {
+    if(Rank.hasPermission(user, "acl") && this.registered) {
         this.server.db.listChannelRanks(this.name, function (err, res) {
             if(err) {
                 user.socket.emit("errorMsg", {
@@ -1975,8 +1985,7 @@ Channel.prototype.trySetRank = function(user, data) {
             self.saveRank(receiver);
         }
         self.broadcastUserUpdate(receiver);
-    }
-    else {
+    } else if(self.registered) {
         self.getRank(data.user, function (err, rrank) {
             if(err)
                 return;
