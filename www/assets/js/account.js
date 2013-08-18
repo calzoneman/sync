@@ -9,6 +9,31 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+    So, it turns out that $.post causes Firefox to use a GET request
+    on cross-site requests.  What the hell?  I'd understand if they just
+    made it error instead, but why give me chicken tenders if I ordered a
+    cheeseburger and act like everything's peachy?
+*/
+function postJSON(url, data, callback) {
+    $.ajax(url, {
+        method: "POST",
+        crossDomain: true,
+        data: data,
+        success: function (data) {
+            try {
+                data = data.substring(data.indexOf("{"));
+                data = data.substring(0, data.lastIndexOf("}") + 1);
+                data = JSON.parse(data);
+                callback(data);
+            } catch(e) {
+                return;
+            }
+        },
+        dataType: "text"
+    });
+}
+
 var uname = readCookie("cytube_uname") || "";
 var session = readCookie("cytube_session") || "";
 var loggedin = false;
@@ -18,7 +43,7 @@ if(uname && session) {
         name: uname,
         session: session
     };
-    $.post(WEB_URL + "/api/login?callback=?", data, function (data) {
+    postJSON(WEB_URL + "/api/login?callback=?", data, function (data) {
         if(data.success)
             onLogin();
     }, "jsonp");
@@ -141,7 +166,7 @@ $("#registerbtn").click(function() {
         pw: pw
     };
     
-    $.post(WEB_URL + "/api/register?callback=?", data, function (data) {
+    postJSON(WEB_URL + "/api/register?callback=?", data, function (data) {
         if(data.success) {
             uname = name;
             session = data.session;
@@ -176,7 +201,8 @@ $("#loginbtn").click(function() {
         name: uname,
         pw: $("#loginpw").val()
     };
-    $.post(WEB_URL+"/api/login?callback=?", data, function(data) {
+
+    postJSON(WEB_URL+"/api/login?callback=?", data, function(data) {
         if(data.success) {
             session = data.session;
             onLogin();
@@ -238,7 +264,7 @@ $("#cpwbtn").click(function() {
         oldpw: oldpw,
         newpw: newpw
     };
-    $.post(WEB_URL + "/api/account/passwordchange?callback=?", data,
+    postJSON(WEB_URL + "/api/account/passwordchange?callback=?", data,
         function (data) {
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
@@ -291,7 +317,7 @@ $("#cebtn").click(function() {
         pw: pw,
         email: email
     };
-    $.post(WEB_URL + "/api/account/email?callback=?", data,
+    postJSON(WEB_URL + "/api/account/email?callback=?", data,
         function (data) {
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
@@ -321,7 +347,7 @@ $("#rpbtn").click(function() {
         name: name,
         email: email
     };
-    $.post(WEB_URL + "/api/account/passwordreset?callback=?", data,
+    postJSON(WEB_URL + "/api/account/passwordreset?callback=?", data,
         function (data) {
         $("#rpbtn").text("Send Reset");
         if(data.success) {
@@ -350,7 +376,7 @@ $("#profilesave").click(function() {
         profile_text: text
     };
 
-    $.post(WEB_URL+"/api/account/profile?callback=?", data,
+    postJSON(WEB_URL+"/api/account/profile?callback=?", data,
         function (data) {
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
