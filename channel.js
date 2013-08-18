@@ -1982,7 +1982,7 @@ Channel.prototype.trySetRank = function(user, data) {
                 return;
             if(rrank >= user.rank)
                 return;
-            self.server.db.setChannelRank(this.name, data.user,
+            self.server.db.setChannelRank(self.name, data.user,
                                           data.rank, function (err, res) {
             
                 self.logger.log("*** " + user.name + " set " + 
