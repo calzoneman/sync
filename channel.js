@@ -612,7 +612,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
                 if(!self.registered)
                     return;
 
-                self.server.db.addChannelBan(chan.name, ip, name,
+                self.server.db.addChannelBan(self.name, ip, name,
                                              actor.name,
                                              function (err, res) {
                     self.users.forEach(function(u) {

@@ -553,7 +553,7 @@ Database.prototype.addToLibrary = function (channame, media, callback) {
         return;
     }
 
-    var query = "INSERT INTO `chan_" + channame + "_ranks`" +
+    var query = "INSERT INTO `chan_" + channame + "_library` " +
                 "(id, title, seconds, type) " +
                 "VALUES (?, ?, ?, ?)";
     var params = [
