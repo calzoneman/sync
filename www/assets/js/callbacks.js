@@ -74,6 +74,33 @@ Callbacks = {
         alert(data.msg);
     },
 
+    costanza: function (data) {
+        hidePlayer();
+        $("#costanza-modal").modal("hide");
+        var modal = $("<div/>").addClass("modal hide fade")
+            .attr("id", "costanza-modal")
+            .appendTo($("body"));
+
+
+        var body = $("<div/>").addClass("modal-body").appendTo(modal);
+        $("<button/>").addClass("close")
+            .attr("data-dismiss", "modal")
+            .attr("data-hidden", "true")
+            .html("&times;")
+            .appendTo(body);
+        $("<img/>").attr("src", "http://i0.kym-cdn.com/entries/icons/original/000/005/498/1300044776986.jpg")
+            .appendTo(body);
+
+        $("<strong/>").text(data.msg).appendTo(body);
+
+        modal.on("hidden", function () {
+            modal.remove();
+            unhidePlayer();
+        });
+
+        modal.modal();
+    },
+
     announcement: function(data) {
         $("#announcements").html("");
         makeAlert(data.title, data.text)

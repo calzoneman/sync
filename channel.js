@@ -508,6 +508,12 @@ Channel.prototype.tryNameBan = function(actor, name) {
     }
 
     name = name.toLowerCase();
+    if(name == actor.name.toLowerCase()) {
+        actor.socket.emit("costanza", {
+            msg: "Trying to ban yourself?"
+        });
+        return;
+    }
 
     self.getRank(name, function (err, rank) {
         if(err) {
@@ -568,6 +574,13 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
         return;
     }
     if(typeof name != "string") {
+        return;
+    }
+    name = name.toLowerCase();
+    if(name == actor.name.toLowerCase()) {
+        actor.socket.emit("costanza", {
+            msg: "Trying to ban yourself?"
+        });
         return;
     }
     self.server.db.listIPsForName(name, function (err, ips) {
