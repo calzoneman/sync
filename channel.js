@@ -25,6 +25,7 @@ var Channel = function(name, Server) {
     var self = this;
     Logger.syslog.log("Opening channel " + name);
     self.initialized = false;
+    self.dbloaded = false;
     self.server = Server;
 
     self.name = name;
@@ -117,6 +118,7 @@ var Channel = function(name, Server) {
     }
 
     Server.db.loadChannelData(self, function () {
+        self.dbloaded = true;
         if(self.registered) {
             self.loadDump();
         }
@@ -658,13 +660,13 @@ Channel.prototype.search = function(query, callback) {
             res = [];
         }
 
-        results.sort(function(a, b) {
+        res.sort(function(a, b) {
             var x = a.title.toLowerCase();
             var y = b.title.toLowerCase();
 
             return (x == y) ? 0 : (x < y ? -1 : 1);
         });
-        callback(results);
+        callback(res);
     });
 }
 
@@ -700,7 +702,7 @@ Channel.prototype.userJoin = function(user) {
 
     // If the channel is empty and isn't registered, the first person
     // gets ownership of the channel (temporarily)
-    if(this.users.length == 0 && !this.registered) {
+    if(this.dbloaded && this.users.length == 0 && !this.registered) {
         user.rank = (user.rank < Rank.Owner) ? 10 : user.rank;
         user.socket.emit("channelNotRegistered");
     }
@@ -948,7 +950,7 @@ Channel.prototype.broadcastNewUser = function(user) {
 
         self.ip_alias[user.ip] = aliases;
         aliases.forEach(function (alias) {
-            chan.name_alias[alias] = aliases;
+            self.name_alias[alias] = aliases;
         });
 
         self.login_hist.unshift({

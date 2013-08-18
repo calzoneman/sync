@@ -141,6 +141,7 @@ module.exports = function (Server) {
     /* login */
     app.post("/api/login", function (req, res) {
         res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
         var pw = req.body.pw;
         var session = req.body.session;
@@ -567,8 +568,6 @@ module.exports = function (Server) {
                 
                 res.jsonp(actions);
             });
-            var actions = ActionLog.readLog(types);
-            res.jsonp(actions);
         });
     });
 

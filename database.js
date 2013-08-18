@@ -10,7 +10,8 @@ var Database = function (cfg) {
         host: cfg["mysql-server"],
         user: cfg["mysql-user"],
         password: cfg["mysql-pw"],
-        database: cfg["mysql-db"]
+        database: cfg["mysql-db"],
+        multipleStatements: true
     });
 
     // Test the connection
@@ -43,6 +44,7 @@ Database.prototype.query = function (query, sub, callback) {
             function cback(err, res) {
                 if(err) {
                     if(self.cfg["debug"]) {
+                        console.log(query);
                         console.log(err);
                     }
                     callback("Database failure", null);
@@ -52,9 +54,9 @@ Database.prototype.query = function (query, sub, callback) {
                 conn.end();
             }
 
-            if(sub)
+            if(sub) {
                 conn.query(query, sub, cback);
-            else {
+            } else {
                 conn.query(query, cback);
             }
         }
@@ -296,11 +298,11 @@ Database.prototype.searchChannel = function (field, value, callback) {
 
     var query = "SELECT * FROM channels WHERE ";
     if(field === "owner")
-        query += "owner LIKE %?%";
+        query += "owner LIKE ?";
     else if(field === "name")
-        query += "name LIKE %?%";
+        query += "name LIKE ?";
 
-    self.query(query, [value], callback);
+    self.query(query, ["%" + value + "%"], callback);
 };
 
 Database.prototype.channelExists = function (name, callback) {
@@ -611,9 +613,9 @@ Database.prototype.searchLibrary = function (channame, term, callback) {
     }
 
     var query = "SELECT id, title, seconds, type FROM " +
-                "`chan_" + channame + "_library` WHERE title LIKE %?%";
+                "`chan_" + channame + "_library` WHERE title LIKE ?";
 
-    self.query(query, [term], callback);
+    self.query(query, ["%" + term + "%"], callback);
 };
 
 Database.prototype.addChannelBan = function (channame, ip, name, banBy,
@@ -889,7 +891,7 @@ Database.prototype.getGlobalRank = function (name, callback) {
         return;
 
     var query = "SELECT global_rank FROM registrations WHERE uname=?";
-    self.query(query, function (err, res) {
+    self.query(query, [name], function (err, res) {
         if(err) {
             callback(err, null);
             return;
@@ -917,9 +919,9 @@ Database.prototype.searchUser = function (name, callback) {
     // the user's password hash
     var query = "SELECT id, uname, global_rank, profile_image, " +
                 "profile_text, email FROM registrations WHERE " +
-                "uname LIKE %?%";
+                "uname LIKE ?";
 
-    self.query(query, [name], callback);
+    self.query(query, ["%" + name + "%"], callback);
 };
 
 /* rank */
@@ -1221,7 +1223,7 @@ Database.prototype.listAliases = function (ip, callback) {
         if(!err) {
             names = [];
             res.forEach(function (row) {
-                names.append(row.name);
+                names.push(row.name);
             });
         }
 
@@ -1338,7 +1340,7 @@ Database.prototype.listActions = function (types, callback) {
         list.push("?");
 
     var actionlist = "(" + list.join(",") + ")";
-    var query = "SELECT * FROM actionlog WHERE action IN " + actiontypes;
+    var query = "SELECT * FROM actionlog WHERE action IN " + actionlist;
     self.query(query, types, callback);
 };
 
