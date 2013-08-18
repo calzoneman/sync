@@ -20,6 +20,7 @@ var ChatCommand = require("./chatcommand.js");
 var Filter = require("./filter.js").Filter;
 var Playlist = require("./playlist");
 var sanitize = require("validator").sanitize;
+var $util = require("./utilities");
 
 var Channel = function(name, Server) {
     var self = this;
@@ -307,8 +308,11 @@ Channel.prototype.readLog = function (filterIp, callback) {
         rs.on("end", function () {
             if(filterIp) {
                 buffer = buffer.replace(
-                    /(\d{1,3}\.){2}(\d{1,3})\.(\d{1,3})/g,
-                    "x.x.$2.$3"
+                    /\d+\.\d+\.(\d+\.\d+)/,
+                    "x.x.$1"
+                ).replace(
+                    /\d+\.\d+\.(\d+)/,
+                    "x.x.$1.*"
                 );
             }
 
@@ -456,10 +460,9 @@ Channel.prototype.saveRank = function (user, callback) {
 
 Channel.prototype.getIPRank = function (ip, callback) {
     var self = this;
-    var names = [];
-    var next = function (names) {
-        self.server.db.getChannelRank(self.name, names,
-                                      function (err, res) {
+    self.server.db.listAliases(ip, function (err, names) {
+        self.server.db.listChannelUserRanks(self.name, names,
+                                        function (err, res) {
             if(err) {
                 callback(err, null);
                 return;
@@ -467,30 +470,23 @@ Channel.prototype.getIPRank = function (ip, callback) {
 
             var rank = 0;
             for(var i in res) {
-                rank = (res[i].rank > rank) ? res[i].rank : rank;
+                rank = (res[i] > rank) ? res[i] : rank;
             }
-            callback(null, rank);
-        });
-    };
 
-    if(ip in self.ip_alias) {
-        names = self.ip_alias[ip];
-        next(names);
-    } else if(ip.match(/^(\d+)\.(\d+)\.(\d+)$/)) {
-        // Range
-        for(var ip2 in self.ip_alias) {
-            if(ip2.indexOf(ip) == 0) {
-                for(var i in self.ip_aliases[ip2])
-                    names.push(self.ip_aliases[ip2][i]);
-            }
-        }
-        next(names);
-    } else {
-        self.server.db.listAliases(ip, function (err, names) {
-            self.ip_alias[ip] = names;
-            next(names);
+            self.server.db.listGlobalRanks(names, function (err, res) {
+                if(err) {
+                    callback(err, null);
+                    return;
+                }
+
+                for(var i in res) {
+                    rank = (res[i] > rank) ? res[i] : rank;
+                }
+
+                callback(null, rank);
+            });
         });
-    }
+    });
 }
 
 Channel.prototype.cacheMedia = function(media) {
@@ -516,7 +512,7 @@ Channel.prototype.tryNameBan = function(actor, name) {
     self.getRank(name, function (err, rank) {
         if(err) {
             actor.socket.emit("errorMsg", {
-                msg: "Internal error"
+                msg: "Internal error " + err
             });
             return;
         }
@@ -577,7 +573,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
     self.server.db.listIPsForName(name, function (err, ips) {
         if(err) {
             actor.socket.emit("errorMsg", {
-                msg: "Internal error"
+                msg: "Internal error: " + err
             });
             return;
         }
@@ -594,8 +590,8 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
 
                 if(rank >= actor.rank) {
                     actor.socket.emit("errorMsg", {
-                        msg: "You don't have permission to ban IP: x.x." + 
-                             ip.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1")
+                        msg: "You don't have permission to ban IP: " +
+                             $util.maskIP(ip)
                     });
                     return;
                 }
@@ -807,7 +803,7 @@ Channel.prototype.sendBanlist = function(user) {
                 var ip_hidden = this.hideIP(ip);
                 var disp = ip;
                 if(user.rank < Rank.Siteadmin) {
-                    disp = "x.x." + ip.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1");
+                    disp = $util.maskIP(ip);
                 }
                 ents.push({
                     ip_displayed: disp,
@@ -1032,7 +1028,7 @@ Channel.prototype.broadcastBanlist = function() {
             var name = this.ipbans[ip][0];
             var ip_hidden = this.hideIP(ip);
             ents.push({
-                ip_displayed: "x.x." + ip.replace(/\d+\.\d+\.(\d+\.\d+)/, "$1"),
+                ip_displayed: $util.maskIP(ip),
                 ip_hidden: ip_hidden,
                 name: name,
                 aliases: this.ip_alias[ip] || [],

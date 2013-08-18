@@ -468,7 +468,35 @@ Database.prototype.dropChannel = function (name, callback) {
     });
 };
 
-Database.prototype.getChannelRank = function (channame, names, callback) {
+Database.prototype.getChannelRank = function (channame, name, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    if(!$util.isValidChannelName(channame)) {
+        callback("Invalid channel name", null);
+        return;
+    }
+
+    var query = "SELECT name, rank FROM `chan_" + channame + "_ranks`" +
+                "WHERE name=?";
+
+    self.query(query, [name], function (err, res) {
+        if(err) {
+            Logger.errlog.log("! Failed to lookup " + channame + " ranks");
+            callback(err, null);
+            return;
+        }
+
+        if(res.length == 0)
+            callback(null, 0);
+        else
+            callback(null, res[0].rank);
+    });
+};
+
+Database.prototype.listChannelUserRanks = function (channame, names, 
+                                                    callback) {
     var self = this;
     if(typeof callback !== "function")
         return;
@@ -493,20 +521,12 @@ Database.prototype.getChannelRank = function (channame, names, callback) {
     self.query(query, names, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to lookup " + channame + " ranks");
-            if(names.length == 1)
-                callback(err, 0);
-            else
-                callback(err, []);
+            callback(err, null);
             return;
         }
 
-        if(names.length == 1) {
-            if(res.length == 0)
-                callback(null, 0);
-            else
-                callback(null, res[0].rank);
-            return;
-        }
+        for(var i in res)
+            res[i] = res[i].rank;
 
         callback(null, res);
     });
@@ -898,6 +918,7 @@ Database.prototype.getGlobalRank = function (name, callback) {
         return;
 
     var query = "SELECT global_rank FROM registrations WHERE uname=?";
+
     self.query(query, [name], function (err, res) {
         if(err) {
             callback(err, null);
@@ -910,6 +931,40 @@ Database.prototype.getGlobalRank = function (name, callback) {
         }
 
         callback(null, res[0].global_rank);
+    });
+};
+
+Database.prototype.listGlobalRanks = function (names, callback) {
+    var self = this;
+    if(typeof callback !== "function")
+        return;
+
+    if(typeof names === "string")
+        names = [names];
+
+    // Build the query template (?, ?, ?, ?, ...)
+    var nlist = [];
+    for(var i in names)
+        nlist.push("?");
+    nlist = "(" + nlist.join(",") + ")";
+
+    var query = "SELECT global_rank FROM registrations WHERE uname IN " +
+                nlist;
+    self.query(query, names, function (err, res) {
+        if(err) {
+            callback(err, null);
+            return;
+        }
+
+        if(res.length == 0) {
+            callback("User does not exist", null);
+            return;
+        }
+
+        for(var i in res)
+            res[i] = res[i].global_rank;
+
+        callback(null, res);
     });
 };
 
@@ -1224,7 +1279,15 @@ Database.prototype.listAliases = function (ip, callback) {
     if(typeof callback !== "function")
         return;
 
-    var query = "SELECT name FROM aliases WHERE ip=?";
+    var query = "SELECT name FROM aliases WHERE ip";
+    // Range
+    if(ip.match(/^\d+\.\d+\.\d+$/)) {
+        query += " LIKE ?";
+        ip += ".%";
+    } else {
+        query += "=?";
+    }
+
     self.query(query, [ip], function (err, res) {
         var names = null;
         if(!err) {
