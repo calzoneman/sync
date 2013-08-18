@@ -119,14 +119,6 @@ var Channel = function(name, Server) {
 
     Server.db.loadChannelData(self, function () {
         self.dbloaded = true;
-        // If the channel is empty and isn't registered, the first person
-        // gets ownership of the channel (temporarily)
-        if(self.users.length == 1 && !self.registered) {
-            var user = self.users[0];
-            user.rank = (user.rank < Rank.Owner) ? 10 : user.rank;
-            self.broadcastUserUpdate(user);
-            user.socket.emit("channelNotRegistered");
-        }
         if(self.registered) {
             self.loadDump();
         }
@@ -710,12 +702,6 @@ Channel.prototype.userJoin = function(user) {
         }
     }
 
-    // If the channel is empty and isn't registered, the first person
-    // gets ownership of the channel (temporarily)
-    if(this.dbloaded && this.users.length == 0 && !this.registered) {
-        user.rank = (user.rank < Rank.Owner) ? 10 : user.rank;
-        user.socket.emit("channelNotRegistered");
-    }
     this.users.push(user);
     this.broadcastVoteskipUpdate();
     if(user.name != "") {
@@ -953,6 +939,12 @@ Channel.prototype.broadcastUsercount = function() {
 
 Channel.prototype.broadcastNewUser = function(user) {
     var self = this;
+    // If the channel is empty and isn't registered, the first person
+    // gets ownership of the channel (temporarily)
+    if(self.dbloaded && self.users.length == 1 && !self.registered) {
+        user.rank = (user.rank < Rank.Owner) ? 10 : user.rank;
+        user.socket.emit("channelNotRegistered");
+    }
     self.server.db.listAliases(user.ip, function (err, aliases) {
         if(err) {
             aliases = [];

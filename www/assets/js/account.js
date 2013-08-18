@@ -44,9 +44,10 @@ if(uname && session) {
         session: session
     };
     postJSON(WEB_URL + "/api/login?callback=?", data, function (data) {
+        console.log(data);
         if(data.success)
             onLogin();
-    }, "jsonp");
+    });
 }
 
 function onLogin() {
@@ -182,7 +183,7 @@ $("#registerbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#registerpane form"));
         }
-    }, "jsonp");
+    });
 });
 
 $("#loginbtn").click(function() {
@@ -217,7 +218,7 @@ $("#loginbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#loginpane form"));
         }
-    }, "jsonp");
+    });
 });
 
 $("#cpwbtn").click(function() {
@@ -279,7 +280,7 @@ $("#cpwbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#changepwpane form"));
         }
-    }, "jsonp");
+    });
 });
 
 $("#cebtn").click(function() {
@@ -332,7 +333,7 @@ $("#cebtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#changeemailpane form"));
         }
-    }, "jsonp");
+    });
 
 });
 
@@ -360,7 +361,7 @@ $("#rpbtn").click(function() {
                 .text(data.error)
                 .insertBefore($("#pwresetpane form"));
         }
-    }, "jsonp");
+    });
 
 });
 
@@ -388,7 +389,7 @@ $("#profilesave").click(function() {
                 .text(data.error)
                 .insertBefore($("#profilepane form"));
         }
-    }, "jsonp");
+    });
 });
 
 $("#login").click(function() {

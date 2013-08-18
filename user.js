@@ -475,7 +475,6 @@ User.prototype.initCallbacks = function() {
          self.server.db.saveUserPlaylist(pl, self.name, data.name,
                                          function (err, res) {
             if(err) {
-                console.log(typeof err);
                 self.socket.emit("savePlaylist", {
                     success: false,
                     error: err
@@ -628,7 +627,7 @@ User.prototype.login = function(name, pw, session) {
     } else {
         self.server.db.userLogin(name, pw, session, function (err, row) {
             if(err) {
-                self.server.actionlog.record(self.ip, self.name, "login-failure");
+                self.server.actionlog.record(self.ip, name, "login-failure");
                 self.socket.emit("login", {
                     success: false,
                     error: err
@@ -637,7 +636,7 @@ User.prototype.login = function(name, pw, session) {
             }
             if(self.channel != null) {
                 for(var i = 0; i < self.channel.users.length; i++) {
-                    if(self.channel.users[i].name == name) {
+                    if(self.channel.users[i].name.toLowerCase() == name.toLowerCase()) {
                         self.channel.kick(self.channel.users[i], "Duplicate login");
                     }
                 }
@@ -667,11 +666,11 @@ User.prototype.login = function(name, pw, session) {
                 }
             };
             if(self.channel !== null) {
-                self.channel.getRank(self.name, function (err, rank) {
-                    if(!err && rank > self.global_rank)
+                self.channel.getRank(name, function (err, rank) {
+                    if(!err)
                         self.rank = rank;
                     else
-                        self.rank = self.global_rank
+                        self.rank = self.global_rank;
                     afterRankLookup();
                 });
             } else {

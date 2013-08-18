@@ -747,6 +747,11 @@ Database.prototype.userLogin = function (name, pw, session, callback) {
             return;
         }
 
+        if(row.session_hash) {
+            callback(null, row);
+            return;
+        }
+
         self.createLoginSession(name, function (err, hash) {
             if(err) {
                 callback(err, null);
@@ -790,6 +795,7 @@ Database.prototype.userLoginPassword = function (name, pw, callback) {
             if(valid) {
                 // For security, erase the password field before returning
                 delete row["pw"];
+                row.session_hash = "";
                 callback(null, row);
                 return;
             }
@@ -809,6 +815,7 @@ Database.prototype.userLoginPassword = function (name, pw, callback) {
 
                 // Remove password field before returning
                 delete row["pw"];
+                row.session_hash = "";
                 callback(null, row);
             } else {
                 callback("Invalid username/password combination", null);
