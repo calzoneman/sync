@@ -265,7 +265,7 @@ Database.prototype.setGlobalIPBan = function (ip, reason, callback) {
             return;
         }
 
-        self.getGlobalIPBans();
+        self.listGlobalIPBans();
         callback(null, res);
     });
 };
