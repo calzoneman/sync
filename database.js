@@ -2,14 +2,7 @@ var mysql = require("mysql");
 var hashlib = require("node_hash");
 var bcrypt = require("bcrypt");
 var $util = require("./utilities");
-
-var Logger = {
-    errlog: {
-        log: function () {
-            console.log(arguments[0]);
-        }
-    }
-};
+var Logger = require("./logger");
 
 var Database = function (cfg) {
     this.cfg = cfg;
