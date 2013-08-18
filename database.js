@@ -832,7 +832,7 @@ Database.prototype.userLoginSession = function (name, session, callback) {
         }
 
         if(res.length == 0) {
-            callback("Invalid session", null);
+            callback("Session expired", null);
             return;
         }
 

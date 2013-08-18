@@ -572,7 +572,7 @@ Callbacks = {
 
     login: function(data) {
         if(!data.success) {
-            if(data.error != "Invalid session") {
+            if(data.error != "Session expired") {
                 alert(data.error);
             }
         }
