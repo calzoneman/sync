@@ -1117,32 +1117,6 @@ Channel.prototype.onVideoChange = function () {
     this.broadcastDrinks();
 }
 
-// The server autolead function
-function mediaUpdate(chan, id) {
-    // Bail cases - video changed, someone's leader, no video playing
-    if(chan.media == null ||
-           id != chan.media.id ||
-           chan.leader != null ||
-           chan.users.length == 0) {
-        return;
-    }
-
-    chan.media.currentTime += (new Date().getTime() - chan.time) / 1000.0;
-    chan.time = new Date().getTime();
-
-    // Show's over, move on to the next thing
-    if(chan.media.currentTime > chan.media.seconds + 1) {
-        chan.playNext();
-    }
-    // Send updates about every 5 seconds
-    else if(chan.i % 5 == 0) {
-        chan.sendAll("mediaUpdate", chan.media.timeupdate());
-    }
-    chan.i++;
-
-    setTimeout(function() { mediaUpdate(chan, id); }, 1000);
-}
-
 function isLive(type) {
     return type == "li" // Livestream.com
         || type == "tw" // Twitch.tv
@@ -1253,12 +1227,12 @@ Channel.prototype.addMedia = function(data, user) {
                     return;
                 }
                 else {
-                    chan.logger.log("### " + user.name + " queued " + item.media.title);
-                    chan.sendAll("queue", {
+                    self.logger.log("### " + user.name + " queued " + item.media.title);
+                    self.sendAll("queue", {
                         item: item.pack(),
                         after: item.prev ? item.prev.uid : "prepend"
                     });
-                    chan.broadcastPlaylistMeta();
+                    self.broadcastPlaylistMeta();
                 }
             });
             return;
@@ -1278,14 +1252,14 @@ Channel.prototype.addMedia = function(data, user) {
                     return;
                 }
                 else {
-                    chan.logger.log("### " + user.name + " queued " + item.media.title);
-                    chan.sendAll("queue", {
+                    self.logger.log("### " + user.name + " queued " + item.media.title);
+                    self.sendAll("queue", {
                         item: item.pack(),
                         after: item.prev ? item.prev.uid : "prepend"
                     });
-                    chan.broadcastPlaylistMeta();
+                    self.broadcastPlaylistMeta();
                     if(!item.temp)
-                        chan.cacheMedia(item.media);
+                        self.cacheMedia(item.media);
                 }
             });
         }
