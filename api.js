@@ -182,6 +182,7 @@ module.exports = function (Server) {
     /* register an account */
     app.post("/api/register", function (req, res) {
         res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
         var pw = req.body.pw;
         var ip = getIP(req);
@@ -252,6 +253,7 @@ module.exports = function (Server) {
     /* password change */
     app.post("/api/account/passwordchange", function (req, res) {
         res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
 
         var name = req.body.name;
         var oldpw = req.body.oldpw;
@@ -294,6 +296,7 @@ module.exports = function (Server) {
     /* password reset */
     app.post("/api/account/passwordreset", function (req, res) {
         res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
         var email = req.body.email;
         var ip = getIP(req);
@@ -408,6 +411,7 @@ module.exports = function (Server) {
     /* profile change */
     app.post("/api/account/profile", function (req, res) {
         res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
         var session = req.body.session;
         var img = req.body.profile_image;
@@ -454,6 +458,7 @@ module.exports = function (Server) {
     /* set email */
     app.post("/api/account/email", function (req, res) {
         res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
         var pw = req.body.pw;
         var email = req.body.email;
