@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var Logger = require("./logger");
 var fs = require("fs");
+var $util = require("./utilities");
 
 module.exports = function (Server) {
     var ActionLog = Server.actionlog;
