@@ -456,10 +456,10 @@ Channel.prototype.getRank = function (name, callback) {
     });
 }
 
-Channel.prototype.saveRank = function (user) {
+Channel.prototype.saveRank = function (user, callback) {
     if(!this.registered)
         return;
-    this.server.db.setChannelRank(this.name, user.name, user.rank);
+    this.server.db.setChannelRank(this.name, user.name, user.rank, callback);
 }
 
 Channel.prototype.getIPRank = function (ip, callback) {
@@ -1982,7 +1982,11 @@ Channel.prototype.trySetRank = function(user, data) {
             return;
         receiver.rank = data.rank;
         if(receiver.loggedIn) {
-            self.saveRank(receiver);
+            self.saveRank(receiver, function (err, res) {
+                self.logger.log("*** " + user.name + " set " + 
+                                data.user + "'s rank to " + data.rank);
+                self.sendAllWithPermission("acl", "setChannelRank", data);
+            });
         }
         self.broadcastUserUpdate(receiver);
     } else if(self.registered) {
