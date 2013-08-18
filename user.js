@@ -13,6 +13,7 @@ var Rank = require("./rank.js");
 var Channel = require("./channel.js").Channel;
 var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
+var $util = require("./utilities");
 
 // Represents a client connected via socket.io
 var User = function(socket, Server) {
