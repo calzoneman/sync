@@ -9,19 +9,44 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+    So, it turns out that $.post causes Firefox to use a GET request
+    on cross-site requests.  What the hell?  I'd understand if they just
+    made it error instead, but why give me chicken tenders if I ordered a
+    cheeseburger and act like everything's peachy?
+*/
+function postJSON(url, data, callback) {
+    $.ajax(url, {
+        method: "POST",
+        crossDomain: true,
+        data: data,
+        success: function (data) {
+            try {
+                data = data.substring(data.indexOf("{"));
+                data = data.substring(0, data.lastIndexOf("}") + 1);
+                data = JSON.parse(data);
+                callback(data);
+            } catch(e) {
+                return;
+            }
+        },
+        dataType: "text"
+    });
+}
+
 var uname = readCookie("cytube_uname") || "";
 var session = readCookie("cytube_session") || "";
-var api = WEB_URL + "/api/json/";
 var loggedin = false;
 
 if(uname && session) {
-    var loginstr = "name=" + encodeURIComponent(uname)
-                 + "&session=" + session;
-    var url = api + "login?" + loginstr + "&callback=?";
-    $.getJSON(url, function(data) {
-        if(data.success) {
+    var data = {
+        name: uname,
+        session: session
+    };
+    postJSON(WEB_URL + "/api/login?callback=?", data, function (data) {
+        console.log(data);
+        if(data.success)
             onLogin();
-        }
     });
 }
 
@@ -57,7 +82,8 @@ $("#email").click(makeTabCallback("#email", "#changeemailpane"));
 $("#profile").click(makeTabCallback("#profile", "#profilepane"));
 $("#profile").click(function() {
     if(uname != "") {
-        $.getJSON(api + "getprofile?name=" + encodeURIComponent(uname) + "&callback=?", function(data) {
+        $.getJSON(WEB_URL+"/api/users/"+uname+"/profile?callback=?",
+            function (data) {
             if(data.success) {
                 $("#profiletext").val(data.profile_text);
                 $("#profileimg").val(data.profile_image);
@@ -82,8 +108,10 @@ $("#channels").click(function () {
         return;
     }
 
-    $.getJSON(api + "listuserchannels?name=" + encodeURIComponent(uname) +
-              "&session=" + session + "&callback=?", function(data) {
+    var auth = "name=" + encodeURIComponent(uname) + "&session=" +
+               encodeURIComponent(session);
+    $.getJSON(WEB_URL+"/api/account/mychannels?"+auth+"&callback=?",
+        function (data) {
         $("#channellist tbody").remove();
         data.channels.forEach(function (chan) {
             var tr = $("<tr/>").appendTo($("#channellist"));
@@ -134,12 +162,12 @@ $("#registerbtn").click(function() {
     }
 
     // Input valid, try registering
-    var url = api + "register?" + [
-        "name=" + encodeURIComponent(name),
-        "pw=" + encodeURIComponent(pw)
-    ].join("&") + "&callback=?";
-
-    $.getJSON(url, function(data) {
+    var data = {
+        name: name,
+        pw: pw
+    };
+    
+    postJSON(WEB_URL + "/api/register?callback=?", data, function (data) {
         if(data.success) {
             uname = name;
             session = data.session;
@@ -170,10 +198,12 @@ $("#loginbtn").click(function() {
         return;
     }
     uname = $("#loginusername").val();
-    var loginstr = "name=" + encodeURIComponent(uname)
-                 + "&pw=" + encodeURIComponent($("#loginpw").val());
-    var url = api + "login?" + loginstr + "&callback=?";
-    $.getJSON(url, function(data) {
+    var data = {
+        name: uname,
+        pw: $("#loginpw").val()
+    };
+
+    postJSON(WEB_URL+"/api/login?callback=?", data, function(data) {
         if(data.success) {
             session = data.session;
             onLogin();
@@ -230,12 +260,13 @@ $("#cpwbtn").click(function() {
     }
 
     // Input valid, try changing password
-    var url = api + "changepass?" + [
-        "name=" + encodeURIComponent(name),
-        "oldpw=" + encodeURIComponent(oldpw),
-        "newpw=" + encodeURIComponent(newpw)
-    ].join("&") + "&callback=?";
-    $.getJSON(url, function(data) {
+    var data = {
+        name: name,
+        oldpw: oldpw,
+        newpw: newpw
+    };
+    postJSON(WEB_URL + "/api/account/passwordchange?callback=?", data,
+        function (data) {
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
                 .text("Password changed.")
@@ -266,7 +297,7 @@ $("#cebtn").click(function() {
         return;
     }
 
-    if(!email.match(/^[a-z0-9_\.]+@[a-z0-9_\.]+[a-z]+$/)) {
+    if(!email.match(/^[\w_\.]+@[\w_\.]+[a-zA-Z]+$/)) {
         $("<div/>").addClass("alert alert-error")
             .text("Invalid email")
             .insertAfter($("#ceemail").parent().parent());
@@ -282,12 +313,13 @@ $("#cebtn").click(function() {
         return;
     }
 
-    var url = api + "setemail?" + [
-        "name=" + encodeURIComponent(name),
-        "pw=" + encodeURIComponent(pw),
-        "email=" + encodeURIComponent(email)
-    ].join("&") + "&callback=?";
-    $.getJSON(url, function(data) {
+    var data = {
+        name: name,
+        pw: pw,
+        email: email
+    };
+    postJSON(WEB_URL + "/api/account/email?callback=?", data,
+        function (data) {
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
                 .text("Email updated")
@@ -312,11 +344,12 @@ $("#rpbtn").click(function() {
     var name = $("#rpusername").val();
     var email = $("#rpemail").val();
 
-    var url = api + "resetpass?" + [
-        "name=" + encodeURIComponent(name),
-        "email=" + encodeURIComponent(email)
-    ].join("&") + "&callback=?";
-    $.getJSON(url, function(data) {
+    var data = {
+        name: name,
+        email: email
+    };
+    postJSON(WEB_URL + "/api/account/passwordreset?callback=?", data,
+        function (data) {
         $("#rpbtn").text("Send Reset");
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
@@ -336,20 +369,16 @@ $("#profilesave").click(function() {
     $("#profilepane").find(".alert-error").remove();
     $("#profilepane").find(".alert-success").remove();
     var img = $("#profileimg").val();
-    /*
-    img = escape(img).replace(/\//g, "%2F")
-        .replace(/&/g, "%26")
-        .replace(/=/g, "%3D")
-        .replace(/\?/g, "%3F");
-    */
-    var url = api + "setprofile?" + [
-        "name=" + encodeURIComponent(uname),
-        "session=" + session,
-        "profile_image=" + encodeURIComponent(img),
-        "profile_text=" + encodeURIComponent($("#profiletext").val())
-    ].join("&") + "&callback=?";
+    var text = $("#profiletext").val();
+    var data = {
+        name: uname,
+        session: session,
+        profile_image: img,
+        profile_text: text
+    };
 
-    $.getJSON(url, function(data) {
+    postJSON(WEB_URL+"/api/account/profile?callback=?", data,
+        function (data) {
         if(data.success) {
             $("<div/>").addClass("alert alert-success")
                 .text("Profile updated.")

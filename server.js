@@ -6,7 +6,7 @@ var Logger = require("./logger");
 var Channel = require("./channel");
 var User = require("./user");
 
-const VERSION = "2.3.3";
+const VERSION = "2.4.0";
 
 function getIP(req) {
     var raw = req.connection.remoteAddress;
@@ -74,6 +74,7 @@ var Server = {
     ips: {},
     acp: null,
     httpaccess: null,
+    actionlog: null,
     logHTTP: function (req, status) {
         if(status === undefined)
             status = 200;
@@ -89,8 +90,14 @@ var Server = {
         this.httpaccess.log([ipstr, req.method, url, status, req.headers["user-agent"]].join(" "));
     },
     init: function () {
+        // init database
+        var Database = require("./database");
+        this.db = new Database(this.cfg);
+        this.db.init();
+        this.actionlog = require("./actionlog")(this);
         this.httpaccess = new Logger.Logger("httpaccess.log");
         this.app = express();
+        this.app.use(express.bodyParser());
         // channel path
         this.app.get("/r/:channel(*)", function (req, res, next) {
             var c = req.params.channel;
@@ -105,10 +112,12 @@ var Server = {
 
         // api path
         this.api = require("./api")(this);
+        /*
         this.app.get("/api/:apireq(*)", function (req, res, next) {
             this.logHTTP(req);
             this.api.handle(req.url.substring(5), req, res);
         }.bind(this));
+        */
 
         this.app.get("/", function (req, res, next) {
             this.logHTTP(req);
@@ -167,14 +176,15 @@ var Server = {
         this.io.sockets.on("connection", function (socket) {
             var ip = getSocketIP(socket);
             socket._ip = ip;
-            if(this.db.checkGlobalBan(ip)) {
-                Logger.syslog.log("Disconnecting " + ip + " - gbanned");
-                socket.emit("kick", {
-                    reason: "You're globally banned."
-                });
-                socket.disconnect(true);
-                return;
-            }
+            this.db.isGlobalIPBanned(ip, function (err, bant) {
+                if(bant) {
+                    Logger.syslog.log("Disconnecting " + ip + " - gbanned");
+                    socket.emit("kick", {
+                        reason: "You're globally banned."
+                    });
+                    socket.disconnect(true);
+                }
+            });
 
             socket.on("disconnect", function () {
                 this.ips[ip]--;
@@ -197,10 +207,6 @@ var Server = {
             new User(socket, this);
         }.bind(this));
 
-        // init database
-        this.db = require("./database");
-        this.db.setup(Server.cfg);
-        this.db.init();
 
         // init ACP
         this.acp = require("./acp")(this);

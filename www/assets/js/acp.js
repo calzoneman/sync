@@ -1,4 +1,3 @@
-var BASE = WEB_URL + "/api/json/";
 var AUTH = "";
 var NO_WEBSOCKETS = false;
 
@@ -156,20 +155,21 @@ function reverseLog() {
 $("#log_reverse").click(reverseLog);
 
 function getSyslog() {
-    $.ajax(WEB_URL+"/api/plain/readlog?type=sys&"+AUTH).done(function(data) {
+    $.ajax(WEB_URL+"/api/logging/syslog?"+AUTH).done(function(data) {
         $("#log").text(data);
     });
 }
 $("#syslog").click(getSyslog);
 function getErrlog() {
-    $.ajax(WEB_URL+"/api/plain/readlog?type=err&"+AUTH).done(function(data) {
+    $.ajax(WEB_URL+"/api/logging/errorlog?"+AUTH).done(function(data) {
         $("#log").text(data);
     });
 }
 $("#errlog").click(getErrlog);
 function getActionLog() {
     var types = "&actions=" + $("#actionlog_filter").val().join(",");
-    $.getJSON(WEB_URL+"/api/json/readactionlog?"+AUTH+types+"&callback=?").done(function(entries) {
+    $.getJSON(WEB_URL+"/api/logging/actionlog?"+AUTH+types+"&callback=?")
+        .done(function(entries) {
         var tbl = $("#actionlog table");
         entries.forEach(function (e) {
             e.time = parseInt(e.time);
@@ -217,7 +217,8 @@ function getActionLog() {
 }
 function getChanlog() {
     var chan = $("#channame").val();
-    $.ajax(WEB_URL+"/api/plain/readlog?type=channel&channel="+chan+"&"+AUTH).done(function(data) {
+    $.ajax(WEB_URL+"/api/logging/channels/"+chan+"?"+AUTH)
+        .done(function(data) {
         $("#log").text(data);
     });
 }
