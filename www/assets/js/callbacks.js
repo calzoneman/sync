@@ -13,6 +13,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Callbacks = {
 
     error: function (reason) {
+        // Don't show the error for when the server goes down
+        if(reason && reason.returnValue === true)
+            return;
+
         var d = $("<div/>").addClass("alert alert-error span12")
             .appendTo($("#announcements"));
         $("<h3/>").text("Uh-oh!").appendTo(d);
