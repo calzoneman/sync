@@ -2,14 +2,14 @@
     "author": "Calvin Montgomery",
     "name": "CyTube",
     "description": "Online media synchronizer and chat",
-    "version": "2.3.3",
+    "version": "2.4.0",
     "repository": {
         "url": "http://github.com/calzoneman/sync"
     },
     "dependencies": {
         "socket.io": ">=0.9",
         "express": ">=3.2",
-        "mysql-libmysqlclient": "*",
+        "mysql": "2.0.0-alpha8",
         "node_hash": "*",
         "bcrypt": "*",
         "nodemailer": "*",

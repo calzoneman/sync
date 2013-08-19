@@ -9,14 +9,12 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Auth = require("./auth");
 var Logger = require("./logger");
-var apilog = new Logger.Logger("api.log");
-var ActionLog = require("./actionlog");
 var fs = require("fs");
-
+var $util = require("./utilities");
 
 module.exports = function (Server) {
+    var ActionLog = Server.actionlog;
     function getIP(req) {
         var raw = req.connection.remoteAddress;
         var forward = req.header("x-forwarded-for");
@@ -28,257 +26,317 @@ module.exports = function (Server) {
         return raw;
     }
 
-    var API = function () {
+    function getChannelData(channel) {
+        var data = {
+            name: channel.name,
+            loaded: true
+        };
 
+        data.pagetitle = channel.opts.pagetitle;
+        data.media = channel.playlist.current ?
+                     channel.playlist.current.media.pack() :
+                     {};
+        data.usercount = channel.users.length;
+        data.afkcount = channel.afkers.length;
+        data.users = [];
+        for(var i in channel.users)
+            if(channel.users[i].name !== "")
+                data.users.push(channel.users[i].name);
+
+        data.chat = [];
+        for(var i in channel.chatbuffer)
+            data.chat.push(channel.chatbuffer[i]);
+
+        return data;
     }
-    API.prototype = {
-        handle: function (path, req, res) {
-            var parts = path.split("/");
-            var last = parts[parts.length - 1];
-            var params = {};
-            if(last.indexOf("?") != -1) {
-                parts[parts.length - 1] = last.substring(0, last.indexOf("?"));
-                var plist = last.substring(last.indexOf("?") + 1).split("&");
-                for(var i = 0; i < plist.length; i++) {
-                    var kv = plist[i].split("=");
-                    if(kv.length != 2) {
-                        res.send(400);
-                        return;
-                    }
-                    params[unescape(kv[0])] = unescape(kv[1]);
-                }
-            }
-            for(var i = 0; i < parts.length; i++) {
-                parts[i] = unescape(parts[i]);
-            }
 
-            if(parts.length != 2) {
-                res.send(400);
+    var app = Server.app;
+    var db = Server.db;
+
+    /* <https://en.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol> */
+    app.get("/api/coffee", function (req, res) {
+        res.send(418); // 418 I'm a teapot
+    });
+
+    /* REGION channels */
+    
+    /* data about a specific channel */
+    app.get("/api/channels/:channel", function (req, res) {
+        var name = req.params.channel;
+        if(!name.match(/^[\w-_]+$/)) {
+            res.send(404);
+            return;
+        }
+        
+        var data = {
+            name: name,
+            loaded: false
+        };
+
+        if(Server.channelLoaded(name))
+            data = getChannelData(Server.getChannel(name));
+
+        res.type("application/json");
+        res.jsonp(data);
+    });
+
+    /* data about all channels (filter= public or all) */
+    app.get("/api/allchannels/:filter", function (req, res) {
+        var filter = req.params.filter;
+        if(filter !== "public" && filter !== "all") {
+            res.send(400);
+            return;
+        }
+
+        var query = req.query;
+
+        // Listing non-public channels requires authenticating as an admin
+        if(filter !== "public") {
+            var name = query.name || "";
+            var session = query.session || "";
+            db.userLoginSession(name, session, function (err, row) {
+                if(err) {
+                    if(err !== "Invalid session" &&
+                       err !== "Session expired") {
+                        res.send(500);
+                    } else {
+                        res.send(403);
+                    }
+                    return;
+                }
+
+                if(row.global_rank < 255) {
+                    res.send(403);
+                    return;
+                }
+
+                var channels = [];
+                for(var key in Server.channels) {
+                    var channel = Server.channels[key];
+                    channels.push(getChannelData(channel));
+                }
+
+                res.type("application/jsonp");
+                res.jsonp(channels);
+            });
+        }
+
+        // If we get here, the filter is public channels
+        
+        var channels = [];
+        for(var key in Server.channels) {
+            var channel = Server.channels[key];
+            if(channel.opts.show_public)
+                channels.push(getChannelData(channel));
+        }
+
+        res.type("application/jsonp");
+        res.jsonp(channels);
+    });
+
+    /* ENDREGION channels */
+
+    /* REGION authentication, account management */
+
+    /* login */
+    app.post("/api/login", function (req, res) {
+        res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        var name = req.body.name;
+        var pw = req.body.pw;
+        var session = req.body.session;
+
+        // for some reason CyTube previously allowed guest logins
+        // over the API...wat
+        if(!pw && !session) {
+            res.jsonp({
+                success: false,
+                error: "You must provide a password"
+            });
+            return;
+        }
+
+        db.userLogin(name, pw, session, function (err, row) {
+            if(err) {
+                if(err !== "Session expired")
+                    ActionLog.record(getIP(req), name, "login-failure");
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
+            
+            // Only record login-success for admins
+            if(row.global_rank >= 255)
+                ActionLog.record(getIP(req), name, "login-success");
+            
+            res.jsonp({
+                success: true,
+                name: name,
+                session: row.session_hash
+            });
+        });
+    });
+
+    /* register an account */
+    app.post("/api/register", function (req, res) {
+        res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        var name = req.body.name;
+        var pw = req.body.pw;
+        var ip = getIP(req);
+
+        // Limit registrations per IP within a certain time period
+        ActionLog.throttleRegistrations(ip, function (err, toomany) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
+            
+            if(toomany) {
+                ActionLog.record(ip, name, "register-failure",
+                                 "Too many recent registrations");
+                res.jsonp({
+                    success: false,
+                    error: "Your IP address has registered too many " +
+                           "accounts in the past 48 hours.  Please wait " +
+                           "a while before registering another."
+                });
                 return;
             }
 
-            if(parts[0] == "json") {
-                res.callback = params.callback || false;
-                if(!(parts[1] in this.jsonHandlers)) {
-                    res.end(JSON.stringify({
-                        error: "Unknown endpoint: " + parts[1]
-                    }, null, 4));
-                    return;
-                }
-                this.jsonHandlers[parts[1]](params, req, res);
-            }
-            else if(parts[0] == "plain") {
-                if(!(parts[1] in this.plainHandlers)) {
-                    res.send(404);
-                    return;
-                }
-                this.plainHandlers[parts[1]](params, req, res);
-            }
-            else {
-                res.send(400);
-            }
-        },
-
-        sendJSON: function (res, obj) {
-            var response = JSON.stringify(obj, null, 4);
-            if(res.callback) {
-                response = res.callback + "(" + response + ")";
-            }
-            var len = unescape(encodeURIComponent(response)).length;
-
-            res.setHeader("Content-Type", "application/json");
-            res.setHeader("Content-Length", len);
-            res.end(response);
-        },
-
-        sendPlain: function (res, str) {
-            if(res.callback) {
-                str = res.callback + "('" + str + "')";
-            }
-            var len = unescape(encodeURIComponent(str)).length;
-
-            res.setHeader("Content-Type", "text/plain");
-            res.setHeader("Content-Length", len);
-            res.end(response);
-        },
-
-        handleChannelData: function (params, req, res) {
-            var clist = params.channel || "";
-            clist = clist.split(",");
-            var data = [];
-            for(var j = 0; j < clist.length; j++) {
-                var cname = clist[j];
-                if(!cname.match(/^[a-zA-Z0-9-_]+$/)) {
-                    continue;
-                }
-
-                var d = {
-                    name: cname,
-                    loaded: Server.channelLoaded(cname)
-                };
-
-                if(d.loaded) {
-                    var chan = Server.getChannel(cname);
-                    d.pagetitle = chan.opts.pagetitle;
-                    d.media = chan.playlist.current ? chan.playlist.current.media.pack() : {};
-                    d.usercount = chan.users.length;
-                    d.users = [];
-                    for(var i = 0; i < chan.users.length; i++) {
-                        if(chan.users[i].name) {
-                            d.users.push(chan.users[i].name);
-                        }
-                    }
-                    d.chat = [];
-                    for(var i = 0; i < chan.chatbuffer.length; i++) {
-                        d.chat.push(chan.chatbuffer[i]);
-                    }
-                }
-                data.push(d);
-            }
-
-            this.sendJSON(res, data);
-        },
-
-        handleChannelList: function (params, req, res) {
-            if(params.filter == "public") {
-                var all = Server.channels;
-                var clist = [];
-                for(var key in all) {
-                    if(all[key].opts.show_public) {
-                        clist.push(all[key].name);
-                    }
-                }
-                this.handleChannelData({channel: clist.join(",")}, req, res);
-            }
-            var session = params.session || "";
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var row = Auth.login(name, pw, session);
-            if(!row || row.global_rank < 255) {
-                res.send(403);
+            if(!pw) {
+                // costanza.jpg
+                res.jsonp({
+                    success: false,
+                    error: "You must provide a password"
+                });
                 return;
             }
-            var clist = [];
-            for(var key in Server.channels) {
-                clist.push(Server.channels[key].name);
+
+
+            if(!$util.isValidUserName(name)) {
+                ActionLog.record(ip, name, "register-failure", 
+                                 "Invalid name");
+                res.jsonp({
+                    success: false,
+                    error: "Invalid username.  Valid usernames must be " +
+                           "1-20 characters long and consist only of " +
+                           "alphanumeric characters and underscores (_)"
+                });
+                return;
             }
-            this.handleChannelData({channel: clist.join(",")}, req, res);
-        },
 
-        handleLogin: function (params, req, res) {
-            var session = params.session || "";
-            var name = params.name || "";
-            var pw = params.pw || "";
-
-            if(pw == "" && session == "") {
-                if(!Auth.isRegistered(name)) {
-                    this.sendJSON(res, {
-                        success: true,
-                        session: ""
-                    });
-                    return;
-                }
-                else {
-                    this.sendJSON(res, {
+            // db.registerUser checks if the name is taken already
+            db.registerUser(name, pw, function (err, session) {
+                if(err) {
+                    res.jsonp({
                         success: false,
-                        error: "That username is already taken"
+                        error: err
                     });
                     return;
                 }
-            }
 
-            var row = Auth.login(name, pw, session);
-            if(row) {
-                if(row.global_rank >= 255)
-                    ActionLog.record(getIP(req), name, "login-success");
-                this.sendJSON(res, {
+                ActionLog.record(ip, name, "register-success");
+                res.jsonp({
                     success: true,
-                    session: row.session_hash
+                    session: session
                 });
-            }
-            else {
-                ActionLog.record(getIP(req), name, "login-failure");
-                this.sendJSON(res, {
-                    error: "Invalid username/password",
-                    success: false
-                });
-            }
-        },
+            });
+        });
+    });
 
-        handlePasswordChange: function (params, req, res) {
-            var name = params.name || "";
-            var oldpw = params.oldpw || "";
-            var newpw = params.newpw || "";
-            if(oldpw == "" || newpw == "") {
-                this.sendJSON(res, {
+    /* password change */
+    app.post("/api/account/passwordchange", function (req, res) {
+        res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        var name = req.body.name;
+        var oldpw = req.body.oldpw;
+        var newpw = req.body.newpw;
+
+        if(!oldpw || !newpw) {
+            res.jsonp({
+                success: false,
+                error: "Password cannot be empty"
+            });
+            return;
+        }
+
+        db.userLoginPassword(name, oldpw, function (err, row) {
+            if(err) {
+                res.jsonp({
                     success: false,
-                    error: "Old password and new password cannot be empty"
+                    error: err
                 });
                 return;
             }
-            var row = Auth.login(name, oldpw);
-            if(row) {
+
+            db.setUserPassword(name, newpw, function (err, row) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        error: err
+                    });
+                    return;
+                }
+
                 ActionLog.record(getIP(req), name, "password-change");
-                var success = Auth.setUserPassword(name, newpw);
-                this.sendJSON(res, {
-                    success: success,
-                    error: success ? "" : "Change password failed",
-                    session: row.session_hash
+                res.jsonp({
+                    success: true
                 });
-            }
-            else {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid username/password"
-                });
-            }
-        },
+            });
+        });
+    });
 
-        handlePasswordReset: function (params, req, res) {
-            var name = params.name || "";
-            var email = params.email || "";
-            var ip = getIP(req);
+    /* password reset */
+    app.post("/api/account/passwordreset", function (req, res) {
+        res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        var name = req.body.name;
+        var email = req.body.email;
+        var ip = getIP(req);
+        var hash = false;
 
-            var hash = false;
-            try {
-                hash = Server.db.generatePasswordReset(ip, name, email);
-                ActionLog.record(ip, name, "password-reset-generate", email);
-            }
-            catch(e) {
-                this.sendJSON(res, {
+        db.genPasswordReset(ip, name, email, function (err, hash) {
+            if(err) {
+                res.jsonp({
                     success: false,
-                    error: e
+                    error: err
                 });
                 return;
             }
-
+            ActionLog.record(ip, name, "password-reset-generate", email);
             if(!Server.cfg["enable-mail"]) {
-                this.sendJSON(res, {
+                res.jsonp({
                     success: false,
-                    error: "This server does not have email enabled.  Contact an administrator"
+                    error: "This server does not have email recovery " +
+                           "enabled.  Contact an administrator for " +
+                           "assistance."
                 });
                 return;
             }
+
             if(!email) {
-                this.sendJSON(res, {
+                res.jsonp({
                     success: false,
-                    error: "You don't have a recovery email address set.  Contact an administrator"
+                    error: "You don't have a recovery email address set.  "+
+                           "Contact an administrator for assistance."
                 });
                 return;
             }
-            var msg = [
-                "A password reset request was issued for your account `",
-                name,
-                "` on ",
-                Server.cfg["domain"],
-                ".  This request is valid for 24 hours.  ",
-                "If you did not initiate this, there is no need to take action.  ",
-                "To reset your password, copy and paste the following link into ",
-                "your browser: ",
-                Server.cfg["domain"],
-                "/reset.html?",
-                hash
-            ].join("");
+
+            var msg = "A password reset request was issued for your " +
+                      "account '"+ name + "' on " + Server.cfg["domain"] + 
+                      ".  This request is valid for 24 hours.  If you did "+
+                      "not initiate this, there is no need to take action."+
+                      "  To reset your password, copy and paste the " +
+                      "following link into your browser: " + 
+                      Server.cfg["domain"] + "/reset.html?"+hash;
 
             var mail = {
                 from: "CyTube Services <" + Server.cfg["mail-from"] + ">",
@@ -286,334 +344,347 @@ module.exports = function (Server) {
                 subject: "Password reset request",
                 text: msg
             };
-            var api = this;
-            Server.cfg["nodemailer"].sendMail(mail, function(err, response) {
+
+            Server.cfg["nodemailer"].sendMail(mail, function (err, response) {
                 if(err) {
-                    Logger.errlog.log("Mail fail: " + err);
-                    api.sendJSON(res, {
+                    Logger.errlog.log("mail fail: " + err);
+                    res.jsonp({
                         success: false,
-                        error: "Email failed.  Contact an admin if this persists."
+                        error: "Email send failed.  Contact an administrator "+
+                               "if this persists"
                     });
-                }
-                else {
-                    api.sendJSON(res, {
+                } else {
+                    res.jsonp({
                         success: true
                     });
-
-                    if(Server.cfg["debug"]) {
-                        Logger.syslog.log(response);
-                    }
                 }
             });
-        },
+        });
+    });
 
-        handlePasswordRecover: function (params, req, res) {
-            var hash = params.hash || "";
-            var ip = getIP(req);
+    /* password recovery */
+    app.get("/api/account/passwordrecover", function (req, res) {
+        res.type("application/jsonp");
+        var hash = req.query.hash;
+        var ip = getIP(req);
 
-            try {
-                var info = Server.db.recoverPassword(hash);
-                this.sendJSON(res, {
-                    success: true,
-                    name: info[0],
-                    pw: info[1]
-                });
-                ActionLog.record(ip, info[0], "password-recover-success");
-                Logger.syslog.log(ip + " recovered password for " + info[0]);
-                return;
-            }
-            catch(e) {
-                ActionLog.record(ip, "", "password-recover-failure");
-                this.sendJSON(res, {
+        db.recoverUserPassword(hash, function (err, auth) {
+            if(err) {
+                ActionLog.record(ip, "", "password-recover-failure", hash);
+                res.jsonp({
                     success: false,
-                    error: e
-                });
-            }
-        },
-
-        handleProfileGet: function (params, req, res) {
-            var name = params.name || "";
-
-            try {
-                var prof = Server.db.getProfile(name);
-                this.sendJSON(res, {
-                    success: true,
-                    profile_image: prof.profile_image,
-                    profile_text: prof.profile_text
-                });
-            }
-            catch(e) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: e
-                });
-            }
-        },
-
-        handleProfileChange: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-            var img = params.profile_image || "";
-            var text = params.profile_text || "";
-
-            var row = Auth.login(name, pw, session);
-            if(!row) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid login"
+                    error: err
                 });
                 return;
             }
-
-            var result = Server.db.setProfile(name, {
-                image: img,
-                text: text
-            });
-
-            this.sendJSON(res, {
-                success: result,
-                error: result ? "" : "Internal error.  Contact an administrator"
-            });
-
-            var all = Server.channels;
-            for(var n in all) {
-                var chan = all[n];
-                for(var i = 0; i < chan.users.length; i++) {
-                    if(chan.users[i].name.toLowerCase() == name) {
-                        chan.users[i].profile = {
-                            image: img,
-                            text: text
-                        };
-                        chan.broadcastUserUpdate(chan.users[i]);
-                        break;
-                    }
-                }
-            }
-        },
-
-        handleEmailChange: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var email = params.email || "";
-            // perhaps my email regex isn't perfect, but there's no freaking way
-            // I'm implementing this monstrosity:
-            // <http://www.ex-parrot.com/pdw/Mail-RFC822-Address.html>
-            if(!email.match(/^[a-z0-9_\.]+@[a-z0-9_\.]+[a-z]+$/)) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid email"
-                });
-                return;
-            }
-
-            if(email.match(/.*@(localhost|127\.0\.0\.1)/i)) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Nice try, but no."
-                });
-                return;
-            }
-
-            if(pw == "") {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Password cannot be empty"
-                });
-                return;
-            }
-            var row = Auth.login(name, pw);
-            if(row) {
-                var success = Server.db.setUserEmail(name, email);
-                ActionLog.record(getIP(req), name, "email-update", email);
-                this.sendJSON(res, {
-                    success: success,
-                    error: success ? "" : "Email update failed",
-                    session: row.session_hash
-                });
-            }
-            else {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid username/password"
-                });
-            }
-        },
-
-        handleRegister: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            if(ActionLog.tooManyRegistrations(getIP(req))) {
-                ActionLog.record(getIP(req), name, "register-failure",
-                    "Too many recent registrations from this IP");
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Your IP address has registered several accounts in "+
-                           "the past 48 hours.  Please wait a while or ask an "+
-                           "administrator for assistance."
-                });
-                return;
-            }
-
-            if(pw == "") {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "You must provide a password"
-                });
-                return;
-            }
-            else if(Auth.isRegistered(name)) {
-                ActionLog.record(getIP(req), name, "register-failure",
-                    "Name taken");
-                this.sendJSON(res, {
-                    success: false,
-                    error: "That username is already taken"
-                });
-                return false;
-            }
-            else if(!Auth.validateName(name)) {
-                ActionLog.record(getIP(req), name, "register-failure",
-                    "Invalid name");
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid username.  Usernames must be 1-20 characters long and consist only of alphanumeric characters and underscores"
-                });
-            }
-            else {
-                var session = Auth.register(name, pw);
-                if(session) {
-                    ActionLog.record(getIP(req), name, "register-success");
-                    Logger.syslog.log(getIP(req) + " registered " + name);
-                    this.sendJSON(res, {
-                        success: true,
-                        session: session
-                    });
-                }
-                else {
-                    this.sendJSON(res, {
-                        success: false,
-                        error: "Registration error.  Contact an admin for assistance."
-                    });
-                }
-            }
-        },
-
-        handleListUserChannels: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-
-            var row = Auth.login(name, pw, session);
-            if(!row) {
-                this.sendJSON(res, {
-                    success: false,
-                    error: "Invalid login"
-                });
-                return;
-            }
-
-            var channels = Server.db.listUserChannels(name);
-
-            this.sendJSON(res, {
+            ActionLog.record(ip, info[0], "password-recover-success");
+            res.jsonp({
                 success: true,
-                channels: channels
+                name: auth.name,
+                pw: auth.pw
             });
-        },
+        });
+    });
 
-        handleAdmReports: function (params, req, res) {
-            this.sendJSON(res, {
-                error: "Not implemented"
-            });
-        },
+    /* profile retrieval */
+    app.get("/api/users/:user/profile", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.params.user;
 
-        handleReadActionLog: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-            var types = params.actions || "";
-            var row = Auth.login(name, pw, session);
-            if(!row || row.global_rank < 255) {
-                res.send(403);
+        db.getUserProfile(name, function (err, profile) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
                 return;
             }
 
-            var actiontypes = types.split(",");
-            var actions = ActionLog.readLog(actiontypes);
-            this.sendJSON(res, actions);
-        },
+            res.jsonp({
+                success: true,
+                profile_image: profile.profile_image,
+                profile_text: profile.profile_text
+            });
+        });
+    });
 
-        // Helper function
-        pipeLast: function (res, file, len) {
-            fs.stat(file, function(err, data) {
+    /* profile change */
+    app.post("/api/account/profile", function (req, res) {
+        res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        var name = req.body.name;
+        var session = req.body.session;
+        var img = req.body.profile_image;
+        var text = req.body.profile_text;
+
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
+        
+            db.setUserProfile(name, { image: img, text: text },
+                              function (err, dbres) {
                 if(err) {
-                    res.send(500);
+                    res.jsonp({
+                        success: false,
+                        error: err
+                    });
                     return;
                 }
-                var start = data.size - len;
-                if(start < 0) {
-                    start = 0;
-                }
-                var end = data.size - 1;
-                fs.createReadStream(file, {start: start, end: end}).pipe(res);
-            });
-        },
 
-        handleReadLog: function (params, req, res) {
-            var name = params.name || "";
-            var pw = params.pw || "";
-            var session = params.session || "";
-            var row = Auth.login(name, pw, session);
-            if(!row || row.global_rank < 255) {
+                res.jsonp({ success: true });
+                name = name.toLowerCase();
+                for(var i in Server.channels) {
+                    var chan = Server.channels[i];
+                    for(var j in chan.users) {
+                        var user = chan.users[j];
+                        if(user.name.toLowerCase() == name) {
+                            user.profile = {
+                                image: img,
+                                text: text
+                            };
+                            chan.broadcastUserUpdate(user);
+                        }
+                    }
+                }
+            });
+        });
+    });
+
+    /* set email */
+    app.post("/api/account/email", function (req, res) {
+        res.type("application/jsonp");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        var name = req.body.name;
+        var pw = req.body.pw;
+        var email = req.body.email;
+
+        if(!email.match(/^[\w_\.]+@[\w_\.]+[a-z]+$/i)) {
+            res.jsonp({
+                success: false,
+                error: "Invalid email address"
+            });
+            return;
+        }
+
+        if(email.match(/.*@(localhost|127\.0\.0\.1)/i)) {
+            res.jsonp({
+                success: false,
+                error: "Nice try, but no"
+            });
+            return;
+        }
+
+        db.userLoginPassword(name, pw, function (err, row) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
+
+            db.setUserEmail(name, email, function (err, dbres) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        error: err
+                    });
+                    return;
+                }
+
+                ActionLog.record(getIP(req), name, "email-update", email);
+                res.jsonp({
+                    success: true,
+                    session: row.session_hash
+                });
+            });
+        });
+    });
+
+    /* my channels */
+    app.get("/api/account/mychannels", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.query.name;
+        var session = req.query.session;
+
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                res.jsonp({
+                    success: false,
+                    error: err
+                });
+                return;
+            }
+
+            db.listUserChannels(name, function (err, dbres) {
+                if(err) {
+                    res.jsonp({
+                        success: false,
+                        channels: []
+                    });
+                    return;
+                }
+
+                res.jsonp({
+                    success: true,
+                    channels: dbres
+                });
+            });
+        });
+
+    });
+
+    /* END REGION */
+
+    /* REGION log reading */
+
+    /* action log */
+    app.get("/api/logging/actionlog", function (req, res) {
+        res.type("application/jsonp");
+        var name = req.query.name;
+        var session = req.query.session;
+        var types = req.query.actions;
+
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
+            }
+
+            if(row.global_rank < 255) {
                 res.send(403);
                 return;
             }
-            res.setHeader("Access-Control-Allow-Origin", "*");
 
-            var type = params.type || "";
-            if(type == "sys") {
-                this.pipeLast(res, "sys.log", 1024*1024);
+            types = types.split(",");
+            ActionLog.listActions(types, function (err, actions) {
+                if(err)
+                    actions = [];
+                
+                res.jsonp(actions);
+            });
+        });
+    });
+
+    /* helper function to pipe the last N bytes of a file */
+    function pipeLast(res, file, len) {
+        fs.stat(file, function (err, data) {
+            if(err) {
+                res.send(500);
+                return;
             }
-            else if(type == "err") {
-                this.pipeLast(res, "error.log", 1024*1024);
+            var start = data.size - len;
+            if(start < 0) {
+                start = 0;
             }
-            else if(type == "channel") {
-                var chan = params.channel || "";
-                fs.exists("chanlogs/" + chan + ".log", function(exists) {
-                    if(exists) {
-                        this.pipeLast(res, "chanlogs/" + chan + ".log", 1024*1024);
-                    }
-                    else {
-                        res.send(404);
-                    }
-                }.bind(this));
+            var end = data.size - 1;
+            fs.createReadStream(file, { start: start, end: end })
+                .pipe(res);
+        });
+    }
+
+    app.get("/api/logging/syslog", function (req, res) {
+        res.type("text/plain");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        var name = req.query.name;
+        var session = req.query.session;
+
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
             }
-            else {
+
+            if(row.global_rank < 255) {
+                res.send(403);
+                return;
+            }
+
+            pipeLast(res, "sys.log", 1048576);
+        });
+    });
+
+    app.get("/api/logging/errorlog", function (req, res) {
+        res.type("text/plain");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        var name = req.query.name;
+        var session = req.query.session;
+
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
+            }
+
+            if(row.global_rank < 255) {
+                res.send(403);
+                return;
+            }
+
+            pipeLast(res, "error.log", 1048576);
+        });
+    });
+
+    app.get("/api/logging/channels/:channel", function (req, res) {
+        res.type("text/plain");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        var name = req.query.name;
+        var session = req.query.session;
+
+        db.userLoginSession(name, session, function (err, row) {
+            if(err) {
+                if(err !== "Invalid session" &&
+                   err !== "Session expired") {
+                    res.send(500);
+                } else {
+                    res.send(403);
+                }
+                return;
+            }
+
+            if(row.global_rank < 255) {
+                res.send(403);
+                return;
+            }
+
+            var chan = req.params.channel || "";
+            if(!$util.isValidChannelName(chan)) {
                 res.send(400);
+                return;
             }
-        }
-    };
 
-    var api = new API();
+            fs.exists("chanlogs/" + chan + ".log", function(exists) {
+                if(exists) {
+                    pipeLast(res, "chanlogs/" + chan + ".log", 1048576);
+                } else {
+                    res.send(404);
+                }
+            });
+        });
+    });
 
-    api.plainHandlers = {
-        "readlog"    : api.handleReadLog.bind(api)
-    };
-
-    api.jsonHandlers = {
-        "channeldata"   : api.handleChannelData.bind(api),
-        "listloaded"    : api.handleChannelList.bind(api),
-        "login"         : api.handleLogin.bind(api),
-        "register"      : api.handleRegister.bind(api),
-        "changepass"    : api.handlePasswordChange.bind(api),
-        "resetpass"     : api.handlePasswordReset.bind(api),
-        "recoverpw"     : api.handlePasswordRecover.bind(api),
-        "setprofile"    : api.handleProfileChange.bind(api),
-        "getprofile"    : api.handleProfileGet.bind(api),
-        "listuserchannels": api.handleListUserChannels.bind(api),
-        "setemail"      : api.handleEmailChange.bind(api),
-        "admreports"    : api.handleAdmReports.bind(api),
-        "readactionlog" : api.handleReadActionLog.bind(api)
-    };
-
-    return api;
+    return null;
 }

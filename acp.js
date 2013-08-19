@@ -9,10 +9,11 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Auth = require("./auth");
-var ActionLog = require("./actionlog");
+var Logger = require("./logger");
 
 module.exports = function (Server) {
+    var db = Server.db;
+    var ActionLog = Server.actionlog;
     return {
         init: function(user) {
             ActionLog.record(user.ip, user.name, "acp-init");
@@ -28,118 +29,84 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-global-ban", function(data) {
-                ActionLog.record(user.ip, user.name, "acp-global-ban", data.ip);
-                Server.db.globalBanIP(data.ip, data.note);
-                user.socket.emit("acp-global-banlist", Server.db.refreshGlobalBans());
+                ActionLog.record(user.ip, user.name, "acp-global-ban",                                       data.ip);
+                db.setGlobalIPBan(data.ip, data.note, function (err, res) {
+                    db.listGlobalIPBans(function (err, res) {
+                        res = res || [];
+                        user.socket.emit("acp-global-banlist", res);
+                    });
+                });
             });
 
             user.socket.on("acp-global-unban", function(ip) {
                 ActionLog.record(user.ip, user.name, "acp-global-unban", ip);
-                Server.db.globalUnbanIP(ip);
-                user.socket.emit("acp-global-banlist", Server.db.refreshGlobalBans());
+                db.clearGlobalIPBan(ip, function (err, res) {
+                    db.listGlobalIPBans(function (err, res) {
+                        res = res || [];
+                        user.socket.emit("acp-global-banlist", res);
+                    });
+                });
             });
 
-            user.socket.emit("acp-global-banlist", Server.db.refreshGlobalBans());
+            db.listGlobalIPBans(function (err, res) {
+                res = res || [];
+                user.socket.emit("acp-global-banlist", res);
+            });
 
             user.socket.on("acp-lookup-user", function(name) {
-                var db = Server.db.getConnection();
-                if(!db) {
-                    return;
-                }
-
-                var query = Server.db.createQuery(
-                    "SELECT id,uname,global_rank,profile_image,profile_text,email FROM registrations WHERE uname LIKE ?",
-                    ["%"+name+"%"]
-                );
-
-                var res = db.querySync(query);
-                if(!res)
-                    return;
-
-                var rows = res.fetchAllSync();
-                user.socket.emit("acp-userdata", rows);
+                db.searchUser(name, function (err, res) {
+                    res = res || [];
+                    user.socket.emit("acp-userdata", res);
+                });
             });
 
             user.socket.on("acp-lookup-channel", function (data) {
-                var db = Server.db.getConnection();
-                if(!db) {
-                    return;
-                }
-
-                var query;
-                if(data.field === "owner") {
-                    query = Server.db.createQuery(
-                        "SELECT * FROM channels WHERE owner LIKE ?",
-                        ["%" + data.value + "%"]
-                    );
-                } else if (data.field === "name") {
-                    query = Server.db.createQuery(
-                        "SELECT * FROM channels WHERE name LIKE ?",
-                        ["%" + data.value + "%"]
-                    );
-                } else {
-                    return;
-                }
-
-                var results = db.querySync(query);
-                if(!results)
-                    return;
-
-                var rows = results.fetchAllSync();
-                user.socket.emit("acp-channeldata", rows);
+                db.searchChannel(data.field, data.value, function (e, res) {
+                    res = res || [];
+                    user.socket.emit("acp-channeldata", res);
+                });
             });
 
             user.socket.on("acp-reset-password", function(data) {
-                if(Auth.getGlobalRank(data.name) >= user.global_rank)
-                    return;
-                try {
-                    var hash = Server.db.generatePasswordReset(user.ip, data.name, data.email);
-                    ActionLog.record(user.ip, user.name, "acp-reset-password", data.name);
-                }
-                catch(e) {
-                    user.socket.emit("acp-reset-password", {
-                        success: false,
-                        error: e
-                    });
-                    return;
-                }
-                if(hash) {
-                    user.socket.emit("acp-reset-password", {
-                        success: true,
-                        hash: hash
-                    });
-                }
-                else {
-                    user.socket.emit("acp-reset-password", {
-                        success: false,
-                        error: "Reset failed"
-                    });
-                }
+                db.getGlobalRank(data.name, function (err, rank) {
+                    if(err || rank >= user.global_rank)
+                        return;
 
+                    db.genPasswordReset(user.ip, data.name, data.email,
+                                        function (err, hash) {
+                        var pkt = {
+                            success: !err
+                        };
+
+                        if(err) {
+                            pkt.error = err;
+                        } else {
+                            pkt.hash = hash;
+                        }
+
+                        user.socket.emit("acp-reset-password", pkt);
+                        ActionLog.record(user.ip, user.name, 
+                                         "acp-reset-password", data.name);
+                    });
+                });
             });
 
             user.socket.on("acp-set-rank", function(data) {
                 if(data.rank < 1 || data.rank >= user.global_rank)
                     return;
 
-                if(Auth.getGlobalRank(data.name) >= user.global_rank)
-                    return;
+                db.getGlobalRank(data.name, function (err, rank) {
+                    if(err || rank >= user.global_rank)
+                        return;
 
-                var db = Server.db.getConnection();
-                if(!db)
-                    return;
-
-                ActionLog.record(user.ip, user.name, "acp-set-rank", data);
-                var query = Server.db.createQuery(
-                    "UPDATE registrations SET global_rank=? WHERE uname=?",
-                    [data.rank, data.name]
-                );
-
-                var res = db.querySync(query);
-                if(!res)
-                    return;
-
-                user.socket.emit("acp-set-rank", data);
+                    db.setGlobalRank(data.name, data.rank,
+                                     function (err, res) {
+                        ActionLog.record(user.ip, user.name, "acp-set-rank",
+                                         data);
+                        if(!err)
+                            user.socket.emit("acp-set-rank", data);
+                    });
+                });
             });
 
             user.socket.on("acp-list-loaded", function() {
@@ -180,9 +147,10 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-actionlog-list", function () {
-                user.socket.emit("acp-actionlog-list",
-                    ActionLog.getLogTypes()
-                );
+                ActionLog.listActionTypes(function (err, types) {
+                    if(!err)
+                        user.socket.emit("acp-actionlog-list", types);
+                });
             });
 
             user.socket.on("acp-actionlog-clear", function(data) {
@@ -196,13 +164,10 @@ module.exports = function (Server) {
             });
 
             user.socket.on("acp-view-stats", function () {
-                var db = Server.db.getConnection();
-                if(!db)
-                    return;
-                var query = "SELECT * FROM stats ORDER BY time ASC";
-                var results = db.querySync(query);
-                if(results)
-                    user.socket.emit("acp-view-stats", results.fetchAllSync());
+                db.listStats(function (err, res) {
+                    if(!err)
+                        user.socket.emit("acp-view-stats", res);
+                });
             });
         }
     }

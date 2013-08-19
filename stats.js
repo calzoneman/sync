@@ -15,6 +15,7 @@ const STAT_INTERVAL = 60 * 60 * 1000;
 const STAT_EXPIRE = 24 * STAT_INTERVAL;
 
 module.exports = function (Server) {
+    var db = Server.db;
     setInterval(function () {
         var chancount = Server.channels.length;
         var usercount = 0;
@@ -24,29 +25,8 @@ module.exports = function (Server) {
 
         var mem = process.memoryUsage().rss;
 
-        var db = Server.db.getConnection();
-        if(!db)
-            return;
-
-        var query = Server.db.createQuery(
-            "INSERT INTO stats VALUES (?, ?, ?, ?)",
-            [Date.now(), usercount, chancount, mem]
-        );
-
-        if(!db.querySync(query)) {
-            Logger.errlog.log("! Failed to record stats");
-            Logger.errlog.log(query);
-        }
-
-        query = Server.db.createQuery(
-            "DELETE FROM stats WHERE time<?",
-            [Date.now() - STAT_EXPIRE]
-        );
-
-        if(!db.querySync(query)) {
-            Logger.errlog.log("! Failed to prune stats");
-            Logger.errlog.log(query);
-        }
-
+        db.addStatPoint(Date.now(), usercount, chancount, mem, function () {
+            db.pruneStats(Date.now() - STAT_EXPIRE);
+        });
     }, STAT_INTERVAL);
 }

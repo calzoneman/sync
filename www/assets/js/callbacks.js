@@ -13,6 +13,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Callbacks = {
 
     error: function (reason) {
+        // Don't show the error for when the server goes down
+        if(reason && reason.returnValue === true)
+            return;
+
         var d = $("<div/>").addClass("alert alert-error span12")
             .appendTo($("#announcements"));
         $("<h3/>").text("Uh-oh!").appendTo(d);
@@ -72,6 +76,33 @@ Callbacks = {
 
     errorMsg: function(data) {
         alert(data.msg);
+    },
+
+    costanza: function (data) {
+        hidePlayer();
+        $("#costanza-modal").modal("hide");
+        var modal = $("<div/>").addClass("modal hide fade")
+            .attr("id", "costanza-modal")
+            .appendTo($("body"));
+
+
+        var body = $("<div/>").addClass("modal-body").appendTo(modal);
+        $("<button/>").addClass("close")
+            .attr("data-dismiss", "modal")
+            .attr("data-hidden", "true")
+            .html("&times;")
+            .appendTo(body);
+        $("<img/>").attr("src", "http://i0.kym-cdn.com/entries/icons/original/000/005/498/1300044776986.jpg")
+            .appendTo(body);
+
+        $("<strong/>").text(data.msg).appendTo(body);
+
+        modal.on("hidden", function () {
+            modal.remove();
+            unhidePlayer();
+        });
+
+        modal.modal();
     },
 
     announcement: function(data) {
@@ -572,7 +603,7 @@ Callbacks = {
 
     login: function(data) {
         if(!data.success) {
-            if(data.error != "Invalid session") {
+            if(data.error != "Session expired") {
                 alert(data.error);
             }
         }
@@ -696,6 +727,7 @@ Callbacks = {
 
     /* REGION Playlist Stuff */
     playlist: function(data) {
+        PL_QUEUED_ACTIONS = [];
         // Clear the playlist first
         var q = $("#queue");
         q.html("");

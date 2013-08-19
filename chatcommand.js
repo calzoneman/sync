@@ -145,10 +145,21 @@ function handleUnmute(chan, user, args) {
 function handleKick(chan, user, args) {
     if(chan.hasPermission(user, "kick") && args.length > 0) {
         args[0] = args[0].toLowerCase();
+        if(args[0] == user.name.toLowerCase()) {
+            user.socket.emit("costanza", {
+                msg: "Kicking yourself?"
+            });
+            return;
+        }
         var kickee;
         for(var i = 0; i < chan.users.length; i++) {
-            if(chan.users[i].name.toLowerCase() == args[0] &&
-               chan.getRank(chan.users[i].name) < user.rank) {
+            if(chan.users[i].name.toLowerCase() == args[0]) {
+                if(chan.users[i].rank >= user.rank) {
+                    user.socket.emit("errorMsg", {
+                        msg: "You don't have permission to kick " + args[0]
+                    });
+                    return;
+                }
                 kickee = chan.users[i];
                 break;
             }

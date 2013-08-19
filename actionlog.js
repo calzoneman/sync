@@ -9,143 +9,50 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var Database = require("./database");
 var Logger = require("./logger");
 
-exports.record = function(ip, name, action, args) {
-    if(typeof args === "undefined" || args === null) {
-        args = "";
-    } else {
-        try {
-            args = JSON.stringify(args);
-        } catch(e) {
-            args = "";
+module.exports = function (Server) {
+    var db = Server.db;
+    return {
+        record: function (ip, name, action, args) {
+            if(!args)
+                args = "";
+            else {
+                try {
+                    args = JSON.stringify(args);
+                } catch(e) {
+                    args = "";
+                }
+            }
+            
+            db.recordAction(ip, name, action, args);
+        },
+
+        clear: function (actions) {
+            db.clearActions(actions);
+        },
+
+        clearOne: function (item) {
+            db.clearSingleAction(item);
+        },
+
+        throttleRegistrations: function (ip, callback) {
+            db.recentRegistrationCount(ip, function (err, count) {
+                if(err) {
+                    callback(err, null);
+                    return;
+                }
+
+                callback(null, count > 4);
+            });
+        },
+
+        listActionTypes: function (callback) {
+            db.listActionTypes(callback);
+        },
+
+        listActions: function (types, callback) {
+            db.listActions(types, callback);
         }
-    }
-
-    var db = Database.getConnection();
-    if(!db)
-        return false;
-
-    var query = Database.createQuery(
-        "INSERT INTO actionlog (ip, name, action, args, time) "+
-        "VALUES (?, ?, ?, ?, ?)",
-        [ip, name, action, args, Date.now()]
-    );
-
-    var result = db.querySync(query);
-    if(!result) {
-        Logger.errlog.log("! Failed to record action");
-    }
-
-    return result;
-}
-
-exports.clear = function(actions) {
-    var db = Database.getConnection();
-    if(!db)
-        return false;
-
-    var list = new Array(actions.length);
-    for(var i = 0; i < actions.length; i++)
-        list[i] = "?";
-
-    var query = Database.createQuery(
-        "DELETE FROM actionlog WHERE action IN ("+
-        list.join(",")+
-        ")",
-        actions
-    );
-
-    var result = db.querySync(query);
-    if(!result) {
-        Logger.errlog.log("! Failed to clear action log");
-    }
-
-    return result;
-}
-
-exports.clearOne = function(e) {
-    var db = Database.getConnection();
-    if(!db)
-        return false;
-
-    var query = Database.createQuery(
-        "DELETE FROM actionlog WHERE ip=? AND time=?",
-        [e.ip, e.time]
-    );
-
-    var result = db.querySync(query);
-    if(!result) {
-        Logger.errlog.log("! Failed to clear action log");
-    }
-
-    return result;
-}
-
-exports.tooManyRegistrations = function (ip) {
-    var db = Database.getConnection();
-    if(!db)
-        return true;
-
-    var query = Database.createQuery(
-        "SELECT * FROM actionlog WHERE ip=? AND action='register-success'"+
-        "AND time > ?",
-        [ip, Date.now() - 48 * 3600 * 1000]
-    );
-
-    var results = db.querySync(query);
-    if(!results) {
-        Logger.errlog.log("! Failed to check tooManyRegistrations");
-        return true;
-    }
-
-    var rows = results.fetchAllSync();
-    // TODO Config value for this
-    return rows.length > 4;
-}
-
-exports.getLogTypes = function () {
-    var db = Database.getConnection();
-    if(!db)
-        return false;
-
-    var query = "SELECT DISTINCT action FROM actionlog";
-    var result = db.querySync(query);
-    if(!result) {
-        Logger.errlog.log("! Failed to read action log");
-        return [];
-    }
-
-    result = result.fetchAllSync();
-    var actions = [];
-    for(var i in result)
-        actions.push(result[i].action);
-
-    return actions;
-}
-
-exports.readLog = function (actions) {
-    var db = Database.getConnection();
-    if(!db)
-        return false;
-
-    var query = "SELECT * FROM actionlog";
-    if(actions !== undefined) {
-        var list = new Array(actions.length);
-        for(var i in actions)
-            list[i] = "?";
-        list = list.join(",");
-        query += Database.createQuery(
-            " WHERE action IN ("+list+")",
-            actions
-        );
-    }
-    var result = db.querySync(query);
-    if(!result) {
-        Logger.errlog.log("! Failed to read action log");
-        return [];
-    }
-
-    return result.fetchAllSync();
-}
+    };
+};
