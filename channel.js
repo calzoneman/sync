@@ -326,10 +326,10 @@ Channel.prototype.readLog = function (filterIp, callback) {
         rs.on("end", function () {
             if(filterIp) {
                 buffer = buffer.replace(
-                    /\d+\.\d+\.(\d+\.\d+)/,
+                    /\d+\.\d+\.(\d+\.\d+)/g,
                     "x.x.$1"
                 ).replace(
-                    /\d+\.\d+\.(\d+)/,
+                    /\d+\.\d+\.(\d+)/g,
                     "x.x.$1.*"
                 );
             }
