@@ -81,8 +81,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create channels table");
-        } else {
-            console.log("Created channels table");
         }
     });
 
@@ -103,8 +101,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create registration table");
-        } else if(self.cfg["debug"]) {
-            console.log("Created registrations table");
         }
     });
 
@@ -118,8 +114,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create global ban table");
-        } else if(self.cfg["debug"]) {
-            console.log("Created global ban table");
         }
     });
 
@@ -136,8 +130,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create password reset table");
-        } else if(self.cfg["debug"]) {
-            console.log("Created password reset table");
         }
     });
 
@@ -154,8 +146,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create user playlist table");
-        } else if(self.cfg["debug"]) {
-            console.log("Created user playlist table");
         }
     });
 
@@ -171,8 +161,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create user aliases table");
-        } else if(self.cfg["debug"]) {
-            console.log("Created user aliases table");
         }
     });
 
@@ -189,8 +177,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create action log table");
-        } else if(self.cfg["debug"]) {
-            console.log("Created action log table");
         }
     });
 
@@ -206,8 +192,6 @@ Database.prototype.init = function () {
     self.query(query, function (err, res) {
         if(err) {
             Logger.errlog.log("! Failed to create stats table");
-        } else if(self.cfg["debug"]) {
-            console.log("Created stats table");
         }
     });
 
