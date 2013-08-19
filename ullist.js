@@ -161,4 +161,13 @@ ULList.prototype.toArray = function(pack) {
     return arr;
 }
 
+/* iterate across the playlist */
+ULList.prototype.forEach = function (fn) {
+    var item = this.first;
+    while(item !== null) {
+        fn(item);
+        item = item.next;
+    }
+};
+
 exports.ULList = ULList;

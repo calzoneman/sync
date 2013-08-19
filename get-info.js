@@ -11,13 +11,23 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var http = require("http");
 var https = require("https");
+var domain = require("domain");
 var Logger = require("./logger.js");
 var Media = require("./media.js").Media;
 var CustomEmbedFilter = require("./customembed").filter;
 
 module.exports = function (Server) {
-    function urlRetrieve(transport, options, callback) {
-        try {
+    var urlRetrieve = function (transport, options, callback) {
+        // Catch any errors that crop up along the way of the request
+        // in order to prevent them from reaching the global handler.
+        // This should cut down on needing to restart the server
+        var d = domain.create();
+        d.on("error", function (err) {
+            Logger.errlog.log("urlRetrieve failed: " + err);
+            Logger.errlog.log("Request was: " + options.host + options.path);
+            callback(503, err);
+        });
+        d.run(function () {
             var req = transport.request(options, function (res) {
                 var buffer = "";
                 res.setEncoding("utf-8");
@@ -30,10 +40,8 @@ module.exports = function (Server) {
             });
 
             req.end();
-        } catch(e) {
-            callback(503, "");
-        }
-    }
+        });
+    };
 
     var Getters = {
         /* youtube.com */
@@ -64,6 +72,9 @@ module.exports = function (Server) {
                     return;
                 } else if(status === 403) {
                     callback("Private video", null);
+                    return;
+                } else if(status === 503) {
+                    callback("API failure", null);
                     return;
                 } else if(status !== 200) {
                     callback(true, null);
@@ -177,6 +188,9 @@ module.exports = function (Server) {
                 } else if(status === 403) {
                     callback("Playlist is private", null);
                     return;
+                } else if(status === 503) {
+                    callback("API failure", null);
+                    return;
                 } else if(status !== 200) {
                     callback(true, null);
                 }
@@ -278,6 +292,9 @@ module.exports = function (Server) {
                 } else if(status === 403) {
                     callback("Private video", null);
                     return;
+                } else if(status === 503) {
+                    callback("API failure", null);
+                    return;
                 } else if(status !== 200) {
                     callback(true, null);
                     return;
@@ -361,6 +378,9 @@ module.exports = function (Server) {
             urlRetrieve(https, options, function (status, data) {
                 if(status === 404) {
                     callback("Sound not found", null);
+                    return;
+                } else if(status === 503) {
+                    callback("API failure", null);
                     return;
                 } else if(status !== 302) {
                     callback(true, null);

@@ -224,10 +224,15 @@ $("#userpl_save").click(function() {
 });
 
 /* video controls */
+function selectQuality(select, preset) {
+
+}
 (function() {
     function qualHandler(select, preset) {
         $(select).click(function() {
             VIDEOQUALITY = preset;
+            USEROPTS.default_quality = select;
+            saveOpts();
             var btn = $("#qualitywrap .btn.dropdown-toggle");
             var caret = btn.find(".caret").detach();
             btn.text($(select).text());
@@ -236,11 +241,14 @@ $("#userpl_save").click(function() {
                 PLAYER.player.setPlaybackQuality(VIDEOQUALITY);
         });
     }
+    qualHandler("#quality_auto", "");
     qualHandler("#quality_240p", "small");
     qualHandler("#quality_360p", "medium");
     qualHandler("#quality_480p", "large");
     qualHandler("#quality_720p", "hd720");
     qualHandler("#quality_1080p", "hd1080");
+    if($(USEROPTS.default_quality).length > 0)
+        $(USEROPTS.default_quality).click();
 })();
 
 $("#mediarefresh").click(function() {

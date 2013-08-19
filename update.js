@@ -1,38 +1,14 @@
 var Config = require("./config.js");
 var Database = require("./database.js");
 
-//Config.DEBUG = true;
-Database.setup(Config);
-Database.init();
-var query;
-var db = Database.getConnection();
+var x = {};
+Config.load(x, "cfg.json", function () {
+    Database.setup(x.cfg);
+    Database.init();
+    var query;
+    var db = Database.getConnection();
 
-// Check for already existing
-query = "SELECT owner FROM channels WHERE 1";
-if(!db.querySync(query)) {
-    query = "ALTER TABLE channels ADD owner VARCHAR(20) NOT NULL";
-    var res = db.querySync(query);
-    if(!res) {
-        console.log(db);
-        console.log("Update failed!");
-    }
-    else {
-        populateChannelOwners();
-    }
-}
 
-console.log("Fixing user playlist bug");
-query = "ALTER TABLE user_playlists DROP PRIMARY KEY, ADD PRIMARY KEY (user, name)";
-if(!db.querySync(query)) {
-    console.log("Something went wrong");
-}
-else {
-    console.log("fixed");
-}
-db.closeSync();
-process.exit(0);
-
-function populateChannelOwners() {
     query = "SELECT * FROM channels WHERE 1";
     var res = db.querySync(query);
     if(!res) {
@@ -44,27 +20,16 @@ function populateChannelOwners() {
     var channels = res.fetchAllSync();
     channels.forEach(function(chan) {
         chan = chan.name;
-        query = "SELECT name FROM `chan_"+chan+"_ranks` WHERE rank>=10 ORDER BY rank";
+        query = "UPDATE `chan_" + chan + "_library` SET title=CONCAT(" + 
+                "SUBSTRING(title FROM 0 FOR 97), '...') WHERE " +
+                "LENGTH(title) > 100";
+        console.log(query);
         res = db.querySync(query);
         if(!res) {
             console.log(db);
             console.log("failed to fix "+chan);
             return;
         }
-
-        var results = res.fetchAllSync();
-        if(results.length == 0) {
-            console.log("bad channel: " + chan);
-            return;
-        }
-        var owner = results[0].name;
-        query = "UPDATE channels SET owner='"+owner+"' WHERE name='"+chan+"'";
-        console.log("setting owner=" + owner + " for /r/" + chan);
-        res = db.querySync(query);
-        if(!res) {
-            console.log(db);
-            console.log("Update failed!");
-            return;
-        }
     });
-}
+    db.closeSync();
+});
