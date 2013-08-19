@@ -450,6 +450,15 @@ Playlist.prototype.clear = function() {
     clearInterval(this._leadInterval);
 }
 
+Playlist.prototype.count = function (id) {
+    var count = 0;
+    this.items.forEach(function (i) {
+        if(i.media.id === id)
+            count++;
+    });
+    return count;
+}
+
 Playlist.prototype.lead = function(lead) {
     this.leading = lead;
     var pl = this;

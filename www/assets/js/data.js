@@ -117,7 +117,8 @@ var USEROPTS = {
     ignore_channelcss    : getOrDefault("ignore_channelcss", false),
     ignore_channeljs     : getOrDefault("ignore_channeljs", false),
     sort_rank            : getOrDefault("sort_rank", false),
-    sort_afk             : getOrDefault("sort_afk", false)
+    sort_afk             : getOrDefault("sort_afk", false),
+    default_quality      : getOrDefault("default_quality", "#quality_auto")
 };
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
