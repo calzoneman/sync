@@ -397,7 +397,7 @@ Database.prototype.loadChannelData = function (chan, callback) {
         }
 
         if(res[0].name != chan.name)
-            chan.name = rows[0].name;
+            chan.name = res[0].name;
         chan.registered = true;
 
         // Load bans
