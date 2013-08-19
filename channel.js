@@ -525,7 +525,7 @@ Channel.prototype.tryNameBan = function(actor, name) {
 
         if(rank >= actor.rank) {
             actor.socket.emit("errorMsg", {
-                msg: "You don't have permission to ban this person."
+                msg: "You don't have permission to ban " + name
             });
             return;
         }
