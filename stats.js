@@ -16,6 +16,7 @@ const STAT_EXPIRE = 24 * STAT_INTERVAL;
 
 module.exports = function (Server) {
     var db = Server.db;
+
     setInterval(function () {
         var chancount = Server.channels.length;
         var usercount = 0;
@@ -29,4 +30,40 @@ module.exports = function (Server) {
             db.pruneStats(Date.now() - STAT_EXPIRE);
         });
     }, STAT_INTERVAL);
+
+    return {
+        stores: {
+            "http": {},
+            "socketio": {},
+            "api": {}
+        },
+        record: function (type, key) {
+            var store;
+            if(!(type in this.stores))
+                return;
+
+            store = this.stores[type];
+
+            if(key in store) {
+                store[key].push(Date.now());
+                if(store[key].length > 100)
+                    store[key].shift();
+            } else {
+                store[key] = [Date.now()];
+            }
+        },
+        readAverages: function (type) {
+            if(!(type in this.stores))
+                return;
+            var avg = {};
+            var store = this.stores[type];
+            for(var k in store) {
+                var time = Date.now() - store[k][0];
+                avg[k] = store[k].length / time;
+                avg[k] = parseInt(avg[k] * 1000);
+            }
+            return avg;
+        }
+    };
+
 }

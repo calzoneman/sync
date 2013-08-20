@@ -46,6 +46,7 @@
                       <li id="li_chanloaded"><a href="javascript:void(0)" id="show_chanloaded">Loaded Channels</a></li>
                       <li id="li_actionlog"><a href="javascript:void(0)" id="show_actionlog">Action Log</a></li>
                       <li id="li_stats"><a href="javascript:void(0)" id="show_stats">Server Stats</a></li>
+                      <li id="li_connstats"><a href="javascript:void(0)" id="show_connstats">Connection Stats</a></li>
                   </ul>
               </li>
             </ul>
@@ -248,6 +249,21 @@
                 <canvas id="stat_channels" width="1170" height="400"></canvas>
                 <h3>Memory Usage (MB)</h3>
                 <canvas id="stat_mem" width="1170" height="400"></canvas>
+            </div>
+            <div class="span12" id="connstats">
+                <h3>Connection Stats</h3>
+                <strong>Note: </strong>Data points for which the frequency average is 0 are not displayed.
+                <br>
+                <button class="btn" id="connstats_refresh">Refresh</button>
+                <table class="table table-bordered table-striped" id="connstats">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Param</th>
+                      <th>Frequency</th>
+                    </tr>
+                  </thead>
+                </table>
             </div>
         </div>
     </div>
