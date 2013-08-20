@@ -39,14 +39,15 @@ Database.prototype.query = function (query, sub, callback) {
     var self = this;
     self.pool.getConnection(function (err, conn) {
         if(err) {
+            Logger.errlog.log("! DB connection failed: " + err);
             callback("Database failure", null);
         } else {
             function cback(err, res) {
                 if(err) {
-                    if(self.cfg["debug"]) {
-                        console.log(query);
-                        console.log(err);
-                    }
+                    Logger.errlog.log("! DB query failed: " + query);
+                    if(sub)
+                        Logger.errlog.log("Substitutions: " + sub);
+                    Logger.errlog.log(err);
                     callback("Database failure", null);
                 } else {
                     callback(null, res);

@@ -1241,11 +1241,45 @@ Channel.prototype.addMedia = function(data, user) {
                          "custom embeds");
         return;
     }
+    if(isLive(data.type) &&
+       !self.hasPermission(user, "playlistaddlive")) {
+        user.socket.emit("queueFail", "You don't have " +
+                         "permission to add livestreams");
+        return;
+    }
     data.temp = data.temp || isLive(data.type);
     data.queueby = user ? user.name : "";
     data.maxlength = self.hasPermission(user, "exceedmaxlength")
                    ? 0
                    : this.opts.maxlength;
+
+    var postAdd = function (item, cached) {
+        self.logger.log("### " + user.name + " queued " + item.media.title);
+        self.sendAll("queue", {
+            item: item.pack(),
+            after: item.prev ? item.prev.uid : "prepend"
+        });
+        self.broadcastPlaylistMeta();
+        if(!cached && !item.temp)
+            self.cacheMedia(item.media);
+    }
+
+    // No need to check library for livestreams - they aren't cached
+    if(isLive(data.type)) {
+        self.playlist.addMedia(data, function (err, data) {
+            if(err) {
+                if(err === true)
+                    err = false;
+                if(user)
+                    user.socket.emit("queueFail", err);
+                return;
+            }
+            else {
+                postAdd(data, false);
+            }
+        });
+        return;
+    }
     self.server.db.getLibraryItem(self.name, data.id,
                                   function (err, item) {
         if(err) {
@@ -1268,24 +1302,11 @@ Channel.prototype.addMedia = function(data, user) {
                     if(user)
                         user.socket.emit("queueFail", err);
                     return;
-                }
-                else {
-                    self.logger.log("### " + user.name + " queued " + item.media.title);
-                    self.sendAll("queue", {
-                        item: item.pack(),
-                        after: item.prev ? item.prev.uid : "prepend"
-                    });
-                    self.broadcastPlaylistMeta();
+                } else {
+                    postAdd(item, true);
                 }
             });
-            return;
         } else {
-            if(isLive(data.type) &&
-               !self.hasPermission(user, "playlistaddlive")) {
-                user.socket.emit("queueFail", "You don't have " +
-                                 "permission to add livestreams");
-                return;
-            }
             self.playlist.addMedia(data, function(err, item) {
                 if(err) {
                     if(err === true)
@@ -1293,16 +1314,8 @@ Channel.prototype.addMedia = function(data, user) {
                     if(user)
                         user.socket.emit("queueFail", err);
                     return;
-                }
-                else {
-                    self.logger.log("### " + user.name + " queued " + item.media.title);
-                    self.sendAll("queue", {
-                        item: item.pack(),
-                        after: item.prev ? item.prev.uid : "prepend"
-                    });
-                    self.broadcastPlaylistMeta();
-                    if(!item.temp)
-                        self.cacheMedia(item.media);
+                } else {
+                    postAdd(item, false);
                 }
             });
         }
