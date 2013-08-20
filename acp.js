@@ -169,6 +169,18 @@ module.exports = function (Server) {
                         user.socket.emit("acp-view-stats", res);
                 });
             });
+
+            user.socket.on("acp-view-connstats", function () {
+                var http = Server.stats.readAverages("http");
+                var sio = Server.stats.readAverages("socketio");
+                var api = Server.stats.readAverages("api");
+
+                user.socket.emit("acp-view-connstats", {
+                    http: http,
+                    sio: sio,
+                    api: api
+                });
+            });
         }
     }
 }
