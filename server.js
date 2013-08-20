@@ -90,49 +90,46 @@ var Server = {
         this.httpaccess.log([ipstr, req.method, url, status, req.headers["user-agent"]].join(" "));
     },
     init: function () {
+        var self = this;
         // init database
         var Database = require("./database");
-        this.db = new Database(this.cfg);
+        this.db = new Database(self.cfg);
         this.db.init();
-        this.actionlog = require("./actionlog")(this);
+        this.actionlog = require("./actionlog")(self);
         this.httpaccess = new Logger.Logger("httpaccess.log");
         this.app = express();
         this.app.use(express.bodyParser());
         // channel path
-        this.app.get("/r/:channel(*)", function (req, res, next) {
+        self.app.get("/r/:channel(*)", function (req, res, next) {
             var c = req.params.channel;
             if(!c.match(/^[\w-_]+$/)) {
                 res.redirect("/" + c);
             }
             else {
-                this.logHTTP(req);
+                self.stats.record("http", "/r/" + c);
+                self.logHTTP(req);
                 res.sendfile(__dirname + "/www/channel.html");
             }
-        }.bind(this));
+        });
 
         // api path
-        this.api = require("./api")(this);
-        /*
-        this.app.get("/api/:apireq(*)", function (req, res, next) {
-            this.logHTTP(req);
-            this.api.handle(req.url.substring(5), req, res);
-        }.bind(this));
-        */
+        self.api = require("./api")(self);
 
-        this.app.get("/", function (req, res, next) {
-            this.logHTTP(req);
+        self.app.get("/", function (req, res, next) {
+            self.logHTTP(req);
+            self.stats.record("http", "/");
             res.sendfile(__dirname + "/www/index.html");
-        }.bind(this));
+        });
 
         // default path
-        this.app.get("/:thing(*)", function (req, res, next) {
+        self.app.get("/:thing(*)", function (req, res, next) {
             var opts = {
                 root: __dirname + "/www",
-                maxAge: this.cfg["asset-cache-ttl"]
+                maxAge: self.cfg["asset-cache-ttl"]
             }
             res.sendfile(req.params.thing, opts, function (err) {
                 if(err) {
-                    this.logHTTP(req, err.status);
+                    self.logHTTP(req, err.status);
                     // Damn path traversal attacks
                     if(req.params.thing.indexOf("%2e") != -1) {
                         res.send("Don't try that again, I'll ban you");
@@ -149,34 +146,36 @@ var Server = {
                     }
                 }
                 else {
-                    this.logHTTP(req);
+                    self.stats.record("http", req.params.thing);
+                    self.logHTTP(req);
                 }
-            }.bind(this));
-        }.bind(this));
+            });
+        });
 
         // fallback
-        this.app.use(function (err, req, res, next) {
-            this.logHTTP(req, err.status);
+        self.app.use(function (err, req, res, next) {
+            self.logHTTP(req, err.status);
             if(err.status == 404) {
                 res.send(404);
             } else {
                 next(err);
             }
-        }.bind(this));
+        });
 
         // bind servers
-        this.httpserv = this.app.listen(Server.cfg["web-port"],
+        self.httpserv = self.app.listen(Server.cfg["web-port"],
                                         Server.cfg["express-host"]);
-        this.ioserv = express().listen(Server.cfg["io-port"],
+        self.ioserv = express().listen(Server.cfg["io-port"],
                                        Server.cfg["express-host"]);
 
         // init socket.io
-        this.io = require("socket.io").listen(this.ioserv);
-        this.io.set("log level", 1);
-        this.io.sockets.on("connection", function (socket) {
+        self.io = require("socket.io").listen(self.ioserv);
+        self.io.set("log level", 1);
+        self.io.sockets.on("connection", function (socket) {
+            self.stats.record("socketio", "socket");
             var ip = getSocketIP(socket);
             socket._ip = ip;
-            this.db.isGlobalIPBanned(ip, function (err, bant) {
+            self.db.isGlobalIPBanned(ip, function (err, bant) {
                 if(bant) {
                     Logger.syslog.log("Disconnecting " + ip + " - gbanned");
                     socket.emit("kick", {
@@ -187,14 +186,14 @@ var Server = {
             });
 
             socket.on("disconnect", function () {
-                this.ips[ip]--;
-            }.bind(this));
+                self.ips[ip]--;
+            }.bind(self));
 
-            if(!(ip in this.ips))
-                this.ips[ip] = 0;
-            this.ips[ip]++;
+            if(!(ip in self.ips))
+                self.ips[ip] = 0;
+            self.ips[ip]++;
 
-            if(this.ips[ip] > Server.cfg["ip-connection-limit"]) {
+            if(self.ips[ip] > Server.cfg["ip-connection-limit"]) {
                 socket.emit("kick", {
                     reason: "Too many connections from your IP address"
                 });
@@ -204,18 +203,18 @@ var Server = {
 
             // finally a valid user
             Logger.syslog.log("Accepted socket from /" + socket._ip);
-            new User(socket, this);
-        }.bind(this));
+            new User(socket, self);
+        }.bind(self));
 
 
         // init ACP
-        this.acp = require("./acp")(this);
+        self.acp = require("./acp")(self);
 
         // init stats
-        this.stats = require("./stats")(this);
+        self.stats = require("./stats")(self);
 
         // init media retriever
-        this.infogetter = require("./get-info")(this);
+        self.infogetter = require("./get-info")(self);
     },
     shutdown: function () {
         Logger.syslog.log("Unloading channels");

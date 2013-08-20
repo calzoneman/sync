@@ -55,6 +55,7 @@ module.exports = function (Server) {
 
     /* <https://en.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol> */
     app.get("/api/coffee", function (req, res) {
+        Server.stats.record("api", "/api/coffee");
         res.send(418); // 418 I'm a teapot
     });
 
@@ -62,6 +63,7 @@ module.exports = function (Server) {
     
     /* data about a specific channel */
     app.get("/api/channels/:channel", function (req, res) {
+        Server.stats.record("api", "/api/channels/:channel");
         var name = req.params.channel;
         if(!name.match(/^[\w-_]+$/)) {
             res.send(404);
@@ -82,6 +84,7 @@ module.exports = function (Server) {
 
     /* data about all channels (filter= public or all) */
     app.get("/api/allchannels/:filter", function (req, res) {
+        Server.stats.record("api", "/api/allchannels/:filter");
         var filter = req.params.filter;
         if(filter !== "public" && filter !== "all") {
             res.send(400);
@@ -140,6 +143,7 @@ module.exports = function (Server) {
 
     /* login */
     app.post("/api/login", function (req, res) {
+        Server.stats.record("api", "/api/login");
         res.type("application/jsonp");
         res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
@@ -181,6 +185,7 @@ module.exports = function (Server) {
 
     /* register an account */
     app.post("/api/register", function (req, res) {
+        Server.stats.record("api", "/api/register");
         res.type("application/jsonp");
         res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
@@ -252,6 +257,7 @@ module.exports = function (Server) {
 
     /* password change */
     app.post("/api/account/passwordchange", function (req, res) {
+        Server.stats.record("api", "/api/account/passwordchange");
         res.type("application/jsonp");
         res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -295,6 +301,7 @@ module.exports = function (Server) {
 
     /* password reset */
     app.post("/api/account/passwordreset", function (req, res) {
+        Server.stats.record("api", "/api/account/passwordreset");
         res.type("application/jsonp");
         res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
@@ -364,6 +371,7 @@ module.exports = function (Server) {
 
     /* password recovery */
     app.get("/api/account/passwordrecover", function (req, res) {
+        Server.stats.record("api", "/api/account/passwordrecover");
         res.type("application/jsonp");
         var hash = req.query.hash;
         var ip = getIP(req);
@@ -388,6 +396,7 @@ module.exports = function (Server) {
 
     /* profile retrieval */
     app.get("/api/users/:user/profile", function (req, res) {
+        Server.stats.record("api", "/api/users/:user/profile");
         res.type("application/jsonp");
         var name = req.params.user;
 
@@ -410,6 +419,7 @@ module.exports = function (Server) {
 
     /* profile change */
     app.post("/api/account/profile", function (req, res) {
+        Server.stats.record("api", "/api/account/profile");
         res.type("application/jsonp");
         res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
@@ -457,6 +467,7 @@ module.exports = function (Server) {
 
     /* set email */
     app.post("/api/account/email", function (req, res) {
+        Server.stats.record("api", "/api/account/email");
         res.type("application/jsonp");
         res.setHeader("Access-Control-Allow-Origin", "*");
         var name = req.body.name;
@@ -508,6 +519,7 @@ module.exports = function (Server) {
 
     /* my channels */
     app.get("/api/account/mychannels", function (req, res) {
+        Server.stats.record("/api/account/mychannels");
         res.type("application/jsonp");
         var name = req.query.name;
         var session = req.query.session;
@@ -545,6 +557,7 @@ module.exports = function (Server) {
 
     /* action log */
     app.get("/api/logging/actionlog", function (req, res) {
+        Server.stats.record("api", "/api/logging/actionlog");
         res.type("application/jsonp");
         var name = req.query.name;
         var session = req.query.session;
@@ -594,6 +607,7 @@ module.exports = function (Server) {
     }
 
     app.get("/api/logging/syslog", function (req, res) {
+        Server.stats.record("api", "/api/logging/syslog");
         res.type("text/plain");
         res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -621,6 +635,7 @@ module.exports = function (Server) {
     });
 
     app.get("/api/logging/errorlog", function (req, res) {
+        Server.stats.record("api", "/api/logging/errorlog");
         res.type("text/plain");
         res.setHeader("Access-Control-Allow-Origin", "*");
 
@@ -648,6 +663,7 @@ module.exports = function (Server) {
     });
 
     app.get("/api/logging/channels/:channel", function (req, res) {
+        Server.stats.record("api", "/api/logging/channels/:channel");
         res.type("text/plain");
         res.setHeader("Access-Control-Allow-Origin", "*");
 
