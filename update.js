@@ -2,7 +2,8 @@ var Config = require("./config.js");
 var Database = require("./database.js");
 
 var updates = {
-    "2013-08-20-utf8fix": fixDBUnicode
+    "2013-08-20-utf8fix": fixDBUnicode,
+    "2013-08-21-banfix": fixChannelBanKey
 };
 
 var x = {};
@@ -22,6 +23,25 @@ Config.load(x, "cfg.json", function () {
     var fn = updates[u];
     fn(db);
 });
+
+/*
+    2013-08-20
+
+    This function iterates over tables in the database and converts the
+    encoding on each to UTF-8.
+
+    Furthermore, it does the following to convert channel libraries in
+    a way such that UTF-8 titles stored in other encodings (e.g. latin1)
+    are preserved as UTF-8:
+        1. Change the `title` column to BLOB (unencoded)
+        2. Change the table character set to utf8
+        3. Change the `title` column to VARCHAR(255) CHARACTER SET utf8
+
+    This corrects an encoding issue that was exposed when switching to
+    node-mysql.  mysql-libmysqlclient ignored database encoding and assumed
+    the data was UTF-8.
+
+*/
 
 function fixDBUnicode(db) {
     db.query("SHOW TABLES", function (err, res) {
@@ -106,6 +126,54 @@ function fixDBUnicode(db) {
                         process.exit(0);
                     }
                 }, 1000);
+            }
+        }, 1000);
+    });
+}
+
+/*
+    2013-08-21
+
+    This function iterates over channel ban tables and corrects the
+    PRIMARY KEY.  Previously, the table was defined with PRIMARY KEY (ip),
+    but in reality, (ip, name) should be pairwise unique.
+
+    This corrects the issue where only one name ban can exist in the table
+    because of the `ip` field "*" being unique.
+
+*/
+
+function fixChannelBanKey(db) {
+    db.query("SHOW TABLES", function (err, res) {
+        if(err) {
+            console.log("SEVERE: SHOW TABLES failed");
+            return;
+        }
+
+        var count = res.length;
+        res.forEach(function (r) {
+            var k = Object.keys(r)[0];
+
+            if(!r[k].match(/^chan_[\w-_]{1,30}_bans$/)) {
+                count--;
+                return;
+            }
+
+            db.query("ALTER TABLE `" + r[k] + "` DROP PRIMARY KEY, ADD PRIMARY KEY (ip, name)", function (err, res) {
+                count--;
+                if(err) {
+                    console.log("FAILED: " + r[k]);
+                    return;
+                }
+                
+                console.log("Fixed " + r[k]);
+            });
+        });
+
+        setInterval(function () {
+            if(count == 0) {
+                console.log("Done");
+                process.exit(0);
             }
         }, 1000);
     });

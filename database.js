@@ -366,7 +366,7 @@ Database.prototype.registerChannel = function (name, owner, callback) {
                             "`ip` VARCHAR(15) NOT NULL,",
                             "`name` VARCHAR(32) NOT NULL,",
                             "`banner` VARCHAR(32) NOT NULL,",
-                            "PRIMARY KEY (`ip`))",
+                            "PRIMARY KEY (`ip`, `name`))",
                          "ENGINE = MyISAM ",
                          "CHARACTER SET utf8;"].join("");
 
@@ -570,10 +570,10 @@ Database.prototype.addToLibrary = function (channame, media, callback) {
         return;
     }
 
-    // use INSERT IGNORE to prevent errors from adding duplicates
-    var query = "INSERT IGNORE INTO `chan_" + channame + "_library` " +
+    var query = "INSERT INTO `chan_" + channame + "_library` " +
                 "(id, title, seconds, type) " +
-                "VALUES (?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE id=id";
     var params = [
         media.id,
         media.title,
@@ -648,7 +648,8 @@ Database.prototype.addChannelBan = function (channame, ip, name, banBy,
     }
 
     var query = "INSERT INTO `chan_" + channame + "_bans`" +
-                "(ip, name, banner) VALUES (?, ?, ?)";
+                "(ip, name, banner) VALUES (?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE ip=ip";
 
     self.query(query, [ip, name, banBy], callback);
 };
