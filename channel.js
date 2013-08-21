@@ -684,6 +684,10 @@ Channel.prototype.tryUnban = function(actor, data) {
 
 Channel.prototype.search = function(query, callback) {
     var self = this;
+    if(!self.registered) {
+        callback([]);
+        return;
+    }
     self.server.db.searchLibrary(self.name, query, function (err, res) {
         if(err) {
             res = [];
@@ -1276,6 +1280,22 @@ Channel.prototype.addMedia = function(data, user) {
             }
             else {
                 postAdd(data, false);
+            }
+        });
+        return;
+    }
+
+    // Don't search library if the channel isn't registered
+    if(!self.registered) {
+        self.playlist.addMedia(data, function(err, item) {
+            if(err) {
+                if(err === true)
+                    err = false;
+                if(user)
+                    user.socket.emit("queueFail", err);
+                return;
+            } else {
+                postAdd(item, false);
             }
         });
         return;
