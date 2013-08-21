@@ -20,7 +20,8 @@ var Database = function (cfg) {
             Logger.errlog.log("! DB connection failed");
             return;
         }
-        conn.end();
+
+
     });
 
     this.global_ipbans = {};
@@ -62,9 +63,7 @@ Database.prototype.query = function (query, sub, callback) {
             }
         }
     });
-}
-
-function blackHole() {
+} function blackHole() {
 
 }
 
@@ -77,7 +76,8 @@ Database.prototype.init = function () {
                 "`name` VARCHAR(255) NOT NULL,",
                 "`owner` VARCHAR(20) NOT NULL,",
                 "PRIMARY KEY(`id`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ",
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -97,7 +97,8 @@ Database.prototype.init = function () {
                 "`profile_text` TEXT NOT NULL,",
                 "`email` VARCHAR(255) NOT NULL,",
                 "PRIMARY KEY (`id`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ",
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -110,7 +111,8 @@ Database.prototype.init = function () {
                 "`ip` VARCHAR(15) NOT NULL,",
                 "`note` VARCHAR(255) NOT NULL,",
                 "PRIMARY KEY (`ip`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ", 
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -126,7 +128,8 @@ Database.prototype.init = function () {
                 "`email` VARCHAR(255) NOT NULL,",
                 "`expire` BIGINT NOT NULL,",
                 "PRIMARY KEY (`name`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ",
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -142,7 +145,8 @@ Database.prototype.init = function () {
                 "`count` INT NOT NULL,",
                 "`time` INT NOT NULL,",
                 "PRIMARY KEY (`user`, `name`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ",
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -157,7 +161,8 @@ Database.prototype.init = function () {
                 "`name` VARCHAR(20) NOT NULL,",
                 "`time` BIGINT NOT NULL,",
                 "PRIMARY KEY (`visit_id`), INDEX (`ip`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ",
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -173,7 +178,8 @@ Database.prototype.init = function () {
                 "`args` TEXT NOT NULL,",
                 "`time` BIGINT NOT NULL,",
                 "PRIMARY KEY (`ip`, `time`), INDEX (`action`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ",
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -188,7 +194,8 @@ Database.prototype.init = function () {
                 "`chancount` INT NOT NULL,",
                 "`mem` INT NOT NULL,",
                 "PRIMARY KEY (`time`))",
-             "ENGINE = MyISAM;"].join("");
+             "ENGINE = MyISAM ",
+             "CHARACTER SET utf8;"].join("");
 
     self.query(query, function (err, res) {
         if(err) {
@@ -330,7 +337,8 @@ Database.prototype.registerChannel = function (name, owner, callback) {
                         "`seconds` INT NOT NULL,",
                         "`type` VARCHAR(2) NOT NULL,",
                         "PRIMARY KEY (`id`))",
-                     "ENGINE = MyISAM;"].join("");
+                     "ENGINE = MyISAM ",
+                     "CHARACTER SET utf8;"].join("");
         self.query(query, function (err, res) {
             if(err) {
                 callback(err, null);
@@ -342,7 +350,8 @@ Database.prototype.registerChannel = function (name, owner, callback) {
                             "`name` VARCHAR(32) NOT NULL,",
                             "`rank` INT NOT NULL,",
                             "UNIQUE (`name`))",
-                         "ENGINE = MyISAM;"].join("");
+                         "ENGINE = MyISAM ",
+                         "CHARACTER SET utf8;"].join("");
 
             self.query(query, function (err, res) {
                 if(err) {
@@ -356,7 +365,8 @@ Database.prototype.registerChannel = function (name, owner, callback) {
                             "`name` VARCHAR(32) NOT NULL,",
                             "`banner` VARCHAR(32) NOT NULL,",
                             "PRIMARY KEY (`ip`))",
-                         "ENGINE = MyISAM;"].join("");
+                         "ENGINE = MyISAM ",
+                         "CHARACTER SET utf8;"].join("");
 
                 self.query(query, function (err, res) {
                     if(err) {
@@ -558,7 +568,8 @@ Database.prototype.addToLibrary = function (channame, media, callback) {
         return;
     }
 
-    var query = "INSERT INTO `chan_" + channame + "_library` " +
+    // use INSERT IGNORE to prevent errors from adding duplicates
+    var query = "INSERT IGNORE INTO `chan_" + channame + "_library` " +
                 "(id, title, seconds, type) " +
                 "VALUES (?, ?, ?, ?)";
     var params = [
