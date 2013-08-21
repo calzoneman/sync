@@ -63,7 +63,9 @@ Database.prototype.query = function (query, sub, callback) {
             }
         }
     });
-} function blackHole() {
+}; 
+
+function blackHole() {
 
 }
 
