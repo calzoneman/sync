@@ -73,7 +73,7 @@ function fixDBUnicode(db) {
                                     console.log(err);
                                     return;
                                 }
-                                console.log("Fixed user_playlists");
+                                console.log("Fixed " + lib);
                             });
                         });
                     });
@@ -96,7 +96,7 @@ function fixDBUnicode(db) {
                                 console.log(err);
                                 return;
                             }
-                            console.log("Fixed " + lib);
+                            console.log("Fixed user_playlists");
                         });
                     });
                 });
