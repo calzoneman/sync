@@ -60,9 +60,14 @@ function formatURL(data) {
 
 function findUserlistItem(name) {
     var children = $("#userlist .userlist_item");
+    if(children.length == 0)
+        return null;
+    name = name.toLowerCase();
     for(var i in children) {
         var child = children[i];
-        if(child.children[1].innerHTML === name)
+        if(typeof child.children === "undefined")
+            continue;
+        if($(child.children[1]).text().toLowerCase() == name)
             return $(child);
     }
     return null;

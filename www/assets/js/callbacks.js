@@ -652,6 +652,10 @@ Callbacks = {
     },
 
     addUser: function(data) {
+        var user = findUserlistItem(data.name);
+        // Remove previous instance of user, if there was one
+        if(user !== null)
+            user.remove();
         var div = $("<div/>")
             .addClass("userlist_item");
         var flair = $("<span/>").appendTo(div);
