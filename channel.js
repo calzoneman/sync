@@ -1229,6 +1229,9 @@ Channel.prototype.tryQueue = function(user, data) {
         return;
     }
 
+    if(typeof data.title !== "string")
+        data.title = false;
+
     var count = this.playlist.count(data.id);
 
     if(user.rank < Rank.Moderator && count >= 5) {
@@ -1277,6 +1280,8 @@ Channel.prototype.addMedia = function(data, user) {
                    : this.opts.maxlength;
 
     var postAdd = function (item, cached) {
+        if(item.media.type === "cu" && data.title)
+            item.media.title = data.title;
         self.logger.log("### " + user.name + " queued " + item.media.title);
         self.sendAll("queue", {
             item: item.pack(),

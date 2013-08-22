@@ -279,12 +279,18 @@ $("#queue").disableSelection();
 
 function queue(pos) {
     if($("#customembed_code").val()) {
+        var title = false;
+        if($("#customembed_title").val()) {
+            title = $("#customembed_title").val();
+        }
         socket.emit("queue", {
             id: $("#customembed_code").val(),
+            title: title,
             type: "cu",
             pos: pos
         });
         $("#customembed_code").val("");
+        $("#customembed_title").val("");
         return;
     }
     var links = $("#mediaurl").val().split(",");
