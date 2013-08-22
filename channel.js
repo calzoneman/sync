@@ -385,7 +385,7 @@ Channel.prototype.tryRegister = function (user) {
                          [self.name, "Insufficient permissions"]);
         user.socket.emit("registerChannel", {
             success: false,
-            error: "You don't have permission to register self channel"
+            error: "You don't have permission to register this channel"
         });
     }
     else {

@@ -149,6 +149,7 @@ User.prototype.initCallbacks = function() {
             });
         }
         self.channel.userJoin(self);
+        self.autoAFK();
     });
 
     self.socket.on("login", function(data) {
