@@ -925,7 +925,7 @@ Database.prototype.getGlobalRank = function (name, callback) {
         }
 
         if(res.length == 0) {
-            callback("User does not exist", null);
+            callback(null, 0);
             return;
         }
 
@@ -956,7 +956,7 @@ Database.prototype.listGlobalRanks = function (names, callback) {
         }
 
         if(res.length == 0) {
-            callback("User does not exist", null);
+            callback(null, 0);
             return;
         }
 

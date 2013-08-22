@@ -556,8 +556,17 @@ Channel.prototype.tryNameBan = function(actor, name) {
             }
         }
         self.logger.log("*** " + actor.name + " namebanned " + name);
+        var notice = {
+            username: "[server]",
+            msg: actor.name + " banned " + name,
+            msgclass: "server-whisper",
+            time: Date.now()
+        };
         self.users.forEach(function(u) {
-            self.sendBanlist(u);
+            if(self.hasPermission(u, "ban")) {
+                self.sendBanlist(u);
+                u.socket.emit("chatMsg", notice);
+            }
         });
 
         if(!self.registered) {
@@ -614,7 +623,7 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
             self.getIPRank(ip, function (err, rank) {
                 if(err) {
                     actor.socket.emit("errorMsg", {
-                        msg: "Internal error"
+                        msg: "Internal error: " + err
                     });
                     return;
                 }
@@ -644,8 +653,18 @@ Channel.prototype.tryIPBan = function(actor, name, range) {
                 self.server.db.addChannelBan(self.name, ip, name,
                                              actor.name,
                                              function (err, res) {
+                    var notice = {
+                        username: "[server]",
+                        msg: actor.name + " banned " + $util.maskIP(ip) +
+                             " (" + name + ")",
+                        msgclass: "server-whisper",
+                        time: Date.now()
+                    };
                     self.users.forEach(function(u) {
-                        self.sendBanlist(u);
+                        if(self.hasPermission(u, "ban")) {
+                            u.socket.emit("chatMsg", notice);
+                            self.sendBanlist(u);
+                        }
                     });
                 });
             });
