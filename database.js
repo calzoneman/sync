@@ -1071,7 +1071,7 @@ Database.prototype.genPasswordReset = function (ip, name, email, callback) {
         query = "INSERT INTO password_reset " +
                 "(ip, name, hash, email, expire) VALUES (?, ?, ?, ?, ?) " +
                 "ON DUPLICATE KEY UPDATE hash=?, expire=?";
-        self.query(query, [ip, name, hash, email, exp, hash, exp],
+        self.query(query, [ip, name, hash, email, exp, hash, expire],
                    function (err, res) {
             if(err) {
                 callback(err, null);
