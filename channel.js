@@ -994,6 +994,7 @@ Channel.prototype.broadcastNewUser = function(user) {
     if(self.dbloaded && self.users.length == 1 && !self.registered) {
         user.rank = (user.rank < Rank.Owner) ? 10 : user.rank;
         user.socket.emit("channelNotRegistered");
+        user.socket.emit("rank", 10);
     }
     self.server.db.listAliases(user.ip, function (err, aliases) {
         if(err) {
