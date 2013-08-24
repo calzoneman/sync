@@ -13,7 +13,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 var fs = require("fs");
 var Poll = require("./poll.js").Poll;
 var Media = require("./media.js").Media;
-var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
 var Rank = require("./rank.js");
 var ChatCommand = require("./chatcommand.js");
@@ -718,6 +717,10 @@ Channel.prototype.search = function(query, callback) {
 
             return (x == y) ? 0 : (x < y ? -1 : 1);
         });
+
+        res.forEach(function (r) {
+            r.duration = $util.formatTime(r.seconds);
+        });
         callback(res);
     });
 }
@@ -974,7 +977,7 @@ Channel.prototype.broadcastPlaylistMeta = function() {
             total += iter.media.seconds;
         iter = iter.next;
     }
-    var timestr = formatTime(total);
+    var timestr = $util.formatTime(total);
     var packet = {
         count: this.playlist.items.length,
         time: timestr

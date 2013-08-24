@@ -9,37 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// Helper function for formatting a time value in seconds
-// to the format hh:mm:ss
-function formatTime(sec) {
-    if(sec == "--:--")
-        return sec;
-
-    sec = Math.floor(sec);
-    var hours="", minutes="", seconds="";
-    if(sec > 3600) {
-        hours = ""+Math.floor(sec / 3600);
-        if(hours.length < 2)
-            hours = "0"+hours;
-        sec = sec % 3600;
-    }
-    minutes = ""+Math.floor(sec / 60);
-    while(minutes.length < 2) {
-        minutes = "0"+minutes;
-    }
-    seconds = ""+(sec % 60);
-    while(seconds.length < 2) {
-        seconds = "0"+seconds;
-    }
-
-    var time = "";
-    if(hours != "")
-        time = hours + ":";
-    time += minutes + ":" + seconds;
-    return time;
-}
-
-exports.formatTime = formatTime;
+var formatTime = require("./utilities").formatTime;
 
 // Represents a media entry
 var Media = function(id, title, seconds, type) {
