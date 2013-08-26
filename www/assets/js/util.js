@@ -63,10 +63,14 @@ function findUserlistItem(name) {
     if(children.length == 0)
         return null;
     name = name.toLowerCase();
-    for(var i in children) {
-        var child = children[i];
-        if(typeof child.children === "undefined")
+    // WARNING: Incoming hax because of jQuery and bootstrap bullshit
+    var keys = Object.keys(children);
+    for(var k in keys) {
+        var i = keys[k];
+        if(isNaN(parseInt(i))) {
             continue;
+        }
+        var child = children[i];
         if($(child.children[1]).text().toLowerCase() == name)
             return $(child);
     }
