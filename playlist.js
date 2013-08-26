@@ -169,20 +169,29 @@ Playlist.prototype.makeItem = function(media) {
 }
 
 Playlist.prototype.add = function(item, pos) {
-    var success;
-    if(pos == "append")
-        success = this.items.append(item);
-    else if(pos == "prepend")
-        success = this.items.prepend(item);
-    else
-        success = this.items.insertAfter(item, pos);
+    if(this.items.length >= 4000)
+        return "Playlist limit reached (4,000)";
 
-    if(success && this.items.length == 1) {
+    if(this.items.findVideoId(item.media.id))
+        return "This item is already on the playlist";
+
+    if(pos == "append") {
+        if(!this.items.append(item))
+            return "Playlist failure";
+    } else if(pos == "prepend") {
+        if(!this.items.prepend(item))
+            return "Playlist failure";
+    } else {
+        if(!this.items.insertAfter(item, pos))
+            return "Playlist failure";
+    }
+
+    if(this.items.length == 1) {
         this.current = item;
         this.startPlayback();
     }
 
-    return success;
+    return false;
 }
 
 Playlist.prototype.addCachedMedia = function(data, callback) {
@@ -202,8 +211,8 @@ Playlist.prototype.addCachedMedia = function(data, callback) {
 
     var action = {
         fn: function() {
-            if(pl.add(it, pos))
-                callback(false, it);
+            var err = pl.add(it, pos);
+            callback(err, err ? null : it);
         },
         waiting: false
     };
@@ -229,9 +238,8 @@ Playlist.prototype.addMedia = function(data, callback) {
     var pl = this;
     var action = {
         fn: function() {
-            if(pl.add(it, pos)) {
-                callback(false, it);
-            }
+            var err = pl.add(it, pos);
+            callback(err, err ? null : it);
         },
         waiting: true
     };
@@ -331,8 +339,8 @@ Playlist.prototype.addYouTubePlaylist = function(data, callback) {
             it.queueby = data.queueby;
             pl.queueAction({
                 fn: function() {
-                    if(pl.add(it, pos))
-                        callback(false, it);
+                    var err = pl.add(it, pos);
+                    callback(err, err ? null : it);
                 },
             });
         });

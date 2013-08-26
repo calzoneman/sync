@@ -1231,22 +1231,12 @@ Channel.prototype.tryQueue = function(user, data) {
             && this.leader != user
             && user.noflood("queue", 3)) {
         return;
+    } else if (user.rank < Rank.Siteadmin && user.noflood("queue", 0.5)) {
+        return;
     }
 
     if(typeof data.title !== "string")
         data.title = false;
-
-    var count = this.playlist.count(data.id);
-
-    if(user.rank < Rank.Moderator && count >= 5) {
-        user.socket.emit("queueFail", "That video is already on the " + 
-                         "playlist 5 times.");
-        return;
-    } else if(user.rank < Rank.Siteadmin && count >= 20) {
-        user.socket.emit("queueFail", "That video is already on the " + 
-                         "playlist 20 times.");
-        return;
-    }
 
     data.queueby = user ? user.name : "";
     data.temp = !this.hasPermission(user, "addnontemp");
