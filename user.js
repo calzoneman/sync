@@ -11,7 +11,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var Rank = require("./rank.js");
 var Channel = require("./channel.js").Channel;
-var formatTime = require("./media.js").formatTime;
 var Logger = require("./logger.js");
 var $util = require("./utilities");
 
@@ -443,7 +442,7 @@ User.prototype.initCallbacks = function() {
             if(err)
                 list = [];
             for(var i = 0; i < list.length; i++) {
-                list[i].time = formatTime(list[i].time);
+                list[i].time = $util.formatTime(list[i].time);
             }
             self.socket.emit("listPlaylists", {
                 pllist: list,
@@ -492,7 +491,7 @@ User.prototype.initCallbacks = function() {
                 if(err)
                     list = [];
                 for(var i = 0; i < list.length; i++) {
-                    list[i].time = formatTime(list[i].time);
+                    list[i].time = $util.formatTime(list[i].time);
                 }
                 self.socket.emit("listPlaylists", {
                     pllist: list,
@@ -519,7 +518,7 @@ User.prototype.initCallbacks = function() {
                 if(err)
                     list = [];
                 for(var i = 0; i < list.length; i++) {
-                    list[i].time = formatTime(list[i].time);
+                    list[i].time = $util.formatTime(list[i].time);
                 }
                 self.socket.emit("listPlaylists", {
                     pllist: list,
