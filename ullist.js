@@ -175,7 +175,7 @@ ULList.prototype.findVideoId = function (id) {
     var item = this.first;
     while(item !== null) {
         if(item.media && item.media.id === id)
-            return true;
+            return item;
         item = item.next;
     }
     return false;

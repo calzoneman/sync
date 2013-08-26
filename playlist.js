@@ -169,21 +169,36 @@ Playlist.prototype.makeItem = function(media) {
 }
 
 Playlist.prototype.add = function(item, pos) {
-    if(this.items.length >= 4000)
+    var self = this;
+    if(this.items.length >= 4000) {
         return "Playlist limit reached (4,000)";
+    }
 
-    if(this.items.findVideoId(item.media.id))
-        return "This item is already on the playlist";
+    var it = this.items.findVideoId(item.media.id);
+    if(it) {
+        if(pos === "append" || it == this.current) {
+            return "This item is already on the playlist";
+        }
+
+        self.remove(it.uid, function () {
+            self.channel.sendAll("delete", {
+                uid: it.uid
+            });
+        });
+    }
 
     if(pos == "append") {
-        if(!this.items.append(item))
+        if(!this.items.append(item)) {
             return "Playlist failure";
+        }
     } else if(pos == "prepend") {
-        if(!this.items.prepend(item))
+        if(!this.items.prepend(item)) {
             return "Playlist failure";
+        }
     } else {
-        if(!this.items.insertAfter(item, pos))
+        if(!this.items.insertAfter(item, pos)) {
             return "Playlist failure";
+        }
     }
 
     if(this.items.length == 1) {
