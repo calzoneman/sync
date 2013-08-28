@@ -120,7 +120,7 @@ var USEROPTS = {
     sort_rank            : getOrDefault("sort_rank", false),
     sort_afk             : getOrDefault("sort_afk", false),
     default_quality      : getOrDefault("default_quality", "#quality_auto"),
-    boop                 : gerOrDefault("boop", false)
+    boop                 : getOrDefault("boop", false)
 };
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
