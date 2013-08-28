@@ -1274,8 +1274,12 @@ Channel.prototype.addMedia = function(data, user) {
                    : this.opts.maxlength;
 
     var postAdd = function (item, cached) {
-        if(item.media.type === "cu" && data.title)
-            item.media.title = data.title;
+        if(item.media.type === "cu" && data.title) {
+            var t = data.title;
+            if(t.length > 100)
+                t = t.substring(0, 97) + "...";
+            item.media.title = t;
+        }
         self.logger.log("### " + user.name + " queued " + item.media.title);
         self.sendAll("queue", {
             item: item.pack(),
