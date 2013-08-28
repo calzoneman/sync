@@ -184,6 +184,7 @@ Playlist.prototype.add = function(item, pos) {
             self.channel.sendAll("delete", {
                 uid: it.uid
             });
+            self.channel.broadcastPlaylistMeta();
         });
     }
 
