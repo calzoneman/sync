@@ -614,6 +614,12 @@ function showOptionsMenu() {
     blink.prop("checked", USEROPTS.blink_title);
     addOption("Chat Notice", blinkcontainer);
 
+    var boopcontainer = $("<label/>").addClass("checkbox")
+        .text("Play a sound in addition to flashing the title");
+    var boop = $("<input/>").attr("type", "checkbox").appendTo(boopcontainer);
+    boop.prop("checked", USEROPTS.boop);
+    addOption("Chat Sound", boopcontainer);
+
     var sendbtncontainer = $("<label/>").addClass("checkbox")
         .text("Add a send button to the chatbox");
     var sendbtn = $("<input/>").attr("type", "checkbox").appendTo(sendbtncontainer);
@@ -665,6 +671,7 @@ function showOptionsMenu() {
         USEROPTS.ignore_channeljs     = nojs.prop("checked");
         USEROPTS.sort_rank            = sr.prop("checked");
         USEROPTS.sort_afk             = sa.prop("checked");
+        USEROPTS.boop                 = boop.prop("checked");
         sortUserlist();
         if(CLIENT.rank >= Rank.Moderator) {
             USEROPTS.modhat = modhat.prop("checked");
@@ -1384,6 +1391,7 @@ function addChatMessage(data) {
     if(SCROLLCHAT)
         scrollChat();
     if(USEROPTS.blink_title && !FOCUSED && !TITLE_BLINK) {
+        USEROPTS.boop && CHATSOUND.play();
         TITLE_BLINK = setInterval(function() {
             if(document.title == "*Chat*")
                 document.title = PAGETITLE;
@@ -1395,6 +1403,7 @@ function addChatMessage(data) {
         if(data.msg.toUpperCase().indexOf(CLIENT.name.toUpperCase()) != -1) {
             div.addClass("nick-highlight");
             if(!FOCUSED && !TITLE_BLINK) {
+                USEROPTS.boop && CHATSOUND.play();
                 TITLE_BLINK = setInterval(function() {
                     if(document.title == "*Chat*")
                         document.title = PAGETITLE;

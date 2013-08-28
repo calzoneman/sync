@@ -63,6 +63,7 @@ var LASTCHATTIME = 0;
 var FOCUSED = true;
 var PAGETITLE = "CyTube";
 var TITLE_BLINK;
+var CHATSOUND = new Audio("assets/sounds/boop.wav");
 var KICKED = false;
 var NAME = readCookie("cytube_uname");
 var SESSION = readCookie("cytube_session");
@@ -118,7 +119,8 @@ var USEROPTS = {
     ignore_channeljs     : getOrDefault("ignore_channeljs", false),
     sort_rank            : getOrDefault("sort_rank", false),
     sort_afk             : getOrDefault("sort_afk", false),
-    default_quality      : getOrDefault("default_quality", "#quality_auto")
+    default_quality      : getOrDefault("default_quality", "#quality_auto"),
+    boop                 : gerOrDefault("boop", false)
 };
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
