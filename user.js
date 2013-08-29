@@ -31,6 +31,7 @@ var User = function(socket, Server) {
     this.muted = false;
     this.throttle = {};
     this.flooded = {};
+    this.queueLimiter = $util.newRateLimiter();
     this.profile = {
         image: "",
         text: ""

@@ -1227,11 +1227,20 @@ Channel.prototype.tryQueue = function(user, data) {
         return;
     }
 
-    if(user.rank < Rank.Moderator
-            && this.leader != user
-            && user.noflood("queue", 3)) {
-        return;
-    } else if (user.rank < Rank.Siteadmin && user.noflood("queue", 0.5)) {
+    var limit = {
+        burst: 3,
+        sustained: 1
+    };
+
+    if (user.rank >= Rank.Moderator || this.leader == user) {
+        limit = {
+            burst: 10,
+            sustained: 2
+        };
+    }
+
+    if (user.queueLimiter.throttle(limit)) {
+        user.socket.emit("queueFail", "You are adding videos too quickly");
         return;
     }
 
