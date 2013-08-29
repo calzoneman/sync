@@ -84,8 +84,11 @@ function formatUserlistItem(div, data) {
     name.addClass(getNameColor(data.rank));
     div.find(".profile-box").remove();
 
-    var profile;
+    var profile = null;
     name.mouseenter(function(ev) {
+        if (profile)
+            profile.remove();
+
         profile = $("<div/>")
             .addClass("profile-box")
             .css("top", (ev.pageY + 5) + "px")
