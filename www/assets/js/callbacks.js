@@ -43,11 +43,9 @@ Callbacks = {
 
     /* fired when socket connection completes */
     connect: function() {
-        setTimeout(function () {
         socket.emit("joinChannel", {
             name: CHANNEL.name
         });
-        }, 2000);
         if(NAME && SESSION) {
             socket.emit("login", {
                 name: NAME,
