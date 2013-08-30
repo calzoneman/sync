@@ -1443,6 +1443,7 @@ function fluidLayout() {
 function synchtubeLayout() {
     $("#videowrap").detach().insertBefore($("#chatwrap"));
     $("#rightpane-outer").detach().insertBefore($("#leftpane-outer"));
+    $("#userlist").css("float", "right");
 }
 
 function chatOnly() {
