@@ -472,6 +472,8 @@ Channel.prototype.getRank = function (name, callback) {
 Channel.prototype.saveRank = function (user, callback) {
     if(!this.registered)
         return;
+    if(!user.saverank)
+        return;
     this.server.db.setChannelRank(this.name, user.name, user.rank, callback);
 }
 
@@ -728,6 +730,7 @@ Channel.prototype.search = function(query, callback) {
 /* REGION User interaction */
 
 Channel.prototype.userJoin = function(user) {
+    var self = this;
     var parts = user.ip.split(".");
     var slash24 = parts[0] + "." + parts[1] + "." + parts[2];
     // GTFO
@@ -758,7 +761,17 @@ Channel.prototype.userJoin = function(user) {
     this.users.push(user);
     this.broadcastVoteskipUpdate();
     if(user.name != "") {
-        this.broadcastNewUser(user);
+        self.getRank(user.name, function (err, rank) {
+            if(err) {
+                user.rank = user.global_rank;
+                user.saverank = false;
+            } else {
+                user.saverank = true;
+                user.rank = rank;
+            }
+            user.socket.emit("rank", rank);
+            self.broadcastNewUser(user);
+        });
     }
     this.broadcastUsercount();
 

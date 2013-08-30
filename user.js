@@ -20,6 +20,7 @@ var User = function(socket, Server) {
     this.server = Server;
     this.socket = socket;
     this.loggedIn = false;
+    this.saverank = false;
     this.rank = Rank.Anonymous;
     this.global_rank = Rank.Anonymous;
     this.channel = null;
@@ -668,10 +669,13 @@ User.prototype.login = function(name, pw, session) {
             };
             if(self.channel !== null) {
                 self.channel.getRank(name, function (err, rank) {
-                    if(!err)
+                    if(!err) {
+                        self.saverank = true;
                         self.rank = rank;
-                    else
+                    } else {
+                        self.saverank = false;
                         self.rank = self.global_rank;
+                    }
                     afterRankLookup();
                 });
             } else {
