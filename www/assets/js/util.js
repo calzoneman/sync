@@ -1,11 +1,11 @@
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -182,7 +182,7 @@ function addUserDropdown(entry, data) {
         });
         sel.val(""+rank);
     }
-    
+
     /* ignore button */
     var ignore = $("<button/>").addClass("btn btn-mini btn-block")
         .appendTo(menu)
@@ -290,7 +290,7 @@ function calcUserBreakdown() {
         if($(item).find(".icon-time").length > 0)
             breakdown["AFK"]++;
     });
-    
+
     return breakdown;
 }
 
@@ -497,6 +497,145 @@ function rebuildPlaylist() {
 }
 
 /* menus */
+function showOpts() {
+    hidePlayer();
+    var modal = $("<div/>").addClass("modal hide fade")
+        .appendTo($("body"));
+
+    modal.load("useroptions.html", function () {
+        if (CLIENT.rank < 2) {
+            $("#uopt-btn-mod").remove();
+        }
+
+        var tabHandler = function (btnid, panelid) {
+            $(btnid).click(function () {
+                modal.find(".btn.btn-small").attr("disabled", false);
+                modal.find(".uopt-panel").hide();
+                $(btnid).attr("disabled", true);
+                $(panelid).show();
+            });
+        };
+
+        tabHandler("#uopt-btn-general", "#uopt-panel-general");
+        tabHandler("#uopt-btn-playback", "#uopt-panel-playback");
+        tabHandler("#uopt-btn-chat", "#uopt-panel-chat");
+        tabHandler("#uopt-btn-mod", "#uopt-panel-mod");
+
+        var initForm = function (id) {
+            var f = $("<form/>").appendTo($(id))
+                .addClass("form-horizontal")
+                .attr("action", "javascript:void(0)");
+            return $("<fieldset/>").appendTo(f);
+        };
+
+        var addOption = function (form, lbl, thing) {
+            var g = $("<div/>").addClass("control-group").appendTo(form);
+            $("<label/>").addClass("control-label").text(lbl).appendTo(g);
+            var c = $("<div/>").addClass("controls").appendTo(g);
+            thing.appendTo(c);
+        };
+
+        var addCheckbox = function (form, opt, lbl) {
+            var c = $("<label/>").addClass("checkbox")
+                .text(lbl);
+            var box = $("<input/>").attr("type", "checkbox")
+                .appendTo(c);
+            addOption(form, opt, c);
+            return box;
+        };
+
+        // general options
+        var general = initForm("#uopt-panel-general");
+
+        var gen_theme = $("<select/>");
+        $("<option/>").attr("value", "default")
+            .text("Default")
+            .appendTo(gen_theme);
+        $("<option/>").attr("value", "assets/css/darkstrap.css")
+            .text("Dark")
+            .appendTo(gen_theme);
+        gen_theme.val(USEROPTS.theme);
+        addOption(general, "Theme", gen_theme);
+
+        var gen_layout = $("<select/>");
+        $("<option/>").attr("value", "default")
+            .text("Compact")
+            .appendTo(gen_layout);
+        $("<option/>").attr("value", "synchtube")
+            .text("Synchtube")
+            .appendTo(gen_layout);
+        $("<option/>").attr("value", "fluid")
+            .text("Fluid")
+            .appendTo(gen_layout);
+        gen_layout.val(USEROPTS.layout);
+        addOption(general, "Layout", gen_layout);
+
+        var gen_layoutwarn = $("<p/>").addClass("text-error")
+            .text("Changing layouts may require a refresh");
+        addOption(general, "", gen_layoutwarn);
+
+        var gen_css = $("<input/>").attr("type", "text")
+            .attr("placeholder", "Stylesheet URL");
+        gen_css.val(USEROPTS.css);
+        addOption(general, "User CSS", gen_css);
+
+        var gen_nocss = addCheckbox(general, "Channel CSS",
+                                    "Ignore channel CSS");
+        gen_nocss.prop("checked", USEROPTS.ignore_channelcss);
+
+        var gen_nojs = addCheckbox(general, "Channel JS",
+                                    "Ignore channel JS");
+        gen_nojs.prop("checked", USEROPTS.ignore_channeljs);
+
+        // playback options
+        var playback = initForm("#uopt-panel-playback");
+
+        var pl_synch = addCheckbox(playback, "Synchronize",
+                                   "Synchronize media playback");
+        pl_synch.prop("checked", USEROPTS.synch);
+
+        var pl_synchacc = $("<input/>").attr("type", "text")
+            .attr("placeholder", "Accuracy in seconds");
+        pl_synchacc.val(USEROPTS.sync_accuracy);
+        addOption(playback, "Synch Accuracy (seconds)", pl_synchacc);
+
+        var pl_wmode = addCheckbox(playback, "Transparent wmode",
+                                   "Allow transparency over video player");
+        pl_wmode.prop("checked", USEROPTS.wmode_transparent);
+
+        var pl_wmodewarn = $("<p/>").addClass("text-error")
+            .text("Enabling transparent wmode may cause performance "+
+                  "issues on some systems");
+        addOption(playback, "", pl_wmodewarn);
+
+        var pl_hide = addCheckbox(playback, "Hide Video",
+                                  "Remove the video player");
+        pl_hide.prop("checked", USEROPTS.hidevid);
+
+        // mod options
+        var mod = initForm("#uopt-panel-mod");
+
+        var mod_flair = addCheckbox(mod, "Modflair", "Show name color");
+        mod_flair.prop("checked", USEROPTS.modhat);
+
+        var mod_joinmsg = addCheckbox(mod, "Join Messages",
+                                      "Show join messages");
+        mod_joinmsg.prop("checked", USEROPTS.joinmessage);
+
+
+        $("#uopt-btn-general").click();
+        $("#uopt-btn-save").click(function () {
+        });
+    });
+
+    modal.on("hidden", function () {
+        unhidePlayer();
+        modal.remove();
+    });
+
+    modal.modal();
+}
+
 function showOptionsMenu() {
     hidePlayer();
     var modal = $("<div/>").addClass("modal hide fade")
