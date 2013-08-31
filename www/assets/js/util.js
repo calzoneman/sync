@@ -587,6 +587,17 @@ function showOpts() {
                                     "Ignore channel JS");
         gen_nojs.prop("checked", USEROPTS.ignore_channeljs);
 
+        var gen_altsocket = addCheckbox(general, "Alternate Socket",
+                                        "Use alternate socket connection");
+        gen_altsocket.prop("checked", USEROPTS.altsocket);
+
+        var gen_altsocketinfo = $("<p/>")
+            .addClass("text-error")
+            .text("Alternate socket requires a refresh after changing.  "+
+                  "It should only be used if the default (unchecked) "+
+                  "does not work.");
+        addOption(general, "", gen_altsocketinfo);
+
         // playback options
         var playback = initForm("#uopt-panel-playback");
 
@@ -611,6 +622,46 @@ function showOpts() {
         var pl_hide = addCheckbox(playback, "Hide Video",
                                   "Remove the video player");
         pl_hide.prop("checked", USEROPTS.hidevid);
+
+        var pl_hidebtn = addCheckbox(playback, "Playlist Buttons",
+                                     "Hide playlist buttons by default");
+        pl_hidebtn.prop("checked", USEROPTS.qbtn_hide);
+
+        var pl_oldbtn = addCheckbox(playback, "Playlist Buttons (old)",
+                                    "Old style playlist buttons");
+        pl_oldbtn.prop("checked", USEROPTS.qbtn_idontlikechange);
+
+        // chat options
+        var chat = initForm("#uopt-panel-chat");
+
+        var chat_time = addCheckbox(chat, "Timestamps",
+                                    "Show timestamps in chat");
+        chat_time.prop("checked", USEROPTS.show_timestamps);
+
+        var chat_sort_rank = addCheckbox(chat, "Userlist sort",
+                                         "Sort userlist by rank");
+        chat_sort_rank.prop("checked", USEROPTS.sort_rank);
+
+        var chat_sort_afk = addCheckbox(chat, "Userlist sort",
+                                        "Sort AFKers to bottom");
+        chat_sort_afk.prop("checked", USEROPTS.sort_afk);
+
+        var chat_all = addCheckbox(chat, "Chat Notice",
+                                   "Notify on all messages");
+        chat_all.prop("checked", USEROPTS.blink_title);
+
+        var chat_allinfo = $("<p/>")
+            .text("When disabled, you will only be notified if your "+
+                  "name is mentioned");
+        addOption(chat, "", chat_allinfo);
+
+        var chat_boop = addCheckbox(chat, "Chat Sound",
+                                    "Play a sound for notifications");
+        chat_boop.prop("checked", USEROPTS.boop);
+
+        var chat_sendbtn = addCheckbox(chat, "Send Button",
+                                       "Add a send button to chat");
+        chat_sendbtn.prop("checked", USEROPTS.chatbtn);
 
         // mod options
         var mod = initForm("#uopt-panel-mod");
