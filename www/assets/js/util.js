@@ -1,11 +1,11 @@
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -182,7 +182,7 @@ function addUserDropdown(entry, data) {
         });
         sel.val(""+rank);
     }
-    
+
     /* ignore button */
     var ignore = $("<button/>").addClass("btn btn-mini btn-block")
         .appendTo(menu)
@@ -290,7 +290,7 @@ function calcUserBreakdown() {
         if($(item).find(".icon-time").length > 0)
             breakdown["AFK"]++;
     });
-    
+
     return breakdown;
 }
 
@@ -497,198 +497,220 @@ function rebuildPlaylist() {
 }
 
 /* menus */
+
+/* user settings menu */
 function showOptionsMenu() {
     hidePlayer();
     var modal = $("<div/>").addClass("modal hide fade")
         .appendTo($("body"));
-    var head = $("<div/>").addClass("modal-header")
-        .appendTo(modal);
-    $("<button/>").addClass("close")
-        .attr("data-dismiss", "modal")
-        .attr("aria-hidden", "true")
-        .appendTo(head)[0].innerHTML = "&times;";
-    $("<h3/>").text("User Options").appendTo(head);
-    var body = $("<div/>").addClass("modal-body").appendTo(modal);
-    var form = $("<form/>").addClass("form-horizontal")
-        .appendTo(body);
 
-    function addOption(lbl, thing) {
-        var g = $("<div/>").addClass("control-group").appendTo(form);
-        $("<label/>").addClass("control-label").text(lbl).appendTo(g);
-        var c = $("<div/>").addClass("controls").appendTo(g);
-        thing.appendTo(c);
-    }
-
-    var themeselect = $("<select/>");
-    $("<option/>").attr("value", "default").text("Default").appendTo(themeselect);
-    $("<option/>").attr("value", "assets/css/darkstrap.css").text("Dark").appendTo(themeselect);
-    $("<option/>").attr("value", "assets/css/semidark.css").text("Semidark").appendTo(themeselect);
-    themeselect.val(USEROPTS.theme);
-    addOption("Theme", themeselect);
-
-    var usercss = $("<input/>").attr("type", "text")
-        .attr("placeholder", "Stylesheet URL");
-    usercss.val(USEROPTS.css);
-    addOption("User CSS", usercss);
-
-    var layoutselect = $("<select/>");
-    $("<option/>").attr("value", "default").text("Compact")
-        .appendTo(layoutselect);
-    $("<option/>").attr("value", "synchtube").text("Synchtube")
-        .appendTo(layoutselect);
-    $("<option/>").attr("value", "fluid").text("Fluid")
-        .appendTo(layoutselect);
-    layoutselect.val(USEROPTS.layout);
-    addOption("Layout", layoutselect);
-    var warn = $("<p/>").addClass("text-error")
-        .text("Changing layouts may require a refresh")
-    addOption("", warn);
-    $("<hr>").appendTo(form);
-    var nocsscontainer = $("<label/>").addClass("checkbox")
-        .text("Ignore channel CSS");
-    var nocss = $("<input/>").attr("type", "checkbox").appendTo(nocsscontainer);
-    nocss.prop("checked", USEROPTS.ignore_channelcss);
-    addOption("Channel CSS", nocsscontainer);
-    var nojscontainer = $("<label/>").addClass("checkbox")
-        .text("Ignore channel JS");
-    var nojs = $("<input/>").attr("type", "checkbox").appendTo(nojscontainer);
-    nojs.prop("checked", USEROPTS.ignore_channeljs);
-    addOption("Channel JS", nojscontainer);
-    $("<hr>").appendTo(form);
-
-    var hqbtncontainer = $("<label/>").addClass("checkbox")
-        .text("Hide playlist buttons by default");
-    var hqbtn = $("<input/>").attr("type", "checkbox").appendTo(hqbtncontainer);
-    hqbtn.prop("checked", USEROPTS.qbtn_hide);
-    addOption("Playlist Buttons", hqbtncontainer);
-
-    var oqbtncontainer = $("<label/>").addClass("checkbox")
-        .text("Old style playlist buttons");
-    var oqbtn = $("<input/>").attr("type", "checkbox").appendTo(oqbtncontainer);
-    oqbtn.prop("checked", USEROPTS.qbtn_idontlikechange);
-    addOption("Playlist Buttons (Old)", oqbtncontainer);
-
-    var synchcontainer = $("<label/>").addClass("checkbox")
-        .text("Synchronize Media");
-    var synch = $("<input/>").attr("type", "checkbox").appendTo(synchcontainer);
-    synch.prop("checked", USEROPTS.synch);
-    addOption("Synch", synchcontainer);
-
-    var syncacc = $("<input/>").attr("type", "text")
-        .attr("placeholder", "Seconds");
-    syncacc.val(USEROPTS.sync_accuracy);
-    addOption("Synch Accuracy", syncacc);
-
-    var wmcontainer = $("<label/>").addClass("checkbox")
-        .text("Allow transparency over video");
-    var wmodetrans = $("<input/>").attr("type", "checkbox")
-        .appendTo(wmcontainer);
-    wmodetrans.prop("checked", USEROPTS.wmode_transparent);
-    addOption("Transparent wmode", wmcontainer);
-
-    var vidcontainer = $("<label/>").addClass("checkbox")
-        .text("Hide Video");
-    var hidevid = $("<input/>").attr("type", "checkbox").appendTo(vidcontainer);
-    hidevid.prop("checked", USEROPTS.hidevid);
-    addOption("Hide Video", vidcontainer);
-    $("<hr>").appendTo(form);
-
-    var tscontainer = $("<label/>").addClass("checkbox")
-        .text("Show timestamps in chat");
-    var showts = $("<input/>").attr("type", "checkbox").appendTo(tscontainer);
-    showts.prop("checked", USEROPTS.show_timestamps);
-    addOption("Show timestamps", tscontainer);
-
-    var srcontainer = $("<label/>").addClass("checkbox")
-        .text("Sort userlist by rank");
-    var sr = $("<input/>").attr("type", "checkbox").appendTo(srcontainer);
-    sr.prop("checked", USEROPTS.sort_rank);
-    addOption("Userlist sort", srcontainer);
-
-    var sacontainer = $("<label/>").addClass("checkbox")
-        .text("AFKers at bottom of userlist");
-    var sa = $("<input/>").attr("type", "checkbox").appendTo(sacontainer);
-    sa.prop("checked", USEROPTS.sort_afk);
-    addOption("Userlist sort", sacontainer);
-
-    var blinkcontainer = $("<label/>").addClass("checkbox")
-        .text("Flash title on every incoming message");
-    var blink = $("<input/>").attr("type", "checkbox").appendTo(blinkcontainer);
-    blink.prop("checked", USEROPTS.blink_title);
-    addOption("Chat Notice", blinkcontainer);
-
-    var boopcontainer = $("<label/>").addClass("checkbox")
-        .text("Play a sound in addition to flashing the title");
-    var boop = $("<input/>").attr("type", "checkbox").appendTo(boopcontainer);
-    boop.prop("checked", USEROPTS.boop);
-    addOption("Chat Sound", boopcontainer);
-
-    var sendbtncontainer = $("<label/>").addClass("checkbox")
-        .text("Add a send button to the chatbox");
-    var sendbtn = $("<input/>").attr("type", "checkbox").appendTo(sendbtncontainer);
-    sendbtn.prop("checked", USEROPTS.chatbtn);
-    addOption("Send Button", sendbtncontainer);
-
-    var altsocketcontainer = $("<label/>").addClass("checkbox")
-        .text("Use alternative socket connection (requires refresh)");
-    var altsocket = $("<input/>").attr("type", "checkbox")
-        .appendTo(altsocketcontainer);
-    altsocket.prop("checked", USEROPTS.altsocket);
-    addOption("Alternate Socket", altsocketcontainer);
-
-    if(CLIENT.rank >= Rank.Moderator) {
-        $("<hr>").appendTo(form);
-        var modhatcontainer = $("<label/>").addClass("checkbox")
-            .text("Show name color");
-        var modhat = $("<input/>").attr("type", "checkbox").appendTo(modhatcontainer);
-        modhat.prop("checked", USEROPTS.modhat);
-        addOption("Modflair", modhatcontainer);
-
-        var joincontainer = $("<label/>").addClass("checkbox")
-            .text("Show join messages");
-        var join = $("<input/>").attr("type", "checkbox").appendTo(joincontainer);
-        join.prop("checked", USEROPTS.joinmessage);
-        addOption("Join Messages", joincontainer);
-    }
-
-    var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
-    var submit = $("<button/>").addClass("btn btn-primary pull-right")
-        .text("Save")
-        .appendTo(footer);
-
-    submit.click(function() {
-        USEROPTS.theme                = themeselect.val();
-        USEROPTS.css                  = usercss.val();
-        USEROPTS.layout               = layoutselect.val();
-        USEROPTS.synch                = synch.prop("checked");
-        USEROPTS.sync_accuracy        = parseFloat(syncacc.val()) || 2;
-        USEROPTS.wmode_transparent    = wmodetrans.prop("checked");
-        USEROPTS.hidevid              = hidevid.prop("checked");
-        USEROPTS.show_timestamps      = showts.prop("checked");
-        USEROPTS.blink_title          = blink.prop("checked");
-        USEROPTS.chatbtn              = sendbtn.prop("checked");
-        USEROPTS.altsocket            = altsocket.prop("checked");
-        USEROPTS.qbtn_hide            = hqbtn.prop("checked");
-        USEROPTS.qbtn_idontlikechange = oqbtn.prop("checked");
-        USEROPTS.ignore_channelcss    = nocss.prop("checked");
-        USEROPTS.ignore_channeljs     = nojs.prop("checked");
-        USEROPTS.sort_rank            = sr.prop("checked");
-        USEROPTS.sort_afk             = sa.prop("checked");
-        USEROPTS.boop                 = boop.prop("checked");
-        sortUserlist();
-        if(CLIENT.rank >= Rank.Moderator) {
-            USEROPTS.modhat = modhat.prop("checked");
-            USEROPTS.joinmessage = join.prop("checked");
+    modal.load("useroptions.html", function () {
+        if (CLIENT.rank < 2) {
+            $("#uopt-btn-mod").remove();
         }
-        saveOpts();
-        modal.modal("hide");
+
+        var tabHandler = function (btnid, panelid) {
+            $(btnid).click(function () {
+                modal.find(".btn.btn-small").attr("disabled", false);
+                modal.find(".uopt-panel").hide();
+                $(btnid).attr("disabled", true);
+                $(panelid).show();
+            });
+        };
+
+        tabHandler("#uopt-btn-general", "#uopt-panel-general");
+        tabHandler("#uopt-btn-playback", "#uopt-panel-playback");
+        tabHandler("#uopt-btn-chat", "#uopt-panel-chat");
+        tabHandler("#uopt-btn-mod", "#uopt-panel-mod");
+
+        var initForm = function (id) {
+            var f = $("<form/>").appendTo($(id))
+                .addClass("form-horizontal")
+                .attr("action", "javascript:void(0)");
+            return $("<fieldset/>").appendTo(f);
+        };
+
+        var addOption = function (form, lbl, thing) {
+            var g = $("<div/>").addClass("control-group").appendTo(form);
+            $("<label/>").addClass("control-label").text(lbl).appendTo(g);
+            var c = $("<div/>").addClass("controls").appendTo(g);
+            thing.appendTo(c);
+        };
+
+        var addCheckbox = function (form, opt, lbl) {
+            var c = $("<label/>").addClass("checkbox")
+                .text(lbl);
+            var box = $("<input/>").attr("type", "checkbox")
+                .appendTo(c);
+            addOption(form, opt, c);
+            return box;
+        };
+
+        // general options
+        var general = initForm("#uopt-panel-general");
+
+        var gen_theme = $("<select/>");
+        $("<option/>").attr("value", "default")
+            .text("Default")
+            .appendTo(gen_theme);
+        $("<option/>").attr("value", "assets/css/darkstrap.css")
+            .text("Dark")
+            .appendTo(gen_theme);
+        gen_theme.val(USEROPTS.theme);
+        addOption(general, "Theme", gen_theme);
+
+        var gen_layout = $("<select/>");
+        $("<option/>").attr("value", "default")
+            .text("Compact")
+            .appendTo(gen_layout);
+        $("<option/>").attr("value", "synchtube")
+            .text("Synchtube")
+            .appendTo(gen_layout);
+        $("<option/>").attr("value", "fluid")
+            .text("Fluid")
+            .appendTo(gen_layout);
+        gen_layout.val(USEROPTS.layout);
+        addOption(general, "Layout", gen_layout);
+
+        var gen_layoutwarn = $("<p/>").addClass("text-error")
+            .text("Changing layouts may require a refresh");
+        addOption(general, "", gen_layoutwarn);
+
+        var gen_css = $("<input/>").attr("type", "text")
+            .attr("placeholder", "Stylesheet URL");
+        gen_css.val(USEROPTS.css);
+        addOption(general, "User CSS", gen_css);
+
+        var gen_nocss = addCheckbox(general, "Channel CSS",
+                                    "Ignore channel CSS");
+        gen_nocss.prop("checked", USEROPTS.ignore_channelcss);
+
+        var gen_nojs = addCheckbox(general, "Channel JS",
+                                    "Ignore channel JS");
+        gen_nojs.prop("checked", USEROPTS.ignore_channeljs);
+
+        var gen_altsocket = addCheckbox(general, "Alternate Socket",
+                                        "Use alternate socket connection");
+        gen_altsocket.prop("checked", USEROPTS.altsocket);
+
+        var gen_altsocketinfo = $("<p/>")
+            .addClass("text-error")
+            .text("Alternate socket requires a refresh after changing.  "+
+                  "It should only be used if the default (unchecked) "+
+                  "does not work.");
+        addOption(general, "", gen_altsocketinfo);
+
+        // playback options
+        var playback = initForm("#uopt-panel-playback");
+
+        var pl_synch = addCheckbox(playback, "Synchronize",
+                                   "Synchronize media playback");
+        pl_synch.prop("checked", USEROPTS.synch);
+
+        var pl_synchacc = $("<input/>").attr("type", "text")
+            .attr("placeholder", "Accuracy in seconds");
+        pl_synchacc.val(USEROPTS.sync_accuracy);
+        addOption(playback, "Synch Accuracy (seconds)", pl_synchacc);
+
+        var pl_wmode = addCheckbox(playback, "Transparent wmode",
+                                   "Allow transparency over video player");
+        pl_wmode.prop("checked", USEROPTS.wmode_transparent);
+
+        var pl_wmodewarn = $("<p/>").addClass("text-error")
+            .text("Enabling transparent wmode may cause performance "+
+                  "issues on some systems");
+        addOption(playback, "", pl_wmodewarn);
+
+        var pl_hide = addCheckbox(playback, "Hide Video",
+                                  "Remove the video player");
+        pl_hide.prop("checked", USEROPTS.hidevid);
+
+        var pl_hidebtn = addCheckbox(playback, "Playlist Buttons",
+                                     "Hide playlist buttons by default");
+        pl_hidebtn.prop("checked", USEROPTS.qbtn_hide);
+
+        var pl_oldbtn = addCheckbox(playback, "Playlist Buttons (old)",
+                                    "Old style playlist buttons");
+        pl_oldbtn.prop("checked", USEROPTS.qbtn_idontlikechange);
+
+        // chat options
+        var chat = initForm("#uopt-panel-chat");
+
+        var chat_time = addCheckbox(chat, "Timestamps",
+                                    "Show timestamps in chat");
+        chat_time.prop("checked", USEROPTS.show_timestamps);
+
+        var chat_sort_rank = addCheckbox(chat, "Userlist sort",
+                                         "Sort userlist by rank");
+        chat_sort_rank.prop("checked", USEROPTS.sort_rank);
+
+        var chat_sort_afk = addCheckbox(chat, "Userlist sort",
+                                        "Sort AFKers to bottom");
+        chat_sort_afk.prop("checked", USEROPTS.sort_afk);
+
+        var chat_all = addCheckbox(chat, "Chat Notice",
+                                   "Notify on all messages");
+        chat_all.prop("checked", USEROPTS.blink_title);
+
+        var chat_allinfo = $("<p/>")
+            .text("When disabled, you will only be notified if your "+
+                  "name is mentioned");
+        addOption(chat, "", chat_allinfo);
+
+        var chat_boop = addCheckbox(chat, "Chat Sound",
+                                    "Play a sound for notifications");
+        chat_boop.prop("checked", USEROPTS.boop);
+
+        var chat_sendbtn = addCheckbox(chat, "Send Button",
+                                       "Add a send button to chat");
+        chat_sendbtn.prop("checked", USEROPTS.chatbtn);
+
+        // mod options
+        var mod = initForm("#uopt-panel-mod");
+
+        var mod_flair = addCheckbox(mod, "Modflair", "Show name color");
+        mod_flair.prop("checked", USEROPTS.modhat);
+
+        var mod_joinmsg = addCheckbox(mod, "Join Messages",
+                                      "Show join messages");
+        mod_joinmsg.prop("checked", USEROPTS.joinmessage);
+
+
+        $("#uopt-btn-general").click();
+        $("#uopt-btn-save").click(function () {
+            USEROPTS.theme                = gen_theme.val();
+            USEROPTS.layout               = gen_layout.val();
+            USEROPTS.css                  = gen_css.val();
+            USEROPTS.ignore_channelcss    = gen_nocss.prop("checked");
+            USEROPTS.ignore_channeljs     = gen_nojs.prop("checked");
+            USEROPTS.altsocket            = gen_altsocket.prop("checked");
+            USEROPTS.synch                = pl_synch.prop("checked");
+            USEROPTS.sync_accuracy        = parseFloat(pl_synchacc.val())||2;
+            USEROPTS.wmode_transparent    = pl_wmode.prop("checked");
+            USEROPTS.hidevid              = pl_hide.prop("checked");
+            USEROPTS.qbtn_hide            = pl_hidebtn.prop("checked");
+            USEROPTS.qbtn_idontlikechange = pl_oldbtn.prop("checked");
+            USEROPTS.show_timestamps      = chat_time.prop("checked");
+            USEROPTS.sort_rank            = chat_sort_rank.prop("checked");
+            USEROPTS.sort_afk             = chat_sort_afk.prop("checked");
+            USEROPTS.blink_title          = chat_all.prop("checked");
+            USEROPTS.boop                 = chat_boop.prop("checked");
+            USEROPTS.chatbtn              = chat_sendbtn.prop("checked");
+            if (CLIENT.rank >= 2) {
+                USEROPTS.modhat      = mod_flair.prop("checked");
+                USEROPTS.joinmessage = mod_joinmsg.prop("checked");
+            }
+            saveOpts();
+            modal.modal("hide");
+        });
     });
 
-    modal.on("hidden", function() {
+    modal.on("hidden", function () {
         unhidePlayer();
         applyOpts();
         modal.remove();
     });
+
     modal.modal();
 }
 
