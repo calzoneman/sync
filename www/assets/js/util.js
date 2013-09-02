@@ -557,6 +557,9 @@ function showOptionsMenu() {
         $("<option/>").attr("value", "assets/css/darkstrap.css")
             .text("Dark")
             .appendTo(gen_theme);
+        $("<option/>").attr("value", "assets/css/altdark.css")
+            .text("Alternate Dark")
+            .appendTo(gen_theme);
         gen_theme.val(USEROPTS.theme);
         addOption(general, "Theme", gen_theme);
 
