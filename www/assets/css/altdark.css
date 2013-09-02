@@ -216,3 +216,8 @@ pre {
     border-top: none!important;
     border-bottom: 4px solid #ccc!important;
 }
+
+#footer {
+    background-color: #222;
+    color: #ccc;
+}
