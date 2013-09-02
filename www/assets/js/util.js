@@ -488,6 +488,7 @@ function rebuildPlaylist() {
                     return;
                 addQueueButtons(li);
                 if(i == qli.length - 1) {
+                    scrollQueue();
                     REBUILDING = false;
                 }
             }, 10*i);
