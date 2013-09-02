@@ -343,3 +343,7 @@ body {
 #sc_volume .ui-slider-handle {
     border-color: rgb(255, 195, 0);
 }
+
+#ytapiplayer, #ytapiplayer > iframe {
+    border: none;
+}
