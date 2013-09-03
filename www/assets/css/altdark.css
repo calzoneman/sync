@@ -9,7 +9,7 @@ body {
 }
 
 #usercountwrap, #userlist, #messagebuffer, #videowrap {
-    background-color: #222;
+    background-color: #111;
 }
 
 #usercountwrap, #currenttitle {
@@ -90,10 +90,6 @@ input, textarea, button, .well, .btn, .dropdown-menu, select {
 
 .queue_entry > a {
     color: #ccc;
-}
-
-.queue_temp {
-    /*border: 1px dashed #ccc;*/
 }
 
 .queue_active {
@@ -189,7 +185,7 @@ pre {
 }
 
 .nick-hover {
-    background-color: #111;
+    background-color: #444;
 }
 
 .nick-highlight {
@@ -220,4 +216,8 @@ pre {
 #footer {
     background-color: #222;
     color: #ccc;
+}
+
+.poll-notify {
+    color: #ff6600;
 }
