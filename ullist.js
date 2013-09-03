@@ -181,4 +181,21 @@ ULList.prototype.findVideoId = function (id) {
     return false;
 };
 
+/**
+returns the UID of the first item in the queue that
+was submitted by a user matching the target regexp.
+*/
+ULList.prototype.findSubmitter = function(target) {
+    var item = this.first;
+    
+    while(item !== null) {
+        if(item.queueby && target.test(item.queueby)) {
+            console.log("found", item.uid, target, item.queueby);
+            return item.uid;
+        } 
+        item = item.next;
+    }
+    return false;
+}
+
 exports.ULList = ULList;
