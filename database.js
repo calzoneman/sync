@@ -1095,7 +1095,7 @@ Database.prototype.recoverUserPassword = function (hash, callback) {
             return;
         }
 
-        if(rows.length == 0) {
+        if(res.length == 0) {
             callback("Invalid password reset link", null);
             return;
         }
