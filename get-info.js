@@ -51,6 +51,14 @@ module.exports = function (Server) {
                 return;
             }
 
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
+
             var options = {
                 host: "gdata.youtube.com",
                 port: 443,
@@ -113,6 +121,13 @@ module.exports = function (Server) {
 
         /* youtube.com API v3 (requires API key) */
         ytv3: function (id, callback) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var params = [
                 "part=" + encodeURIComponent("id,snippet,contentDetails"),
                 "id=" + id,
@@ -160,6 +175,13 @@ module.exports = function (Server) {
 
         /* youtube.com playlists */
         yp: function (id, callback, url) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var path = "/feeds/api/playlists/" + id + "?v=2&alt=json";
             // YouTube only returns 25 at a time, so I have to keep asking
             // for more with the URL they give me
@@ -276,6 +298,13 @@ module.exports = function (Server) {
 
         /* vimeo.com */
         vi: function (id, callback) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var options = {
                 host: "vimeo.com",
                 port: 443,
@@ -325,6 +354,13 @@ module.exports = function (Server) {
             // - URL is simple
             // - Field names are sensible
             // Other media providers take notes, please
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var options = {
                 host: "api.dailymotion.com",
                 port: 443,
@@ -365,6 +401,14 @@ module.exports = function (Server) {
             // This is a waste of bandwidth and a pain in the ass
 
             const SC_CLIENT = "2e0c82ab5a020f3a7509318146128abd";
+
+            var m = id.match(/([\w-\/\.:]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
 
             var options = {
                 host: "api.soundcloud.com",
@@ -429,6 +473,13 @@ module.exports = function (Server) {
 
         /* livestream.com */
         li: function (id, callback) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var title = "Livestream.com - " + id;
             var media = new Media(id, title, "--:--", "li");
             callback(false, media);
@@ -436,6 +487,13 @@ module.exports = function (Server) {
 
         /* twitch.tv */
         tw: function (id, callback) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var title = "Twitch.tv - " + id;
             var media = new Media(id, title, "--:--", "tw");
             callback(false, media);
@@ -443,6 +501,13 @@ module.exports = function (Server) {
 
         /* justin.tv */
         jt: function (id, callback) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var title = "Justin.tv - " + id;
             var media = new Media(id, title, "--:--", "jt");
             callback(false, media);
@@ -450,6 +515,13 @@ module.exports = function (Server) {
 
         /* ustream.tv */
         us: function (id, callback) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var options = {
                 host: "www.ustream.tv",
                 port: 80,
@@ -497,6 +569,13 @@ module.exports = function (Server) {
 
         /* imgur.com albums */
         im: function (id, callback) {
+            var m = id.match(/([\w-]+)/);
+            if (m) {
+                id = m[1];
+            } else {
+                callback("Invalid ID", null);
+                return;
+            }
             var title = "Imgur Album - " + id;
             var media = new Media(id, title, "--:--", "im");
             callback(false, media);

@@ -607,6 +607,14 @@ Database.prototype.getLibraryItem = function (channame, id, callback) {
         return;
     }
 
+    var m = id.match(/([\w-\/\.:]+)/);
+    if (m) {
+        id = m[1];
+    } else {
+        callback("Invalid ID", null);
+        return;
+    }
+
     var query = "SELECT id, title, seconds, type FROM " +
                 "`chan_" + channame + "_library` WHERE id=?";
 
