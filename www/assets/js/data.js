@@ -31,7 +31,8 @@ var CHANNEL = {
     js: "",
     motd: "",
     motd_text: "",
-    name: false
+    name: false,
+    usercount: 0
 };
 
 var PLAYER = false;

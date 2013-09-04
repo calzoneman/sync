@@ -272,8 +272,10 @@ function calcUserBreakdown() {
         "Moderators": 0,
         "Regular Users": 0,
         "Guests": 0,
+        "Anonymous": 0,
         "AFK": 0
     };
+    var total = 0;
     $("#userlist .userlist_item").each(function (index, item) {
         var data = $(item).data("dropdown-info");
         if(data.rank >= 255)
@@ -287,9 +289,13 @@ function calcUserBreakdown() {
         else
             breakdown["Guests"]++;
 
+        total++;
+
         if($(item).find(".icon-time").length > 0)
             breakdown["AFK"]++;
     });
+
+    breakdown["Anonymous"] = CHANNEL.usercount - total;
 
     return breakdown;
 }
