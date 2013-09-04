@@ -254,26 +254,21 @@ function handleClean(chan, user, target) {
     // you can use regexps, in case someone tries
     // to fool you with cyrillic or something.
     target = new RegExp(target);
-    var uid = false; // to skip first chan.sendAll()
     // local variables for deleteNext() callback
     var pl = chan.playlist;
     var count = 0;
+    var matches = pl.items.findAll(function(item) {
+        return target.test(item.queueby);
+    });
+    console.log(matches);
     var deleteNext;
-    // this callback will search for matching items,
-    // and if one is found, call the remove method
-    // with itself as the callback to execute after
-    // the remove is finished.  
     deleteNext = function() {
-        // notify channel that this is deleted
-        if (uid !== false) {
+        if (count < matches.length) {
+            var uid=matches[count].uid;
+            count += 1
             chan.sendAll("delete", {
                 uid: uid
             });
-        }
-        // find next match
-        uid = pl.items.findSubmitter(target);
-        if (uid !== false) {
-            // remove, and restart callback when removed.
             pl.remove(uid, deleteNext);
         } else {
             // refresh playlist only once, at the end
