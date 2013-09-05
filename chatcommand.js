@@ -91,6 +91,9 @@ function handle(chan, user, msg, data) {
     else if(msg.indexOf("/clean ") == 0) {
         handleClean(chan, user, msg.substring(7));
     }
+    else if(msg.indexOf("/cleantitle ") == 0) {
+        handleCleanTitle(chan, user, msg.substring(12));
+    }
 }
 
 function handleMute(chan, user, args) {
@@ -243,24 +246,45 @@ function handleClear(chan, user) {
     chan.sendAll("clearchat");
 }
 
+var user_input_re = /^(-[img]+\s+)/i
+
+function user_input_regexp(target) {
+    var m = target.match(user_input_re);
+    var flags = "";
+    if (m) {
+        flags = m[0].slice(1,-1);
+        target = target.replace(user_input_re, "");
+    }
+    return new RegExp(target, flags);
+}
+
+function handleClean(chan, user, target) {
+    // you can use regexps, in case someone tries
+    // to fool you with cyrillic or something.
+    target = user_input_regexp(target);
+    cleanPlaylist(chan, user, function(item) {
+        return target.test(item.queueby);
+    });
+}
+
+function handleCleanTitle(chan, user, target) {
+    target = user_input_regexp(target);
+    cleanPlaylist(chan, user, function(item) {
+        return target.exec(item.media.title) !== null;
+    });
+}
 
 /**
 Remove all videos by a particular user.
 */
-function handleClean(chan, user, target) {
+function cleanPlaylist(chan, user, filter) {
     if(!chan.hasPermission(user, "playlistdelete")) { 
         return;
     }
-    // you can use regexps, in case someone tries
-    // to fool you with cyrillic or something.
-    target = new RegExp(target);
     // local variables for deleteNext() callback
     var pl = chan.playlist;
     var count = 0;
-    var matches = pl.items.findAll(function(item) {
-        return target.test(item.queueby);
-    });
-    console.log(matches);
+    var matches = pl.items.findAll(filter);
     var deleteNext;
     deleteNext = function() {
         if (count < matches.length) {
