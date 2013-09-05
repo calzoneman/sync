@@ -1,0 +1,12 @@
+Wed Sep  4 22:45 2013 CDT
+    * changelog: initialize changelog file
+
+Wed Sep  4 17:47 2013 CDT
+    * www/assets/js/data.js: add CHANNEL.usercount variable
+    * www/assets/js/callbacks.js: update CHANNEL.usercount variable when
+      the usercount changes
+    * www/assets/js/util.js: add "Anonymous" to the usercount breakdown
+      display (addresses Issue #270 <Suggestion: Put Mute button on Right
+      click menu + anon count>)
+
+Changelog established on Wed Sep  4 2013
