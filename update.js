@@ -1,5 +1,5 @@
-var Config = require("./config.js");
-var Database = require("./database.js");
+var Config = require("./lib/config.js");
+var Database = require("./lib/database.js");
 
 var updates = {
     "2013-08-20-utf8fix": fixDBUnicode,

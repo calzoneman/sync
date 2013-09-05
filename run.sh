@@ -2,7 +2,7 @@
 
 while :
 do
-    node server.js
+    node lib/server.js
     sleep 2
 
 done

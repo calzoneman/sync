@@ -1,0 +1,6 @@
+*.swp
+cfg.json
+chandump
+chanlogs
+*.log
+node_modules
