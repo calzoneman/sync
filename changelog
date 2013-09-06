@@ -1,3 +1,7 @@
+Fri Sep  6 16:29 2013 CDT
+    * lib/config.js: Add an io-host option to allow binding socket.io to
+      a different IP than the webserver
+
 Fri Sep  6 15:51 2013 CDT
     * lib/utilities.js: Tweak the throttle code for rate limiters to fix
       incorrect behavior of the burst cap after the cooldown period has
