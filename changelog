@@ -1,3 +1,10 @@
+Fri Sep  6 15:51 2013 CDT
+    * lib/utilities.js: Tweak the throttle code for rate limiters to fix
+      incorrect behavior of the burst cap after the cooldown period has
+      been passed
+    * tests/rateLimiter.js: Write a couple quick test cases to ensure that
+      rate limiting is handled properly
+
 Thu Sep  5 22:52 2013 CDT
     * www/assets/js/callbacks.js: Disable the channel registration button
       and change its text while a registration attempt is being processed
