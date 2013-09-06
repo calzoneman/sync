@@ -136,13 +136,20 @@ Callbacks = {
             .click(function() { div.remove(); });
         $("<h3/>").text("This channel isn't registered").appendTo(div);
         $("<button/>").addClass("btn btn-primary").text("Register it")
+            .attr("id", "chanregisterbtn")
             .appendTo(div)
             .click(function() {
+                $(this).attr("disabled", true)
+                    .text("Registering...");
                 socket.emit("registerChannel");
             });
     },
 
     registerChannel: function(data) {
+        if ($("#chanregisterbtn").length > 0) {
+            $("#chanregisterbtn").text("Register it")
+                .attr("disabled", false);
+        }
         if(data.success) {
             $("#chregnotice").remove();
         }
