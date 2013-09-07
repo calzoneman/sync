@@ -1,3 +1,8 @@
+Sat Sep  7 15:43 2013 CDT
+    * lib/channel.js, lib/user.js: Add an extra check for channel.users[i]
+      to write an error message (instead of kicking) when the same user that
+      is connecting is the one being kicked.
+
 Fri Sep  6 16:29 2013 CDT
     * lib/config.js: Add an io-host option to allow binding socket.io to
       a different IP than the webserver
