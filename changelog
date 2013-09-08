@@ -1,3 +1,15 @@
+Sun Sep  8 17:41 2013 CDT
+    * lib/server.js: Change behavior of unloadChannel - deletes all object
+      keys in the channel object and then sets channel.dead = true
+    * lib/channel.js: Add extra checks in callbacks to ensure certain things
+      don't happen if the channel is dead
+    * lib/playlist.js: Add extra checks to kill the playlist if the channel
+      it is associated with is dead
+    * lib/database.js: Add extra checks to prevent loading channel data into
+      a dead channel object
+    * tests/fastQuit.js: A simple script to open a connection, join a
+      channel, and disconnect immediately to test for race conditions
+
 Sat Sep  7 23:38 2013 CDT
     * lib/user.js: Add "loggingIn" field to act as a lock on async logins.
       Delay further login attempts until the current login attempt finishes.
