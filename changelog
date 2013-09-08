@@ -1,3 +1,10 @@
+Sat Sep  7 23:38 2013 CDT
+    * lib/user.js: Add "loggingIn" field to act as a lock on async logins.
+      Delay further login attempts until the current login attempt finishes.
+      Should prevent cases where sending multiple logins quickly in
+      succession caused race conditions and thus odd "duplicate login"
+      kicks.
+
 Sat Sep  7 15:43 2013 CDT
     * lib/channel.js, lib/user.js: Add an extra check for channel.users[i]
       to write an error message (instead of kicking) when the same user that
