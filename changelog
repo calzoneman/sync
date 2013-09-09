@@ -1,3 +1,15 @@
+Mon Sep  9 17:11 2013 CDT
+    * lib/server.js: If SSL is enabled in config, create an additional
+      server listening with SSL for websockets and HTTPS traffic
+    * lib/config.js: Add config keys for SSL
+    * lib/channel.js: Broadcast messages to both regular and SSL sockets
+    * www/assets/js/iourl.js: Add SSL_URL and automatically set WEB_URL and
+      IO_URL to SSL_URL when the protocol is HTTPS
+    * www/assets/js/callbacks.js: Automatically set the secure option on
+      io.connect()
+    * www/assets/js/ui.js, www/index.html, www/channel.html: Fix links to 
+      be dependent on the protocol
+
 Sun Sep  8 17:41 2013 CDT
     * lib/server.js: Change behavior of unloadChannel - deletes all object
       keys in the channel object and then sets channel.dead = true

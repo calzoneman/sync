@@ -11,3 +11,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var IO_URL = "http://localhost:1337";
 var WEB_URL = "http://localhost:8080";
+var SSL_URL = "https://localhost:443";
+
+if (location.protocol === "https:") {
+    IO_URL = WEB_URL = SSL_URL;
+}
