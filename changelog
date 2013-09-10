@@ -1,3 +1,7 @@
+Tue Sep 10 14:09 2013 CDT
+    * lib/config.js, lib/server.js: Add a config key for the passphrase
+      to the ssl key.
+
 Mon Sep  9 22:10 2013 CDT
     * lib/acp.js: Change acp-channel-unload callback to duplicate the list
       of users in the channel to prevent concurrent modification while
