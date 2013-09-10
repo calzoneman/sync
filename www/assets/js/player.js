@@ -111,7 +111,8 @@ var VimeoPlayer = function (data) {
             removeOld(iframe);
             iframe.attr("width", VWIDTH);
             iframe.attr("height", VHEIGHT);
-            iframe.attr("src", "http://player.vimeo.com/video/"+self.videoId+"?api=1&player_id=ytapiplayer");
+            var prto = location.protocol;
+            iframe.attr("src", prto+"//player.vimeo.com/video/"+self.videoId+"?api=1&player_id=ytapiplayer");
             iframe.attr("webkitAllowFullScreen", "");
             iframe.attr("mozallowfullscreen", "");
             iframe.attr("allowFullScreen", "");
@@ -185,7 +186,8 @@ var VimeoFlashPlayer = function (data) {
     self.videoId = data.id;
     self.init = function () {
         removeOld();
-        var url = "http://vimeo.com/moogaloop.swf?clip_id="+self.videoId;
+        var prto = location.protocol;
+        var url = prto+"//vimeo.com/moogaloop.swf?clip_id="+self.videoId;
         url += "&" + [
             "server=vimeo.com",
             "api=2",
@@ -429,8 +431,9 @@ var LivestreamPlayer = function (data) {
     self.init = function () {
         var flashvars = { channel: self.videoId };
         var params = { AllowScriptAccess: "always" };
+        var prto = location.protocol;
         swfobject.embedSWF(
-            "http://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf",
+            prto+"//cdn.livestream.com/chromelessPlayer/v20/playerapi.swf",
             "ytapiplayer",
             VWIDTH, VHEIGHT,
             "9.0.0",
@@ -505,6 +508,7 @@ var JustinTVPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
     self.init = function () {
+        var prto = location.protocol;
         var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+self.videoId;
         var params = {
             allowFullScreen: "true",
@@ -547,14 +551,15 @@ var RTMPPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
     self.init = function () {
-        var url = "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
+        var prto = location.protocol;
+        var url = prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
         var src = encodeURIComponent(self.videoId);
         var params = {
             allowFullScreen: "true",
             allowScriptAccess: "always",
             allowNetworking: "all",
             wMode: "direct",
-            movie: "http://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
+            movie: prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
             flashvars: "src="+src+"&streamType=live&autoPlay=true"
         };
         swfobject.embedSWF(url,
@@ -656,7 +661,8 @@ var UstreamPlayer = function (data) {
         removeOld(iframe);
         iframe.attr("width", VWIDTH);
         iframe.attr("height", VHEIGHT);
-        iframe.attr("src", "http://www.ustream.tv/embed/"+self.videoId+"?v=3&wmode=direct");
+        var prto = location.protocol;
+        iframe.attr("src", prto+"//www.ustream.tv/embed/"+self.videoId+"?v=3&wmode=direct");
         iframe.attr("frameborder", "0");
         iframe.attr("scrolling", "no");
         iframe.css("border", "none");
@@ -687,7 +693,9 @@ var ImgurPlayer = function (data) {
         removeOld(iframe);
         iframe.attr("width", VWIDTH);
         iframe.attr("height", VHEIGHT);
-        iframe.attr("src", "http://imgur.com/a/"+self.videoId+"/embed");
+        var prto = location.protocol;
+        iframe.attr("src", prto+"//imgur.com/a/"+self.videoId+"/embed");
+        console.log(prto);
         iframe.attr("frameborder", "0");
         iframe.attr("scrolling", "no");
         iframe.css("border", "none");
