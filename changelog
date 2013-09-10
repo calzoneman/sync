@@ -1,3 +1,6 @@
+Tue Sep 10 16:45 2013 CDT
+    * lib/channel.js: Don't attempt to emit to SSL sockets if it's disabled
+
 Tue Sep 10 16:34 2013 CDT
     * www/channel.html, www/assets/js/jwplayer.js: Cache jwplayer script
       locally since their server doesn't support SSL
