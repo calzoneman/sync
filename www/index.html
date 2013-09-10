@@ -91,12 +91,7 @@
     <!-- Mine -->
     <script src="./assets/js/iourl.js"></script>
     <script type="text/javascript">
-        var host = document.location+"";
-        host = host.replace("http://", "");
-        var parts = host.split("/");
-        parts[parts.length - 1] = "";
-        host = parts.join("/");
-        host = "http://" + host;
+        var host = location.protocol + "//" + location.host + "/";
         setInterval(refresh, 10000);
         refresh();
         function idToURL(data) {
@@ -186,10 +181,8 @@
             }
         }
         if(params["channel"] && params["channel"].match(/^[a-zA-Z0-9]+$/)) {
-            var host = ""+document.location;
-            host = host.replace("http://", "");
-            host = host.substring(0, host.indexOf("/"));
-            document.location = "http://" + host + "/r/" + params["channel"];
+            var host = location.protocol + "//" + location.host + "/";
+            document.location = host + "r/" + params["channel"];
         }
     </script>
   </body>

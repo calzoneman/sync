@@ -438,14 +438,9 @@ else {
     var label = $("<label/>").text("Enter Channel:").appendTo(div);
     var entry = $("<input/>").attr("type", "text").appendTo(div);
     entry.keydown(function(ev) {
-        var host = ""+document.location;
-        host = host.replace("http://", "");
-        host = host.substring(0, host.indexOf("/"));
+        var host = document.protocol + "//" + document.host + "/";
         if(ev.keyCode == 13) {
-            document.location = "http://" + host + "/r/" + entry.val();
-            socket.emit("joinChannel", {
-                name: entry.val()
-            });
+            document.location = host + "r/" + entry.val();
             container.remove();
             main.css("display", "");
         }
