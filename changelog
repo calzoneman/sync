@@ -1,3 +1,16 @@
+Tue Sep 10 22:40 2013 CDT
+    * www/account.html, www/acp.html, www/login.html: 
+      Import www/assets/js/data.js for easy access to user preferences
+    * www/assets/js/account.js, www/assets/js/acp.js: remove redundant
+      cookie util functions
+    * www/assets/js/data.js, www/assets/js/util.js, www/assets/js/iourl.js:
+      Add a user option to enable SSL for websockets and API calls
+    * www/assets/js/ui.js: Add a warning if the user loaded the page over
+      SSL (because some media players throw warnings and others don't work
+      at all (Twitch.tv, Justin.tv: go eat a dick)
+    * www/assets/js/player.js: Prevent race conditions for media types that
+      depend on swfobject
+
 Tue Sep 10 17:17 2013 CDT
     * www/assets/js/player.js: Fix loading over SSL for everything except
       TwitchTV and JustinTV

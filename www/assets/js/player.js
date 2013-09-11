@@ -485,7 +485,9 @@ var TwitchTVPlayer = function (data) {
         );
     };
 
-    self.init();
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
 
     self.load = function (data) {
         self.videoId = data.id;
@@ -528,7 +530,9 @@ var JustinTVPlayer = function (data) {
         );
     };
 
-    self.init();
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
 
     self.load = function (data) {
         self.videoId = data.id;
@@ -572,7 +576,9 @@ var RTMPPlayer = function (data) {
         );
     };
 
-    self.init();
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
 
     self.load = function (data) {
         self.videoId = data.id;

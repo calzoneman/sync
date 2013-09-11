@@ -610,6 +610,21 @@ function showOptionsMenu() {
                   "does not work.");
         addOption(general, "", gen_altsocketinfo);
 
+        var gen_secure = addCheckbox(general, "SSL",
+                                     "Encrypt connections with SSL");
+        gen_secure.prop("checked", USEROPTS.secure_connection);
+        gen_secure.attr("disabled", !ALLOW_SSL);
+
+        var gen_secureinfo = $("<p/>")
+            .addClass("text-error")
+            .text("If enabled, websocket traffic and API calls (logins, "+
+                  "account management) will be sent over a secure "+
+                  "connection.  Changes take effect after a refresh.");
+            addOption(general, "", gen_secureinfo);
+        if (!ALLOW_SSL) {
+            gen_secureinfo.text("This server does not support SSL.");
+        }
+
         // playback options
         var playback = initForm("#uopt-panel-playback");
 
@@ -706,6 +721,7 @@ function showOptionsMenu() {
             USEROPTS.blink_title          = chat_all.prop("checked");
             USEROPTS.boop                 = chat_boop.prop("checked");
             USEROPTS.chatbtn              = chat_sendbtn.prop("checked");
+            USEROPTS.secure_connection    = gen_secure.prop("checked");
             if (CLIENT.rank >= 2) {
                 USEROPTS.modhat      = mod_flair.prop("checked");
                 USEROPTS.joinmessage = mod_joinmsg.prop("checked");

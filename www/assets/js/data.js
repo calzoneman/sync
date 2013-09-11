@@ -44,7 +44,6 @@ if($("#videowidth").length > 0) {
     VWIDTH = $("#videowidth").css("width").replace("px", "");
     VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
 }
-var MEDIA = { hash: "" };
 var PL_MOVING = false;
 var PL_ADDING = false;
 var PL_DELETING = false;
@@ -71,6 +70,7 @@ var SESSION = readCookie("cytube_session");
 var LEADTMR = false;
 var PL_FROM = "";
 var PL_AFTER = "";
+var PL_CURRENT = -1;
 var PL_WAIT_SCROLL = false;
 var FILTER_FROM = 0;
 var FILTER_TO = 0;
@@ -121,7 +121,8 @@ var USEROPTS = {
     sort_rank            : getOrDefault("sort_rank", false),
     sort_afk             : getOrDefault("sort_afk", false),
     default_quality      : getOrDefault("default_quality", "#quality_auto"),
-    boop                 : getOrDefault("boop", false)
+    boop                 : getOrDefault("boop", false),
+    secure_connection    : getOrDefault("secure_connection", false)
 };
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
