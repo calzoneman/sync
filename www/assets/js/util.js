@@ -1093,6 +1093,8 @@ function handlePermissionChange() {
 
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
+    $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
+                                    !CHANNEL.opts.allow_voteskip);
 
     $("#pollwrap .active").find(".btn-danger").remove();
     if(hasPermission("pollctl")) {
@@ -1598,6 +1600,7 @@ function genPermissionsEditor() {
     makeOption("Open/Close poll", "pollctl", modleader, CHANNEL.perms.pollctl+"");
     makeOption("Vote", "pollvote", standard, CHANNEL.perms.pollvote+"");
     makeOption("View hidden poll results", "viewhiddenpoll", standard, CHANNEL.perms.viewhiddenpoll+"");
+    makeOption("Voteskip", "voteskip", standard, CHANNEL.perms.voteskip+"");
 
     addDivider("Moderation");
     makeOption("Mute users", "mute", modleader, CHANNEL.perms.mute+"");

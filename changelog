@@ -1,3 +1,12 @@
+Wed Sep 11 22:13 2013 CDT
+    * lib/channel.js, lib/user.js: Remove "afkers" array, replace afkcount
+      with a function that calculates how many users are eligible to
+      voteskip (not AFK + have permission).  Check permission before
+      allowing voteskip
+    * lib/api.js: Replace "afkcount" in /api/channels/:channel with
+      voteskip_eligible
+    * www/assets/js/util.js: Add a permissions option for voteskip
+
 Wed Sep 11 20:19 2013 CDT
     * lib/poll.js: Add support for hidden polls
     * lib/channel.js: Check permissions for viewing hidden polls
