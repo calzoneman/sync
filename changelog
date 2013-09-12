@@ -1,3 +1,11 @@
+Wed Sep 11 20:19 2013 CDT
+    * lib/poll.js: Add support for hidden polls
+    * lib/channel.js: Check permissions for viewing hidden polls
+    * lib/chatcommand.js: Add /hpoll for opening hidden polls
+    * www/assets/js/util.js: Update poll interface to include a checkbox
+      for whether or not to hide a poll.  Update permissions interface to
+      allow for changing the permission to view obscured polls.
+
 Tue Sep 10 22:40 2013 CDT
     * www/account.html, www/acp.html, www/login.html: 
       Import www/assets/js/data.js for easy access to user preferences

@@ -899,6 +899,13 @@ function showPollMenu() {
         .appendTo(menu);
     $("<br/>").appendTo(menu);
 
+    var lbl = $("<label/>").addClass("checkbox")
+        .text("Hide poll results")
+        .appendTo(menu);
+    var hidden = $("<input/>").attr("type", "checkbox")
+        .appendTo(lbl);
+    $("<br/>").appendTo(menu);
+
     $("<strong/>").text("Options").appendTo(menu);
     $("<br/>").appendTo(menu);
 
@@ -931,7 +938,8 @@ function showPollMenu() {
             });
             socket.emit("newPoll", {
                 title: title.val(),
-                opts: opts
+                opts: opts,
+                obscured: hidden.prop("checked")
             });
             menu.remove();
         });
@@ -1589,6 +1597,7 @@ function genPermissionsEditor() {
     addDivider("Polls");
     makeOption("Open/Close poll", "pollctl", modleader, CHANNEL.perms.pollctl+"");
     makeOption("Vote", "pollvote", standard, CHANNEL.perms.pollvote+"");
+    makeOption("View hidden poll results", "viewhiddenpoll", standard, CHANNEL.perms.viewhiddenpoll+"");
 
     addDivider("Moderation");
     makeOption("Mute users", "mute", modleader, CHANNEL.perms.mute+"");
