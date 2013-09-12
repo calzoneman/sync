@@ -1,3 +1,6 @@
+Thu Sep 12 18:41 2013 CDT
+    * www/index.html: Fix index page not showing public channels
+
 Thu Sep 12 16:25 2013 CDT
     * lib/channel.js: Fix an error resulting from calcVoteskipMax being run
       when the usercount is 0
