@@ -1,3 +1,10 @@
+Fri Sep 13 10:10 2013 CDT
+    * www/reset.html: Fix data.js dependency
+    * lib/api.js: Fix ActionLog trying to record wrong data.  How long has
+      this been broken?
+    * www/assets/js/acp.js: Prepend "/reset.html?" in case admins can't
+      remember what the URL is
+
 Thu Sep 12 18:41 2013 CDT
     * www/index.html: Fix index page not showing public channels
 

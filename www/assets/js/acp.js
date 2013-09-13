@@ -407,7 +407,7 @@ function setupCallbacks() {
         if(!data.success)
             alert(data.error);
         else
-            alert("Password reset successful.  Reset hash: " + data.hash);
+            alert("Password reset successful.  Reset hash: /reset.html?" + data.hash);
     });
 
     socket.on("acp-channeldata", function(data) {
