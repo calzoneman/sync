@@ -1,3 +1,13 @@
+Wed Sep 18 18:26 2013 CDT
+    * lib/user.js: Change channel checks to include checking for whether
+      the channel is dead
+
+Wed Sep 18 18:14 2013 CDT
+    * lib/channel.js: Add a bunch of checks to prevent callbacks from doing
+      things with a dead channel
+    * tests/channelDeadRace.js: Add a few client tests that cause exceptions
+      in the pre-patched channel code
+
 Tue Sep 17 22:24 2013 CDT
     * lib/user.js: Fix what I assume was a race condition that caused an error message
       when a user's login callback fired after the channel unloaded.
