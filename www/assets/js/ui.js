@@ -38,7 +38,8 @@ function generateToggle(chevron, div) {
 }
 
 /* setup show/hide toggles */
-generateToggle("#usercountwrap", "#userlist");
+generateToggle("#usercount", "#userlist");
+generateToggle("#userlisttoggle", "#userlist");
 $("#usercountwrap").click(scrollChat);
 generateToggle("#librarytoggle", "#librarywrap");
 generateToggle("#userpltoggle", "#userplaylistwrap");
@@ -69,14 +70,40 @@ $("#logout").click(function() {
 
 /* chatbox */
 
-$("#usercountwrap").mouseenter(function (ev) {
+$("#modflair").click(function () {
+    var m = $("#modflair");
+    if (m.hasClass("label-success")) {
+        USEROPTS.modhat = false;
+        m.removeClass("label-success")
+         .addClass("label-default");
+    } else {
+        USEROPTS.modhat = true;
+        m.removeClass("label-default")
+         .addClass("label-success");
+    }
+});
+
+$("#adminflair").click(function () {
+    var m = $("#adminflair");
+    if (m.hasClass("label-important")) {
+        USEROPTS.adminhat = false;
+        m.removeClass("label-important")
+         .addClass("label-default");
+    } else {
+        USEROPTS.adminhat = true;
+        m.removeClass("label-default")
+         .addClass("label-important");
+    }
+});
+
+$("#usercount").mouseenter(function (ev) {
     var breakdown = calcUserBreakdown();
     // re-using profile-box class for convenience
     var popup = $("<div/>")
         .addClass("profile-box")
         .css("top", (ev.pageY + 5) + "px")
         .css("left", (ev.pageX) + "px")
-        .appendTo($("#usercountwrap"));
+        .appendTo($("#usercount"));
 
     var contents = "";
     for(var key in breakdown) {
@@ -87,8 +114,8 @@ $("#usercountwrap").mouseenter(function (ev) {
     popup.html(contents);
 });
 
-$("#usercountwrap").mousemove(function (ev) {
-    var popup = $("#usercountwrap").find(".profile-box");
+$("#usercount").mousemove(function (ev) {
+    var popup = $("#usercount").find(".profile-box");
     if(popup.length == 0)
         return;
 
@@ -96,8 +123,8 @@ $("#usercountwrap").mousemove(function (ev) {
     popup.css("left", (ev.pageX) + "px");
 });
 
-$("#usercountwrap").mouseleave(function () {
-    $("#usercountwrap").find(".profile-box").remove();
+$("#usercount").mouseleave(function () {
+    $("#usercount").find(".profile-box").remove();
 });
 
 $("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
@@ -107,7 +134,9 @@ $("#chatline").keydown(function(ev) {
     if(ev.keyCode == 13) {
         var msg = $("#chatline").val();
         if(msg.trim()) {
-            if(USEROPTS.modhat && CLIENT.rank >= Rank.Moderator) {
+            if (USEROPTS.adminhat && CLIENT.rank >= 255) {
+                msg = "/a " + msg;
+            } else if(USEROPTS.modhat && CLIENT.rank >= Rank.Moderator) {
                 msg = "/m " + msg;
             }
             socket.emit("chatMsg", {

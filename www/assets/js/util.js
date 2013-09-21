@@ -798,6 +798,14 @@ function applyOpts() {
             }
         });
     }
+
+    if (USEROPTS.modhat) {
+        $("#modflair").removeClass("label-default")
+            .addClass("label-success");
+    } else {
+        $("#modflair").removeClass("label-success")
+            .addClass("label-default");
+    }
 }
 
 applyOpts();
@@ -1038,6 +1046,9 @@ function handlePermissionChange() {
     }
 
     setVisible("#userpltogglewrap", CLIENT.rank >= 1);
+
+    setVisible("#modflair", CLIENT.rank >= 2);
+    setVisible("#adminflair", CLIENT.rank >= 255);
 
     setVisible("#playlisttogglewrap", hasPermission("playlistadd"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));

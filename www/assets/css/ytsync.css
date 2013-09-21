@@ -360,3 +360,7 @@ body {
 #ytapiplayer, #ytapiplayer > iframe {
     border: none;
 }
+
+#adminflair {
+    margin-left: 3px;
+}
