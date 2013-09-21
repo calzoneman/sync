@@ -1,3 +1,7 @@
+Sat Sep 21 00:23 2013 CDT
+    * www/assets/js/callbacks.js, www/assets/css/ytsync.css: make it more
+      obvious which option was voted for
+
 Sat Sep 21 00:08 2013 CDT
     * lib/playlist.js: Make .clean(filter) an instance method
     * lib/chatcommand.js: Make a few minor changes to unbibium's /clean

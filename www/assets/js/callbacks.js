@@ -996,13 +996,14 @@ Callbacks = {
         $("<h3/>").text(data.title).appendTo(poll);
         for(var i = 0; i < data.options.length; i++) {
             (function(i) {
-            var callback = function() {
-                    socket.emit("vote", {
-                        option: i
-                    });
-                    poll.find(".option button").each(function() {
-                        $(this).attr("disabled", "disabled");
-                    });
+            var callback = function () {
+                socket.emit("vote", {
+                    option: i
+                });
+                poll.find(".option button").each(function() {
+                    $(this).attr("disabled", "disabled");
+                });
+                $(this).parent().addClass("option-selected");
             }
             $("<button/>").addClass("btn").text(data.counts[i])
                 .prependTo($("<div/>").addClass("option").text(data.options[i])
@@ -1019,7 +1020,7 @@ Callbacks = {
         var poll = $("#pollwrap .active");
         var i = 0;
         poll.find(".option button").each(function() {
-            $(this).text(data.counts[i]);
+            $(this).html(data.counts[i]);
             i++;
         });
     },

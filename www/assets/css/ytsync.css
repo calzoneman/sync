@@ -247,8 +247,21 @@ body {
     font-size: 14pt;
 }
 
+.option {
+    margin-top: 3px;
+}
+
 .option button {
     margin-right: 15px;
+}
+
+.option-selected {
+    font-weight: bold;
+}
+
+.option-selected button{
+    border-width: 3px!important;
+    margin-right: 10px;
 }
 
 .nick-highlight {
