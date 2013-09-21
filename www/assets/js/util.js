@@ -1551,7 +1551,8 @@ function genPermissionsEditor() {
         ["Registered"   , "1"],
         ["Leader"       , "1.5"],
         ["Moderator"    , "2"],
-        ["Channel Admin", "3"]
+        ["Channel Admin", "3"],
+        ["Nobody"       , "1000000"]
     ];
 
     var noanon = [
@@ -1559,18 +1560,21 @@ function genPermissionsEditor() {
         ["Registered"   , "1"],
         ["Leader"       , "1.5"],
         ["Moderator"    , "2"],
-        ["Channel Admin", "3"]
+        ["Channel Admin", "3"],
+        ["Nobody"       , "1000000"]
     ];
 
     var modleader = [
         ["Leader"       , "1.5"],
         ["Moderator"    , "2"],
-        ["Channel Admin", "3"]
+        ["Channel Admin", "3"],
+        ["Nobody"       , "1000000"]
     ];
 
     var modplus = [
         ["Moderator"    , "2"],
-        ["Channel Admin", "3"]
+        ["Channel Admin", "3"],
+        ["Nobody"       , "1000000"]
     ];
 
     $("<h3/>").text("Open playlist permissions").appendTo(fs);

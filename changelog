@@ -1,3 +1,7 @@
+Sat Sep 21 00:29 2013 CDT
+    * www/assets/js/util.js: support a "Nobody" permission level (set
+      arbitrarily high)
+
 Sat Sep 21 00:23 2013 CDT
     * www/assets/js/callbacks.js, www/assets/css/ytsync.css: make it more
       obvious which option was voted for
