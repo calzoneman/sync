@@ -761,12 +761,19 @@ var CustomPlayer = function (data) {
 };
 
 function handleMediaUpdate(data) {
+    var wait = data.currentTime < 0;
     // Media change
     if(data.id && data.id !== PLAYER.videoId) {
         if(data.currentTime < 0)
             data.currentTime = 0;
         PLAYER.load(data);
         PLAYER.play();
+    }
+
+    if (wait) {
+        PLAYER.seek(0);
+        PLAYER.pause();
+        return;
     }
     
     // Don't synch if leader or synch disabled
@@ -775,8 +782,12 @@ function handleMediaUpdate(data) {
 
     // Handle pause/unpause
     if(data.paused) {
-        PLAYER.seek(data.currentTime);
-        PLAYER.pause();
+        PLAYER.isPaused(function (paused) {
+            if (!paused) {
+                PLAYER.seek(data.currentTime);
+                PLAYER.pause();
+            }
+        });
     } else {
         PLAYER.isPaused(function (paused) {
             if(paused)
