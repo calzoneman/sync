@@ -953,12 +953,7 @@ Callbacks = {
                 generator: function (item, page, index) {
                     var li = makeSearchEntry(item, false);
                     if(hasPermission("playlistadd")) {
-                        if(item.thumb) {
-                            addLibraryButtons(li, item.id, "yt");
-                        }
-                        else {
-                            addLibraryButtons(li, item.id);
-                        }
+                        addLibraryButtons(li, item.id, data.source);
                     }
                     $(li).appendTo($("#library"));
                 },

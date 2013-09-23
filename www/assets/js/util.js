@@ -1143,10 +1143,12 @@ function clearSearchResults() {
     }
 }
 
-function addLibraryButtons(li, id, type) {
+function addLibraryButtons(li, id, source) {
     var btns = $("<div/>").addClass("btn-group")
         .addClass("pull-left")
         .prependTo(li);
+
+    var type = (source === "library") ? undefined : source;
 
     if(hasPermission("playlistadd")) {
         if(hasPermission("playlistnext")) {
@@ -1172,7 +1174,7 @@ function addLibraryButtons(li, id, type) {
             })
             .appendTo(btns);
     }
-    if(CLIENT.rank >= 2) {
+    if(CLIENT.rank >= 2 && source === "library") {
         $("<button/>").addClass("btn btn-mini btn-danger")
             .html("<i class='icon-trash'></i>")
             .click(function() {
