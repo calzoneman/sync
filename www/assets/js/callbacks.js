@@ -939,6 +939,9 @@ Callbacks = {
                 clearSearchResults();
             })
             .insertBefore($("#library"));
+
+
+        $("#search_pagination").remove();
         var opts = {
             preLoadPage: function () {
                 $("#library").html("");
