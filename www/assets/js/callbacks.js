@@ -939,33 +939,26 @@ Callbacks = {
                 clearSearchResults();
             })
             .insertBefore($("#library"));
-        var p = $("#library").data("paginator");
-        if(p) {
-            p.items = data.results;
-            p.loadPage(0);
-        }
-        else {
-            var opts = {
-                preLoadPage: function () {
-                    $("#library").html("");
-                },
+        var opts = {
+            preLoadPage: function () {
+                $("#library").html("");
+            },
 
-                generator: function (item, page, index) {
-                    var li = makeSearchEntry(item, false);
-                    if(hasPermission("playlistadd")) {
-                        addLibraryButtons(li, item.id, data.source);
-                    }
-                    $(li).appendTo($("#library"));
-                },
+            generator: function (item, page, index) {
+                var li = makeSearchEntry(item, false);
+                if(hasPermission("playlistadd")) {
+                    addLibraryButtons(li, item.id, data.source);
+                }
+                $(li).appendTo($("#library"));
+            },
 
-                itemsPerPage: 100
-            };
+            itemsPerPage: 100
+        };
 
-            p = Paginate(data.results, opts);
-            p.paginator.insertBefore($("#library"))
-                .attr("id", "search_pagination");
-            $("#library").data("paginator", p);
-        }
+        var p = Paginate(data.results, opts);
+        p.paginator.insertBefore($("#library"))
+            .attr("id", "search_pagination");
+        $("#library").data("paginator", p);
     },
 
     /* REGION Polls */

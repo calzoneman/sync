@@ -1,3 +1,7 @@
+Tue Sep 24 13:15 2013 CDT
+    * www/assets/js/callbacks.js: Instantiate a new paginator for every
+      search result- prevents buttons being incorrectly added or omitted.
+
 Mon Sep 23 16:22 2013 CDT
     * lib/user.js: distinguish search result return packets with a 'source'
       field that specifies where the item came from (e.g 'yt' for youtube
