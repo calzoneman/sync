@@ -1,3 +1,7 @@
+Thu Sep 26 13:17 2013 CDT
+    * lib/user.js: A few minor cleanups to login functions
+    * lib/api.js: Pass the login failure reason to the action log
+
 Tue Sep 24 15:18 2013 CDT
     * www/assets/js/callbacks.js: Double fix search result buttons because
       the paginator was being duplicated
