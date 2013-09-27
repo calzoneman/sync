@@ -1,3 +1,8 @@
+Thu Sep 26 23:40 2013 CDT
+    * lib/config.js: Add config keys for statistics interval & max age,
+      alias purge interval & max age.
+    * lib/bgtask.js: Update intervals to reflect new config keys
+
 Thu Sep 26 23:33 2013 CDT
     * lib/stats.js: Remove this file, move the statistics tracking
       interval to the new bgtask.js
