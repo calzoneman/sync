@@ -27,6 +27,7 @@ var YouTubePlayer = function (data) {
             removeOld();
             self.paused = false;
             self.videoId = data.id;
+            self.videoLength = data.seconds;
             var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
             self.player = new YT.Player("ytapiplayer", {
                 height: VHEIGHT,
@@ -69,6 +70,7 @@ var YouTubePlayer = function (data) {
             if(VIDEOQUALITY)
                 self.player.setPlaybackQuality(VIDEOQUALITY);
             self.videoId = data.id;
+            self.videoLength = data.seconds;
         }
     };
 
@@ -106,6 +108,7 @@ var VimeoPlayer = function (data) {
     var self = this;
     waitUntilDefined(window, "$f", function () {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init = function () {
             var iframe = $("<iframe/>");
             removeOld(iframe);
@@ -148,6 +151,7 @@ var VimeoPlayer = function (data) {
 
         self.load = function (data) {
             self.videoId = data.id;
+            self.videoLength = data.seconds;
             self.init();
         };
 
@@ -184,6 +188,7 @@ var VimeoPlayer = function (data) {
 var VimeoFlashPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         removeOld();
         var prto = location.protocol;
@@ -244,6 +249,7 @@ var VimeoFlashPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -279,6 +285,7 @@ var DailymotionPlayer = function (data) {
     waitUntilDefined(window, "DM", function () {
         removeOld();
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.player = DM.player("ytapiplayer", {
             video: data.id,
             width: parseInt(VWIDTH, 10),
@@ -309,6 +316,7 @@ var DailymotionPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         if(self.player && self.player.api)
             self.player.api("load", data.id);
     };
@@ -341,6 +349,7 @@ var DailymotionPlayer = function (data) {
 var SoundcloudPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     waitUntilDefined(window, "SC", function () {
         unfixSoundcloudShit();
         var iframe = $("<iframe/>");
@@ -389,6 +398,7 @@ var SoundcloudPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         if(self.player && self.player.load)
             self.player.load(data.id, { auto_play: true });
     };
@@ -428,6 +438,7 @@ var LivestreamPlayer = function (data) {
     removeOld();
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         var flashvars = { channel: self.videoId };
         var params = { AllowScriptAccess: "always" };
@@ -447,6 +458,7 @@ var LivestreamPlayer = function (data) {
 
     self.load = function(data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -465,6 +477,7 @@ var TwitchTVPlayer = function (data) {
     removeOld();
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         var url = "http://www.twitch.tv/widgets/live_embed_player.swf?channel="+self.videoId;
         var params = {
@@ -491,6 +504,7 @@ var TwitchTVPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -509,6 +523,7 @@ var JustinTVPlayer = function (data) {
     removeOld();
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         var prto = location.protocol;
         var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+self.videoId;
@@ -536,6 +551,7 @@ var JustinTVPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -554,6 +570,7 @@ var RTMPPlayer = function (data) {
     removeOld();
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         var prto = location.protocol;
         var url = prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
@@ -582,6 +599,7 @@ var RTMPPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -599,6 +617,7 @@ var RTMPPlayer = function (data) {
 var JWPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         removeOld();
 
@@ -628,6 +647,7 @@ var JWPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -662,6 +682,7 @@ var JWPlayer = function (data) {
 var UstreamPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         var iframe = $("<iframe/>");
         removeOld(iframe);
@@ -678,6 +699,7 @@ var UstreamPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -711,6 +733,7 @@ var ImgurPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -728,6 +751,7 @@ var ImgurPlayer = function (data) {
 var CustomPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
+    self.videoLength = data.seconds;
     self.init = function () {
         removeOld();
         var div = $("#ytapiplayer");
@@ -746,6 +770,7 @@ var CustomPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.videoLength = data.seconds;
         self.init();
     };
 
@@ -761,6 +786,14 @@ var CustomPlayer = function (data) {
 };
 
 function handleMediaUpdate(data) {
+    // Don't update if the position is past the video length, but
+    // make an exception when the video length is 0 seconds
+    if (typeof PLAYER.videoLength === "number") {
+        if (PLAYER.videoLength > 0 && 
+            data.currentTime > PLAYER.videoLength) {
+            return;
+        }
+    }
     var wait = data.currentTime < 0;
     // Media change
     if(data.id && data.id !== PLAYER.videoId) {

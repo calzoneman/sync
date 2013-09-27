@@ -1,3 +1,8 @@
+Thu Sep 26 21:42 2013 CDT
+    * www/assets/js/player.js: Keep track of the duration of the current
+      video and use this information to prevent the player restarting when
+      it receives an out of range timestamp
+
 Thu Sep 26 13:29 2013 CDT
     * lib/user.js: Some code style cleanup
 
