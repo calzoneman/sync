@@ -1,3 +1,15 @@
+Thu Sep 26 23:33 2013 CDT
+    * lib/stats.js: Remove this file, move the statistics tracking
+      interval to the new bgtask.js
+    * lib/bgtask.js: Generalize background tasks to this module.  Add
+      tasks for statistics tracking and clearing old aliases.
+    * lib/database.js: Modify the way aliases work a bit.  Rather than
+      constantly deleting to keep 5 aliases per person, have a function
+      that is periodically called to delete aliases more than one month old,
+      and have the listAliases function explicitly sort and request the most
+      recent 5 aliases.
+    * lib/server.js: Update references accordingly
+
 Thu Sep 26 23:08 2013 CDT
     * lib/acp.js, lib/api.js, lib/server.js, lib/stats.js, www/acp.html,
       www/assets/js/acp.js: Remove the [realtime] 'connection stats'
