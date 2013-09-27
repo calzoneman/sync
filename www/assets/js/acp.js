@@ -147,13 +147,6 @@ menuHandler("#show_stats", "#stats");
 $("#show_stats").click(function () {
     socket.emit("acp-view-stats");
 });
-menuHandler("#show_connstats", "#connstats");
-$("#show_connstats").click(function () {
-    socket.emit("acp-view-connstats");
-});
-$("#connstats_refresh").click(function () {
-    socket.emit("acp-view-connstats");
-});
 
 function reverseLog() {
     $("#log").text($("#log").text().split("\n").reverse().join("\n"));
@@ -554,49 +547,5 @@ function setupCallbacks() {
         alist.forEach(function(a) {
             $("<option/>").text(a).val(a).appendTo($("#actionlog_filter"));
         });
-    });
-
-    socket.on("acp-view-connstats", function (data) {
-        var tbl = $("#connstats table");
-        tbl.find("tbody").remove();
-
-        var flat = [];
-
-        for(var key in data) {
-            var d = data[key];
-            for(var k in d) {
-                flat.push({
-                    type: key,
-                    param: k,
-                    freq: d[k]
-                });
-            }
-        }
-
-        flat.sort(function (a, b) {
-            var x = a.freq, y = b.freq;
-
-            if(x == y) {
-                var c = a.type + a.param;
-                var d = b.type + b.param;
-                return c == d ? 0 : (c < d ? -1 : 1);
-            }
-            return y - x;
-        });
-
-        for(var i in flat) {
-            i = flat[i];
-            if(i.freq == 0)
-                return;
-            var tr = $("<tr/>").appendTo(tbl);
-            $("<td/>").text(i.type).appendTo(tr);
-            $("<td/>").text(i.param).appendTo(tr);
-            $("<td/>").text(i.freq + " hits/sec average").appendTo(tr);
-            if(i.freq > 50) {
-                tr.addClass("error");
-            } else if(i.freq > 10) {
-                tr.addClass("warning");
-            }
-        }
     });
 }
