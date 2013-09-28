@@ -897,8 +897,10 @@ Callbacks = {
         if(data.type != PLAYER.type) {
             loadMediaPlayer(data);
         }
-
-        handleMediaUpdate(data);
+        
+        if ($("#videowrap").length != 0) {
+            handleMediaUpdate(data);
+        }
     },
 
     mediaUpdate: function(data) {
