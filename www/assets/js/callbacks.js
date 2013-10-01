@@ -764,33 +764,35 @@ Callbacks = {
     },
 
     queue: function(data) {
-        queueAction({
-            fn: function () {
-                var li = makeQueueEntry(data.item, true);
-                if (data.item.uid === PL_CURRENT)
-                    li.addClass("queue_active");
-                li.hide();
-                var q = $("#queue");
-                li.attr("title", data.item.queueby
-                                    ? ("Added by: " + data.item.queueby)
-                                    : "Added by: Unknown");
-                if (data.after === "prepend") {
-                    li.prependTo(q);
-                    li.show("blind");
-                    return true;
-                } else if (data.after === "append") {
-                    li.appendTo(q);
-                    li.show("blind");
-                    return true;
-                } else {
-                    var liafter = playlistFind(data.after);
-                    if (!liafter) {
-                        return false;
-                    }
-                    li.insertAfter(liafter);
-                    li.show("blind");
-                    return true;
+        PL_ACTION_QUEUE.queue(function (plq) {
+            var li = makeQueueEntry(data.item, true);
+            if (data.item.uid === PL_CURRENT)
+                li.addClass("queue_active");
+            li.hide();
+            var q = $("#queue");
+            li.attr("title", data.item.queueby
+                                ? ("Added by: " + data.item.queueby)
+                                : "Added by: Unknown");
+            if (data.after === "prepend") {
+                li.prependTo(q);
+                li.show("blind", function () {
+                    plq.release();
+                });
+            } else if (data.after === "append") {
+                li.appendTo(q);
+                li.show("blind", function () {
+                    plq.release();
+                });
+            } else {
+                var liafter = playlistFind(data.after);
+                if (!liafter) {
+                    plq.release();
+                    return;
                 }
+                li.insertAfter(liafter);
+                li.show("blind", function () {
+                    plq.release();
+                });
             }
         });
     },
@@ -848,26 +850,23 @@ Callbacks = {
     },
 
     "delete": function(data) {
-        queueAction({
-            fn: function () {
-                PL_WAIT_SCROLL = true;
-                var li = $(".pluid-" + data.uid);
-                li.hide("blind", function() {
-                    li.remove();
-                    PL_WAIT_SCROLL = false;
-                });
-                return true;
-            }
+        PL_ACTION_QUEUE.queue(function (plq) {
+            PL_WAIT_SCROLL = true;
+            var li = $(".pluid-" + data.uid);
+            li.hide("blind", function() {
+                li.remove();
+                plq.release();
+                PL_WAIT_SCROLL = false;
+            });
         });
     },
 
     moveVideo: function(data) {
-        if(data.moveby != CLIENT.name) {
-            queueAction({
-                fn: function () {
-                    playlistMove(data.from, data.after);
-                    return true;
-                }
+        if (data.moveby != CLIENT.name) {
+            PL_ACTION_QUEUE.queue(function (plq) {
+                playlistMove(data.from, data.after, function () {
+                    plq.release();
+                });
             });
         }
     },
