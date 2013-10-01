@@ -798,7 +798,7 @@ Callbacks = {
     },
 
     queueFail: function(data) {
-        if (!data) {
+        if (!data || data === true) {
             data = "Queue failed.  Check your link to make sure it is valid.";
         }
         var alerts = $(".qfalert");
