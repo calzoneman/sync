@@ -796,11 +796,30 @@ Callbacks = {
     },
 
     queueFail: function(data) {
-        if(!data) {
+        if (!data) {
             data = "Queue failed.  Check your link to make sure it is valid.";
         }
+        var alerts = $(".qfalert");
+        for (var i = 0; i < alerts.length; i++) {
+            var al = $(alerts[i]);
+            var cl = al.clone();
+            cl.children().remove();
+            if (cl.text() === data) {
+                var tag = al.find(".label-important");
+                if (tag.length > 0) {
+                    var count = parseInt(tag.text().match(/\d+/)[0]) + 1;
+                    tag.text(tag.text().replace(/\d+/, ""+count));
+                } else {
+                    $("<span/>")
+                        .addClass("label label-important pull-right")
+                        .text("+ 1 more")
+                        .appendTo(al);
+                }
+                return;
+            }
+        }
         makeAlert("Error", data, "alert-error")
-            .addClass("span12")
+            .addClass("span12 qfalert")
             .insertBefore($("#extended_controls"));
     },
 
