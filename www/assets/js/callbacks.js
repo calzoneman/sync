@@ -767,24 +767,24 @@ Callbacks = {
         queueAction({
             fn: function () {
                 var li = makeQueueEntry(data.item, true);
+                if (data.item.uid === PL_CURRENT)
+                    li.addClass("queue_active");
                 li.hide();
                 var q = $("#queue");
                 li.attr("title", data.item.queueby
                                     ? ("Added by: " + data.item.queueby)
                                     : "Added by: Unknown");
-                if(data.after === "prepend") {
+                if (data.after === "prepend") {
                     li.prependTo(q);
                     li.show("blind");
                     return true;
-                }
-                else if(data.after === "append") {
+                } else if (data.after === "append") {
                     li.appendTo(q);
                     li.show("blind");
                     return true;
-                }
-                else {
+                } else {
                     var liafter = playlistFind(data.after);
-                    if(!liafter) {
+                    if (!liafter) {
                         return false;
                     }
                     li.insertAfter(liafter);
@@ -873,27 +873,18 @@ Callbacks = {
     },
 
     setCurrent: function(uid) {
-        queueAction({
-            fn: function () {
-                PL_CURRENT = uid;
-                var qli = $("#queue li");
-                qli.removeClass("queue_active");
-                var li = $(".pluid-" + uid);
-                if(li.length == 0) {
-                    return false;
+        PL_CURRENT = uid;
+        $("#queue li").removeClass("queue_active");
+        var li = $(".pluid-" + uid);
+        if (li.length !== 0) {
+            li.addClass("queue_active");
+            var tmr = setInterval(function () {
+                if (!PL_WAIT_SCROLL) {
+                    scrollQueue();
+                    clearInterval(tmr);
                 }
-
-                li.addClass("queue_active");
-                var timer = setInterval(function () {
-                    if(!PL_WAIT_SCROLL) {
-                        scrollQueue();
-                        clearInterval(timer);
-                    }
-                }, 100);
-                return true;
-            },
-            can_wait: true
-        });
+            }, 100);
+        }
     },
 
     changeMedia: function(data) {
