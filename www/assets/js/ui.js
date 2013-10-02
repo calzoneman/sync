@@ -48,6 +48,18 @@ generateToggle("#playlisttoggle", "#playlist_controls");
 /* navbar stuff */
 $("#optlink").click(showOptionsMenu);
 $("#chatonly").click(chatOnly);
+$("#hidemotd").click(hideMotd);
+
+function hideMotd() {
+    if ($("#hidemotd").text() == "Hide MOTD" && $("#motd").html() != "") {
+        $("#motd").slideUp();
+        $("#hidemotd").text("Show MOTD");
+    }
+    else if ($("#hidemotd").text() == "Show MOTD") {
+        $("#motd").slideDown();
+        $("#hidemotd").text("Hide MOTD");
+    }
+}
 
 function guestLogin() {
     socket.emit("login", {
