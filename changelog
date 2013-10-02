@@ -1,3 +1,17 @@
+Tue Oct 01 22:57 2013 CDT
+    * lib/asyncqueue.js: Add a generalized queue class for queueing async
+      functions to execute in order
+    * lib/channel.js, lib/playlist.js: Clean up playlist addition/move/
+      deletion.  Should fix #285.
+    * lib/server.js: Fix announcement initialization to null
+    * tests/naokosimulator2013.js: Add a simple bot that authenticates
+      and vomits a giant list of videos into a channel
+    * www/assets/js/callbacks.js, www/assets/js/util.js: Clean up
+      playlist add/move/delete
+    * www/assets/js/data.js: Update CL_VERSION which I always forget
+      to do.
+    * www/assets/js/ui.js: Small fix to comply with server changes
+
 Sun Sep 29 21:30 2013 CDT
     * lib/get-info.js: Add an extra check to ytv2 to make sure embedding is
       allowed.  If not, send a queueFail.
@@ -140,7 +154,7 @@ Wed Sep 11 20:19 2013 CDT
       allow for changing the permission to view obscured polls.
 
 Tue Sep 10 22:40 2013 CDT
-    * www/account.html, www/acp.html, www/login.html: 
+    * www/account.html, www/acp.html, www/login.html:
       Import www/assets/js/data.js for easy access to user preferences
     * www/assets/js/account.js, www/assets/js/acp.js: remove redundant
       cookie util functions

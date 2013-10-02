@@ -323,9 +323,6 @@ function queue(pos) {
         return;
     }
     var links = $("#mediaurl").val().split(",");
-    if(pos == "next") {
-        links = links.reverse();
-    }
     var parsed = [];
     links.forEach(function(link) {
         var data = parseMediaLink(link);

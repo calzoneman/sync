@@ -1191,29 +1191,58 @@ function addLibraryButtons(li, id, source) {
 
 /* queue stuff */
 
-var PL_QUEUED_ACTIONS = [];
-var PL_ACTION_INTERVAL = false;
+var AsyncQueue = function () {
+    this._q = [];
+    this._lock = false;
+    this._tm = 0;
+};
 
-function queueAction(data) {
-    PL_QUEUED_ACTIONS.push(data);
-    if(PL_ACTION_INTERVAL)
-        return;
-    PL_ACTION_INTERVAL = setInterval(function () {
-        var data = PL_QUEUED_ACTIONS.shift();
-        if(!("expire" in data))
-            data.expire = Date.now() + 5000;
-        if(!data.fn()) {
-            if(data.can_wait && Date.now() < data.expire)
-                PL_QUEUED_ACTIONS.push(data);
-            else if(Date.now() < data.expire)
-                PL_QUEUED_ACTIONS.unshift(data);
+AsyncQueue.prototype.next = function () {
+    if (this._q.length > 0) {
+        if (!this.lock())
+            return;
+        var item = this._q.shift();
+        var fn = item[0], tm = item[1];
+        this._tm = Date.now() + item[1];
+        fn(this);
+    }
+};
+
+AsyncQueue.prototype.lock = function () {
+    if (this._lock) {
+        if (this._tm > 0 && Date.now() > this._tm) {
+            this._tm = 0;
+            return true;
         }
-        if(PL_QUEUED_ACTIONS.length == 0) {
-            clearInterval(PL_ACTION_INTERVAL);
-            PL_ACTION_INTERVAL = false;
-        }
-    }, 100);
-}
+        return false;
+    }
+
+    this._lock = true;
+    return true;
+};
+
+AsyncQueue.prototype.release = function () {
+    var self = this;
+    if (!self._lock)
+        return false;
+
+    self._lock = false;
+    self.next();
+    return true;
+};
+
+AsyncQueue.prototype.queue = function (fn) {
+    var self = this;
+    self._q.push([fn, 20000]);
+    self.next();
+};
+
+AsyncQueue.prototype.reset = function () {
+    this._q = [];
+    this._lock = false;
+};
+
+var PL_ACTION_QUEUE = new AsyncQueue();
 
 // Because jQuery UI does weird things
 function playlistFind(uid) {
@@ -1227,10 +1256,12 @@ function playlistFind(uid) {
     return false;
 }
 
-function playlistMove(from, after) {
+function playlistMove(from, after, cb) {
     var lifrom = $(".pluid-" + from);
-    if(lifrom.length == 0)
-        return false;
+    if(lifrom.length == 0) {
+        cb(false);
+        return;
+    }
 
     var q = $("#queue");
 
@@ -1238,24 +1269,26 @@ function playlistMove(from, after) {
         lifrom.hide("blind", function() {
             lifrom.detach();
             lifrom.prependTo(q);
-            lifrom.show("blind");
+            lifrom.show("blind", cb);
         });
     }
     else if(after === "append") {
         lifrom.hide("blind", function() {
             lifrom.detach();
             lifrom.appendTo(q);
-            lifrom.show("blind");
+            lifrom.show("blind", cb);
         });
     }
     else {
         var liafter = $(".pluid-" + after);
-        if(liafter.length == 0)
-            return false;
+        if(liafter.length == 0) {
+            cb(false);
+            return;
+        }
         lifrom.hide("blind", function() {
             lifrom.detach();
             lifrom.insertAfter(liafter);
-            lifrom.show("blind");
+            lifrom.show("blind", cb);
         });
     }
 }

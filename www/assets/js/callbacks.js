@@ -764,43 +764,64 @@ Callbacks = {
     },
 
     queue: function(data) {
-        queueAction({
-            fn: function () {
-                var li = makeQueueEntry(data.item, true);
-                li.hide();
-                var q = $("#queue");
-                li.attr("title", data.item.queueby
-                                    ? ("Added by: " + data.item.queueby)
-                                    : "Added by: Unknown");
-                if(data.after === "prepend") {
-                    li.prependTo(q);
-                    li.show("blind");
-                    return true;
+        PL_ACTION_QUEUE.queue(function (plq) {
+            var li = makeQueueEntry(data.item, true);
+            if (data.item.uid === PL_CURRENT)
+                li.addClass("queue_active");
+            li.hide();
+            var q = $("#queue");
+            li.attr("title", data.item.queueby
+                                ? ("Added by: " + data.item.queueby)
+                                : "Added by: Unknown");
+            if (data.after === "prepend") {
+                li.prependTo(q);
+                li.show("blind", function () {
+                    plq.release();
+                });
+            } else if (data.after === "append") {
+                li.appendTo(q);
+                li.show("blind", function () {
+                    plq.release();
+                });
+            } else {
+                var liafter = playlistFind(data.after);
+                if (!liafter) {
+                    plq.release();
+                    return;
                 }
-                else if(data.after === "append") {
-                    li.appendTo(q);
-                    li.show("blind");
-                    return true;
-                }
-                else {
-                    var liafter = playlistFind(data.after);
-                    if(!liafter) {
-                        return false;
-                    }
-                    li.insertAfter(liafter);
-                    li.show("blind");
-                    return true;
-                }
+                li.insertAfter(liafter);
+                li.show("blind", function () {
+                    plq.release();
+                });
             }
         });
     },
 
     queueFail: function(data) {
-        if(!data) {
+        if (!data || data === true) {
             data = "Queue failed.  Check your link to make sure it is valid.";
         }
+        var alerts = $(".qfalert");
+        for (var i = 0; i < alerts.length; i++) {
+            var al = $(alerts[i]);
+            var cl = al.clone();
+            cl.children().remove();
+            if (cl.text() === data) {
+                var tag = al.find(".label-important");
+                if (tag.length > 0) {
+                    var count = parseInt(tag.text().match(/\d+/)[0]) + 1;
+                    tag.text(tag.text().replace(/\d+/, ""+count));
+                } else {
+                    $("<span/>")
+                        .addClass("label label-important pull-right")
+                        .text("+ 1 more")
+                        .appendTo(al);
+                }
+                return;
+            }
+        }
         makeAlert("Error", data, "alert-error")
-            .addClass("span12")
+            .addClass("span12 qfalert")
             .insertBefore($("#extended_controls"));
     },
 
@@ -829,52 +850,40 @@ Callbacks = {
     },
 
     "delete": function(data) {
-        queueAction({
-            fn: function () {
-                PL_WAIT_SCROLL = true;
-                var li = $(".pluid-" + data.uid);
-                li.hide("blind", function() {
-                    li.remove();
-                    PL_WAIT_SCROLL = false;
-                });
-                return true;
-            }
+        PL_ACTION_QUEUE.queue(function (plq) {
+            PL_WAIT_SCROLL = true;
+            var li = $(".pluid-" + data.uid);
+            li.hide("blind", function() {
+                li.remove();
+                plq.release();
+                PL_WAIT_SCROLL = false;
+            });
         });
     },
 
     moveVideo: function(data) {
-        if(data.moveby != CLIENT.name) {
-            queueAction({
-                fn: function () {
-                    playlistMove(data.from, data.after);
-                    return true;
-                }
+        if (data.moveby != CLIENT.name) {
+            PL_ACTION_QUEUE.queue(function (plq) {
+                playlistMove(data.from, data.after, function () {
+                    plq.release();
+                });
             });
         }
     },
 
     setCurrent: function(uid) {
-        queueAction({
-            fn: function () {
-                PL_CURRENT = uid;
-                var qli = $("#queue li");
-                qli.removeClass("queue_active");
-                var li = $(".pluid-" + uid);
-                if(li.length == 0) {
-                    return false;
+        PL_CURRENT = uid;
+        $("#queue li").removeClass("queue_active");
+        var li = $(".pluid-" + uid);
+        if (li.length !== 0) {
+            li.addClass("queue_active");
+            var tmr = setInterval(function () {
+                if (!PL_WAIT_SCROLL) {
+                    scrollQueue();
+                    clearInterval(tmr);
                 }
-
-                li.addClass("queue_active");
-                var timer = setInterval(function () {
-                    if(!PL_WAIT_SCROLL) {
-                        scrollQueue();
-                        clearInterval(timer);
-                    }
-                }, 100);
-                return true;
-            },
-            can_wait: true
-        });
+            }, 100);
+        }
     },
 
     changeMedia: function(data) {
