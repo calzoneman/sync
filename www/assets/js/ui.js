@@ -44,6 +44,7 @@ $("#usercountwrap").click(scrollChat);
 generateToggle("#librarytoggle", "#librarywrap");
 generateToggle("#userpltoggle", "#userplaylistwrap");
 generateToggle("#playlisttoggle", "#playlist_controls");
+generateToggle("#motdtoggle", "#motd");
 
 /* navbar stuff */
 $("#optlink").click(showOptionsMenu);
