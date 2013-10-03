@@ -173,13 +173,16 @@ Callbacks = {
         CHANNEL.motd_text = data.motd;
         $("#motd").html(data.html);
         $("#motdtext").val(CHANNEL.motd_text);
-        if(data.motd != "") {
+
+        if(data.motd != "" && $("#motd").css("display") == "none") {
+            $("#motdtoggle").html($("#motdtoggle").html().replace(/Show/, "Hide"));
+            $("#motdtoggle"+" i").removeClass("icon-plus").addClass("icon-minus");
+            $("#motdtoggle").show();
             $("#motd").show();
-            $("#hidemotd").text("Hide MOTD");
         }
         else {
             $("#motd").hide();
-            $("#hidemotd").text("Hide MOTD");
+            $("#motdtoggle").hide();
         }
     },
 

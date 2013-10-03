@@ -30,7 +30,6 @@
               <li><a href="account.html" target="_blank">Account</a></li>
               <li><a href="javascript:void(0)" id="optlink">Options</a></li>
               <li><a href="javascript:void(0)" id="chatonly">Chat Only</a></li>
-              <li><a href="javascript:void(0)" id="hidemotd">Hide MOTD</a></li>
             </ul>
             <div class="navbar-form pull-right" id="loginform">
               <input type="text" id="guestname" placeholder="Name">
@@ -48,6 +47,10 @@
       <!-- begin main page -->
       <div class="container" id="mainpage">
         <!-- top row (MOTD, drink count) -->
+        <div class="well-small pointer" id="motdtoggle">
+          <i class="icon-minus pull-left"></i>
+          <p>Hide MOTD</p>
+        </div>
         <div class="row-fluid" id="toprow">
           <div class="well span12" id="motd">
           </div>

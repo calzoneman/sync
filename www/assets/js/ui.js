@@ -44,22 +44,11 @@ $("#usercountwrap").click(scrollChat);
 generateToggle("#librarytoggle", "#librarywrap");
 generateToggle("#userpltoggle", "#userplaylistwrap");
 generateToggle("#playlisttoggle", "#playlist_controls");
+generateToggle("#motdtoggle", "#motd");
 
 /* navbar stuff */
 $("#optlink").click(showOptionsMenu);
 $("#chatonly").click(chatOnly);
-$("#hidemotd").click(hideMotd);
-
-function hideMotd() {
-    if ($("#hidemotd").text() == "Hide MOTD" && $("#motd").html() != "") {
-        $("#motd").slideUp();
-        $("#hidemotd").text("Show MOTD");
-    }
-    else if ($("#hidemotd").text() == "Show MOTD") {
-        $("#motd").slideDown();
-        $("#hidemotd").text("Hide MOTD");
-    }
-}
 
 function guestLogin() {
     socket.emit("login", {
