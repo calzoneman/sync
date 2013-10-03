@@ -174,7 +174,7 @@ Callbacks = {
         $("#motd").html(data.html);
         $("#motdtext").val(CHANNEL.motd_text);
 
-        if(data.motd != "" && $("#motd").css("display") == "none") {
+        if(data.motd != "" || $("#motd").css("display") == "none") {
             $("#motdtoggle").html($("#motdtoggle").html().replace(/Show/, "Hide"));
             $("#motdtoggle"+" i").removeClass("icon-plus").addClass("icon-minus");
             $("#motdtoggle").show();
