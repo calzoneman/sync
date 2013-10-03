@@ -173,10 +173,15 @@ Callbacks = {
         CHANNEL.motd_text = data.motd;
         $("#motd").html(data.html);
         $("#motdtext").val(CHANNEL.motd_text);
-        if(data.motd != "")
+        if(data.motd != "") {
+            $("#motdwrap").show();
             $("#motd").show();
+            $("#togglemotd").find(".icon-plus")
+                .removeClass("icon-plus")
+                .addClass("icon-minus");
+        }
         else
-            $("#motd").hide();
+            $("#motdwrap").hide();
     },
 
     chatFilters: function(entries) {

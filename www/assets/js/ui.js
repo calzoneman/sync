@@ -45,6 +45,20 @@ generateToggle("#librarytoggle", "#librarywrap");
 generateToggle("#userpltoggle", "#userplaylistwrap");
 generateToggle("#playlisttoggle", "#playlist_controls");
 
+$("#togglemotd").click(function () {
+    var hidden = $("#motd").css("display") === "none";
+    $("#motd").toggle();
+    if (hidden) {
+        $("#togglemotd").find(".icon-plus")
+            .removeClass("icon-plus")
+            .addClass("icon-minus");
+    } else {
+        $("#togglemotd").find(".icon-minus")
+            .removeClass("icon-minus")
+            .addClass("icon-plus");
+    }
+});
+
 /* navbar stuff */
 $("#optlink").click(showOptionsMenu);
 $("#chatonly").click(chatOnly);

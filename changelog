@@ -1,3 +1,7 @@
+Wed Oct 02 22:25 2013 CDT
+    * www/channel.html, www/assets/js/ui.js, www/assets/js/callbacks.js:
+      Add a small toggle for the MOTD
+
 Wed Oct 02 09:35 2013 CDT
     * lib/channel.js: Fix the use of the wrong variable when checking for
       maximum video length

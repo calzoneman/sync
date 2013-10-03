@@ -48,9 +48,11 @@
       <div class="container" id="mainpage">
         <!-- top row (MOTD, drink count) -->
         <div class="row-fluid" id="toprow">
-          <div class="well span12" id="motd">
+          <div class="well" id="motdwrap">
+            <button class="close pull-right" id="togglemotd"><i class="icon-minus"></i></button>
+            <div id="motd"></div>
           </div>
-          <div class="span12" id="drinkbar">
+          <div id="drinkbar">
             <h1 id="drinkcount"></h1>
           </div>
         </div>
