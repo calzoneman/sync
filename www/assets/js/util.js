@@ -419,8 +419,7 @@ function addQueueButtons(li) {
             .click(function() {
                 socket.emit("moveMedia", {
                     from: li.data("uid"),
-                    after: PL_CURRENT,
-                    moveby: null
+                    after: PL_CURRENT
                 });
             })
             .appendTo(menu);

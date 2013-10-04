@@ -867,13 +867,11 @@ Callbacks = {
     },
 
     moveVideo: function(data) {
-        if (data.moveby != CLIENT.name) {
-            PL_ACTION_QUEUE.queue(function (plq) {
-                playlistMove(data.from, data.after, function () {
-                    plq.release();
-                });
+        PL_ACTION_QUEUE.queue(function (plq) {
+            playlistMove(data.from, data.after, function () {
+                plq.release();
             });
-        }
+        });
     },
 
     setCurrent: function(uid) {

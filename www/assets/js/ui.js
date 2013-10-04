@@ -316,6 +316,7 @@ $("#queue").sortable({
             from: PL_FROM,
             after: PL_AFTER
         });
+        $("#queue").sortable("cancel");
     }
 });
 $("#queue").disableSelection();

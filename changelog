@@ -1,3 +1,9 @@
+Thu Oct 03 22:09 2013 CDT
+    * www/assets/js/ui.js: Use sortable("cancel") to remove the need for
+      the `moveby` field of the movement packet
+    * www/assets/js/util.js, www/assets/js/callbacks.js, lib/channel.js:
+      Remove references to moveby
+
 Thu Oct 03 22:05 2013 CDT
     * lib/channel.js, lib/playlist.js: Fix 'next' bumping not properly
       telling clients that the old item was deleted
