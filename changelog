@@ -1,3 +1,7 @@
+Thu Oct 03 22:05 2013 CDT
+    * lib/channel.js, lib/playlist.js: Fix 'next' bumping not properly
+      telling clients that the old item was deleted
+
 Wed Oct 02 22:25 2013 CDT
     * www/channel.html, www/assets/js/ui.js, www/assets/js/callbacks.js:
       Add a small toggle for the MOTD
