@@ -1,3 +1,7 @@
+Sat Oct 05 20:41 2013 CDT
+    * lib/user.js: Fix a bug where duplicate guestnames were allowed with
+      different capitalizations
+
 Thu Oct 03 22:09 2013 CDT
     * www/assets/js/ui.js: Use sortable("cancel") to remove the need for
       the `moveby` field of the movement packet
