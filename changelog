@@ -1,3 +1,9 @@
+Mon Oct 07 00:08 2013 CDT
+    * lib/playlist.js: Fix /clean not behaving properly (actually was a
+      consequence of the remove() function)
+    * lib/get-info.js: Send more specific error messages
+    * www/assets/js/callbacks.js: Minor fix to the queueFail callback
+
 Sun Oct 06 01:42 2013 CDT
     * lib/channel.js, www/assets/js/callbacks.js: Include the link that
       failed with the queueFail packet.  Clicking the "+ n more" tag

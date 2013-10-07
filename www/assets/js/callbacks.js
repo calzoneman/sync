@@ -806,7 +806,7 @@ Callbacks = {
         if (!data)
             data = { link: null };
         if (!data.msg || data.msg === true) {
-            data = "Queue failed.  Check your link to make sure it is valid.";
+            data.msg = "Queue failed.  Check your link to make sure it is valid.";
         }
         var alerts = $(".qfalert");
         for (var i = 0; i < alerts.length; i++) {
