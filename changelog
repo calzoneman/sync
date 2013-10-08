@@ -1,3 +1,10 @@
+Mon Oct 07 19:00 2013 CDT
+    * lib/channel.js: Rearrange the callback order to prevent database
+      lookups from racing with the playlist queue.
+    * tests/naokosimulator2013.js: Flood the first 10 videos all at once.
+      Should provide better test coverage for race conditions (especially
+      on localhost where the latency is ~0)
+
 Mon Oct 07 10:02 2013 CDT
     * lib/channel.js: Fix several cases where an unregistered channel
       might attempt to make a database call which then fails.

@@ -6,6 +6,8 @@ socket.on('connect', function () {
     socket.emit('joinChannel', { name: 'test' });
 });
 
+socket.on('login', testAddVideos);
+
 socket.on('queueFail', function (msg) {
     console.log(msg);
 });
@@ -21,7 +23,17 @@ function testAddVideos() {
             ids.push(pl[i].id);
     }
 
-    for (var i = 0; i < ids.length; i++) {
+    // burst the first 10
+    for (var i = 0; i < 10; i++) {
+        console.log('queue', ids[i]);
+        socket.emit('queue', {
+            id: ids[i],
+            type: 'yt',
+            pos: 'end'
+        });
+    }
+
+    for (var i = 10; i < ids.length; i++) {
         (function (i) {
             setTimeout(function () {
                 console.log('queue', ids[i]);
@@ -30,9 +42,7 @@ function testAddVideos() {
                     type: 'yt',
                     pos: 'end'
                 });
-            }, 1050 * i);
+            }, 1050 * (i - 9));
         })(i);
     }
 }
-
-testAddVideos();
