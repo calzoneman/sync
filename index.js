@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 var Server = require("./lib/server");
 var Config = require("./lib/config");
+var Logger = require("./lib/logger");
 
 Config.load("cfg.json", function (cfg) {
     var sv = Server.init(cfg);
