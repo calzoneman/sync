@@ -1,3 +1,6 @@
+Sat Oct 12 18:24 2013 CDT
+    * lib/user.js: Fix bad chatMsg packet causing exceptions
+
 Sat Oct 12 15:53 2013 CDT
     * lib/channel.js: Add a try-catch to playlist loading to catch
       the mysterious error that's been coming up (corrupt pl?)
