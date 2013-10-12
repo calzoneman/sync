@@ -1,3 +1,8 @@
+Sat Oct 12 18:58 2013 CDT
+    * lib/user.js, lib/channel.js: Improve strictness of data checking
+      to prevent errors from incoming bad data.  Kick users who send
+      bad data or attempt channel moderation with insufficient rank.
+
 Sat Oct 12 18:24 2013 CDT
     * lib/user.js: Fix bad chatMsg packet causing exceptions
 
