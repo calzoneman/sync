@@ -72,7 +72,7 @@ Features
   - Global bans
   - Search registered channels and users
   - Currently loaded channels
-  - Stats (usercount, channelcount, RAM usage
+  - Stats (usercount, channelcount, RAM usage)
 
 Installing
 ----------
