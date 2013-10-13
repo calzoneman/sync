@@ -1,5 +1,5 @@
 Sat Oct 12 19:43 2013 CDT
-    * lib/user.js: Fix jumpTo kick bug
+    * lib/user.js: Fix jumpTo kick bug (and delete)
     * lib/api.js: Fix unloaded channel API listing bug
 
 Sat Oct 12 19:02 2013 CDT
