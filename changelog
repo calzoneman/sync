@@ -1,3 +1,8 @@
+Mon Oct 14 16:37 2013 CDT
+    * lib/bgtask.js: Add an interval for dumping all loaded channels
+    * lib/channel.js: Remove per-channel dump interval
+    * lib/config.js: Add config key for channel save interval
+
 Mon Oct 14 16:30 2013 CDT
     * lib/server.js: Rate-limit socket.io connections
     * lib/bgtask.js: Periodically clear out old rate limiters
