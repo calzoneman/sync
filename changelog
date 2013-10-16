@@ -1,3 +1,7 @@
+Wed Oct 16 17:19 2013 CDT
+    * lib/channel.js, lib/user.js: Only kick users on permissions
+      violations.  Fail silently on bad packets.
+
 Mon Oct 14 18:13 2013 CDT
     * lib/channel.js, lib/database.js: Add a separate database query
       for saving ranks on login (insert only, do nothing if the name
