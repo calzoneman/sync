@@ -75,7 +75,7 @@ Callbacks = {
     },
 
     errorMsg: function(data) {
-        alert(data.msg);
+        errDialog(data.msg);
     },
 
     costanza: function (data) {
