@@ -852,7 +852,7 @@ Callbacks = {
         }
         makeAlert("Error", text, "alert-error")
             .addClass("span12 qfalert")
-            .insertBefore($("#extended_controls"));
+            .appendTo($("#queuefail"));
     },
 
     setTemp: function(data) {

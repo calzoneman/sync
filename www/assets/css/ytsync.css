@@ -364,3 +364,12 @@ body {
 #adminflair {
     margin-left: 3px;
 }
+
+#queuefail {
+    min-height: 0px;
+}
+
+#queuefail .alert {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
