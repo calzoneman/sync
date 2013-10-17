@@ -67,8 +67,11 @@ var YouTubePlayer = function (data) {
     self.load = function (data) {
         if(self.player && self.player.loadVideoById) {
             self.player.loadVideoById(data.id, data.currentTime);
-            if(VIDEOQUALITY)
+            if(VIDEOQUALITY) {
                 self.player.setPlaybackQuality(VIDEOQUALITY);
+                // What's that?  Another stupid hack for the HTML5 player?
+                self.player.setPlaybackQuality(VIDEOQUALITY);
+            }
             self.videoId = data.id;
             self.videoLength = data.seconds;
         }
@@ -723,7 +726,6 @@ var ImgurPlayer = function (data) {
         iframe.attr("height", VHEIGHT);
         var prto = location.protocol;
         iframe.attr("src", prto+"//imgur.com/a/"+self.videoId+"/embed");
-        console.log(prto);
         iframe.attr("frameborder", "0");
         iframe.attr("scrolling", "no");
         iframe.css("border", "none");
@@ -804,8 +806,20 @@ function handleMediaUpdate(data) {
     }
 
     if (wait) {
-        PLAYER.seek(0);
-        PLAYER.pause();
+        var tm = 1;
+        /* Stupid hack -- In this thrilling episode of
+           "the YouTube API developers should eat a boat", the
+           HTML5 player apparently breaks if I play()-seek(0)-pause()
+           quickly (as a "start buffering but don't play yet"
+           mechanism)
+        */
+        if (PLAYER.type === "yt") {
+            tm = 500;
+        }
+        setTimeout(function () {
+            PLAYER.seek(0);
+            PLAYER.pause();
+        }, tm);
         return;
     }
     
