@@ -257,6 +257,14 @@ function addUserDropdown(entry, data) {
     entry.contextmenu(function(ev) {
         ev.preventDefault();
         if(menu.css("display") == "none") {
+            $(".user-dropdown").hide();
+            $(document).bind("mouseup.userlist-ddown", function (e) {
+                if (menu.has(e.target).length === 0 &&
+                    entry.parent().has(e.target).length === 0) {
+                    menu.hide();
+                    $(document).unbind("mouseup.userlist-ddown");
+                }
+            });
             menu.show();
         } else {
             menu.hide();
