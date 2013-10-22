@@ -1,3 +1,6 @@
+Tue Oct 22 13:41 2013 CDT
+    * lib/channel.js: Fix a channel dead race condition
+
 Sun Oct 20 20:02 2013 CDT
     * lib/channel.js: Fix MOTD XSS filter stripping style tags
 
