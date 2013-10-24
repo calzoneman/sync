@@ -1,3 +1,8 @@
+Thu Oct 24 17:29 2013 CDT
+    * www/assets/js/player.js: Add a special of special checks for
+      dailymotion because their player can only seek to the nearest
+      2 seconds
+
 Tue Oct 22 13:41 2013 CDT
     * lib/channel.js: Fix a channel dead race condition
 

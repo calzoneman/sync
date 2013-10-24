@@ -846,14 +846,26 @@ function handleMediaUpdate(data) {
     PLAYER.getTime(function (seconds) {
         var time = data.currentTime;
         var diff = time - seconds || time;
+        var acc = USEROPTS.sync_accuracy;
+        // Dailymotion can't seek more accurately than to the nearest
+        // 2 seconds.  It gets stuck looping portions of the video
+        // at the default synch accuracy of 2.
+        // I've found 5 works decently.
+        if (PLAYER.type === "dm")
+            acc = Math.max(acc, 5.0);
 
-        if(diff > USEROPTS.sync_accuracy) {
+        if(diff > acc) {
             PLAYER.seek(time);
-        } else if(diff < -USEROPTS.sync_accuracy) {
+        } else if(diff < -acc) {
             // Don't synch all the way back, causes buffering problems
             // because for some dumb reason YouTube erases the buffer
             // when you seek backwards
-            PLAYER.seek(time + 1);
+            //
+            // ADDENDUM 2013-10-24 Except for dailymotion because
+            // their player is inaccurate
+            if (PLAYER.type !== "dm")
+                time += 1;
+            PLAYER.seek(time);
         }
     });
 }
