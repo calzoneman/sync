@@ -1,3 +1,7 @@
+Thu Oct 31 18:10 2013 CDT
+    * package.json: Require node-validator < 2.0.0 as a temporary
+      measure while in-house XSS filtering is developed.
+
 Wed Oct 30 19:28 2013 CDT
     * www/assets/js/util.js: Fix mod permission check breaking chat box
       in chat only mode
