@@ -8,8 +8,8 @@ function basicTest() {
     assert(sanitize("< img src=asdf onerror='alert(\"xss\")'>") ===
                     "<img src=\"asdf\">");
 
-    assert(sanitize("<a href='javascript:alert(document.cookie)'>") === 
-                    "<a href=\":()\">");
+    assert(sanitize("<a href='javascript:alert(document.cookie)'>") ===
+                    "<a href=\"[removed]:[removed]([removed])\">");
 
     assert(sanitize("<a ") === "<a>");
 
