@@ -10,6 +10,11 @@ function basicTest() {
 
     assert(sanitize("<a href='javascript:alert(document.cookie)'>") === 
                     "<a href=\":()\">");
+
+    assert(sanitize("<a ") === "<a>");
+
+    assert(sanitize("<img src=\"<a href=\"javascript:void(0)\">>") ===
+                    "<img src=\"<a href=\" javascriptvoid0=\"\">>");
 }
 
 basicTest();
