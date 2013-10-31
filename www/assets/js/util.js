@@ -1038,7 +1038,7 @@ function handleModPermissions() {
 }
 
 function handlePermissionChange() {
-    if(CLIENT.rank >= 2) {
+    if(CLIENT.rank >= 2 && $("#channelsettingswrap").length > 0) {
         $("#channelsettingswrap3").show();
         if($("#channelsettingswrap").html().trim() == "") {
             $("#channelsettingswrap").load("channeloptions.html", handleModPermissions);
