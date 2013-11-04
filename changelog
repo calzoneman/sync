@@ -1,3 +1,9 @@
+Mon Nov 04 16:15 2013 CDT
+    * lib/xss.js, tests/xss.js: Merge work-in-progress XSS filter
+      from xss branch
+    * lib/torblocker.js: Allow blocking of socket connections from
+      Tor IPs
+
 Thu Oct 31 18:10 2013 CDT
     * package.json: Require node-validator < 2.0.0 as a temporary
       measure while in-house XSS filtering is developed.
