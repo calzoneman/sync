@@ -42,7 +42,7 @@ with open("package.json", "w") as f:
     f.write("".join(pkgbuf))
 
 serbuf = []
-with open("server.js") as f:
+with open("lib/server.js") as f:
     for line in f:
         m = SERVER.search(line)
         sb = []
@@ -69,5 +69,5 @@ with open("server.js") as f:
             print("server.js: {} => {}".format(line, "".join(sb)))
         else:
             serbuf.append(line)
-with open("server.js", "w") as f:
+with open("lib/server.js", "w") as f:
     f.write("".join(serbuf))
