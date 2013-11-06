@@ -161,6 +161,8 @@ $("#registerbtn").click(function() {
         return;
     }
 
+    $("#registerbtn").attr("disabled", true);
+
     // Input valid, try registering
     var data = {
         name: name,
@@ -168,6 +170,7 @@ $("#registerbtn").click(function() {
     };
     
     postJSON(WEB_URL + "/api/register?callback=?", data, function (data) {
+        $("#registerbtn").attr("disabled", false);
         if(data.success) {
             uname = name;
             session = data.session;

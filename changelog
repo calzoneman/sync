@@ -1,3 +1,9 @@
+Tue Nov 05 22:38 2013 CDT
+    * lib/database.js: Add a check for registrations-in-progress to prevent
+      duplicate queries by an impatient user
+    * www/assets/js/account.js: Disable the registration button while the
+      registration is being processed
+
 Mon Nov 04 16:15 2013 CDT
     * lib/xss.js, tests/xss.js: Merge work-in-progress XSS filter
       from xss branch
