@@ -1,3 +1,7 @@
+Wed Nov 06 17:42 2013 CDT
+    * lib/server.js: Fix getChannel to properly handle case insensitive
+      channel names
+
 Tue Nov 05 22:43 2013 CDT
     * lib/channel.js: Set user.channel = null in userLeave to prevent
       double execution of userLeave.
