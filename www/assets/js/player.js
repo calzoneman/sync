@@ -787,6 +787,59 @@ var CustomPlayer = function (data) {
     self.seek = function () { };
 };
 
+var GoogleDocsPlayer = function (data) {
+    var self = this;
+    self.init = function (data) {
+        self.videoId = data.id;
+        self.videoLength = data.seconds;
+        self.paused = false;
+        var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
+        self.player = $("<object/>", data.object)[0];
+        $(self.player).attr("data", data.object.data);
+        $(self.player).attr("width", VWIDTH)
+                      .attr("height", VHEIGHT);
+        data.params.forEach(function (p) {
+            $("<param/>", p).appendTo(self.player);
+        });
+        removeOld($(self.player));
+    };
+
+    self.init(data);
+
+    self.load = function (data) {
+        self.init(data);
+    };
+
+    self.pause = function () {
+        if(self.player && self.player.pauseVideo)
+            self.player.pauseVideo();
+    };
+
+    self.play = function () {
+        if(self.player && self.player.playVideo)
+            self.player.playVideo();
+    };
+
+    self.isPaused = function (callback) {
+        if(self.player && self.player.getPlayerState) {
+            var state = self.player.getPlayerState();
+            callback(state != YT.PlayerState.PLAYING);
+        } else {
+            callback(false);
+        }
+    };
+
+    self.getTime = function (callback) {
+        if(self.player && self.player.getCurrentTime)
+            callback(self.player.getCurrentTime());
+    };
+
+    self.seek = function (time) {
+        if(self.player && self.player.seekTo)
+            self.player.seekTo(time, true);
+    };
+};
+
 function handleMediaUpdate(data) {
     // Don't update if the position is past the video length, but
     // make an exception when the video length is 0 seconds
@@ -882,7 +935,8 @@ var constructors = {
     "rt": RTMPPlayer,
     "jw": JWPlayer,
     "im": ImgurPlayer,
-    "cu": CustomPlayer
+    "cu": CustomPlayer,
+    "gd": GoogleDocsPlayer
 };
 
 function loadMediaPlayer(data) {

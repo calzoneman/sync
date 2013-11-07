@@ -1402,6 +1402,13 @@ function parseMediaLink(url) {
         };
     }
 
+    if ((m = url.match(/docs\.google\.com\/file\/d\/(.*?)\/edit/))) {
+        return {
+            id: m[1],
+            type: "gd"
+        };
+    }
+
     return {
         id: null,
         type: null
