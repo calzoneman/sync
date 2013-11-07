@@ -27,6 +27,7 @@ Features
 - Optional SSL support for socket.io and the account API
 - Synchronized playback from the following sources:
   - YouTube (individual videos + playlists)
+  - Google Docs videos
   - Vimeo
   - Dailymotion
   - Soundcloud
