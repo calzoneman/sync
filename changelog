@@ -1,3 +1,8 @@
+Thu Nov 07 17:18 2013 CDT
+    * lib/channel.js, lib/get-info.js, lib/media.js, lib/playlist.js,
+      www/assets/js/player.js, www/assets/js/util.js:
+      Add ability to embed Google Docs videos with synchronization
+
 Wed Nov 06 17:42 2013 CDT
     * lib/server.js: Fix getChannel to properly handle case insensitive
       channel names
