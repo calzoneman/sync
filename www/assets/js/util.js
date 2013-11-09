@@ -82,7 +82,8 @@ function formatUserlistItem(div) {
         name: div.data("name") || "",
         rank: div.data("rank"),
         profile: div.data("profile") || { image: "", text: ""},
-        leader: div.data("leader") || false
+        leader: div.data("leader") || false,
+        icon: div.data("icon") || false
     };
     var name = $(div.children()[1]);
     name.removeClass();
@@ -125,8 +126,8 @@ function formatUserlistItem(div) {
         name.css("font-style", "italic");
         $("<i/>").addClass("icon-time").appendTo(flair);
     }
-    if(data.meta && data.meta.icon) {
-        $("<i/>").addClass(data.meta.icon).prependTo(flair);
+    if (data.icon) {
+        $("<i/>").addClass(data.icon).prependTo(flair);
     }
 }
 

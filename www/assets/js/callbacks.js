@@ -677,6 +677,7 @@ Callbacks = {
         div.data("rank", data.rank);
         div.data("leader", false);
         div.data("profile", data.profile);
+        div.data("icon", data.meta.icon);
         formatUserlistItem(div, data);
         addUserDropdown(div, data);
         div.appendTo($("#userlist"));
@@ -724,6 +725,16 @@ Callbacks = {
         addUserDropdown(user);
         if(USEROPTS.sort_rank)
             sortUserlist();
+    },
+
+    setUserIcon: function (data) {
+        var user = findUserlistItem(data.name);
+        if (user === null) {
+            return;
+        }
+
+        user.data("icon", data.icon);
+        formatUserlistItem(user);
     },
 
     updateUser: function(data) {
