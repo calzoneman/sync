@@ -679,6 +679,18 @@ Callbacks = {
         sortUserlist();
     },
 
+    setLeader: function (name) {
+        $(".userlist_item").each(function () {
+            $(this).find(".icon-star-empty").remove();
+        });
+        if (name === "")
+            return;
+        var user = findUserlistItem(name);
+        if (user) {
+            $("<i/>").addClass("icon-star-empty").prependTo(user.children()[0]);
+        }
+    },
+
     updateUser: function(data) {
         if(data.name == CLIENT.name) {
             CLIENT.leader = data.leader;
