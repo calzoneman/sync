@@ -77,7 +77,13 @@ function findUserlistItem(name) {
     return null;
 }
 
-function formatUserlistItem(div, data) {
+function formatUserlistItem(div) {
+    var data = {
+        name: div.data("name") || "",
+        rank: div.data("rank"),
+        profile: div.data("profile") || { image: "", text: ""},
+        leader: div.data("leader") || false
+    };
     var name = $(div.children()[1]);
     name.removeClass();
     name.css("font-style", "");
@@ -109,7 +115,6 @@ function formatUserlistItem(div, data) {
     name.mouseleave(function() {
         profile.remove();
     });
-
     var flair = div.children()[0];
     flair.innerHTML = "";
     // denote current leader with a star
@@ -138,11 +143,10 @@ function getNameColor(rank) {
         return "";
 }
 
-function addUserDropdown(entry, data) {
-    entry.data("dropdown-info", data);
-    var name = data.name,
-        rank = data.rank,
-        leader = data.leader;
+function addUserDropdown(entry) {
+    var name = entry.data("name"),
+        rank = entry.data("rank"),
+        leader = entry.data("leader");
     entry.find(".user-dropdown").remove();
     var menu = $("<div/>")
         .addClass("user-dropdown")
@@ -285,7 +289,10 @@ function calcUserBreakdown() {
     };
     var total = 0;
     $("#userlist .userlist_item").each(function (index, item) {
-        var data = $(item).data("dropdown-info");
+        var data = {
+            rank: $(item).data("rank")
+        };
+            
         if(data.rank >= 255)
             breakdown["Site Admins"]++;
         else if(data.rank >= 3)
@@ -312,8 +319,8 @@ function sortUserlist() {
     var slice = Array.prototype.slice;
     var list = slice.call($("#userlist .userlist_item"));
     list.sort(function (a, b) {
-        var r1 = $(a).data("dropdown-info").rank;
-        var r2 = $(b).data("dropdown-info").rank;
+        var r1 = $(a).data("rank");
+        var r2 = $(b).data("rank");
         var afk1 = $(a).find(".icon-time").length > 0;
         var afk2 = $(b).find(".icon-time").length > 0;
         var name1 = a.children[1].innerHTML.toLowerCase();
@@ -1132,7 +1139,7 @@ function handlePermissionChange() {
     }
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
-        addUserDropdown($(users[i]), $(users[i]).data("dropdown-info"));
+        addUserDropdown($(users[i]));
     }
 
     $("#chatline").attr("disabled", !hasPermission("chat"));

@@ -673,6 +673,10 @@ Callbacks = {
             .addClass("userlist_item");
         var flair = $("<span/>").appendTo(div);
         var nametag = $("<span/>").text(data.name).appendTo(div);
+        div.data("name", data.name);
+        div.data("rank", data.rank);
+        div.data("leader", false);
+        div.data("profile", data.profile);
         formatUserlistItem(div, data);
         addUserDropdown(div, data);
         div.appendTo($("#userlist"));
@@ -682,13 +686,44 @@ Callbacks = {
     setLeader: function (name) {
         $(".userlist_item").each(function () {
             $(this).find(".icon-star-empty").remove();
+            if ($(this).data("leader")) {
+                $(this).data("leader", false);
+                addUserDropdown($(this));
+            }
         });
         if (name === "")
             return;
         var user = findUserlistItem(name);
         if (user) {
-            $("<i/>").addClass("icon-star-empty").prependTo(user.children()[0]);
+            user.data("leader", true);
+            formatUserlistItem(user);
+            addUserDropdown(user);
         }
+        if (name === CLIENT.name) {
+            CLIENT.leader = true;
+            // I'm a leader!  Set up sync function
+            if(LEADTMR)
+                clearInterval(LEADTMR);
+            LEADTMR = setInterval(sendVideoUpdate, 5000);
+        } else {
+            CLIENT.leader = false;
+            if(LEADTMR)
+                clearInterval(LEADTMR);
+            LEADTMR = false;
+        }
+    },
+
+    setUserRank: function (data) {
+        var user = findUserlistItem(data.name);
+        if (user === null) {
+            return;
+        }
+
+        user.data("rank", data.rank);
+        formatUserlistItem(user);
+        addUserDropdown(user);
+        if(USEROPTS.sort_rank)
+            sortUserlist();
     },
 
     updateUser: function(data) {
@@ -712,6 +747,7 @@ Callbacks = {
         }
         var user = findUserlistItem(data.name);
         if(user !== null) {
+            user.data("rank", data.rank);
             formatUserlistItem(user, data);
             addUserDropdown(user, data);
             if(USEROPTS.sort_rank)
