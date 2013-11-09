@@ -1,11 +1,6 @@
 Fri Nov 08 20:44 2013 CDT
     * lib/channel.js, lib/chatcommand.js: Implement basic shadow mute
       command
-
-Fri Nov 08 17:55 2013 CDT
-    * lib/get-info.js: Strip "ip" and "expire" fields from Google Drive
-      flashvars
-
 Thu Nov 07 17:18 2013 CDT
     * lib/channel.js, lib/get-info.js, lib/media.js, lib/playlist.js,
       www/assets/js/player.js, www/assets/js/util.js:
