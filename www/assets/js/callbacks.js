@@ -861,57 +861,12 @@ Callbacks = {
         });
     },
 
+    queueWarn: function (data) {
+        queueMessage(data, "alert-warning");
+    },
+
     queueFail: function (data) {
-        if (!data)
-            data = { link: null };
-        if (!data.msg || data.msg === true) {
-            data.msg = "Queue failed.  Check your link to make sure it is valid.";
-        }
-        var alerts = $(".qfalert");
-        for (var i = 0; i < alerts.length; i++) {
-            var al = $(alerts[i]);
-            var cl = al.clone();
-            cl.children().remove();
-            if (cl.text() === data.msg) {
-                var tag = al.find(".label-important");
-                if (tag.length > 0) {
-                    var morelinks = al.find(".qflinks");
-                    $("<a/>").attr("href", data.link)
-                        .attr("target", "_blank")
-                        .text(data.link)
-                        .appendTo(morelinks);
-                    $("<br/>").appendTo(morelinks);
-                    var count = parseInt(tag.text().match(/\d+/)[0]) + 1;
-                    tag.text(tag.text().replace(/\d+/, ""+count));
-                } else {
-                    var tag = $("<span/>")
-                        .addClass("label label-important pull-right pointer")
-                        .text("+ 1 more")
-                        .appendTo(al);
-                    var morelinks = $("<div/>")
-                        .addClass("qflinks")
-                        .appendTo(al)
-                        .hide();
-                    $("<a/>").attr("href", data.link)
-                        .attr("target", "_blank")
-                        .text(data.link)
-                        .appendTo(morelinks);
-                    $("<br/>").appendTo(morelinks);
-                    tag.click(function () {
-                        morelinks.toggle();
-                    });
-                }
-                return;
-            }
-        }
-        var text = data.msg;
-        if (typeof data.link === "string") {
-            text += "<br><a href='" + data.link + "' target='_blank'>" +
-                    data.link + "</a>";
-        }
-        makeAlert("Error", text, "alert-error")
-            .addClass("span12 qfalert")
-            .appendTo($("#queuefail"));
+        queueMessage(data, "alert-error");
     },
 
     setTemp: function(data) {
