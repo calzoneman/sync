@@ -171,7 +171,11 @@ Callbacks = {
     setMotd: function(data) {
         CHANNEL.motd = data.html;
         CHANNEL.motd_text = data.motd;
-        $("#motd").html(data.html);
+        if ($("#motdwrap").find(".motdeditor").length > 0) {
+            $("#motdwrap .motdeditor").val(CHANNEL.motd_text);
+        } else {
+            $("#motd").html(CHANNEL.motd);
+        }
         $("#motdtext").val(CHANNEL.motd_text);
         if(data.motd != "") {
             $("#motdwrap").show();

@@ -1034,6 +1034,7 @@ function handleModPermissions() {
     $("#csstext").val(CHANNEL.css);
     $("#jstext").val(CHANNEL.js);
     $("#motdtext").val(CHANNEL.motd_text);
+    setVisible("#editmotd", hasPermission("motdedit"));
     setVisible("#permedit_tab", CLIENT.rank >= 3);
     setVisible("#banlist_tab", hasPermission("ban"));
     setVisible("#motdedit_tab", hasPermission("motdedit"));
@@ -1811,4 +1812,27 @@ function queueMessage(data, type) {
     makeAlert(title, text, type)
         .addClass("span12 qfalert qf-" + type)
         .appendTo($("#queuefail"));
+}
+
+function showMOTDEditor() {
+    var motd = $("#motd");
+    motd.html("");
+    var text = $("<textarea/>")
+        .addClass("motdeditor input-block-level")
+        .attr("rows", "10")
+        .val(CHANNEL.motd_text)
+        .css("width", "100%")
+        .css("height", "100%")
+        .appendTo($("#motdwrap"))
+        .blur(function () {
+            socket.emit("setMotd", {
+                motd: text.val()
+            });
+            $("#motdwrap .motdeditor").remove();
+            $("#editmotd").show();
+            $("#togglemotd").show();
+        })
+        .focus();
+    $("#editmotd").hide();
+    $("#togglemotd").hide();
 }

@@ -45,6 +45,8 @@ generateToggle("#librarytoggle", "#librarywrap");
 generateToggle("#userpltoggle", "#userplaylistwrap");
 generateToggle("#playlisttoggle", "#playlist_controls");
 
+$("#editmotd").click(showMOTDEditor);
+
 $("#togglemotd").click(function () {
     var hidden = $("#motd").css("display") === "none";
     $("#motd").toggle();
