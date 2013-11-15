@@ -682,10 +682,19 @@ Callbacks = {
         div.data("leader", false);
         div.data("profile", data.profile);
         div.data("icon", data.meta.icon);
+        div.data("afk", data.meta.afk);
         formatUserlistItem(div, data);
         addUserDropdown(div, data);
         div.appendTo($("#userlist"));
         sortUserlist();
+    },
+
+    setUserProfile: function (data) {
+        var user = findUserlistItem(data.name);
+        if (user === null)
+            return;
+        user.data("profile", data.profile);
+        formatUserlistItem(user);
     },
 
     setLeader: function (name) {
@@ -741,6 +750,13 @@ Callbacks = {
         formatUserlistItem(user);
     },
 
+    /* DEPRECATED
+       SEE:
+        - setUserIcon
+        - setAFK
+        - setLeader
+        - setUserProfile
+    */
     updateUser: function(data) {
         if(data.name == CLIENT.name) {
             CLIENT.leader = data.leader;
@@ -774,13 +790,8 @@ Callbacks = {
         var user = findUserlistItem(data.name);
         if(user === null)
             return;
-        user.find(".icon-time").remove();
-        $(user[0].children[1]).css("font-style", "");
-        if(data.afk) {
-            $("<i/>").addClass("icon-time")
-                .appendTo(user[0].children[0]);
-            $(user[0].children[1]).css("font-style", "italic");
-        }
+        user.data("afk", data.afk);
+        formatUserlistItem(user);
         if(USEROPTS.sort_afk)
             sortUserlist();
     },

@@ -83,7 +83,8 @@ function formatUserlistItem(div) {
         rank: div.data("rank"),
         profile: div.data("profile") || { image: "", text: ""},
         leader: div.data("leader") || false,
-        icon: div.data("icon") || false
+        icon: div.data("icon") || false,
+        afk: div.data("afk") || false
     };
     var name = $(div.children()[1]);
     name.removeClass();
@@ -122,7 +123,7 @@ function formatUserlistItem(div) {
     if(data.leader) {
         $("<i/>").addClass("icon-star-empty").appendTo(flair);
     }
-    if(data.meta && data.meta.afk) {
+    if(data.afk) {
         name.css("font-style", "italic");
         $("<i/>").addClass("icon-time").appendTo(flair);
     }
