@@ -533,7 +533,7 @@ Callbacks = {
 
     setChannelRank: function(data) {
         var ents = $("#channelranks").data("entries");
-        if(typeof ents === "undefined")
+        if(typeof ents === "undefined" || ents === null)
             return;
         for(var i = 0; i < ents.length; i++) {
             if(ents[i].name == data.user) {
@@ -724,8 +724,10 @@ Callbacks = {
             if(LEADTMR)
                 clearInterval(LEADTMR);
             LEADTMR = setInterval(sendVideoUpdate, 5000);
-        } else {
+            handlePermissionChange();
+        } else if (CLIENT.leader) {
             CLIENT.leader = false;
+            handlePermissionChange();
             if(LEADTMR)
                 clearInterval(LEADTMR);
             LEADTMR = false;
@@ -739,6 +741,10 @@ Callbacks = {
         }
 
         user.data("rank", data.rank);
+        if (data.name === CLIENT.name) {
+            CLIENT.rank = data.rank;
+            handlePermissionChange();
+        }
         formatUserlistItem(user);
         addUserDropdown(user);
         if(USEROPTS.sort_rank)
@@ -761,6 +767,7 @@ Callbacks = {
         - setAFK
         - setLeader
         - setUserProfile
+        - setUserRank
     */
     updateUser: function(data) {
         if(data.name == CLIENT.name) {
