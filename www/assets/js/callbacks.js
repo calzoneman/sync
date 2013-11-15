@@ -705,8 +705,13 @@ Callbacks = {
                 addUserDropdown($(this));
             }
         });
-        if (name === "")
+        if (name === "") {
+            CLIENT.leader = false;
+            if(LEADTMR)
+                clearInterval(LEADTMR);
+            LEADTMR = false;
             return;
+        }
         var user = findUserlistItem(name);
         if (user) {
             user.data("leader", true);

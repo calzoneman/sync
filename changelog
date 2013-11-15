@@ -1,3 +1,6 @@
+Thu Nov 14 22:22 2013 CDT
+    * www/assets/js/callbacks.js: Fix being kicked when leader is removed
+
 Thu Nov 14 19:49 2013 CDT
     * www/assets/js/callbacks.js: Fix AFK users on join and profile
       updates.

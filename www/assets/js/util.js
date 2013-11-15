@@ -1426,6 +1426,9 @@ function parseMediaLink(url) {
 }
 
 function sendVideoUpdate() {
+    if (!CLIENT.leader) {
+        return;
+    }
     PLAYER.getTime(function (seconds) {
         socket.emit("mediaUpdate", {
             id: PLAYER.videoId,
