@@ -555,6 +555,7 @@ Callbacks = {
         if(data.success) {
             log.data("log", data.data);
             log.text(data.data);
+            filterChannelLog();
         } else {
             log.text("Error reading channel log");
         }
