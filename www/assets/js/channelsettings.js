@@ -205,4 +205,24 @@
             });
         }
     });
+
+    var logfilters = [
+        "#filter_chat",
+        "#filter_polls",
+        "#filter_queue",
+        "#filter_bans",
+        "#filter_channelsettings",
+        "#filter_joinquit"
+    ];
+
+    logfilters.unshift("#filter_all");
+    logfilters.forEach(function (f) {
+        $(f).change(function () {
+            if (f !== "#filter_all") {
+                $("#filter_all").prop("checked", false);
+            }
+            filterChannelLog();
+        });
+    });
+    logfilters.shift();
 })();

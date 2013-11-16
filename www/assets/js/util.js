@@ -294,7 +294,7 @@ function calcUserBreakdown() {
         var data = {
             rank: $(item).data("rank")
         };
-            
+
         if(data.rank >= 255)
             breakdown["Site Admins"]++;
         else if(data.rank >= 3)
@@ -1839,4 +1839,87 @@ function showMOTDEditor() {
         .focus();
     $("#editmotd").hide();
     $("#togglemotd").hide();
+}
+
+function filterChannelLog() {
+    var cc = $("#chanlog_contents");
+    if (!cc.data("log")) {
+        cc.data("log", cc.text());
+    }
+    var all = $("#filter_all").prop("checked");
+    var chat = $("#filter_chat").prop("checked");
+    var polls = $("#filter_polls").prop("checked");
+    var queue = $("#filter_queue").prop("checked");
+    var bans = $("#filter_bans").prop("checked");
+    var channelsettings = $("#filter_channelsettings").prop("checked");
+    var joinquit = $("#filter_joinquit").prop("checked");
+
+    var lines = cc.data("log").split("\n");
+    var include = [];
+    lines.forEach(function (line) {
+        if (line.trim() === "") {
+            return;
+        }
+        if (all) {
+            include.push(line);
+            return;
+        }
+
+        var pre = line.split(" ")[5];
+        if (pre === undefined) {
+            return;
+        }
+
+        if (chat && pre.match(/<[\w-]+\.>/)) {
+            include.push(line);
+            return;
+        }
+
+        if (polls && pre === "***" && (line.indexOf("Opened Poll") >= 0 ||
+                                       line.indexOf("closed the active poll") >= 0)) {
+            include.push(line);
+            return;
+        }
+
+        if (queue && pre === "###") {
+            include.push(line);
+            return;
+        }
+
+        if (channelsettings && pre === "%%%") {
+            include.push(line);
+            return;
+        }
+
+        if (joinquit) {
+            if (pre === "+++" || pre === "---") {
+                include.push(line);
+                return;
+            }
+
+            if (pre.match(/(\d{1,3}\.){3}\d{1,3}/) &&
+                line.indexOf("logged in as") >= 0) {
+                include.push(line);
+                return;
+            }
+        }
+
+        if (bans && pre === "***" && line.indexOf("banned") >= 0) {
+            include.push(line);
+            return;
+        }
+
+        if (channelsettings && pre === "***") {
+            if (line.indexOf("Loading") >= 0 ||
+                line.indexOf("Loaded") >= 0 ||
+                line.indexOf("unloading") >= 0 ||
+                line.indexOf("rank") >= 0) {
+                include.push(line);
+                return;
+            }
+            return;
+        }
+    });
+
+    $("#chanlog_contents").text(include.join("\n"));
 }
