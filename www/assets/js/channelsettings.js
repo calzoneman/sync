@@ -214,16 +214,15 @@
         "#filter_channelsettings",
         "#filter_joinquit"
     ];
-    $("#filter_all").change(function () {
-        var checked = $("#filter_all").prop("checked");
-        logfilters.forEach(function (f) {
-            $(f).attr("disabled", checked);
-        });
-    });
 
     logfilters.unshift("#filter_all");
     logfilters.forEach(function (f) {
-        $(f).change(filterChannelLog);
+        $(f).change(function () {
+            if (f !== "#filter_all") {
+                $("#filter_all").prop("checked", false);
+            }
+            filterChannelLog();
+        });
     });
     logfilters.shift();
 })();
