@@ -228,21 +228,30 @@
 </div>
 <div id="chanlog" class="span12">
     <button class="btn" id="chanlog_refresh">Refresh</button>
+    <br>
+    <br>
+    <strong>Filter Log:</strong>
     <form class="form-inline" action="javascript:void(0)">
+      <label class="checkbox" for="filter_all">Everything
+        <input type="checkbox" id="filter_all" checked="checked">
+      </label>
       <label class="checkbox" for="filter_chat">Chat
-        <input type="checkbox" id="filter_chat">
+        <input type="checkbox" id="filter_chat" disabled="true">
       </label>
       <label class="checkbox" for="filter_polls">Polls
-        <input type="checkbox" id="filter_polls">
-      </label>
-      <label class="checkbox" for="filter_joinquit">Join/Quit Messages
-        <input type="checkbox" id="filter_joinquit">
+        <input type="checkbox" id="filter_polls" disabled="true">
       </label>
       <label class="checkbox" for="filter_queue">Playlist actions
-        <input type="checkbox" id="filter_queue">
+        <input type="checkbox" id="filter_queue" disabled="true">
+      </label>
+      <label class="checkbox" for="filter_bans">Bans
+        <input type="checkbox" id="filter_bans" disabled="true">
       </label>
       <label class="checkbox" for="filter_channelsettings">Channel settings
-        <input type="checkbox" id="filter_channelsettings">
+        <input type="checkbox" id="filter_channelsettings" disabled="true">
+      </label>
+      <label class="checkbox" for="filter_joinquit">Join/Quit Messages
+        <input type="checkbox" id="filter_joinquit" disabled="true">
       </label>
     </form>
     <pre id="chanlog_contents" style="max-height: 400px; overflow-y: scroll"></pre>
