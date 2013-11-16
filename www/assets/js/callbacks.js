@@ -553,6 +553,7 @@ Callbacks = {
             return;
 
         if(data.success) {
+            log.data("log", data);
             log.text(data.data);
         } else {
             log.text("Error reading channel log");
