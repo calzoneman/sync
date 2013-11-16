@@ -228,5 +228,22 @@
 </div>
 <div id="chanlog" class="span12">
     <button class="btn" id="chanlog_refresh">Refresh</button>
+    <form class="form-inline" action="javascript:void(0)">
+      <label class="checkbox" for="filter_chat">Chat
+        <input type="checkbox" id="filter_chat">
+      </label>
+      <label class="checkbox" for="filter_polls">Polls
+        <input type="checkbox" id="filter_polls">
+      </label>
+      <label class="checkbox" for="filter_joinquit">Join/Quit Messages
+        <input type="checkbox" id="filter_joinquit">
+      </label>
+      <label class="checkbox" for="filter_queue">Playlist actions
+        <input type="checkbox" id="filter_queue">
+      </label>
+      <label class="checkbox" for="filter_channelsettings">Channel settings
+        <input type="checkbox" id="filter_channelsettings">
+      </label>
+    </form>
     <pre id="chanlog_contents" style="max-height: 400px; overflow-y: scroll"></pre>
 </div>

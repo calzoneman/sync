@@ -1840,3 +1840,7 @@ function showMOTDEditor() {
     $("#editmotd").hide();
     $("#togglemotd").hide();
 }
+
+function filterChannelLog() {
+    
+}
