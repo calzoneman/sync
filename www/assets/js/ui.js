@@ -150,13 +150,20 @@ $("#chatline").keydown(function(ev) {
     if(ev.keyCode == 13) {
         var msg = $("#chatline").val();
         if(msg.trim()) {
+            var meta = {};
             if (USEROPTS.adminhat && CLIENT.rank >= 255) {
                 msg = "/a " + msg;
-            } else if(USEROPTS.modhat && CLIENT.rank >= Rank.Moderator) {
-                msg = "/m " + msg;
+            } else if (USEROPTS.modhat && CLIENT.rank >= Rank.Moderator) {
+                meta.modflair = CLIENT.rank;
             }
+            if (CLIENT.rank >= 2 && msg.indexOf("/m ") === 0) {
+                meta.modflair = CLIENT.rank;
+                msg = msg.substring(4);
+            }
+
             socket.emit("chatMsg", {
-                msg: msg
+                msg: msg,
+                meta: meta
             });
             CHATHIST.push($("#chatline").val());
             CHATHISTIDX = CHATHIST.length;

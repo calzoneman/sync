@@ -1442,6 +1442,61 @@ function sendVideoUpdate() {
 /* chat */
 
 function formatChatMessage(data) {
+    var skip = data.username === LASTCHATNAME;
+    if (data.meta.forceShowName) {
+        skip = false;
+    }
+    if(data.msgclass == "server-whisper")
+        skip = true;
+    // Prevent impersonation by abuse of the bold filter
+    if(data.msg.match(/^\s*<strong>\w+\s*:\s*<\/strong>\s*/))
+        skip = false;
+    LASTCHATNAME = data.username;
+    LASTCHATTIME = data.time;
+    var div = $("<div/>");
+    if (USEROPTS.show_timestamps) {
+        var time = $("<span/>").addClass("timestamp").appendTo(div);
+        var timestamp = new Date(data.time).toTimeString().split(" ")[0];
+        time.text("["+timestamp+"] ");
+        if (data.meta.addClass && 
+            data.meta.addClass.match(/shout|server-whisper/)) {
+            time.addClass(data.meta.addClass);
+        }
+    }
+
+    var name = $("<span/>");
+    if (!skip) {
+        name.appendTo(div);
+    }
+    $("<strong/>").addClass("username").text(data.username + ": ").appendTo(name);
+    if (data.meta.modflair) {
+        name.addClass(getNameColor(data.meta.modflair));
+    }
+    if (data.meta.addClass) {
+        name.addClass(data.meta.addClass);
+    }
+    if (data.meta.superadminflair) {
+        name.addClass("label")
+            .addClass(data.meta.superadminflair.labelclass);
+        $("<i/>").addClass(data.meta.superadminflair.icon)
+            .addClass("icon-white")
+            .prependTo(name);
+    }
+
+    var message = $("<span/>").appendTo(div);
+    message[0].innerHTML = data.msg;
+
+    if (data.meta.action) {
+        name.remove();
+        message[0].innerHTML = data.username + " " + data.msg;
+    }
+    if (data.meta.addClass) {
+        message.addClass(data.meta.addClass);
+    }
+    return div;
+}
+
+function oldFormatChatMessage(data) {
     var skip = data.username == LASTCHATNAME;
     if(data.msgclass == "drink" || data.msgclass == "shout") {
         skip = false;
