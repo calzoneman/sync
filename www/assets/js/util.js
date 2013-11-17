@@ -1454,6 +1454,10 @@ function formatChatMessage(data) {
     LASTCHATNAME = data.username;
     LASTCHATTIME = data.time;
     var div = $("<div/>");
+    if (data.meta.addClass === "drink") {
+        div.addClass("drink");
+        data.meta.addClass = "";
+    }
     if (USEROPTS.show_timestamps) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
