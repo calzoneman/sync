@@ -1010,6 +1010,9 @@ function handleModPermissions() {
     $("#opt_externaljs").val(CHANNEL.opts.externaljs);
     $("#opt_externaljs").attr("disabled", CLIENT.rank < 3);
     $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
+    $("#opt_chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
+    $("#opt_chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
+    $("#opt_chat_antiflood_cooldown").val(CHANNEL.opts.chat_antiflood_params.cooldown);
     $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
     $("#opt_show_public").attr("disabled", CLIENT.rank < 3);
     $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);

@@ -127,6 +127,43 @@ Callbacks = {
         scrollChat();
     },
 
+    chatCooldown: function (time) {
+        time = time + 200;
+        /*
+        var msg = $("#chat-cooldown-msg");
+        if (msg.length > 0) {
+            var timer = msg.data("timer");
+            if (timer) {
+                clearTimeout(timer);
+            }
+        } else {
+            msg = $("<div/>")
+                .addClass("server-msg-disconnect")
+                .attr("id", "chat-cooldown-msg")
+                .text("Chat rate limit exceeded, please wait before sending another message")
+                .appendTo($("#messagebuffer"));
+        }
+        if (SCROLLCHAT) {
+            scrollChat();
+        }
+        */
+        $("#chatline").css("color", "#ff0000");
+        if (CHATTHROTTLE && $("#chatline").data("throttle_timer")) {
+            clearTimeout($("#chatline").data("throttle_timer"));
+        }
+        CHATTHROTTLE = true;
+        $("#chatline").data("throttle_timer", setTimeout(function () {
+            CHATTHROTTLE = false;
+            $("#chatline").css("color", "");
+            /*
+            msg.remove();
+            if (SCROLLCHAT) {
+                scrollChat();
+            }
+            */
+        }, time));
+    },
+
     channelNotRegistered: function() {
         var div = $("<div/>").addClass("alert alert-info")
             .attr("id", "chregnotice")
