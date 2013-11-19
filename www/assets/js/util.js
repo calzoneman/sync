@@ -1442,6 +1442,12 @@ function sendVideoUpdate() {
 /* chat */
 
 function formatChatMessage(data) {
+    // Backwards compat
+    if (!data.meta || data.msgclass) {
+        data.meta = {
+            addClass: data.msgclass
+        };
+    }
     // Phase 1: Determine whether to show the username or not
     var skip = data.username === LASTCHATNAME;
     if(data.meta.addClass === "server-whisper")
