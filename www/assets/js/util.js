@@ -1442,67 +1442,79 @@ function sendVideoUpdate() {
 /* chat */
 
 function formatChatMessage(data) {
-    var skip = data.username == LASTCHATNAME;
-    if(data.msgclass == "drink" || data.msgclass == "shout") {
-        skip = false;
-    }
-    if(data.superadminflair)
-        skip = false;
-    if(data.msgclass == "server-whisper")
+    // Phase 1: Determine whether to show the username or not
+    var skip = data.username === LASTCHATNAME;
+    if(data.meta.addClass === "server-whisper")
         skip = true;
     // Prevent impersonation by abuse of the bold filter
     if(data.msg.match(/^\s*<strong>\w+\s*:\s*<\/strong>\s*/))
         skip = false;
+    if (data.meta.forceShowName)
+        skip = false;
+
     LASTCHATNAME = data.username;
     LASTCHATTIME = data.time;
     var div = $("<div/>");
-    if(USEROPTS.show_timestamps) {
+    /* drink is a special case because the entire container gets the class, not
+       just the message */
+    if (data.meta.addClass === "drink") {
+        div.addClass("drink");
+        data.meta.addClass = "";
+    }
+
+    // Add timestamps (unless disabled)
+    if (USEROPTS.show_timestamps) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
         time.text("["+timestamp+"] ");
-        if(data.msgclass == "shout" || data.msgclass == "server-whisper")
-            time.addClass(data.msgclass);
+        if (data.meta.addClass && 
+            data.meta.addClass.match(/shout|server-whisper/)) {
+            time.addClass(data.meta.addClass);
+        }
     }
+
+    // Add username
     var name = $("<span/>");
-    if(!skip) {
+    if (!skip) {
         name.appendTo(div);
     }
     $("<strong/>").addClass("username").text(data.username + ": ").appendTo(name);
-    var message = $("<span/>").appendTo(div);
-    message[0].innerHTML = data.msg;
-    if(data.modflair) {
-        name.addClass(getNameColor(data.modflair));
+    if (data.meta.modflair) {
+        name.addClass(getNameColor(data.meta.modflair));
     }
-    if(data.superadminflair) {
+    if (data.meta.addClass) {
+        name.addClass(data.meta.addClass);
+    }
+    if (data.meta.superadminflair) {
         name.addClass("label")
-            .addClass(data.superadminflair.labelclass);
-        $("<i/>").addClass(data.superadminflair.icon)
+            .addClass(data.meta.superadminflair.labelclass);
+        $("<i/>").addClass(data.meta.superadminflair.icon)
             .addClass("icon-white")
             .prependTo(name);
     }
-    if(data.msgclass == "action") {
+
+    // Add the message itself
+    var message = $("<span/>").appendTo(div);
+    message[0].innerHTML = data.msg;
+
+    // For /me the username is part of the message
+    if (data.meta.action) {
         name.remove();
-        message.addClass("action");
         message[0].innerHTML = data.username + " " + data.msg;
     }
-    else if(data.msgclass == "drink") {
-        div.addClass("drink");
-    }
-    else if(data.msgclass == "shout") {
-        message.addClass("shout");
-        name.addClass("shout");
-    }
-    else  {
-        message.addClass(data.msgclass);
+    if (data.meta.addClass) {
+        message.addClass(data.meta.addClass);
     }
     return div;
 }
 
 function addChatMessage(data) {
-    if(IGNORED.indexOf(data.username) != -1) {
+    if(IGNORED.indexOf(data.username) !== -1) {
         return;
     }
     var div = formatChatMessage(data);
+    // Incoming: a bunch of crap for the feature where if you hover over
+    // a message, it highlights messages from that user
     div.data("sender", data.username);
     div.appendTo($("#messagebuffer"));
     div.mouseover(function() {
