@@ -1445,7 +1445,9 @@ function formatChatMessage(data) {
     // Backwards compat
     if (!data.meta || data.msgclass) {
         data.meta = {
-            addClass: data.msgclass
+            addClass: data.msgclass,
+            // And the award for "variable name most like Java source code" goes to...
+            addClassToNameAndTimestamp: data.msgclass
         };
     }
     // Phase 1: Determine whether to show the username or not
@@ -1473,8 +1475,7 @@ function formatChatMessage(data) {
         var time = $("<span/>").addClass("timestamp").appendTo(div);
         var timestamp = new Date(data.time).toTimeString().split(" ")[0];
         time.text("["+timestamp+"] ");
-        if (data.meta.addClass && 
-            data.meta.addClass.match(/shout|server-whisper/)) {
+        if (data.meta.addClass && data.meta.addClassToNameAndTimestamp) {
             time.addClass(data.meta.addClass);
         }
     }
@@ -1488,7 +1489,7 @@ function formatChatMessage(data) {
     if (data.meta.modflair) {
         name.addClass(getNameColor(data.meta.modflair));
     }
-    if (data.meta.addClass) {
+    if (data.meta.addClass && data.meta.addClassToNameAndTimestamp) {
         name.addClass(data.meta.addClass);
     }
     if (data.meta.superadminflair) {
