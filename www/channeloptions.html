@@ -31,21 +31,21 @@
         </div>
         <!-- chat flood burst -->
         <div class="control-group">
-            <label class="control-label" for="opt_chat_antiflood_burst"># of messages allowed before throttling</label>
+            <label class="control-label" for="opt_chat_antiflood_burst" title="The number of messages someone can send with no restriction before the rate limit is applied"># of messages allowed before throttling</label>
             <div class="controls">
                 <input type="text" id="opt_chat_antiflood_burst">
             </div>
         </div>
         <!-- chat flood sustained -->
         <div class="control-group">
-            <label class="control-label" for="opt_chat_antiflood_sustained"># of messages allowed per second (sustained)</label>
+            <label class="control-label" for="opt_chat_antiflood_sustained" title="The number of messages (after the burst is exceeded) per second a non-moderator can send"># of messages allowed per second (sustained)</label>
             <div class="controls">
                 <input type="text" id="opt_chat_antiflood_sustained">
             </div>
         </div>
         <!-- chat flood cooldown -->
         <div class="control-group">
-            <label class="control-label" for="opt_chat_antiflood_cooldown">Cooldown time after being throttled (seconds)</label>
+            <label class="control-label" for="opt_chat_antiflood_cooldown" title="The number of seconds since the last message before someone can burst again">Cooldown time after being throttled (seconds)</label>
             <div class="controls">
                 <input type="text" id="opt_chat_antiflood_cooldown">
             </div>
