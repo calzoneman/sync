@@ -1889,7 +1889,7 @@ function filterChannelLog() {
             return;
         }
 
-        if (chat && pre.match(/<[\w-]+\.>/)) {
+        if (chat && pre.match(/<[\w-]+(\.\w*)?>/)) {
             include.push(line);
             return;
         }
