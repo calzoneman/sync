@@ -81,8 +81,7 @@
             chat_antiflood: $("#opt_chat_antiflood").prop("checked"),
             chat_antiflood_params: {
                 burst: $("#opt_chat_antiflood_burst").val(),
-                sustained: $("#opt_chat_antiflood_sustained").val(),
-                cooldown: $("#opt_chat_antiflood_cooldown").val()
+                sustained: $("#opt_chat_antiflood_sustained").val()
             },
             show_public: $("#opt_show_public").prop("checked"),
             enable_link_regex: $("#opt_enable_link_regex").prop("checked"),
