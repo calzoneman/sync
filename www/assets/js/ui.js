@@ -158,7 +158,7 @@ $("#chatline").keydown(function(ev) {
             }
             if (CLIENT.rank >= 2 && msg.indexOf("/m ") === 0) {
                 meta.modflair = CLIENT.rank;
-                msg = msg.substring(4);
+                msg = msg.substring(3);
             }
 
             socket.emit("chatMsg", {
