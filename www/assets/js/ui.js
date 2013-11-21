@@ -148,6 +148,9 @@ $("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 
 $("#chatline").keydown(function(ev) {
     if(ev.keyCode == 13) {
+        if (CHATTHROTTLE) {
+            return;
+        }
         var msg = $("#chatline").val();
         if(msg.trim()) {
             var meta = {};

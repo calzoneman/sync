@@ -67,6 +67,10 @@
         else {
             len = parseInt(hms[0]);
         }
+        var sus = parseFloat($("#opt_chat_antiflood_sustained").val()) || 0;
+        if (sus <= 0) {
+            sus = 1;
+        }
         socket.emit("setOptions", {
             allow_voteskip: $("#opt_allow_voteskip").prop("checked"),
             voteskip_ratio: parseFloat($("#opt_voteskip_ratio").val()),
@@ -75,6 +79,10 @@
             externalcss: $("#opt_externalcss").val(),
             externaljs: $("#opt_externaljs").val(),
             chat_antiflood: $("#opt_chat_antiflood").prop("checked"),
+            chat_antiflood_params: {
+                burst: $("#opt_chat_antiflood_burst").val(),
+                sustained: $("#opt_chat_antiflood_sustained").val()
+            },
             show_public: $("#opt_show_public").prop("checked"),
             enable_link_regex: $("#opt_enable_link_regex").prop("checked"),
             afk_timeout: parseInt($("#opt_afktimeout").val())

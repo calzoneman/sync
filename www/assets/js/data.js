@@ -54,6 +54,7 @@ var socket = {
 var IGNORED = [];
 var CHATHIST = [];
 var CHATHISTIDX = 0;
+var CHATTHROTTLE = false;
 var SCROLLCHAT = true;
 var LASTCHATNAME = "";
 var LASTCHATTIME = 0;

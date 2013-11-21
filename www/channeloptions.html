@@ -29,6 +29,20 @@
                 <input type="checkbox" id="opt_chat_antiflood">
             </div>
         </div>
+        <!-- chat flood burst -->
+        <div class="control-group">
+            <label class="control-label" for="opt_chat_antiflood_burst" title="The number of messages someone can send with no restriction before the rate limit is applied"># of messages allowed before throttling</label>
+            <div class="controls">
+                <input type="text" id="opt_chat_antiflood_burst">
+            </div>
+        </div>
+        <!-- chat flood sustained -->
+        <div class="control-group">
+            <label class="control-label" for="opt_chat_antiflood_sustained" title="The number of messages (after the burst is exceeded) per second a non-moderator can send"># of messages allowed per second (sustained)</label>
+            <div class="controls">
+                <input type="text" id="opt_chat_antiflood_sustained">
+            </div>
+        </div>
         <!-- convert URLs to links -->
         <div class="control-group">
             <label class="control-label" for="opt_enable_link_regex">Convert URLs in chat to links</label>
