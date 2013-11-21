@@ -19,7 +19,7 @@
     }
 
     P.prototype.loadButtons = function (p) {
-        var pages = parseInt(this.items.length / this.opts.itemsPerPage+0.5);
+        var pages = parseInt(this.items.length / this.opts.itemsPerPage) + 1;
         var endcaps = pages > this.opts.maxPages;
         this.paginator.html("");
         if(this.items.length < this.opts.itemsPerPage)
