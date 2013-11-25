@@ -46,6 +46,9 @@ Callbacks = {
         socket.emit("joinChannel", {
             name: CHANNEL.name
         });
+        if (CHANNEL.opts.password) {
+            socket.emit("channelPassword", CHANNEL.opts.password);
+        }
         if(NAME && SESSION) {
             socket.emit("login", {
                 name: NAME,
@@ -127,26 +130,44 @@ Callbacks = {
         scrollChat();
     },
 
+    needPassword: function (wrongpw) {
+        var div = $("<div/>");
+        $("<strong/>").text("Channel Password")
+            .appendTo(div);
+        if (wrongpw) {
+            $("<br/>").appendTo(div);
+            $("<span/>").addClass("text-error")
+                .text("Wrong Password")
+                .appendTo(div);
+        }
+
+        var pwbox = $("<input/>").addClass("input-block-level")
+            .attr("type", "password")
+            .appendTo(div);
+        var submit = $("<button/>").addClass("btn btn-mini btn-block")
+            .text("Submit")
+            .appendTo(div);
+        var parent = chatDialog(div);
+        parent.attr("id", "needpw");
+        var sendpw = function () {
+            socket.emit("channelPassword", pwbox.val());
+            parent.remove();
+        };
+        submit.click(sendpw);
+        pwbox.keydown(function (ev) {
+            if (ev.keyCode == 13) {
+                sendpw();
+            }
+        });
+        pwbox.focus();
+    },
+
+    cancelNeedPassword: function () {
+        $("#needpw").remove();
+    },
+
     chatCooldown: function (time) {
         time = time + 200;
-        /*
-        var msg = $("#chat-cooldown-msg");
-        if (msg.length > 0) {
-            var timer = msg.data("timer");
-            if (timer) {
-                clearTimeout(timer);
-            }
-        } else {
-            msg = $("<div/>")
-                .addClass("server-msg-disconnect")
-                .attr("id", "chat-cooldown-msg")
-                .text("Chat rate limit exceeded, please wait before sending another message")
-                .appendTo($("#messagebuffer"));
-        }
-        if (SCROLLCHAT) {
-            scrollChat();
-        }
-        */
         $("#chatline").css("color", "#ff0000");
         if (CHATTHROTTLE && $("#chatline").data("throttle_timer")) {
             clearTimeout($("#chatline").data("throttle_timer"));
@@ -155,12 +176,6 @@ Callbacks = {
         $("#chatline").data("throttle_timer", setTimeout(function () {
             CHATTHROTTLE = false;
             $("#chatline").css("color", "");
-            /*
-            msg.remove();
-            if (SCROLLCHAT) {
-                scrollChat();
-            }
-            */
         }, time));
     },
 

@@ -1010,10 +1010,14 @@ function handleModPermissions() {
     $("#opt_externaljs").val(CHANNEL.opts.externaljs);
     $("#opt_externaljs").attr("disabled", CLIENT.rank < 3);
     $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
-    $("#opt_chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
-    $("#opt_chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
+    if ("chat_antiflood_parans" in CHANNEL.opts) {
+        $("#opt_chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
+        $("#opt_chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
+    }
     $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
     $("#opt_show_public").attr("disabled", CLIENT.rank < 3);
+    $("#opt_password").val(CHANNEL.opts.password || "");
+    $("#opt_password").attr("disabled", CLIENT.rank < 3);
     $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
     $("#opt_afktimeout").val(CHANNEL.opts.afk_timeout);
     $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
@@ -1756,6 +1760,22 @@ function unhidePlayer() {
 
     $("#ytapiplayer").attr("width", PLAYER.size.width)
         .attr("height", PLAYER.size.height);
+}
+
+function chatDialog(div) {
+    var parent = $("<div/>").addClass("profile-box")
+        .css("padding", "10px")
+        .appendTo($("body"));
+
+    div.appendTo(parent);
+    var cw = $("#chatwrap").width();
+    var ch = $("#chatwrap").height();
+    var cp = $("#chatwrap").offset();
+    var x = cp.left + cw/2 - parent.width()/2;
+    var y = cp.top + ch/2 - parent.height()/2;
+    parent.css("left", x + "px");
+    parent.css("top", y + "px");
+    return parent;
 }
 
 function errDialog(err) {
