@@ -84,6 +84,7 @@
                 sustained: $("#opt_chat_antiflood_sustained").val()
             },
             show_public: $("#opt_show_public").prop("checked"),
+            password: $("#opt_password").val(),
             enable_link_regex: $("#opt_enable_link_regex").prop("checked"),
             afk_timeout: parseInt($("#opt_afktimeout").val())
         });
