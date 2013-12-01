@@ -1100,7 +1100,7 @@ Callbacks = {
     newPoll: function(data) {
         Callbacks.closePoll();
         var pollMsg = $("<div/>").addClass("poll-notify")
-            .text(data.initiator + " opened a poll: \"" + data.title + "\"")
+            .html(data.initiator + " opened a poll: \"" + data.title + "\"")
             .appendTo($("#messagebuffer"));
         scrollChat();
 
@@ -1116,7 +1116,7 @@ Callbacks = {
                 });
         }
 
-        $("<h3/>").text(data.title).appendTo(poll);
+        $("<h3/>").html(data.title).appendTo(poll);
         for(var i = 0; i < data.options.length; i++) {
             (function(i) {
             var callback = function () {
@@ -1129,7 +1129,7 @@ Callbacks = {
                 $(this).parent().addClass("option-selected");
             }
             $("<button/>").addClass("btn").text(data.counts[i])
-                .prependTo($("<div/>").addClass("option").text(data.options[i])
+                .prependTo($("<div/>").addClass("option").html(data.options[i])
                         .appendTo(poll))
                 .click(callback);
             })(i);
