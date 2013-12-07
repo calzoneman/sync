@@ -1010,7 +1010,7 @@ function handleModPermissions() {
     $("#opt_externaljs").val(CHANNEL.opts.externaljs);
     $("#opt_externaljs").attr("disabled", CLIENT.rank < 3);
     $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
-    if ("chat_antiflood_parans" in CHANNEL.opts) {
+    if ("chat_antiflood_params" in CHANNEL.opts) {
         $("#opt_chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
         $("#opt_chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
     }
