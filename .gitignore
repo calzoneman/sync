@@ -4,3 +4,6 @@ chandump
 chanlogs
 *.log
 node_modules
+*.crt
+*.cert
+*.key
