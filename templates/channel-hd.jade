@@ -1,0 +1,108 @@
+doctype 5
+html(lang="en")
+  head
+    include head
+    +head()
+  body
+    #wrap
+      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+        include nav
+        +navheader()
+        #nav-collapsible.collapse.navbar-collapse
+          - var cname = "/r/" + channelName
+          ul.nav.navbar-nav
+            +navdefaultlinks(cname)
+            li: a(href="javascript:showUserOptions()") Options
+          +navloginlogout(cname)
+      section#mainpage
+        .container
+          #motdwrap.col-lg-12.col-md-12
+            #motd
+          #announcements.col-lg-12.col-md-12
+            .alert.alert-info Demo announcement
+          #drinkbar.col-lg-12.col-md-12
+            #drinkcount
+          #videowrap.hd-video-wrap.col-lg-8.col-lg-offset-2.col-md-8.col-md-offset-2
+          #videoopts.col-lg-8.col-lg-offset-2.col-md-8.col-md-offset-2
+            button#voteskip.btn.btn-sm.btn-default Voteskip
+          .vertical-spacer.col-lg-8.col-md-8
+          #playlistwrap.col-lg-6.col-md-6
+            #playlistheader
+              button#showimport.btn.btn-default.btn-xs.btn-block(data-toggle="collapse", data-target="#playlistcontrols") Playlist Controls
+              #playlistcontrols.collapse
+                strong Add from URL
+                #fromurl.input-group
+                  input#urlinput.form-control(type="text")
+                  .input-group-btn
+                    button#queuenext.btn.btn-default(type="button") Next
+                    button#queueend.btn.btn-default(type="button") End
+                hr
+                #customembed
+                  strong Custom Embed
+                  br
+                  | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags)
+                  textarea#customembedcode.form-control.input-block-level(rows="3")
+                  .input-group
+                    input#customembedtitle.form-control.input-block-level(placeholder="(Optional) Title")
+                    .input-group-btn
+                      button#customqueuenext.btn.btn-default(type="button") Next
+                      button#customqueueend.btn.btn-default(type="button") End
+                hr
+                #misccontrols
+                  strong Additional Controls
+                  button#clearplaylist.btn.btn-xs.btn-default.btn-block(type="button") Clear Playlist
+                  button#shuffleplaylist.btn.btn-xs.btn-default.btn-block(type="button") Shuffle Playlist
+                hr
+                    
+              button#showsearch.btn.btn-default.btn-xs.btn-block(data-toggle="collapse", data-target="#fromsearch") Search Library/YouTube
+              #fromsearch.collapse
+                .input-group
+                  input#ytsearchtext.form-control(type="text")
+                  .input-group-btn
+                    button#libsearchbtn.btn.btn-default(type="button") Library
+                    button#ytsearchbtn.btn.btn-default(type="button") YouTube
+                hr
+                  #searchresultswrap(style="display: none")
+                    #searchresults
+                    hr
+            ul#playlist
+              li
+                .btn-group.video-buttons
+                  button.btn.btn-xs.btn-default
+                    span.glyphicon.glyphicon-play
+                  button.btn.btn-xs.btn-default
+                    span.glyphicon.glyphicon-share-alt
+                  button.btn.btn-xs.btn-default
+                    span.glyphicon.glyphicon-flag
+                  button.btn.btn-xs.btn-default
+                    span.glyphicon.glyphicon-trash
+                a.video-title(href="#") Some Video Thing
+                span.video-time 02:00
+                span.clear
+              li
+                a.video-title(href="#") Some Video Thing
+                span.video-time 02:00
+                span.clear
+              li
+                a.video-title(href="#") Some Video Thing
+                span.video-time 02:00
+                span.clear
+          #chatwrap.col-lg-6.col-md-6
+            #chatheader
+              span Not connected
+            ul#chatlist.pull-right
+              li Test
+              li Test 2
+            #chatbuffer.linewrap.
+              sdfngjksdfngjnsdjkgfnjklsdngjksdngfsnjdfg
+              sdgfsdjifgjksdfngjksdngfjksdfnjgfknsdjkgfnsdgsdbfasdhbfhjbasdhjfbsdhjbghjsdfbghjsdbhjgbsdhjfbghjdsfbghj
+              fsdfgfnjksdgjnsdjgnfjksngjksngjnksjgnsjnfgsd
+              gfsnjgfjsnjkg
+            input#chatline.form-control.input-block-level(type="text")
+    include footer
+    +footer()
+    script(src="#{ioUrl}/socket.io/socket.io.js")
+    script(type="text/javascript").
+      var IOSERVER = "#{ioUrl}";
+      var SOCKET = io.connect(IOSERVER);
+    script(src="/js/functions.js")

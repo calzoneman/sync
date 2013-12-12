@@ -1,0 +1,462 @@
+#loginform > .form-group {
+    margin-right: 5px;
+}
+
+.center {
+    text-align: center;
+}
+
+.messagebox > p {
+    margin-top: 20px;
+}
+
+#ytapiplayer {
+    background-color: #000000;
+}
+
+#videowrap.hd-video-wrap {
+    height: 410px;
+    margin-bottom: 10px;
+}
+
+.vertical-spacer {
+    margin-top: 10px;
+}
+
+#playlistwrap {
+    border: 1px solid #000000;
+    border-radius: 5px;
+}
+
+#playlist, #userlist {
+    list-style: none outside none;
+    padding: 0;
+}
+
+#playlist > li {
+    margin: 3px 0;
+    border: 1px solid #000000;
+    line-height: 28px;
+    height: 28px;
+}
+
+#messagebuffer {
+    width: auto;
+    border: 1px solid #ff0000;
+}
+
+#userlist {
+    border: 1px solid #0000ff;
+    width: 120px;
+    float: left;
+    border-right: 0;
+    font-size: 9pt;
+}
+
+#messagebuffer, #userlist {
+    height: 300px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin-bottom: 0;
+}
+
+#chatheader, #currenttitle {
+    border: 1px solid #cccccc;
+    border-bottom: 0;
+    border-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#chatline, #guestlogin > input, #guestlogin > .input-group-addon {
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.linewrap {
+    white-space: pre-wrap; /* css-3 */
+    white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+    white-space: -pre-wrap; /* Opera 4-6 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+#from-url, #from-search {
+    margin-top: 3px;
+}
+
+#playlistheader > button {
+    margin-top: 5px;
+}
+
+.video-buttons {
+    margin-top: 2px;
+}
+
+.video-title, .video-buttons {
+    float: left;
+    margin-left: 5px;
+}
+
+.video-time {
+    float: right;
+    margin-right: 5px;
+}
+
+.video-title, .video-time {
+    font-size: 8pt;
+}
+
+.clear {
+    clear: both;
+}
+
+.chat-timestamp {
+    font-size: 8pt;
+}
+
+.chat-name {
+    font-weight: bold;
+}
+
+#customembed > .input-group {
+    margin-top: 5px;
+}
+
+#logoutform {
+    display: none;
+}
+
+#drinkbar {
+    margin-left: 0;
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+    font-weight: bold;
+}
+
+#chatheader, #currenttitle {
+    border: 1px solid #aaaaaa;
+    border-bottom: none;
+    margin: 0;
+}
+
+#chatheader > p, #currenttitle > p {
+    margin: 0;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+#userlist, #messagebuffer {
+    height: 347px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border: 1px solid #aaaaaa;
+}
+
+#ytapiplayer {
+    background-color: #000000;
+    height: 380px;
+}
+
+#chatwrap, #videowrap {
+    margin-bottom: 10px;
+}
+
+#userpl_list {
+    list-style: none outside none;
+    margin-left: 0;
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+#userpl_list li {
+    display: inline-block;
+    line-height: 22px;
+    width: 100%;
+    clear: both;
+    margin: 2px 0 0 auto;
+    padding: 2px;
+    font-size: 8pt;
+}
+
+#customembed_wrap {
+    margin: 5px 0;
+}
+
+#playlistcontrolswrap, #playlistmanagerwrap, #searchwrap, #voteskipwrap {
+    margin-top: 10px;
+}
+
+#channelsettingswrap-outer {
+    margin-top: 20px;
+}
+
+#library {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#library_search, #queue_next {
+    border-radius: 0;
+}
+
+#voteskip, #getplaylist {
+    width: 46%;
+}
+
+#qlockbtn {
+    width: 8%;
+}
+
+#voteskip, #getplaylist, #qlockbtn {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#getplaylist, #qlockbtn {
+    margin-left: 0;
+    border-left: 0;
+}
+
+#plmeta {
+    border-radius: 4px;
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.videolist {
+    list-style: none outside none;
+    margin-left: 0;
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+#plmeta {
+    border: 1px solid #aaaaaa;
+}
+
+#pllength {
+    float: right;
+}
+
+.queue_entry {
+    line-height: 22px;
+    background-color: #ffffff;
+    margin: 0 0 2px auto;
+    padding: 2px;
+    font-size: 8pt;
+    border: 1px solid #aaaaaa;
+}
+
+.queue_temp {
+    background-image: url(../img/stripe-diagonal.png);
+}
+
+.queue_active {
+    background-color: #d9edf7;
+    border-color: #bce8f1;
+}
+
+#queue li:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+
+.qe_btn {
+    height: 20px;
+    font-family: Monospace;
+    padding: 0 5px 0 5px;
+    margin: auto;
+    overflow: hidden;
+}
+
+.qe_buttons, .qe_title {
+    float: left;
+}
+
+.qe_time {
+    float: right;
+    font-family: Monospace;
+}
+
+.qe_clear {
+    clear: both;
+}
+
+.clear {
+    clear: both;
+}
+
+#chatheader .label {
+    height: 100%;
+    margin-left: 2px;
+}
+
+.well hr {
+    border-color: #cccccc;
+}
+
+#csstext, #jstext {
+    font-family: Monospace;
+}
+
+#optedit, #permedit, #filteredit, #motdedit, #cssedit, #jsedit,
+#banlist, #loginhistory, #channelranks, #chanlog {
+    display: none;
+}
+
+#chanlog_contents {
+    max-height: 400px;
+    overflow-y: scroll;
+    margin-top: 10px;
+}
+
+.server-msg-disconnect {
+    border: 1px solid #ff0000;
+    margin: 5px;
+    padding: 5px;
+    color: #ff0000;
+}
+
+.server-msg-reconnect {
+    border: 1px solid #009900;
+    margin: 5px;
+    padding: 5px;
+    color: #009900;
+}
+
+.queue_sortable li {
+    cursor: row-resize;
+}
+
+.poll-notify {
+    color: #0000aa;
+    font-weight: bold;
+    font-size: 14pt;
+}
+
+.userlist_siteadmin {
+    color: #cc0000;
+    font-weight: bold;
+}
+
+.userlist_owner {
+    color: #0000cc;
+    font-weight: bold;
+}
+
+.userlist_op {
+    color: #00aa00;
+}
+
+.userlist_guest {
+    color: #888888;
+}
+
+.action {
+    font-style: italic;
+    color: #888888;
+}
+
+.server-whisper {
+    font-style: italic;
+    color: #888888;
+    font-size: 8pt;
+}
+
+.spoiler {
+    color: #000000;
+    background-color: #000000;
+}
+
+.spoiler:hover {
+    color: #ffffff;
+}
+
+.greentext {
+    color: #789922; /* Color value directly from 4chan */
+}
+
+.shout {
+    color: #ff0000;
+    font-weight: bold;
+    font-size: 18pt;
+}
+
+.mono {
+    font-family: Monospace;
+}
+
+.nick-highlight {
+    background-color: #ddffdd;
+}
+
+.nick-hover {
+    background-color: #ffff99;
+}
+
+.timestamp {
+    font-size: 8pt;
+}
+
+.profile-box {
+    z-index: 9999;
+    position: absolute;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+    background-color: #ffffff;
+    max-width: 200px;
+    padding: 5px;
+}
+
+.user-dropdown {
+    z-index: 9999;
+    position: absolute;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #000000;
+    max-width: 200px;
+    padding: 5px;
+}
+
+.profile-image {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #aaaaaa;
+    border-radius: 5px;
+}
+
+#togglemotd .glyphicon {
+    font-size: 10pt;
+}
+
+.poll-menu > .btn, .poll-menu > input {
+    clear: both;
+    margin-bottom: 10px;
+}
+
+.poll-menu {
+    margin-top: 10px;
+}
+
+#search_clear {
+    margin-top: 10px;
+}
+
+#qualitywrap {
+    margin-right: 5px;
+}
+
+#guestlogin .input-group-addon {
+    min-width: 120px;
+}
+
+#channeloptions .modal-header {
+    border-bottom: none;
+}

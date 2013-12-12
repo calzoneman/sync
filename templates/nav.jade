@@ -1,0 +1,64 @@
+- var links = { "/": "Home" }
+
+mixin navlink(page, title, active)
+  if active
+    li.active
+      a(href=page)= title
+  else
+    li
+      a(href=page)= title
+
+mixin navheader()
+  .navbar-header
+    button.navbar-toggle(type="button", data-toggle="collapse", data-target="#nav-collapsible")
+      span.icon-bar
+      span.icon-bar
+      span.icon-bar
+    a.navbar-brand(href="/")= siteTitle
+
+mixin navdefaultlinks(page)
+  each t, p in links
+    if p == page
+      +navlink(p, t, true)
+    else
+      +navlink(p, t, false)
+  li.dropdown
+    a.dropdown-toggle(href="#", data-toggle="dropdown") Account
+      b.caret
+    ul.dropdown-menu
+      if loggedIn
+        li: a(href="/logout?redirect=#{page}") Logout
+        li.divider
+        li: a(href="/account/channels") My Channels
+        li: a(href="/account/profile") Profile
+        li: a(href="/account/edit") Change Password/Email
+      else
+        li: a(href="/login") Login
+        li: a(href="/register") Register
+
+
+mixin navloginlogout(redirect)
+  if loggedIn
+    +navlogoutform(redirect)
+  else
+    +navloginform(redirect)
+
+mixin navloginform(redirect)
+  .visible-md.visible-lg
+    form#loginform.navbar-form.navbar-right(action="/login", method="post")
+      input(type="hidden", name="redirect", value=redirect)
+      .form-group
+        input#username.form-control(type="text", name="name", placeholder="Username")
+      .form-group
+        input#password.form-control(type="password", name="password", placeholder="Password")
+      button#login.btn.btn-default(type="submit") Login
+
+mixin navlogoutform(redirect)
+  if redirect
+    - url = "/logout?redirect=#{redirect}"
+  else
+    - url = "/logout"
+  p#logoutform.navbar-text.pull-right
+    span#welcome Welcome, #{loginName}
+    span &nbsp;&middot;&nbsp;
+    a#logout.navbar-link(href=url) Logout

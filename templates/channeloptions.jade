@@ -1,0 +1,100 @@
+mixin lcheckbox(id, label)
+  .form-group
+    label.control-label.col-sm-4(for=id)= label
+    .col-sm-8
+      .checkbox
+        input(type="checkbox", id=id)
+
+mixin rcheckbox(id, label)
+  .form-group
+    .col-sm-8.col-sm-offset-4
+      .checkbox
+        label.control-label(for=id)= label
+          input(type="checkbox", id=id)
+
+mixin textbox(id, label, placeholder)
+  .form-group
+    label.control-label.col-sm-4(for=id)= label
+    .col-sm-8
+      if placeholder
+        input.form-control(id=id, type="text", placeholder=placeholder)
+      else
+        input.form-control(id=id, type="text")
+
+mixin miscoptions
+  #cs-miscoptions.tab-pane
+    h4 General Settings
+    form.form-horizontal(action="javascript:void(0)")
+      +rcheckbox("opt_enable_link_regex", "Convert URLs in chat to links")
+      +rcheckbox("opt_allow_voteskip", "Allow voteskip")
+      +textbox("opt_voteskip_ratio", "Voteskip ratio", "0.5")
+      +textbox("opt_maxlength", "Max video length", "HH:MM:SS")
+      +textbox("opt_afktimeout", "Auto-AFK Delay", "0 (disabled)")
+      .form-group
+        .col-sm-8.col-sm-offset-4
+          button.btn.btn-default#cs-miscoptionssubmit Save
+
+mixin adminoptions
+  #cs-adminoptions.tab-pane
+    h4 Admin-Only Settings
+    form.form-horizontal(action="javascript:void(0)")
+      - var defname = "CyTube - /r/" + channelName
+      +textbox("opt_pagetitle", "Page title", defname)
+      +textbox("opt_password", "Password", "leave blank to disable")
+      +textbox("opt_externalcss", "External CSS", "Stylesheet URL")
+      +textbox("opt_externaljs", "External Javascript", "Script URL")
+      +rcheckbox("opt_show_public", "List channel publicly")
+      .form-group
+        .col-sm-8.col-sm-offset-4
+          button.btn.btn-default#cs-adminoptionssubmit Save
+
+mixin motdeditor
+  #cs-motdeditor.tab-pane
+    h4 MOTD editor
+    p The MOTD can be formatted using a subset of HTML.  Tags which attempt to execute Javascript will be removed.
+    textarea.form-control#cs-motdtext(rows="10")
+    button.btn.btn-default#cs-motdsubmit Save MOTD
+
+mixin csseditor
+  #cs-csseditor.tab-pane
+    h4 CSS editor
+    p Maximum size 20KB.  If more space is required, use the External CSS option under General Settings to link to an externally hosted stylesheet.
+    textarea.form-control#cs-csstext(rows="10")
+    button.btn.btn-default#cs-csssubmit Save CSS
+
+mixin jseditor
+  #cs-jseditor.tab-pane
+    h4 JS editor
+    p Maximum size 20KB.  If more space is required, use the External JS option under General Settings to link to an externally hosted stylesheet.
+    textarea.form-control#cs-jstext(rows="10")
+    button.btn.btn-default#cs-jssubmit Save JS
+
+mixin banlist
+  #cs-banlist.tab-pane
+    h4 Ban list
+    table.table.table-striped
+      thead
+        tr
+          th Unban
+          th IP
+          th Name
+          th Aliases
+          th Banned by
+
+mixin recentjoins
+  #cs-recentjoins.tab-pane
+    h4 Recent connections
+    table.table.table-striped
+      thead
+        tr
+          th Name
+          th Aliases
+          th Time
+
+mixin chanranks
+  #cs-chanranks.tab-pane
+    table.table.table-striped
+      thead
+        tr
+          th Name
+          th Rank
