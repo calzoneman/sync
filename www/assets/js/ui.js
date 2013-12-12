@@ -478,7 +478,7 @@ $(window).resize(function() {
 /* load channel */
 
 var loc = document.location+"";
-var m = loc.match(/\/old\/([a-zA-Z0-9-_]+)$/);
+var m = loc.match(/\/r\/([a-zA-Z0-9-_]+)$/);
 if(m) {
     CHANNEL.name = m[1];
 }

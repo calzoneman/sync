@@ -3,6 +3,7 @@ html(lang="en")
   head
     include head
     +head()
+    link(href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css", rel="stylesheet")
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
@@ -170,6 +171,7 @@ html(lang="en")
             button.btn.btn-default(type="button", data-dismiss="modal") Close
     include footer
     +footer()
+    script(src="//code.jquery.com/ui/1.10.3/jquery-ui.js")
     script(src="/assets/js/iourl.js")
     //script(src="#{ioUrl}/socket.io/socket.io.js")
     //script(type="text/javascript").

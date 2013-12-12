@@ -49,6 +49,7 @@ Callbacks = {
         if (CHANNEL.opts.password) {
             socket.emit("channelPassword", CHANNEL.opts.password);
         }
+        /*
         if(NAME && SESSION) {
             socket.emit("login", {
                 name: NAME,
@@ -61,6 +62,7 @@ Callbacks = {
                 name: CLIENT.name
             });
         }
+        */
         $("<div/>").addClass("server-msg-reconnect")
             .text("Connected")
             .appendTo($("#messagebuffer"));
