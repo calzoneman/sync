@@ -134,9 +134,9 @@ $("#registerbtn").click(function() {
     var pwc = $("#regpwconfirm").val();
 
     var err = false;
-    if(!name.match(/^[a-z0-9_]{1,20}$/i)) {
+    if(!name.match(/^[-\w\u00c0-\u00ff]{1,20}$/i)) {
         $("<div/>").addClass("alert alert-error")
-            .text("Usernames must be 1-20 characters long and contain only a-z, 0-9, and underscores")
+            .text("Usernames must be 1-20 characters long and contain only a-z, A-Z, 0-9, -, _, and accented letters.")
             .insertAfter($("#regusername").parent().parent());
         err = true;
     }
