@@ -402,7 +402,7 @@
 
 .profile-box {
     z-index: 9999;
-    position: absolute;
+    position: fixed;
     border: 1px solid #aaaaaa;
     border-radius: 5px;
     background-color: #ffffff;

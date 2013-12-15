@@ -1964,3 +1964,22 @@ function filterChannelLog() {
 
     $("#chanlog_contents").text(include.join("\n"));
 }
+
+function makeModal() {
+    var wrap = $("<div/>").addClass("modal fade");
+    var dialog = $("<div/>").addClass("modal-dialog").appendTo(wrap);
+    var content = $("<div/>").addClass("modal-content").appendTo(dialog);
+
+    var head = $("<div/>").addClass("modal-header").appendTo(content);
+    $("<button/>").addClass("close")
+        .attr("data-dismiss", "modal")
+        .attr("data-hidden", "true")
+        .html("&times;")
+        .appendTo(head);
+
+    wrap.on("hidden", function () {
+        unhidePlayer();
+        wrap.remove();
+    });
+    return wrap;
+}

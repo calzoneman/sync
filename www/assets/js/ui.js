@@ -19,32 +19,6 @@ $(window).focus(function() {
     FOCUSED = false;
 });
 
-/* Generalized show/hide function */
-function generateToggle(chevron, div) {
-    $(chevron).click(function() {
-        if($(div).css("display") == "none") {
-            $(chevron).html($(chevron).html().replace(/Show/, "Hide"));
-            $(div).show();
-            $(chevron+" i").removeClass("icon-plus")
-                .addClass("icon-minus");
-        }
-        else {
-            $(chevron).html($(chevron).html().replace(/Hide/, "Show"));
-            $(div).hide();
-            $(chevron+" i").removeClass("icon-minus")
-                .addClass("icon-plus");
-        }
-    });
-}
-
-/* setup show/hide toggles */
-generateToggle("#usercount", "#userlist");
-generateToggle("#userlisttoggle", "#userlist");
-$("#usercountwrap").click(scrollChat);
-generateToggle("#librarytoggle", "#librarywrap");
-generateToggle("#userpltoggle", "#userplaylistwrap");
-generateToggle("#playlisttoggle", "#playlist_controls");
-
 $("#editmotd").click(showMOTDEditor);
 
 $("#togglemotd").click(function () {
@@ -59,29 +33,6 @@ $("#togglemotd").click(function () {
             .removeClass("icon-minus")
             .addClass("icon-plus");
     }
-});
-
-/* navbar stuff */
-$("#optlink").click(showOptionsMenu);
-$("#chatonly").click(chatOnly);
-
-function guestLogin() {
-    socket.emit("login", {
-        name: $("#guestname").val(),
-    });
-}
-$("#guestlogin").click(guestLogin);
-$("#guestname").keydown(function(ev) {
-    if(ev.keyCode == 13) {
-        guestLogin();
-    }
-});
-
-$("#login").click(showLoginMenu);
-$("#logout").click(function() {
-    eraseCookie("cytube_name");
-    eraseCookie("cytube_session");
-    document.location.reload(true);
 });
 
 /* chatbox */
@@ -147,6 +98,7 @@ $("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
 $("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 
 $("#chatline").keydown(function(ev) {
+    // Enter/return
     if(ev.keyCode == 13) {
         if (CHATTHROTTLE) {
             return;
@@ -159,6 +111,8 @@ $("#chatline").keydown(function(ev) {
             } else if (USEROPTS.modhat && CLIENT.rank >= Rank.Moderator) {
                 meta.modflair = CLIENT.rank;
             }
+
+            // The /m command no longer exists, so emulate it clientside
             if (CLIENT.rank >= 2 && msg.indexOf("/m ") === 0) {
                 meta.modflair = CLIENT.rank;
                 msg = msg.substring(3);
@@ -174,16 +128,19 @@ $("#chatline").keydown(function(ev) {
         }
         return;
     }
-    else if(ev.keyCode == 9) {
+    else if(ev.keyCode == 9) { // Tab completion
         var words = $("#chatline").val().split(" ");
         var current = words[words.length - 1].toLowerCase();
         var users = $("#userlist").children();
         var match = null;
         for(var i = 0; i < users.length; i++) {
             var name = users[i].children[1].innerHTML.toLowerCase();
+            // Last word is a unique match for a userlist name
             if(name.indexOf(current) == 0 && match == null) {
                 match = users[i].children[1].innerHTML;
             }
+            // Last word is NOT a unique match- a match has already
+            // been found.  Bail because no unique completion is possible.
             else if(name.indexOf(current) == 0) {
                 match = null;
                 break;
@@ -200,7 +157,7 @@ $("#chatline").keydown(function(ev) {
         ev.preventDefault();
         return false;
     }
-    else if(ev.keyCode == 38) {
+    else if(ev.keyCode == 38) { // Up arrow (input history)
         if(CHATHISTIDX == CHATHIST.length) {
             CHATHIST.push($("#chatline").val());
         }
@@ -212,7 +169,7 @@ $("#chatline").keydown(function(ev) {
         ev.preventDefault();
         return false;
     }
-    else if(ev.keyCode == 40) {
+    else if(ev.keyCode == 40) { // Down arrow (input history)
         if(CHATHISTIDX < CHATHIST.length - 1) {
             CHATHISTIDX++;
             $("#chatline").val(CHATHIST[CHATHISTIDX]);
@@ -249,8 +206,7 @@ $("#youtube_search").click(function () {
         makeAlert("Media Link", "If you already have the link, paste it " +
                   "in the 'Media URL' box under Playlist Controls.  This "+
                   "searchbar works like YouTube's search function.",
-                  "alert-error")
-            .addClass("span12")
+                  "alert-danger")
             .insertBefore($("#library"));
     }
 
@@ -262,14 +218,13 @@ $("#youtube_search").click(function () {
 
 /* user playlists */
 
-$("#userpltoggle").click(function() {
+$("#showplaylistmanager").click(function() {
     socket.emit("listPlaylists");
 });
 
 $("#userpl_save").click(function() {
     if($("#userpl_name").val().trim() == "") {
-        makeAlert("Invalid Name", "Playlist name cannot be empty", "alert-error")
-            .addClass("span12")
+        makeAlert("Invalid Name", "Playlist name cannot be empty", "alert-danger")
             .insertAfter($("#userpl_save").parent());
         return;
     }
@@ -279,16 +234,14 @@ $("#userpl_save").click(function() {
 });
 
 /* video controls */
-function selectQuality(select, preset) {
-
-}
+// TODO this is ugly, change it?
 (function() {
     function qualHandler(select, preset) {
         $(select).click(function() {
             VIDEOQUALITY = preset;
             USEROPTS.default_quality = select;
             saveOpts();
-            var btn = $("#qualitywrap .btn.dropdown-toggle");
+            var btn = $("#qdrop");
             var caret = btn.find(".caret").detach();
             btn.text($(select).text());
             caret.appendTo(btn);
@@ -309,6 +262,8 @@ function selectQuality(select, preset) {
 $("#mediarefresh").click(function() {
     PLAYER.type = "";
     PLAYER.id = "";
+    // playerReady triggers the server to send a changeMedia.
+    // the changeMedia handler then reloads the player
     socket.emit("playerReady");
 });
 
@@ -333,6 +288,7 @@ $("#queue").sortable({
 });
 $("#queue").disableSelection();
 
+// TODO no more comma separated queueing.
 function queue(pos) {
     if($("#customembed_code").val()) {
         var title = false;
@@ -354,8 +310,7 @@ function queue(pos) {
     links.forEach(function(link) {
         var data = parseMediaLink(link);
         if(data.id === null || data.type === null) {
-            makeAlert("Error", "Invalid link.  Please double check it and remove extraneous information", "alert-error")
-                .addClass("span12")
+            makeAlert("Error", "Invalid link.  Please double check it and remove extraneous information", "alert-danger")
                 .insertBefore($("#extended_controls"));
         }
         else {
@@ -424,8 +379,10 @@ $("#getplaylist").click(function() {
         }
         var urls = list.join(",");
 
-        var modal = $("<div/>").addClass("modal hide fade")
+        var outer = $("<div/>").addClass("modal fade")
             .appendTo($("body"));
+        modal = $("<div/>").addClass("modal-dialog").appendTo(outer);
+        modal = $("<div/>").addClass("modal-content").appendTo(modal);
         var head = $("<div/>").addClass("modal-header")
             .appendTo(modal);
         $("<button/>").addClass("close")
@@ -435,16 +392,16 @@ $("#getplaylist").click(function() {
             .appendTo(head);
         $("<h3/>").text("Playlist URLs").appendTo(head);
         var body = $("<div/>").addClass("modal-body").appendTo(modal);
-        $("<input/>").attr("type", "text")
+        $("<input/>").addClass("form-control").attr("type", "text")
             .val(urls)
             .appendTo(body);
         $("<div/>").addClass("modal-footer").appendTo(modal);
-        modal.on("hidden", function() {
-            modal.remove();
+        outer.on("hidden", function() {
+            outer.remove();
             unhidePlayer();
         });
-        modal.modal();
-    }
+        outer.modal();
+    };
     socket.on("playlist", callback);
     socket.emit("requestPlaylist");
 });
@@ -464,6 +421,7 @@ $("#shuffleplaylist").click(function() {
 });
 
 /* layout stuff */
+/*
 $(window).resize(function() {
     VWIDTH = $("#videowidth").css("width").replace("px", "");
     VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
@@ -474,6 +432,7 @@ $(window).resize(function() {
         $("#ytapiplayer").attr("height", VHEIGHT);
     }
 });
+*/
 
 /* load channel */
 
@@ -482,11 +441,12 @@ var m = loc.match(/\/r\/([a-zA-Z0-9-_]+)$/);
 if(m) {
     CHANNEL.name = m[1];
 }
+/*
 else {
     var main = $("#main");
     var container = $("<div/>").addClass("container").insertBefore(main);
     var row = $("<div/>").addClass("row").appendTo(container);
-    var div = $("<div/>").addClass("span6").appendTo(row);
+    var div = $("<div/>").addClass("col-lg-6 col-md-6").appendTo(row);
     main.css("display", "none");
     var label = $("<label/>").text("Enter Channel:").appendTo(div);
     var entry = $("<input/>").attr("type", "text").appendTo(div);
@@ -499,6 +459,7 @@ else {
         }
     });
 }
+*/
 
 /* custom footer */
 $("#sitefooter").load("footer.html");

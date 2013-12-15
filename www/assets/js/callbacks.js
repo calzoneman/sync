@@ -17,7 +17,7 @@ Callbacks = {
         if(reason && reason.returnValue === true)
             return;
 
-        var d = $("<div/>").addClass("alert alert-error span12")
+        var d = $("<div/>").addClass("alert alert-danger col-lg-12 col-md-12")
             .appendTo($("#announcements"));
         $("<h3/>").text("Uh-oh!").appendTo(d);
         $("<p/>").html("The socket.io connection failed."+
@@ -66,7 +66,7 @@ Callbacks = {
         $("<div/>").addClass("server-msg-reconnect")
             .text("Connected")
             .appendTo($("#messagebuffer"));
-        $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+        scrollChat();
     },
 
     disconnect: function() {
@@ -86,27 +86,17 @@ Callbacks = {
     costanza: function (data) {
         hidePlayer();
         $("#costanza-modal").modal("hide");
-        var modal = $("<div/>").addClass("modal hide fade")
-            .attr("id", "costanza-modal")
+        var modal = makeModal();
+        modal.attr("id", "costanza-modal")
             .appendTo($("body"));
 
-
-        var body = $("<div/>").addClass("modal-body").appendTo(modal);
-        $("<button/>").addClass("close")
-            .attr("data-dismiss", "modal")
-            .attr("data-hidden", "true")
-            .html("&times;")
-            .appendTo(body);
+        var body = $("<div/>").addClass("modal-body")
+            .appendTo(modal.find(".modal-content"));
         $("<img/>").attr("src", "http://i0.kym-cdn.com/entries/icons/original/000/005/498/1300044776986.jpg")
             .appendTo(body);
 
         $("<strong/>").text(data.msg).appendTo(body);
-
-        modal.on("hidden", function () {
-            modal.remove();
-            unhidePlayer();
-        });
-
+        hidePlayer();
         modal.modal();
     },
 
@@ -143,10 +133,11 @@ Callbacks = {
                 .appendTo(div);
         }
 
-        var pwbox = $("<input/>").addClass("input-block-level")
+        var pwbox = $("<input/>").addClass("form-control")
             .attr("type", "password")
             .appendTo(div);
-        var submit = $("<button/>").addClass("btn btn-mini btn-block")
+        var submit = $("<button/>").addClass("btn btn-xs btn-default btn-block")
+            .css("margin-top", "5px")
             .text("Submit")
             .appendTo(div);
         var parent = chatDialog(div);
@@ -208,7 +199,7 @@ Callbacks = {
             $("#chregnotice").remove();
         }
         else {
-            makeAlert("Error", data.error, "alert-error")
+            makeAlert("Error", data.error, "alert-danger")
                 .insertAfter($("#chregnotice"));
         }
     },
@@ -234,9 +225,9 @@ Callbacks = {
         if(data.motd != "") {
             $("#motdwrap").show();
             $("#motd").show();
-            $("#togglemotd").find(".icon-plus")
-                .removeClass("icon-plus")
-                .addClass("icon-minus");
+            $("#togglemotd").find(".glyphicon-plus")
+                .removeClass("glyphicon-plus")
+                .addClass("glyphicon-minus");
         }
         else
             $("#motdwrap").hide();
@@ -254,9 +245,9 @@ Callbacks = {
         for(var i = 0; i < entries.length; i++) {
             var f = entries[i];
             var tr = $("<tr/>").appendTo(tbl).addClass("filter-row");
-            var remove = $("<button/>").addClass("btn btn-mini btn-danger")
+            var remove = $("<button/>").addClass("btn btn-xs btn-danger")
                 .appendTo($("<td/>").appendTo(tr));
-            $("<i/>").addClass("icon-trash").appendTo(remove);
+            $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(remove);
             var name = $("<code/>").text(f.name)
                 .appendTo($("<td/>").appendTo(tr));
             var regex = $("<code/>").text(f.source)
@@ -277,11 +268,11 @@ Callbacks = {
                         return;
                     var r = this.text();
                     this.text("");
-                    var edit = $("<input/>").attr("type", "text")
+                    var edit = $("<input/>").addClass("form-control filter-regex-edit")
+                        .attr("type", "text")
                         .css("font-family", "Monospace")
                         .attr("placeholder", r)
                         .val(r)
-                        .addClass("filter-regex-edit")
                         .appendTo(this)
                         .focus();
 
@@ -309,7 +300,7 @@ Callbacks = {
                         .css("font-family", "Monospace")
                         .attr("placeholder", r)
                         .val(r)
-                        .addClass("filter-flags-edit")
+                        .addClass("form-control filter-flags-edit")
                         .appendTo(this)
                         .focus();
 
@@ -337,7 +328,7 @@ Callbacks = {
                         .css("font-family", "Monospace")
                         .attr("placeholder", r)
                         .val(r)
-                        .addClass("filter-replace-edit")
+                        .addClass("form-control filter-replace-edit")
                         .appendTo(this)
                         .focus();
 
@@ -465,9 +456,9 @@ Callbacks = {
         }
         for(var i = 0; i < entries.length; i++) {
             var tr = document.createElement("tr");
-            var remove = $("<button/>").addClass("btn btn-mini btn-danger")
+            var remove = $("<button/>").addClass("btn btn-xs btn-danger")
                 .appendTo($("<td/>").appendTo(tr));
-            $("<i/>").addClass("icon-remove-circle").appendTo(remove);
+            $("<span/>").addClass("glyphicon glyphicon-remove-circle").appendTo(remove);
             var ip = $("<td/>").text(entries[i].ip_displayed).appendTo(tr);
             var name = $("<td/>").text(entries[i].name).appendTo(tr);
             var aliases = $("<td/>").text(entries[i].aliases.join(", ")).appendTo(tr);
