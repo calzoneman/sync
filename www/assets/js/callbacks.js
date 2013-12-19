@@ -619,6 +619,10 @@ Callbacks = {
     /* REGION Rank Stuff */
 
     rank: function(r) {
+        if (r > -1) {
+            $("#guestlogin").hide();
+            $("#chatline").show();
+        }
         if(r >= 255)
             SUPERADMIN = true;
         CLIENT.rank = r;
@@ -657,13 +661,6 @@ Callbacks = {
         }
     },
 
-    /* should not be relevant since registration is on account.html */
-    register: function(data) {
-        if(data.error) {
-            alert(data.error);
-        }
-    },
-
     login: function(data) {
         if(!data.success) {
             if(data.error != "Session expired") {
@@ -671,17 +668,8 @@ Callbacks = {
             }
         }
         else {
-            $("#welcome").text("Logged in as " + data.name);
-            $("#loginform").css("display", "none");
-            $("#logoutform").css("display", "");
-            $("#loggedin").css("display", "");
-            SESSION = data.session || "";
             CLIENT.name = data.name;
             CLIENT.logged_in = true;
-            if(SESSION) {
-                createCookie("cytube_uname", CLIENT.name, 7);
-                createCookie("cytube_session", SESSION, 7);
-            }
         }
     },
 
@@ -709,7 +697,7 @@ Callbacks = {
     },
 
     userlist: function(data) {
-        $(".userlist_item").each(function() { $(this).remove(); });
+        $(".userlist_item").remove();
         for(var i = 0; i < data.length; i++) {
             Callbacks.addUser(data[i]);
         }
@@ -722,11 +710,11 @@ Callbacks = {
             user.remove();
         var div = $("<div/>")
             .addClass("userlist_item");
-        var flair = $("<span/>").appendTo(div);
+        var icon = $("<span/>").appendTo(div);
         var nametag = $("<span/>").text(data.name).appendTo(div);
         div.data("name", data.name);
         div.data("rank", data.rank);
-        div.data("leader", false);
+        div.data("leader", Boolean(data.leader));
         div.data("profile", data.profile);
         div.data("icon", data.meta.icon);
         div.data("afk", data.meta.afk);
@@ -746,7 +734,7 @@ Callbacks = {
 
     setLeader: function (name) {
         $(".userlist_item").each(function () {
-            $(this).find(".icon-star-empty").remove();
+            $(this).find(".glyphicon-star-empty").remove();
             if ($(this).data("leader")) {
                 $(this).data("leader", false);
                 addUserDropdown($(this));
@@ -806,43 +794,6 @@ Callbacks = {
 
         user.data("icon", data.icon);
         formatUserlistItem(user);
-    },
-
-    /* DEPRECATED
-       SEE:
-        - setUserIcon
-        - setAFK
-        - setLeader
-        - setUserProfile
-        - setUserRank
-    */
-    updateUser: function(data) {
-        if(data.name == CLIENT.name) {
-            CLIENT.leader = data.leader;
-            CLIENT.rank = data.rank;
-            handlePermissionChange();
-            if(CLIENT.leader) {
-                // I'm a leader!  Set up sync function
-                if(LEADTMR)
-                    clearInterval(LEADTMR);
-                LEADTMR = setInterval(sendVideoUpdate, 5000);
-            }
-            // I'm not a leader.  Don't send syncs to the server
-            else {
-                if(LEADTMR)
-                    clearInterval(LEADTMR);
-                LEADTMR = false;
-            }
-
-        }
-        var user = findUserlistItem(data.name);
-        if(user !== null) {
-            user.data("rank", data.rank);
-            formatUserlistItem(user, data);
-            addUserDropdown(user, data);
-            if(USEROPTS.sort_rank)
-                sortUserlist();
-        }
     },
 
     setAFK: function (data) {
@@ -940,7 +891,7 @@ Callbacks = {
     },
 
     queueFail: function (data) {
-        queueMessage(data, "alert-error");
+        queueMessage(data, "alert-danger");
     },
 
     setTemp: function(data) {
@@ -1038,16 +989,16 @@ Callbacks = {
                 .addClass("btn-success")
                 .attr("title", "Playlist Unlocked");
             $("#qlockbtn").find("i")
-                .removeClass("icon-lock")
-                .addClass("icon-ok");
+                .removeClass("glyphicon-lock")
+                .addClass("glyphicon-ok");
         }
         else {
             $("#qlockbtn").removeClass("btn-success")
                 .addClass("btn-danger")
                 .attr("title", "Playlist Locked");
             $("#qlockbtn").find("i")
-                .removeClass("icon-ok")
-                .addClass("icon-lock");
+                .removeClass("glyphicon-ok")
+                .addClass("glyphicon-lock");
         }
     },
 
@@ -1055,8 +1006,7 @@ Callbacks = {
         $("#search_clear").remove();
         clearSearchResults();
         $("#library").data("entries", data.results);
-        $("<button/>").addClass("btn btn-block")
-            .addClass("span12")
+        $("<button/>").addClass("btn btn-default btn-sm btn-block")
             .css("margin-left", "0")
             .attr("id", "search_clear")
             .text("Clear Results")
@@ -1102,7 +1052,7 @@ Callbacks = {
             .appendTo(poll)
             .click(function() { poll.remove(); });
         if(hasPermission("pollctl")) {
-            $("<button/>").addClass("btn btn-danger pull-right").text("End Poll")
+            $("<button/>").addClass("btn btn-danger btn-sm pull-right").text("End Poll")
                 .appendTo(poll)
                 .click(function() {
                     socket.emit("closePoll")
@@ -1121,7 +1071,7 @@ Callbacks = {
                 });
                 $(this).parent().addClass("option-selected");
             }
-            $("<button/>").addClass("btn").text(data.counts[i])
+            $("<button/>").addClass("btn btn-default btn-sm").text(data.counts[i])
                 .prependTo($("<div/>").addClass("option").html(data.options[i])
                         .appendTo(poll))
                 .click(callback);
@@ -1159,7 +1109,7 @@ Callbacks = {
             makeAlert("Success", "Playlist saved.", "alert-success");
         }
         else {
-            makeAlert("Error", data.error, "alert-error")
+            makeAlert("Error", data.error, "alert-danger")
                 .addClass("span12")
                 .insertBefore($("#userpl_list"));
         }
@@ -1167,8 +1117,7 @@ Callbacks = {
 
     listPlaylists: function(data) {
         if(data.error) {
-            makeAlert("Error", data.error, "alert-error")
-                .addClass("span12")
+            makeAlert("Error", data.error, "alert-danger")
                 .insertBefore($("#userpl_list"));
         }
         else {
@@ -1200,9 +1149,9 @@ Callbacks = {
                     .css("float", "left")
                     .prependTo(li);
                 var del = $("<button/>")
-                    .addClass("btn btn-mini btn-danger")
+                    .addClass("btn btn-xs btn-danger")
                     .prependTo(bg);
-                $("<i/>").addClass("icon-trash").appendTo(del);
+                $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(del);
                 (function(li) {
                 del.click(function() {
                     var go = confirm("Are you sure you want to delete playlist '" + li.data("pl-name") + "'?");
@@ -1215,7 +1164,7 @@ Callbacks = {
                 })(li);
                 if(hasPermission("playlistaddlist")) {
                     (function(li) {
-                    $("<button/>").addClass("btn btn-mini")
+                    $("<button/>").addClass("btn btn-xs btn-default")
                         .text("End")
                         .prependTo(bg)
                         .click(function() {
@@ -1228,7 +1177,7 @@ Callbacks = {
 
                     if(hasPermission("playlistnext")) {
                         (function(li) {
-                        $("<button/>").addClass("btn btn-mini")
+                        $("<button/>").addClass("btn btn-xs btn-default")
                             .text("Next")
                             .prependTo(bg)
                             .click(function() {

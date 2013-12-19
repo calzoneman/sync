@@ -53,6 +53,8 @@ function formatURL(data) {
             return "http://imgur.com/a/" + data.id;
         case "us":
             return "http://ustream.tv/" + data.id;
+        case "gd":
+            return data.id;
         default:
             return "#";
     }
@@ -117,18 +119,18 @@ function formatUserlistItem(div) {
     name.mouseleave(function() {
         profile.remove();
     });
-    var flair = div.children()[0];
-    flair.innerHTML = "";
+    var icon = div.children()[0];
+    icon.innerHTML = "";
     // denote current leader with a star
     if(data.leader) {
-        $("<i/>").addClass("icon-star-empty").appendTo(flair);
+        $("<span/>").addClass("glyphicon glyphicon-star-empty").appendTo(icon);
     }
     if(data.afk) {
         name.css("font-style", "italic");
-        $("<i/>").addClass("icon-time").appendTo(flair);
+        $("<span/>").addClass("glyphicon glyphicon-time").appendTo(icon);
     }
     if (data.icon) {
-        $("<i/>").addClass(data.icon).prependTo(flair);
+        $("<span/>").addClass(data.icon).prependTo(icon);
     }
 }
 
@@ -165,7 +167,7 @@ function addUserDropdown(entry) {
     */
     if(CLIENT.rank >= 3 && CLIENT.rank > rank && rank > 0 && rank != 1.5) {
         var sel = $("<select/>")
-            .addClass("input-block-level")
+            .addClass("form-control")
             .appendTo(menu);
         $("<option/>").attr("value", "1").text("Regular User")
             .appendTo(sel);
@@ -190,7 +192,7 @@ function addUserDropdown(entry) {
     }
 
     /* ignore button */
-    var ignore = $("<button/>").addClass("btn btn-mini btn-block")
+    var ignore = $("<button/>").addClass("btn btn-xs btn-default btn-block")
         .appendTo(menu)
         .click(function () {
             if(IGNORED.indexOf(name) == -1) {
@@ -209,7 +211,7 @@ function addUserDropdown(entry) {
 
     /* gib/remove leader (moderator+ only) */
     if(CLIENT.rank >= 2) {
-        var ldr = $("<button/>").addClass("btn btn-mini btn-block")
+        var ldr = $("<button/>").addClass("btn btn-xs btn-default btn-block")
             .appendTo(menu);
         if(leader) {
             ldr.text("Remove Leader");
@@ -230,7 +232,7 @@ function addUserDropdown(entry) {
 
     /* kick button */
     if(hasPermission("kick")) {
-        $("<button/>").addClass("btn btn-mini btn-block")
+        $("<button/>").addClass("btn btn-xs btn-default btn-block")
             .text("Kick")
             .click(function () {
                 socket.emit("chatMsg", {
@@ -242,7 +244,7 @@ function addUserDropdown(entry) {
 
     /* ban buttons */
     if(hasPermission("ban")) {
-        $("<button/>").addClass("btn btn-mini btn-block")
+        $("<button/>").addClass("btn btn-xs btn-default btn-block")
             .text("Name Ban")
             .click(function () {
                 socket.emit("chatMsg", {
@@ -250,7 +252,7 @@ function addUserDropdown(entry) {
                 });
             })
             .appendTo(menu);
-        $("<button/>").addClass("btn btn-mini btn-block")
+        $("<button/>").addClass("btn btn-xs btn-default btn-block")
             .text("IP Ban")
             .click(function () {
                 socket.emit("chatMsg", {
@@ -323,8 +325,8 @@ function sortUserlist() {
     list.sort(function (a, b) {
         var r1 = $(a).data("rank");
         var r2 = $(b).data("rank");
-        var afk1 = $(a).find(".icon-time").length > 0;
-        var afk2 = $(b).find(".icon-time").length > 0;
+        var afk1 = $(a).find(".glyphicon-time").length > 0;
+        var afk2 = $(b).find(".glyphicon-time").length > 0;
         var name1 = a.children[1].innerHTML.toLowerCase();
         var name2 = b.children[1].innerHTML.toLowerCase();
 
@@ -422,8 +424,8 @@ function addQueueButtons(li) {
     var menu = $("<div/>").addClass("btn-group").appendTo(li);
     // Play
     if(hasPermission("playlistjump")) {
-        $("<button/>").addClass("btn btn-mini qbtn-play")
-            .html("<i class='icon-play'></i>Play")
+        $("<button/>").addClass("btn btn-xs btn-default qbtn-play")
+            .html("<span class='glyphicon glyphicon-play'></i>Play")
             .click(function() {
                 socket.emit("jumpTo", li.data("uid"));
             })
@@ -431,8 +433,8 @@ function addQueueButtons(li) {
     }
     // Queue next
     if(hasPermission("playlistmove")) {
-        $("<button/>").addClass("btn btn-mini qbtn-next")
-            .html("<i class='icon-share-alt'></i>Queue Next")
+        $("<button/>").addClass("btn btn-xs btn-default qbtn-next")
+            .html("<span class='glyphicon glyphicon-share-alt'></i>Queue Next")
             .click(function() {
                 socket.emit("moveMedia", {
                     from: li.data("uid"),
@@ -444,8 +446,8 @@ function addQueueButtons(li) {
     // Temp/Untemp
     if(hasPermission("settemp")) {
         var tempstr = li.data("temp")?"Make Permanent":"Make Temporary";
-        $("<button/>").addClass("btn btn-mini qbtn-tmp")
-            .html("<i class='icon-flag'></i>" + tempstr)
+        $("<button/>").addClass("btn btn-xs btn-default qbtn-tmp")
+            .html("<span class='glyphicon glyphicon-flag'></i>" + tempstr)
             .click(function() {
                 socket.emit("setTemp", {
                     uid: li.data("uid"),
@@ -456,8 +458,8 @@ function addQueueButtons(li) {
     }
     // Delete
     if(hasPermission("playlistdelete")) {
-        $("<button/>").addClass("btn btn-mini qbtn-delete")
-            .html("<i class='icon-trash'></i>Delete")
+        $("<button/>").addClass("btn btn-xs btn-default qbtn-delete")
+            .html("<span class='glyphicon glyphicon-trash'></i>Delete")
             .click(function() {
                 socket.emit("delete", li.data("uid"));
             })
@@ -522,6 +524,7 @@ function rebuildPlaylist() {
 /* menus */
 
 /* user settings menu */
+// TODO fix this
 function showOptionsMenu() {
     hidePlayer();
     var modal = $("<div/>").addClass("modal hide fade")
