@@ -619,10 +619,6 @@ Callbacks = {
     /* REGION Rank Stuff */
 
     rank: function(r) {
-        if (r > -1) {
-            $("#guestlogin").hide();
-            $("#chatline").show();
-        }
         if(r >= 255)
             SUPERADMIN = true;
         CLIENT.rank = r;

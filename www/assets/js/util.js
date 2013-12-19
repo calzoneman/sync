@@ -425,7 +425,7 @@ function addQueueButtons(li) {
     // Play
     if(hasPermission("playlistjump")) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-play")
-            .html("<span class='glyphicon glyphicon-play'></i>Play")
+            .html("<span class='glyphicon glyphicon-play'></span>Play")
             .click(function() {
                 socket.emit("jumpTo", li.data("uid"));
             })
@@ -434,7 +434,7 @@ function addQueueButtons(li) {
     // Queue next
     if(hasPermission("playlistmove")) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-next")
-            .html("<span class='glyphicon glyphicon-share-alt'></i>Queue Next")
+            .html("<span class='glyphicon glyphicon-share-alt'></span>Queue Next")
             .click(function() {
                 socket.emit("moveMedia", {
                     from: li.data("uid"),
@@ -447,7 +447,7 @@ function addQueueButtons(li) {
     if(hasPermission("settemp")) {
         var tempstr = li.data("temp")?"Make Permanent":"Make Temporary";
         $("<button/>").addClass("btn btn-xs btn-default qbtn-tmp")
-            .html("<span class='glyphicon glyphicon-flag'></i>" + tempstr)
+            .html("<span class='glyphicon glyphicon-flag'></span>" + tempstr)
             .click(function() {
                 socket.emit("setTemp", {
                     uid: li.data("uid"),
@@ -459,7 +459,7 @@ function addQueueButtons(li) {
     // Delete
     if(hasPermission("playlistdelete")) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-delete")
-            .html("<span class='glyphicon glyphicon-trash'></i>Delete")
+            .html("<span class='glyphicon glyphicon-trash'></span>Delete")
             .click(function() {
                 socket.emit("delete", li.data("uid"));
             })
@@ -829,90 +829,12 @@ function applyOpts() {
 
 applyOpts();
 
-function showLoginMenu() {
-    hidePlayer();
-    var modal = $("<div/>").addClass("modal hide fade")
-        .appendTo($("body"));
-    var head = $("<div/>").addClass("modal-header")
-        .appendTo(modal);
-    $("<button/>").addClass("close")
-        .attr("data-dismiss", "modal")
-        .attr("aria-hidden", "true")
-        .appendTo(head)
-        .html("&times;");
-    $("<h3/>").text("Login").appendTo(head);
-    var body = $("<div/>").addClass("modal-body").appendTo(modal);
-    var frame = $("<iframe/>")
-        .attr("id", "loginframe")
-        .attr("src", "login.html")
-        .css("border", "none")
-        .css("width", "100%")
-        .css("height", "300px")
-        .css("margin", "0")
-        .appendTo(body);
-    var timer = setInterval(function() {
-        frame[0].contentWindow.postMessage("cytube-syn", document.location);
-    }, 1000);
-    var respond = function(e) {
-        if(e.data == "cytube-ack") {
-            clearInterval(timer);
-        }
-        if(e.data.indexOf(":") == -1) {
-            return;
-        }
-        if(e.data.substring(0, e.data.indexOf(":")) == "cytube-login") {
-            var data = e.data.substring(e.data.indexOf(":")+1);
-            data = JSON.parse(data);
-            if(data.error) {
-                // Since this is the login page, invalid session implies bad credentials
-                if(data.error == "Invalid session") {
-                    alert("Invalid username/password");
-                }
-                else {
-                    alert(data.error);
-                }
-            }
-            else if(data.success) {
-                SESSION = data.session || "";
-                CLIENT.name = data.uname || "";
-                socket.emit("login", {
-                    name: CLIENT.name,
-                    session: SESSION
-                });
-                if(window.removeEventListener) {
-                    window.removeEventListener("message", respond, false);
-                }
-                else if(window.detachEvent) {
-                    // If an IE dev ever reads this, please tell your company
-                    // to get their shit together
-                    window.detachEvent("onmessage", respond);
-                }
-                modal.modal("hide");
-            }
-        }
-    }
-    if(window.addEventListener) {
-        window.addEventListener("message", respond, false);
-    }
-    else if(window.attachEvent) {
-        // If an IE dev ever reads this, please tell your company to get
-        // their shit together
-        window.attachEvent("onmessage", respond);
-    }
-    var footer = $("<div/>").addClass("modal-footer").appendTo(modal);
-    modal.on("hidden", function() {
-        unhidePlayer();
-        modal.remove();
-    });
-    modal.modal();
-}
-
 function showPollMenu() {
     $("#pollwrap .poll-menu").remove();
     var menu = $("<div/>").addClass("well poll-menu")
-        .insertAfter($("#newpollbtn"));
+        .prependTo($("#pollwrap"));
 
-    $("<button/>").addClass("btn btn-danger pull-right")
+    $("<button/>").addClass("btn btn-sm btn-danger pull-right")
         .text("Cancel")
         .appendTo(menu)
         .click(function() {
@@ -920,42 +842,36 @@ function showPollMenu() {
         });
 
     $("<strong/>").text("Title").appendTo(menu);
-    $("<br/>").appendTo(menu);
 
-    var title = $("<input/>").attr("type", "text")
+    var title = $("<input/>").addClass("form-control")
+        .attr("type", "text")
         .appendTo(menu);
-    $("<br/>").appendTo(menu);
 
     var lbl = $("<label/>").addClass("checkbox")
         .text("Hide poll results")
         .appendTo(menu);
     var hidden = $("<input/>").attr("type", "checkbox")
         .appendTo(lbl);
-    $("<br/>").appendTo(menu);
 
     $("<strong/>").text("Options").appendTo(menu);
-    $("<br/>").appendTo(menu);
 
-    var addbtn = $("<button/>").addClass("btn")
+    var addbtn = $("<button/>").addClass("btn btn-sm btn-default")
         .text("Add Option")
         .appendTo(menu);
-    $("<br/>").appendTo(menu);
 
     function addOption() {
-        $("<input/>").attr("type", "text")
+        $("<input/>").addClass("form-control")
+            .attr("type", "text")
             .addClass("poll-menu-option")
             .insertBefore(addbtn);
-        $("<br/>").insertBefore(addbtn);
     }
 
     addbtn.click(addOption);
     addOption();
     addOption();
 
-    $("<br/>").appendTo(menu);
-    $("<button/>").addClass("btn")
+    $("<button/>").addClass("btn btn-default btn-block")
         .text("Open Poll")
-        .addClass("btn-block")
         .appendTo(menu)
         .click(function() {
             var opts = []
@@ -1057,26 +973,17 @@ function handleModPermissions() {
 }
 
 function handlePermissionChange() {
-    if(CLIENT.rank >= 2 && $("#channelsettingswrap").length > 0) {
-        $("#channelsettingswrap3").show();
-        if($("#channelsettingswrap").html().trim() == "") {
-            $("#channelsettingswrap").load("channeloptions.html", handleModPermissions);
-        }
-        else {
-            handleModPermissions();
-        }
-    }
-    else {
-        $("#channelsettingswrap").html("");
-        $("#channelsettingswrap3").hide();
+    if(CLIENT.rank >= 2) {
+        handleModPermissions();
     }
 
-    setVisible("#userpltogglewrap", CLIENT.rank >= 1);
-
+    setVisible("#playlistmanagerwrap", CLIENT.rank >= 1);
     setVisible("#modflair", CLIENT.rank >= 2);
     setVisible("#adminflair", CLIENT.rank >= 255);
+    setVisible("#guestlogin", CLIENT.rank < 0);
+    setVisible("#chatline", CLIENT.rank >= 0);
 
-    setVisible("#playlisttogglewrap", hasPermission("playlistadd"));
+    setVisible("#playlistcontrolswrap", hasPermission("playlistadd"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
     $("#qlockbtn").attr("disabled", CLIENT.rank < 2);
 
@@ -1092,7 +999,6 @@ function handlePermissionChange() {
                 " you right click).  You can also choose to use the old",
                 " style of playlist buttons.",
                 "<br>"].join(""))
-                .addClass("span12")
                 .attr("id", "plonotification")
                 .insertBefore($("#queue"));
 
@@ -1122,7 +1028,7 @@ function handlePermissionChange() {
 
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
-    setVisible("#customembed_btn", hasPermission("playlistaddcustom"));
+    setVisible("#customembedwrap", hasPermission("playlistaddcustom"));
     if(!hasPermission("playlistaddcustom")) {
         $("#customembed_entry").hide();
         $("#customembed_code").val("");
@@ -1178,7 +1084,7 @@ function addLibraryButtons(li, id, source) {
 
     if(hasPermission("playlistadd")) {
         if(hasPermission("playlistnext")) {
-            $("<button/>").addClass("btn btn-mini")
+            $("<button/>").addClass("btn btn-xs btn-default")
                 .text("Next")
                 .click(function() {
                     socket.emit("queue", {
@@ -1189,7 +1095,7 @@ function addLibraryButtons(li, id, source) {
                 })
                 .appendTo(btns);
         }
-        $("<button/>").addClass("btn btn-mini")
+        $("<button/>").addClass("btn btn-xs btn-default")
             .text("End")
             .click(function() {
                 socket.emit("queue", {
@@ -1201,8 +1107,8 @@ function addLibraryButtons(li, id, source) {
             .appendTo(btns);
     }
     if(CLIENT.rank >= 2 && source === "library") {
-        $("<button/>").addClass("btn btn-mini btn-danger")
-            .html("<i class='icon-trash'></i>")
+        $("<button/>").addClass("btn btn-xs btn-danger")
+            .html("<span class='glyphicon glyphicon-trash'></span>")
             .click(function() {
                 socket.emit("uncache", {
                     id: id

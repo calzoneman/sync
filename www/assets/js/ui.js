@@ -52,14 +52,14 @@ $("#modflair").click(function () {
 
 $("#adminflair").click(function () {
     var m = $("#adminflair");
-    if (m.hasClass("label-important")) {
+    if (m.hasClass("label-danger")) {
         USEROPTS.adminhat = false;
-        m.removeClass("label-important")
+        m.removeClass("label-danger")
          .addClass("label-default");
     } else {
         USEROPTS.adminhat = true;
         m.removeClass("label-default")
-         .addClass("label-important");
+         .addClass("label-danger");
     }
 });
 

@@ -456,3 +456,24 @@
 #channeloptions .modal-header {
     border-bottom: none;
 }
+
+#pollwrap > div {
+    margin-top: 10px;
+}
+
+.option {
+    margin-top: 5px;
+}
+
+.option-selected {
+    font-weight: bold;
+}
+
+.option > button {
+    margin-right: 15px;
+}
+
+.option-selected > button {
+    border-width: 3px !important;
+    margin-right: 10px;
+}
