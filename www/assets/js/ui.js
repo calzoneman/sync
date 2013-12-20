@@ -19,8 +19,6 @@ $(window).focus(function() {
     FOCUSED = false;
 });
 
-$("#editmotd").click(showMOTDEditor);
-
 $("#togglemotd").click(function () {
     var hidden = $("#motd").css("display") === "none";
     $("#motd").toggle();

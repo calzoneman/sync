@@ -1486,42 +1486,29 @@ function addChatMessage(data) {
 /* layouts */
 
 function fluidLayout() {
-    $(".row").each(function() {
-        $(this).removeClass("row").addClass("row-fluid");
-    });
-    $(".container").each(function() {
-        $(this).removeClass("container").addClass("container-fluid");
-    });
-    // Video might not be there, but the playlist is
-    VWIDTH = $("#videowidth").css("width").replace("px", "");
-    VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
-    if($("#ytapiplayer").length > 0) {
-        $("#ytapiplayer").attr("width", VWIDTH);
-        $("#ytapiplayer").attr("height", VHEIGHT);
-    }
-    $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
-    $("#userlist").css("height", (VHEIGHT - 31) + "px");
-    $("#chatline").removeClass().addClass("span12");
-    $("#channelsettingswrap3").css("margin-left", "0");
+    $(".container").css("max-width", "100%");
 }
 
 function synchtubeLayout() {
     $("#videowrap").detach().insertBefore($("#chatwrap"));
-    $("#rightpane-outer").detach().insertBefore($("#leftpane-outer"));
+    $("#rightcontrols").detach().insertBefore($("#leftcontrols"));
+    $("#rightpane").detach().insertBefore($("#leftpane"));
     $("#userlist").css("float", "right");
 }
 
 function chatOnly() {
-    fluidLayout();
+    //fluidLayout();
     $("#toprow").remove()
     $("#announcements").remove();
     $("#playlistrow").remove();
     $("#videowrap").remove();
-    $("#chatwrap").removeClass("span5").addClass("span12");
+    $("#controlsrow").remove();
+    $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
 }
 
 /* channel administration stuff */
 
+// TODO fix
 function genPermissionsEditor() {
     $("#permedit").html("");
     var form = $("<form/>").addClass("form-horizontal")
@@ -1694,7 +1681,7 @@ function errDialog(err) {
         .appendTo($("body"));
 
     $("<br/>").appendTo(div);
-    $("<button/>").addClass("btn btn-mini")
+    $("<button/>").addClass("btn btn-xs btn-default")
         .css("width", "100%")
         .text("OK")
         .click(function () { div.remove(); })
@@ -1714,12 +1701,12 @@ function queueMessage(data, type) {
     if (!data.msg || data.msg === true) {
         data.msg = "Queue failed.  Check your link to make sure it is valid.";
     }
-    var ltype = "label-important";
+    var ltype = "label-danger";
     var title = "Error";
-    if (type === "alert-warning")
+    if (type === "alert-warning") {
         ltype = "label-warning";
-    if (type === "alert-warning")
         title = "Warning";
+    }
 
     var alerts = $(".qfalert.qf-" + type);
     for (var i = 0; i < alerts.length; i++) {
@@ -1764,31 +1751,8 @@ function queueMessage(data, type) {
                 data.link + "</a>";
     }
     makeAlert(title, text, type)
-        .addClass("span12 qfalert qf-" + type)
+        .addClass("qfalert qf-" + type)
         .appendTo($("#queuefail"));
-}
-
-function showMOTDEditor() {
-    var motd = $("#motd");
-    motd.html("");
-    var text = $("<textarea/>")
-        .addClass("motdeditor input-block-level")
-        .attr("rows", "10")
-        .val(CHANNEL.motd_text)
-        .css("width", "100%")
-        .css("height", "100%")
-        .appendTo($("#motdwrap"))
-        .blur(function () {
-            socket.emit("setMotd", {
-                motd: text.val()
-            });
-            $("#motdwrap .motdeditor").remove();
-            $("#editmotd").show();
-            $("#togglemotd").show();
-        })
-        .focus();
-    $("#editmotd").hide();
-    $("#togglemotd").hide();
 }
 
 function filterChannelLog() {

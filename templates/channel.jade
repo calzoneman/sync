@@ -18,7 +18,7 @@ html(lang="en")
           +navloginlogout(cname)
       section#mainpage
         .container
-          .row
+          #motdrow.row
             .col-lg-12.col-md-12
               #motdwrap.well
                 button#togglemotd.close.pull-right(type="button")
@@ -45,7 +45,7 @@ html(lang="en")
             #videowrap.col-lg-7.col-md-7
               p#currenttitle Nothing Playling
               #ytapiplayer
-          .row
+          #controlsrow.row
             #leftcontrols.col-lg-5.col-md-5
               button#newpollbtn.btn.btn-sm.btn-default New Poll
             #rightcontrols.col-lg-7.col-md-7
@@ -181,6 +181,8 @@ html(lang="en")
     //  $('#channeloptions a[href="#cs-miscoptions"]').tab('show');
     script(src="/assets/js/data.js")
     script(src="/assets/js/util.js")
+    script(src="/assets/js/player.js")
     script(src="/assets/js/paginator.js")
     script(src="/assets/js/ui.js")
     script(src="/assets/js/callbacks.js")
+    script(src="https://www.youtube.com/iframe_api")
