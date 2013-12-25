@@ -13,8 +13,8 @@ html(lang="en")
           - var cname = "/r/" + channelName
           ul.nav.navbar-nav
             +navdefaultlinks(cname)
-            li: a(href="javascript:showUserOptions()") Options
-            li: a(href="javascript:$('#channeloptions').modal()") Channel Settings
+            li: a(href="#", onclick="javascript:showUserOptions()") Options
+            li: a(href="#", onclick="javascript:$('#channeloptions').modal()") Channel Settings
           +navloginlogout(cname)
       section#mainpage
         .container
@@ -123,14 +123,6 @@ html(lang="en")
                     i.glyphicon.glyphicon-lock
                 .col-lg-12.col-md-12
                   #queue.videolist
-                    li.queue_entry
-                      a.qe_title(href="#") Derp
-                      span.qe_time 00:00
-                      div.qe_clear
-                    li.queue_entry.queue_active.queue_temp
-                      a.qe_title(href="#") Derp
-                      span.qe_time 00:00
-                      div.qe_clear
                   #plmeta
                     span#plcount 0 items
                     span#pllength 00:00:00
@@ -138,6 +130,27 @@ html(lang="en")
             .col-lg-5.col-md-5
             #videowidth.col-lg-7.col-md-7
           #sitefooter
+    #useroptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+      .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal", aria-hidden="true")&times;
+            h4 User Preferences
+            ul.nav.nav-tabs
+              li: a(href="#us-general", data-toggle="tab") General
+              li: a(href="#us-playback", data-toggle="tab") Playback
+              li: a(href="#us-chat", data-toggle="tab") Chat
+              li: a(href="#us-mod", data-toggle="tab", style="") Moderator
+          .modal-body
+            .tab-content
+              include useroptions
+              +us-general()
+              +us-playback()
+              +us-chat()
+              +us-mod()
+          .modal-footer
+            button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
+            button.btn.btn-default(type="button", data-dismiss="modal") Close
     #channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
       .modal-dialog
         .modal-content

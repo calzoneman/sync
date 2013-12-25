@@ -238,7 +238,7 @@ $("#userpl_save").click(function() {
         $(select).click(function() {
             VIDEOQUALITY = preset;
             USEROPTS.default_quality = select;
-            saveOpts();
+            storeOpts();
             var btn = $("#qdrop");
             var caret = btn.find(".caret").detach();
             btn.text($(select).text());
@@ -435,9 +435,12 @@ $(window).resize(function() {
 /* load channel */
 
 var loc = document.location+"";
-var m = loc.match(/\/r\/([a-zA-Z0-9-_]+)$/);
+var m = loc.match(/\/r\/([a-zA-Z0-9-_#]+)$/);
 if(m) {
     CHANNEL.name = m[1];
+    if (CHANNEL.name.indexOf("#") !== -1) {
+        CHANNEL.name = CHANNEL.name.substring(0, CHANNEL.name.indexOf("#"));
+    }
 }
 /*
 else {

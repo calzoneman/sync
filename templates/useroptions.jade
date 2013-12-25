@@ -1,0 +1,82 @@
+mixin lcheckbox(id, label)
+  .form-group
+    label.control-label.col-sm-4(for=id)= label
+    .col-sm-8
+      .checkbox
+        input(type="checkbox", id=id)
+
+mixin rcheckbox(id, label)
+  .form-group
+    .col-sm-8.col-sm-offset-4
+      .checkbox
+        label.control-label(for=id)= label
+          input(type="checkbox", id=id)
+
+mixin textbox(id, label, placeholder)
+  .form-group
+    label.control-label.col-sm-4(for=id)= label
+    .col-sm-8
+      if placeholder
+        input.form-control(id=id, type="text", placeholder=placeholder)
+      else
+        input.form-control(id=id, type="text")
+
+mixin us-general
+  #us-general.tab-pane
+    h4 General Preferences
+    form.form-horizontal(action="javascript:void(0)")
+      .form-group
+        label.control-label.col-sm-4(for="#us-theme") Theme
+        .col-sm-8
+          select#us-theme.form-control
+            option(value="default") Default
+            option(value="/css/bootstrap-theme.min.css") Bootstrap
+            option(value="/css/dark.css") Dark
+      .form-group
+        label.control-label.col-sm-4(for="#us-layout") Layout
+        .col-sm-8
+          select#us-layout.form-control
+            option(value="default") Compact
+            option(value="synchtube") Synchtube (flipped)
+            option(value="fluid") Fluid
+      .col-sm-4
+      .col-sm-8
+        p.text-danger Changing layouts may require refreshing to take effect.
+      +rcheckbox("us-no-channelcss", "Ignore Channel CSS")
+      +rcheckbox("us-no-channeljs", "Ignore Channel Javascript")
+      +rcheckbox("us-ssl", "Encrypt connection with SSL")
+
+mixin us-playback
+  #us-playback.tab-pane
+    h4 Playback Preferences
+    form.form-horizontal(action="javascript:void(0)")
+      +rcheckbox("us-synch", "Synchronize video playback")
+      +textbox("us-synch-accuracy", "Synch threshold (seconds)", "2")
+      +rcheckbox("us-wmode-transparent", "Set wmode=transparent")
+      .col-sm-4
+      .col-sm-8
+        p.text-info Setting <code>wmode=transparent</code> allows objects to be displayed above the video player, but may cause performance issues on some systems.
+      +rcheckbox("us-hidevideo", "Remove the video player")
+      +rcheckbox("us-playlistbuttons", "Hide playlist buttons by default")
+      +rcheckbox("us-oldbtns", "Old style playlist buttons")
+
+mixin us-chat
+  #us-chat.tab-pane
+    h4 Chat Preferences
+    form.form-horizontal(action="javascript:void(0)")
+      +rcheckbox("us-chat-timestamp", "Show timestamps in chat")
+      +rcheckbox("us-sort-rank", "Sort userlist by rank")
+      +rcheckbox("us-sort-afk", "Sort AFKers to bottom")
+      +rcheckbox("us-chat-notice", "Ping on all new messages")
+      .col-sm-4
+      .col-sm-8
+        p.text-info When unchecked, you will only be pinged if your name is mentioned
+      +rcheckbox("us-boop", "Play a sound when pinged")
+      +rcheckbox("us-sendbtn", "Add a send button to chat")
+
+mixin us-mod
+  #us-mod.tab-pane
+    h4 Moderator Preferences
+    form.form-horizontal(action="javascript:void(0)")
+      +rcheckbox("us-modflair", "Show name color")
+      +rcheckbox("us-joinmessage", "Show join messages")

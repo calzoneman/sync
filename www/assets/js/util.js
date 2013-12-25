@@ -476,7 +476,7 @@ function addQueueButtons(li) {
         menu.detach().prependTo(li);
         menu.find(".btn").each(function() {
             // Clear icon
-            var icon = $(this).find("i");
+            var icon = $(this).find(".glyphicon");
             $(this).html("");
             icon.appendTo(this);
         });
@@ -524,242 +524,75 @@ function rebuildPlaylist() {
 /* menus */
 
 /* user settings menu */
-// TODO fix this
-function showOptionsMenu() {
+function showUserOptions() {
     hidePlayer();
-    var modal = $("<div/>").addClass("modal hide fade")
-        .appendTo($("body"));
-
-    modal.load("useroptions.html", function () {
-        if (CLIENT.rank < 2) {
-            $("#uopt-btn-mod").remove();
-        }
-
-        var tabHandler = function (btnid, panelid) {
-            $(btnid).click(function () {
-                modal.find(".btn.btn-small").attr("disabled", false);
-                modal.find(".uopt-panel").hide();
-                $(btnid).attr("disabled", true);
-                $(panelid).show();
-            });
-        };
-
-        tabHandler("#uopt-btn-general", "#uopt-panel-general");
-        tabHandler("#uopt-btn-playback", "#uopt-panel-playback");
-        tabHandler("#uopt-btn-chat", "#uopt-panel-chat");
-        tabHandler("#uopt-btn-mod", "#uopt-panel-mod");
-
-        var initForm = function (id) {
-            var f = $("<form/>").appendTo($(id))
-                .addClass("form-horizontal")
-                .attr("action", "javascript:void(0)");
-            return $("<fieldset/>").appendTo(f);
-        };
-
-        var addOption = function (form, lbl, thing) {
-            var g = $("<div/>").addClass("control-group").appendTo(form);
-            $("<label/>").addClass("control-label").text(lbl).appendTo(g);
-            var c = $("<div/>").addClass("controls").appendTo(g);
-            thing.appendTo(c);
-        };
-
-        var addCheckbox = function (form, opt, lbl) {
-            var c = $("<label/>").addClass("checkbox")
-                .text(lbl);
-            var box = $("<input/>").attr("type", "checkbox")
-                .appendTo(c);
-            addOption(form, opt, c);
-            return box;
-        };
-
-        // general options
-        var general = initForm("#uopt-panel-general");
-
-        var gen_theme = $("<select/>");
-        $("<option/>").attr("value", "default")
-            .text("Default")
-            .appendTo(gen_theme);
-        $("<option/>").attr("value", "assets/css/darkstrap.css")
-            .text("Dark")
-            .appendTo(gen_theme);
-        $("<option/>").attr("value", "assets/css/altdark.css")
-            .text("Alternate Dark")
-            .appendTo(gen_theme);
-        gen_theme.val(USEROPTS.theme);
-        addOption(general, "Theme", gen_theme);
-
-        var gen_layout = $("<select/>");
-        $("<option/>").attr("value", "default")
-            .text("Compact")
-            .appendTo(gen_layout);
-        $("<option/>").attr("value", "synchtube")
-            .text("Synchtube")
-            .appendTo(gen_layout);
-        $("<option/>").attr("value", "fluid")
-            .text("Fluid")
-            .appendTo(gen_layout);
-        gen_layout.val(USEROPTS.layout);
-        addOption(general, "Layout", gen_layout);
-
-        var gen_layoutwarn = $("<p/>").addClass("text-error")
-            .text("Changing layouts may require a refresh");
-        addOption(general, "", gen_layoutwarn);
-
-        var gen_css = $("<input/>").attr("type", "text")
-            .attr("placeholder", "Stylesheet URL");
-        gen_css.val(USEROPTS.css);
-        addOption(general, "User CSS", gen_css);
-
-        var gen_nocss = addCheckbox(general, "Channel CSS",
-                                    "Ignore channel CSS");
-        gen_nocss.prop("checked", USEROPTS.ignore_channelcss);
-
-        var gen_nojs = addCheckbox(general, "Channel JS",
-                                    "Ignore channel JS");
-        gen_nojs.prop("checked", USEROPTS.ignore_channeljs);
-
-        var gen_altsocket = addCheckbox(general, "Alternate Socket",
-                                        "Use alternate socket connection");
-        gen_altsocket.prop("checked", USEROPTS.altsocket);
-
-        var gen_altsocketinfo = $("<p/>")
-            .addClass("text-error")
-            .text("Alternate socket requires a refresh after changing.  "+
-                  "It should only be used if the default (unchecked) "+
-                  "does not work.");
-        addOption(general, "", gen_altsocketinfo);
-
-        var gen_secure = addCheckbox(general, "SSL",
-                                     "Encrypt connections with SSL");
-        gen_secure.prop("checked", USEROPTS.secure_connection);
-        gen_secure.attr("disabled", !ALLOW_SSL);
-
-        var gen_secureinfo = $("<p/>")
-            .addClass("text-error")
-            .text("If enabled, websocket traffic and API calls (logins, "+
-                  "account management) will be sent over a secure "+
-                  "connection.  Changes take effect after a refresh.");
-            addOption(general, "", gen_secureinfo);
-        if (!ALLOW_SSL) {
-            gen_secureinfo.text("This server does not support SSL.");
-        }
-
-        // playback options
-        var playback = initForm("#uopt-panel-playback");
-
-        var pl_synch = addCheckbox(playback, "Synchronize",
-                                   "Synchronize media playback");
-        pl_synch.prop("checked", USEROPTS.synch);
-
-        var pl_synchacc = $("<input/>").attr("type", "text")
-            .attr("placeholder", "Accuracy in seconds");
-        pl_synchacc.val(USEROPTS.sync_accuracy);
-        addOption(playback, "Synch Accuracy (seconds)", pl_synchacc);
-
-        var pl_wmode = addCheckbox(playback, "Transparent wmode",
-                                   "Allow transparency over video player");
-        pl_wmode.prop("checked", USEROPTS.wmode_transparent);
-
-        var pl_wmodewarn = $("<p/>").addClass("text-error")
-            .text("Enabling transparent wmode may cause performance "+
-                  "issues on some systems");
-        addOption(playback, "", pl_wmodewarn);
-
-        var pl_hide = addCheckbox(playback, "Hide Video",
-                                  "Remove the video player");
-        pl_hide.prop("checked", USEROPTS.hidevid);
-
-        var pl_hidebtn = addCheckbox(playback, "Playlist Buttons",
-                                     "Hide playlist buttons by default");
-        pl_hidebtn.prop("checked", USEROPTS.qbtn_hide);
-
-        var pl_oldbtn = addCheckbox(playback, "Playlist Buttons (old)",
-                                    "Old style playlist buttons");
-        pl_oldbtn.prop("checked", USEROPTS.qbtn_idontlikechange);
-
-        // chat options
-        var chat = initForm("#uopt-panel-chat");
-
-        var chat_time = addCheckbox(chat, "Timestamps",
-                                    "Show timestamps in chat");
-        chat_time.prop("checked", USEROPTS.show_timestamps);
-
-        var chat_sort_rank = addCheckbox(chat, "Userlist sort",
-                                         "Sort userlist by rank");
-        chat_sort_rank.prop("checked", USEROPTS.sort_rank);
-
-        var chat_sort_afk = addCheckbox(chat, "Userlist sort",
-                                        "Sort AFKers to bottom");
-        chat_sort_afk.prop("checked", USEROPTS.sort_afk);
-
-        var chat_all = addCheckbox(chat, "Chat Notice",
-                                   "Notify on all messages");
-        chat_all.prop("checked", USEROPTS.blink_title);
-
-        var chat_allinfo = $("<p/>")
-            .text("When disabled, you will only be notified if your "+
-                  "name is mentioned");
-        addOption(chat, "", chat_allinfo);
-
-        var chat_boop = addCheckbox(chat, "Chat Sound",
-                                    "Play a sound for notifications");
-        chat_boop.prop("checked", USEROPTS.boop);
-
-        var chat_sendbtn = addCheckbox(chat, "Send Button",
-                                       "Add a send button to chat");
-        chat_sendbtn.prop("checked", USEROPTS.chatbtn);
-
-        // mod options
-        var mod = initForm("#uopt-panel-mod");
-
-        var mod_flair = addCheckbox(mod, "Modflair", "Show name color");
-        mod_flair.prop("checked", USEROPTS.modhat);
-
-        var mod_joinmsg = addCheckbox(mod, "Join Messages",
-                                      "Show join messages");
-        mod_joinmsg.prop("checked", USEROPTS.joinmessage);
-
-
-        $("#uopt-btn-general").click();
-        $("#uopt-btn-save").click(function () {
-            USEROPTS.theme                = gen_theme.val();
-            USEROPTS.layout               = gen_layout.val();
-            USEROPTS.css                  = gen_css.val();
-            USEROPTS.ignore_channelcss    = gen_nocss.prop("checked");
-            USEROPTS.ignore_channeljs     = gen_nojs.prop("checked");
-            USEROPTS.altsocket            = gen_altsocket.prop("checked");
-            USEROPTS.synch                = pl_synch.prop("checked");
-            USEROPTS.sync_accuracy        = parseFloat(pl_synchacc.val())||2;
-            USEROPTS.wmode_transparent    = pl_wmode.prop("checked");
-            USEROPTS.hidevid              = pl_hide.prop("checked");
-            USEROPTS.qbtn_hide            = pl_hidebtn.prop("checked");
-            USEROPTS.qbtn_idontlikechange = pl_oldbtn.prop("checked");
-            USEROPTS.show_timestamps      = chat_time.prop("checked");
-            USEROPTS.sort_rank            = chat_sort_rank.prop("checked");
-            USEROPTS.sort_afk             = chat_sort_afk.prop("checked");
-            USEROPTS.blink_title          = chat_all.prop("checked");
-            USEROPTS.boop                 = chat_boop.prop("checked");
-            USEROPTS.chatbtn              = chat_sendbtn.prop("checked");
-            USEROPTS.secure_connection    = gen_secure.prop("checked");
-            if (CLIENT.rank >= 2) {
-                USEROPTS.modhat      = mod_flair.prop("checked");
-                USEROPTS.joinmessage = mod_joinmsg.prop("checked");
-            }
-            saveOpts();
-            modal.modal("hide");
-        });
-    });
-
-    modal.on("hidden", function () {
+    $("#useroptions").on("hidden", function () {
         unhidePlayer();
-        applyOpts();
-        modal.remove();
     });
 
-    modal.modal();
+    if (CLIENT.rank < 2) {
+        $("a[href='#us-mod']").parent().hide();
+    } else {
+        $("a[href='#us-mod']").parent().show();
+    }
+
+    $("#us-theme").val(USEROPTS.theme);
+    $("#us-layout").val(USEROPTS.layout);
+    $("#us-no-channelcss").prop("checked", USEROPTS.ignore_channelcss);
+    $("#us-no-channeljs").prop("checked", USEROPTS.ignore_channeljs);
+    $("#us-ssl").prop("checked", USEROPTS.secure_connection);
+
+    $("#us-synch").prop("checked", USEROPTS.synch);
+    $("#us-synch-accuracy").val(USEROPTS.synch_accuracy);
+    $("#us-wmode-transparent").prop("checked", USEROPTS.wmode_transparent);
+    $("#us-hidevideo").prop("checked", USEROPTS.hidevid);
+    $("#us-playlistbuttons").prop("checked", USEROPTS.qbtn_hide);
+    $("#us-oldbtns").prop("checked", USEROPTS.qbtn_idontlikechange);
+
+    $("#us-chat-timestamp").prop("checked", USEROPTS.show_timestamps);
+    $("#us-sort-rank").prop("checked", USEROPTS.sort_rank);
+    $("#us-sort-afk").prop("checked", USEROPTS.sort_afk);
+    $("#us-chat-notice").prop("checked", USEROPTS.blink_title);
+    $("#us-boop").prop("checked", USEROPTS.boop);
+    $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
+    
+    $("#us-modflair").prop("checked", USEROPTS.modhat);
+    $("#us-joinmessage").prop("checked", USEROPTS.joinmessage);
+
+    $("a[href='#us-general']").click();
+    $("#useroptions").modal();
 }
 
-function saveOpts() {
+function saveUserOptions() {
+    USEROPTS.theme                = $("#us-theme").val();
+    USEROPTS.layout               = $("#us-layout").val();
+    USEROPTS.ignore_channelcss    = $("#us-no-channelcss").prop("checked");
+    USEROPTS.ignore_channeljs     = $("#us-no-channeljs").prop("checked");
+    USEROPTS.secure_connection    = $("#us-ssl").prop("checked");
+
+    USEROPTS.synch                = $("#us-synch").prop("checked");
+    USEROPTS.synch_accuracy       = parseFloat($("#us-synch-accuracy").val()) || 2;
+    USEROPTS.wmode_transparent    = $("#us-wmode-transparent").prop("checked");
+    USEROPTS.hidevid              = $("#us-hidevideo").prop("checked");
+    USEROPTS.qbtn_hide            = $("#us-playlistbuttons").prop("checked");
+    USEROPTS.qbtn_idontlikechange = $("#us-oldbtns").prop("checked");
+
+    USEROPTS.show_timestamps      = $("#us-chat-timestamp").prop("checked");
+    USEROPTS.sort_rank            = $("#us-sort-rank").prop("checked");
+    USEROPTS.sort_afk             = $("#us-sort-afk").prop("checked");
+    USEROPTS.blink_title          = $("#us-chat-notice").prop("checked");
+    USEROPTS.boop                 = $("#us-boop").prop("checked");
+    USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
+
+    if (CLIENT.rank >= 2) {
+        USEROPTS.modhat      = $("#us-modflair").prop("checked");
+        USEROPTS.joinmessage = $("#us-joinmessage").prop("checked");
+    }
+
+    storeOpts();
+}
+
+function storeOpts() {
     for(var key in USEROPTS) {
         setOpt(key, USEROPTS[key]);
     }
@@ -772,15 +605,6 @@ function applyOpts() {
             .attr("type", "text/css")
             .attr("id", "usertheme")
             .attr("href", USEROPTS.theme)
-            .appendTo($("head"));
-    }
-
-    $("#usercss").remove();
-    if(USEROPTS.css) {
-        $("<link/>").attr("rel", "stylesheet")
-            .attr("type", "text/css")
-            .attr("id", "usercss")
-            .attr("href", USEROPTS.css)
             .appendTo($("head"));
     }
 
@@ -798,13 +622,13 @@ function applyOpts() {
     if(USEROPTS.hidevid) {
         $("#qualitywrap").html("");
         $("#videowrap").remove();
-        $("#chatwrap").removeClass("span5").addClass("span12");
-        $("#chatline").removeClass().addClass("span12");
+        $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
+        $("#chatline").removeClass().addClass("col-lg-12 col-md-12");
     }
 
     $("#chatbtn").remove();
     if(USEROPTS.chatbtn) {
-        var btn = $("<button/>").addClass("btn btn-block")
+        var btn = $("<button/>").addClass("btn btn-default btn-block")
             .text("Send")
             .attr("id", "chatbtn")
             .appendTo($("#chatwrap"));
@@ -1009,7 +833,7 @@ function handlePermissionChange() {
                 .appendTo(al)
                 .click(function() {
                     USEROPTS.first_visit = false;
-                    saveOpts();
+                    storeOpts();
                     al.hide("blind", function() {
                         al.remove();
                     });
