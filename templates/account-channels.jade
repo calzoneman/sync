@@ -2,16 +2,16 @@ doctype html
 html(lang="en")
   head
     include head
-    +head()
+    mixin head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        +navheader()
+        mixin navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            +navdefaultlinks("/account/channels")
-          +navloginlogout("/account/channels")
+            mixin navdefaultlinks("/account/channels")
+          mixin navloginlogout("/account/channels")
       section#mainpage
         .container
           if !loggedIn
@@ -57,4 +57,4 @@ html(lang="en")
                 button.btn.btn-primary.btn-block(type="submit") Register
 
     include footer
-    +footer()
+    mixin footer()

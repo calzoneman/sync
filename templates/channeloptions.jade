@@ -25,11 +25,11 @@ mixin miscoptions
   #cs-miscoptions.tab-pane
     h4 General Settings
     form.form-horizontal(action="javascript:void(0)")
-      +rcheckbox("opt_enable_link_regex", "Convert URLs in chat to links")
-      +rcheckbox("opt_allow_voteskip", "Allow voteskip")
-      +textbox("opt_voteskip_ratio", "Voteskip ratio", "0.5")
-      +textbox("opt_maxlength", "Max video length", "HH:MM:SS")
-      +textbox("opt_afktimeout", "Auto-AFK Delay", "0 (disabled)")
+      mixin rcheckbox("opt_enable_link_regex", "Convert URLs in chat to links")
+      mixin rcheckbox("opt_allow_voteskip", "Allow voteskip")
+      mixin textbox("opt_voteskip_ratio", "Voteskip ratio", "0.5")
+      mixin textbox("opt_maxlength", "Max video length", "HH:MM:SS")
+      mixin textbox("opt_afktimeout", "Auto-AFK Delay", "0 (disabled)")
       .form-group
         .col-sm-8.col-sm-offset-4
           button.btn.btn-default#cs-miscoptionssubmit Save
@@ -39,11 +39,11 @@ mixin adminoptions
     h4 Admin-Only Settings
     form.form-horizontal(action="javascript:void(0)")
       - var defname = "CyTube - /r/" + channelName
-      +textbox("opt_pagetitle", "Page title", defname)
-      +textbox("opt_password", "Password", "leave blank to disable")
-      +textbox("opt_externalcss", "External CSS", "Stylesheet URL")
-      +textbox("opt_externaljs", "External Javascript", "Script URL")
-      +rcheckbox("opt_show_public", "List channel publicly")
+      mixin textbox("opt_pagetitle", "Page title", defname)
+      mixin textbox("opt_password", "Password", "leave blank to disable")
+      mixin textbox("opt_externalcss", "External CSS", "Stylesheet URL")
+      mixin textbox("opt_externaljs", "External Javascript", "Script URL")
+      mixin rcheckbox("opt_show_public", "List channel publicly")
       .form-group
         .col-sm-8.col-sm-offset-4
           button.btn.btn-default#cs-adminoptionssubmit Save

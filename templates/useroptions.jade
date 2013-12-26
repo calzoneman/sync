@@ -42,41 +42,41 @@ mixin us-general
       .col-sm-4
       .col-sm-8
         p.text-danger Changing layouts may require refreshing to take effect.
-      +rcheckbox("us-no-channelcss", "Ignore Channel CSS")
-      +rcheckbox("us-no-channeljs", "Ignore Channel Javascript")
-      +rcheckbox("us-ssl", "Encrypt connection with SSL")
+      mixin rcheckbox("us-no-channelcss", "Ignore Channel CSS")
+      mixin rcheckbox("us-no-channeljs", "Ignore Channel Javascript")
+      mixin rcheckbox("us-ssl", "Encrypt connection with SSL")
 
 mixin us-playback
   #us-playback.tab-pane
     h4 Playback Preferences
     form.form-horizontal(action="javascript:void(0)")
-      +rcheckbox("us-synch", "Synchronize video playback")
-      +textbox("us-synch-accuracy", "Synch threshold (seconds)", "2")
-      +rcheckbox("us-wmode-transparent", "Set wmode=transparent")
+      mixin rcheckbox("us-synch", "Synchronize video playback")
+      mixin textbox("us-synch-accuracy", "Synch threshold (seconds)", "2")
+      mixin rcheckbox("us-wmode-transparent", "Set wmode=transparent")
       .col-sm-4
       .col-sm-8
         p.text-info Setting <code>wmode=transparent</code> allows objects to be displayed above the video player, but may cause performance issues on some systems.
-      +rcheckbox("us-hidevideo", "Remove the video player")
-      +rcheckbox("us-playlistbuttons", "Hide playlist buttons by default")
-      +rcheckbox("us-oldbtns", "Old style playlist buttons")
+      mixin rcheckbox("us-hidevideo", "Remove the video player")
+      mixin rcheckbox("us-playlistbuttons", "Hide playlist buttons by default")
+      mixin rcheckbox("us-oldbtns", "Old style playlist buttons")
 
 mixin us-chat
   #us-chat.tab-pane
     h4 Chat Preferences
     form.form-horizontal(action="javascript:void(0)")
-      +rcheckbox("us-chat-timestamp", "Show timestamps in chat")
-      +rcheckbox("us-sort-rank", "Sort userlist by rank")
-      +rcheckbox("us-sort-afk", "Sort AFKers to bottom")
-      +rcheckbox("us-chat-notice", "Ping on all new messages")
+      mixin rcheckbox("us-chat-timestamp", "Show timestamps in chat")
+      mixin rcheckbox("us-sort-rank", "Sort userlist by rank")
+      mixin rcheckbox("us-sort-afk", "Sort AFKers to bottom")
+      mixin rcheckbox("us-chat-notice", "Ping on all new messages")
       .col-sm-4
       .col-sm-8
         p.text-info When unchecked, you will only be pinged if your name is mentioned
-      +rcheckbox("us-boop", "Play a sound when pinged")
-      +rcheckbox("us-sendbtn", "Add a send button to chat")
+      mixin rcheckbox("us-boop", "Play a sound when pinged")
+      mixin rcheckbox("us-sendbtn", "Add a send button to chat")
 
 mixin us-mod
   #us-mod.tab-pane
     h4 Moderator Preferences
     form.form-horizontal(action="javascript:void(0)")
-      +rcheckbox("us-modflair", "Show name color")
-      +rcheckbox("us-joinmessage", "Show join messages")
+      mixin rcheckbox("us-modflair", "Show name color")
+      mixin rcheckbox("us-joinmessage", "Show join messages")

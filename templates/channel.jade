@@ -2,20 +2,20 @@ doctype html
 html(lang="en")
   head
     include head
-    +head()
+    mixin head()
     link(href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css", rel="stylesheet")
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        +navheader()
+        mixin navheader()
         #nav-collapsible.collapse.navbar-collapse
           - var cname = "/r/" + channelName
           ul.nav.navbar-nav
-            +navdefaultlinks(cname)
+            mixin navdefaultlinks(cname)
             li: a(href="#", onclick="javascript:showUserOptions()") Options
             li: a(href="#", onclick="javascript:$('#channeloptions').modal()") Channel Settings
-          +navloginlogout(cname)
+          mixin navloginlogout(cname)
       section#mainpage
         .container
           #motdrow.row
@@ -56,12 +56,12 @@ html(lang="en")
                   li(role="presentation")
                     a(id="#{id}", role="menuitem", href="javascript:void(0)") #{text}
                 ul.dropdown-menu(role="menu", aria-labelledby="qdrop")
-                  +quality_item("quality_auto", "Quality: Auto")
-                  +quality_item("quality_240p", "240p")
-                  +quality_item("quality_360p", "360p")
-                  +quality_item("quality_480p", "480p")
-                  +quality_item("quality_720p", "720p")
-                  +quality_item("quality_1080p", "1080p")
+                  mixin quality_item("quality_auto", "Quality: Auto")
+                  mixin quality_item("quality_240p", "240p")
+                  mixin quality_item("quality_360p", "360p")
+                  mixin quality_item("quality_480p", "480p")
+                  mixin quality_item("quality_720p", "720p")
+                  mixin quality_item("quality_1080p", "1080p")
               button#mediarefresh.btn.btn-sm.btn-default Refresh Media
               
           #playlistrow.row
@@ -144,10 +144,10 @@ html(lang="en")
           .modal-body
             .tab-content
               include useroptions
-              +us-general()
-              +us-playback()
-              +us-chat()
-              +us-mod()
+              mixin us-general()
+              mixin us-playback()
+              mixin us-chat()
+              mixin us-mod()
           .modal-footer
             button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
             button.btn.btn-default(type="button", data-dismiss="modal") Close
@@ -172,18 +172,18 @@ html(lang="en")
           .modal-body
             .tab-content
               include channeloptions
-              +miscoptions()
-              +adminoptions()
-              +motdeditor()
-              +csseditor()
-              +jseditor()
-              +banlist()
-              +recentjoins()
-              +chanranks()
+              mixin miscoptions()
+              mixin adminoptions()
+              mixin motdeditor()
+              mixin csseditor()
+              mixin jseditor()
+              mixin banlist()
+              mixin recentjoins()
+              mixin chanranks()
           .modal-footer
             button.btn.btn-default(type="button", data-dismiss="modal") Close
     include footer
-    +footer()
+    mixin footer()
     script(src="//code.jquery.com/ui/1.10.3/jquery-ui.js")
     script(src="/assets/js/iourl.js")
     //script(src="#{ioUrl}/socket.io/socket.io.js")

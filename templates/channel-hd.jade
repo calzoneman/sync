@@ -2,18 +2,18 @@ doctype html
 html(lang="en")
   head
     include head
-    +head()
+    mixin head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        +navheader()
+        mixin navheader()
         #nav-collapsible.collapse.navbar-collapse
           - var cname = "/r/" + channelName
           ul.nav.navbar-nav
-            +navdefaultlinks(cname)
+            mixin navdefaultlinks(cname)
             li: a(href="javascript:showUserOptions()") Options
-          +navloginlogout(cname)
+          mixin navloginlogout(cname)
       section#mainpage
         .container
           #motdwrap.col-lg-12.col-md-12
@@ -100,7 +100,7 @@ html(lang="en")
               gfsnjgfjsnjkg
             input#chatline.form-control.input-block-level(type="text")
     include footer
-    +footer()
+    mixin footer()
     script(src="#{ioUrl}/socket.io/socket.io.js")
     script(type="text/javascript").
       var IOSERVER = "#{ioUrl}";

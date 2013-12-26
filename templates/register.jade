@@ -2,17 +2,17 @@ doctype html
 html(lang="en")
   head
     include head
-    +head()
+    mixin head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        +navheader()
+        mixin navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            +navdefaultlinks("/register")
+            mixin navdefaultlinks("/register")
           if loggedIn
-            +navlogoutform("/register")
+            mixin navlogoutform("/register")
       section#mainpage.container
         if loggedIn
           .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
@@ -49,7 +49,7 @@ html(lang="en")
               strong Registration Successful
               p Thanks for registering, #{registerName}!  Now you can <a href="/login">Login</a> to use your account.
     include footer
-    +footer() 
+    mixin footer() 
     script(src="/js/jquery.js")
     script(type="text/javascript").
       function verify() {

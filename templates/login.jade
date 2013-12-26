@@ -2,17 +2,17 @@ doctype html
 html(lang="en")
   head
     include head
-    +head()
+    mixin head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        +navheader()
+        mixin navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            +navdefaultlinks("/login")
+            mixin navdefaultlinks("/login")
           if loggedIn
-            +navlogoutform("/login")
+            mixin navlogoutform("/login")
       section#mainpage.container
         if wasAlreadyLoggedIn
           .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
@@ -43,4 +43,4 @@ html(lang="en")
                   br
                   a(href=redirect) Return to previous page
     include footer
-    +footer() 
+    mixin footer() 
