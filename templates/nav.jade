@@ -55,7 +55,7 @@ mixin navloginform(redirect)
 
 mixin navlogoutform(redirect)
   if redirect
-    - url = "/logout?redirect=#{redirect}"
+    - url = "/logout?redirect=" + redirect
   else
     - url = "/logout"
   p#logoutform.navbar-text.pull-right
