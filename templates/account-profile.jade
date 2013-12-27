@@ -1,0 +1,45 @@
+doctype html
+html(lang="en")
+  head
+    include head
+    mixin head()
+  body
+    #wrap
+      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+        include nav
+        mixin navheader()
+        #nav-collapsible.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            mixin navdefaultlinks("/account/profile")
+          mixin navloginlogout("/account/profile")
+      section#mainpage
+        .container
+          if !loggedIn
+            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+              .alert.alert-danger.messagebox.center
+                strong Authorization Required
+                p You must be <a href="/login">logged in</a> to view this page.
+          else
+            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+              h3 Profile
+              if profileError
+                .alert.alert-danger.center.messagebox
+                  strong Profile Error
+                  p= profileError
+              .media
+                a.pull-left(href="#")
+                  img.media-object(src=profileImage, alt="Profile Image")
+                .media-body
+                  = profileText
+              h3 Edit Profile
+              form(action="/account/profile", method="post", role="form")
+                .form-group
+                  label.control-label(for="profileimage") Image
+                  input#profileimage.form-control(type="text", name="image")
+                .form-group
+                  label.control-label(for="profiletext") Text
+                  textarea#profiletext.form-control(cols="10")
+                button.btn.btn-primary.btn-block(type="submit") Save
+
+    include footer
+    mixin footer()
