@@ -105,6 +105,20 @@ var YouTubePlayer = function (data) {
         if(self.player && self.player.seekTo)
             self.player.seekTo(time, true);
     };
+
+    self.getVolume = function () {
+        if (!self.player || !self.player.getVolume || !self.player.isMuted) {
+            return NaN;
+        }
+
+        return self.player.isMuted() ? 0 : self.player.getVolume()/100;
+    };
+
+    self.setVolume = function (vol) {
+        if (self.player && self.player.setVolume) {
+            self.player.setVolume(vol * 100);
+        }
+    };
 };
 
 var VimeoPlayer = function (data) {
