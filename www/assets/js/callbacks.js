@@ -1,5 +1,4 @@
 /*
-return null;
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
 
@@ -1010,6 +1009,13 @@ Callbacks = {
     },
 
     changeMedia: function(data) {
+        if (PLAYER) {
+            console.log('getting volume for', PLAYER.type);
+            PLAYER.getVolume(function (v) {
+                VOLUME = v;
+            });
+        }
+
         if(CHANNEL.opts.allow_voteskip)
             $("#voteskip").attr("disabled", false);
 
