@@ -36,7 +36,6 @@ var CHANNEL = {
 };
 
 var PLAYER = false;
-var VOLUME = 1;
 var VIDEOQUALITY = false;
 var FLUIDLAYOUT = false;
 var VWIDTH;
@@ -123,6 +122,8 @@ var USEROPTS = {
     boop                 : getOrDefault("boop", false),
     secure_connection    : getOrDefault("secure_connection", false)
 };
+
+var VOLUME = getOrDefault("volume", 1);
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
 

@@ -1013,6 +1013,7 @@ Callbacks = {
             console.log('getting volume for', PLAYER.type);
             PLAYER.getVolume(function (v) {
                 VOLUME = v;
+                setOpt("volume", VOLUME);
             });
         }
 

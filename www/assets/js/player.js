@@ -174,8 +174,6 @@ var VimeoPlayer = function (data) {
             }.bind(self));
         };
 
-        self.init();
-
         self.load = function (data) {
             self.videoId = data.id;
             self.videoLength = data.seconds;
@@ -217,6 +215,8 @@ var VimeoPlayer = function (data) {
         self.setVolume = function (vol) {
             self.player.api("setVolume", vol);
         };
+
+        self.init();
     });
 };
 
@@ -282,8 +282,6 @@ var VimeoFlashPlayer = function (data) {
         });
     };
 
-    self.init();
-
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -323,6 +321,8 @@ var VimeoFlashPlayer = function (data) {
     self.setVolume = function (vol) {
         self.player.api_setVolume(vol);
     };
+
+    self.init();
 };
 
 var DailymotionPlayer = function (data) {
