@@ -121,6 +121,9 @@ var YouTubePlayer = function (data) {
 
     self.setVolume = function (vol) {
         if (self.player && self.player.setVolume) {
+            if (vol > 0) {
+                self.player.unMute();
+            }
             self.player.setVolume(vol * 100);
         }
     };
@@ -401,6 +404,9 @@ var DailymotionPlayer = function (data) {
 
 var SoundcloudPlayer = function (data) {
     var self = this;
+    // The getVolume function on their widget throws TypeErrors
+    // Go figure
+    self.soundcloudIsSeriouslyFuckingBroken = VOLUME;
     self.videoId = data.id;
     self.videoLength = data.seconds;
     waitUntilDefined(window, "SC", function () {
@@ -421,6 +427,7 @@ var SoundcloudPlayer = function (data) {
             value: VOLUME * 100,
             stop: function (event, ui) {
                 self.player.setVolume(ui.value);
+                self.soundcloudIsSeriouslyFuckingBroken = ui.value / 100;
             }
         });
 
@@ -435,19 +442,24 @@ var SoundcloudPlayer = function (data) {
                     sendVideoUpdate();
             });
 
-            self.player.bind(SC.Widget.Events.PLAY, function () {
-                PLAYER.paused = false;
-                if(CLIENT.leader)
-                    sendVideoUpdate();
-            });
-
             self.player.bind(SC.Widget.Events.FINISH, function () {
                 if(CLIENT.leader) {
                     socket.emit("playNext");
                 }
             });
 
-            self.setVolume(VOLUME);
+            self.player.bind(SC.Widget.Events.PLAY, function () {
+                PLAYER.paused = false;
+                if(CLIENT.leader)
+                    sendVideoUpdate();
+            });
+
+            // THAT'S RIGHT, YOU CAN'T SET THE VOLUME BEFORE IT STARTS PLAYING
+            var soundcloudNeedsToFuckingFixTheirPlayer = function () {
+                self.setVolume(VOLUME);
+                self.player.unbind(SC.Widget.Events.PLAY_PROGRESS);
+            };
+            self.player.bind(SC.Widget.Events.PLAY_PROGRESS, soundcloudNeedsToFuckingFixTheirPlayer);
         }.bind(self));
     });
 
@@ -490,11 +502,7 @@ var SoundcloudPlayer = function (data) {
     };
 
     self.getVolume = function (cb) {
-        self.player.getVolume(function (v) {
-            // Soundcloud volume is 0..100, normalize to 0..1
-            v /= 100;
-            cb(v);
-        });
+        cb(self.soundcloudIsSeriouslyFuckingBroken);
     };
 
     self.setVolume = function (vol) {
