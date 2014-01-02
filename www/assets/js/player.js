@@ -43,6 +43,7 @@ var YouTubePlayer = function (data) {
                 },
                 events: {
                     onReady: function () {
+                        PLAYER.setVolume(VOLUME);
                     },
                     onStateChange: function (ev) {
                         if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
@@ -105,6 +106,27 @@ var YouTubePlayer = function (data) {
         if(self.player && self.player.seekTo)
             self.player.seekTo(time, true);
     };
+
+    self.getVolume = function (cb) {
+        if (!self.player || !self.player.getVolume || !self.player.isMuted) {
+            return;
+        }
+
+        // YouTube's API is strange in the sense that getVolume() returns
+        // the regular (unmuted) volume even if it is muted...
+        // YouTube's volume is 0..100, normalize it to 0..1
+        var vol = self.player.isMuted() ? 0 : (self.player.getVolume() / 100);
+        cb(vol);
+    };
+
+    self.setVolume = function (vol) {
+        if (self.player && self.player.setVolume) {
+            if (vol > 0) {
+                self.player.unMute();
+            }
+            self.player.setVolume(vol * 100);
+        }
+    };
 };
 
 var VimeoPlayer = function (data) {
@@ -147,10 +169,10 @@ var VimeoPlayer = function (data) {
                     if(CLIENT.leader)
                         sendVideoUpdate();
                 });
+
+                self.setVolume(VOLUME);
             }.bind(self));
         };
-
-        self.init();
 
         self.load = function (data) {
             self.videoId = data.id;
@@ -185,6 +207,16 @@ var VimeoPlayer = function (data) {
             if(self.player && self.player.api)
                 self.player.api("seekTo", time);
         };
+
+        self.getVolume = function (cb) {
+            self.player.api("getVolume", cb);
+        };
+
+        self.setVolume = function (vol) {
+            self.player.api("setVolume", vol);
+        };
+
+        self.init();
     });
 };
 
@@ -244,11 +276,11 @@ var VimeoFlashPlayer = function (data) {
                     if(CLIENT.leader)
                         sendVideoUpdate();
                 });
+
+                self.setVolume(VOLUME);
             });
         });
     };
-
-    self.init();
 
     self.load = function (data) {
         self.videoId = data.id;
@@ -281,6 +313,16 @@ var VimeoFlashPlayer = function (data) {
         if(self.player.api_seekTo);
             self.player.api_seekTo(time);
     };
+
+    self.getVolume = function (cb) {
+        cb(self.player.api_getVolume());
+    };
+
+    self.setVolume = function (vol) {
+        self.player.api_setVolume(vol);
+    };
+
+    self.init();
 };
 
 var DailymotionPlayer = function (data) {
@@ -314,14 +356,17 @@ var DailymotionPlayer = function (data) {
                 if(CLIENT.leader)
                     sendVideoUpdate();
             });
+
+            self.setVolume(VOLUME);
         });
     });
 
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
-        if(self.player && self.player.api)
+        if (self.player && self.player.api) {
             self.player.api("load", data.id);
+        }
     };
 
     self.pause = function () {
@@ -347,10 +392,21 @@ var DailymotionPlayer = function (data) {
         if(self.player && self.player.api)
             self.player.api("seek", seconds);
     };
+
+    self.getVolume = function (cb) {
+        cb(self.player.volume);
+    };
+
+    self.setVolume = function (vol) {
+        self.player.api("volume", vol);
+    };
 };
 
 var SoundcloudPlayer = function (data) {
     var self = this;
+    // The getVolume function on their widget throws TypeErrors
+    // Go figure
+    self.soundcloudIsSeriouslyFuckingBroken = VOLUME;
     self.videoId = data.id;
     self.videoLength = data.seconds;
     waitUntilDefined(window, "SC", function () {
@@ -368,9 +424,10 @@ var SoundcloudPlayer = function (data) {
 
         volslider.slider({
             range: "min",
-            value: 100,
+            value: VOLUME * 100,
             stop: function (event, ui) {
                 self.player.setVolume(ui.value);
+                self.soundcloudIsSeriouslyFuckingBroken = ui.value / 100;
             }
         });
 
@@ -385,25 +442,38 @@ var SoundcloudPlayer = function (data) {
                     sendVideoUpdate();
             });
 
+            self.player.bind(SC.Widget.Events.FINISH, function () {
+                if(CLIENT.leader) {
+                    socket.emit("playNext");
+                }
+            });
+
             self.player.bind(SC.Widget.Events.PLAY, function () {
                 PLAYER.paused = false;
                 if(CLIENT.leader)
                     sendVideoUpdate();
             });
 
-            self.player.bind(SC.Widget.Events.FINISH, function () {
-                if(CLIENT.leader) {
-                    socket.emit("playNext");
-                }
-            });
+            // THAT'S RIGHT, YOU CAN'T SET THE VOLUME BEFORE IT STARTS PLAYING
+            var soundcloudNeedsToFuckingFixTheirPlayer = function () {
+                self.setVolume(VOLUME);
+                self.player.unbind(SC.Widget.Events.PLAY_PROGRESS);
+            };
+            self.player.bind(SC.Widget.Events.PLAY_PROGRESS, soundcloudNeedsToFuckingFixTheirPlayer);
         }.bind(self));
     });
 
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
-        if(self.player && self.player.load)
+        if(self.player && self.player.load) {
             self.player.load(data.id, { auto_play: true });
+            var soundcloudNeedsToFuckingFixTheirPlayer = function () {
+                self.setVolume(VOLUME);
+                self.player.unbind(SC.Widget.Events.PLAY_PROGRESS);
+            };
+            self.player.bind(SC.Widget.Events.PLAY_PROGRESS, soundcloudNeedsToFuckingFixTheirPlayer);
+        }
     };
 
     self.pause = function () {
@@ -434,6 +504,14 @@ var SoundcloudPlayer = function (data) {
     self.seek = function (seconds) {
         if(self.player && self.player.seekTo)
             self.player.seekTo(seconds * 1000);
+    };
+
+    self.getVolume = function (cb) {
+        cb(self.soundcloudIsSeriouslyFuckingBroken);
+    };
+
+    self.setVolume = function (vol) {
+        self.player.setVolume(vol * 100);
     };
 };
 
@@ -474,6 +552,10 @@ var LivestreamPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
+
+    self.getVolume = function () { };
+
+    self.setVolume = function () { };
 };
 
 var TwitchTVPlayer = function (data) {
@@ -489,102 +571,7 @@ var TwitchTVPlayer = function (data) {
             allowNetworking: "all",
             movie: "http://www.twitch.tv/widgets/live_embed_player.swf",
             id: "live_embed_player_flash",
-            flashvars: "hostname=www.twitch.tv&channel="+self.videoId+"&auto_play=true&start_volume=100"
-        };
-        swfobject.embedSWF(url,
-            "ytapiplayer",
-            VWIDTH, VHEIGHT,
-            "8", 
-            null, null,
-            params,
-            {}
-        );
-    };
-
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.isPaused = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-};
-
-var JustinTVPlayer = function (data) {
-    removeOld();
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        var prto = location.protocol;
-        var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+self.videoId;
-        var params = {
-            allowFullScreen: "true",
-            allowScriptAccess: "always",
-            allowNetworking: "all",
-            movie: "http://www.justin.tv/widgets/live_embed_player.swf",
-            id: "live_embed_player_flash",
-            flashvars: "hostname=www.justin.tv&channel="+self.videoId+"&auto_play=true&start_volume=100"
-        };
-        swfobject.embedSWF(url,
-            "ytapiplayer",
-            VWIDTH, VHEIGHT,
-            "8", 
-            null, null,
-            params,
-            {}
-        );
-    };
-
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.isPaused = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-};
-
-var RTMPPlayer = function (data) {
-    removeOld();
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        var prto = location.protocol;
-        var url = prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
-        var src = encodeURIComponent(self.videoId);
-        var params = {
-            allowFullScreen: "true",
-            allowScriptAccess: "always",
-            allowNetworking: "all",
-            wMode: "direct",
-            movie: prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
-            flashvars: "src="+src+"&streamType=live&autoPlay=true"
+            flashvars: "hostname=www.twitch.tv&channel="+self.videoId+"&auto_play=true&start_volume=" + VOLUME
         };
         swfobject.embedSWF(url,
             "ytapiplayer",
@@ -615,6 +602,122 @@ var RTMPPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
+
+    self.getVolume = function () { };
+
+    self.setVolume = function () { };
+};
+
+var JustinTVPlayer = function (data) {
+    removeOld();
+    var self = this;
+    self.videoId = data.id;
+    self.videoLength = data.seconds;
+    self.init = function () {
+        var prto = location.protocol;
+        var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+self.videoId;
+        var params = {
+            allowFullScreen: "true",
+            allowScriptAccess: "always",
+            allowNetworking: "all",
+            movie: "http://www.justin.tv/widgets/live_embed_player.swf",
+            id: "live_embed_player_flash",
+            flashvars: "hostname=www.justin.tv&channel="+self.videoId+"&auto_play=true&start_volume=" + VOLUME
+        };
+        swfobject.embedSWF(url,
+            "ytapiplayer",
+            VWIDTH, VHEIGHT,
+            "8",
+            null, null,
+            params,
+            {}
+        );
+    };
+
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
+
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.videoLength = data.seconds;
+        self.init();
+    };
+
+    self.pause = function () { };
+
+    self.play = function () { };
+
+    self.isPaused = function () { };
+
+    self.getTime = function () { };
+
+    self.seek = function () { };
+
+    self.getVolume = function () { };
+
+    self.setVolume = function () { };
+};
+
+function rtmpEventHandler(id, ev, data) {
+    if (ev === "volumechange") {
+        PLAYER.volume = (data.muted ? 0 : data.volume);
+    }
+}
+
+var RTMPPlayer = function (data) {
+    removeOld();
+    var self =this;
+    self.volume = VOLUME;
+    self.videoId = data.id;
+    self.videoLength = data.seconds;
+    self.init = function () {
+        var prto = location.protocol;
+        var url = prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
+        var src = encodeURIComponent(self.videoId);
+        var params = {
+            allowFullScreen: "true",
+            allowScriptAccess: "always",
+            allowNetworking: "all",
+            wMode: "direct",
+            movie: prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
+            flashvars: "src="+src+"&streamType=live&javascriptCallbackFunction=rtmpEventHandler&autoPlay=true&volume=" + VOLUME
+        };
+        swfobject.embedSWF(url,
+            "ytapiplayer",
+            VWIDTH, VHEIGHT,
+            "8",
+            null, null,
+            params,
+            {}
+        );
+    };
+
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
+
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.videoLength = data.seconds;
+        self.init();
+    };
+
+    self.pause = function () { };
+
+    self.play = function () { };
+
+    self.isPaused = function () { };
+
+    self.getTime = function () { };
+
+    self.seek = function () { };
+
+    self.getVolume = function (cb) {
+        cb(self.volume);
+    };
+
+    self.setVolume = function () { };
 };
 
 var JWPlayer = function (data) {
@@ -630,7 +733,6 @@ var JWPlayer = function (data) {
             height: VHEIGHT,
             autostart: true
         });
-
         jwplayer().onPlay(function() {
             self.paused = false;
             if(CLIENT.leader)
@@ -644,6 +746,7 @@ var JWPlayer = function (data) {
         jwplayer().onComplete(function() {
             socket.emit("playNext");
         });
+        self.setVolume(VOLUME);
     };
 
     waitUntilDefined(window, "jwplayer", function () { self.init(); });
@@ -680,6 +783,14 @@ var JWPlayer = function (data) {
         if(jwplayer)
             jwplayer().seek(time);
     };
+
+    self.getVolume = function (cb) {
+        cb(jwplayer().getVolume() / 100);
+    };
+
+    self.setVolume = function (vol) {
+        jwplayer().setVolume(vol * 100);
+    };
 };
 
 var UstreamPlayer = function (data) {
@@ -697,7 +808,7 @@ var UstreamPlayer = function (data) {
         iframe.attr("scrolling", "no");
         iframe.css("border", "none");
     };
-    
+
     self.init();
 
     self.load = function (data) {
@@ -715,6 +826,10 @@ var UstreamPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
+
+    self.getVolume = function () { };
+
+    self.setVolume = function () { };
 };
 
 var ImgurPlayer = function (data) {
@@ -748,6 +863,10 @@ var ImgurPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
+
+    self.getVolume = function () { };
+
+    self.setVolume = function () { };
 };
 
 var CustomPlayer = function (data) {
@@ -785,6 +904,10 @@ var CustomPlayer = function (data) {
     self.getTime = function () { };
 
     self.seek = function () { };
+
+    self.getVolume = function () { };
+
+    self.setVolume = function () { };
 };
 
 var GoogleDocsPlayer = function (data) {
@@ -802,6 +925,7 @@ var GoogleDocsPlayer = function (data) {
             $("<param/>", p).appendTo(self.player);
         });
         removeOld($(self.player));
+        self.setVolume(VOLUME);
     };
 
     self.init(data);
@@ -838,13 +962,31 @@ var GoogleDocsPlayer = function (data) {
         if(self.player && self.player.seekTo)
             self.player.seekTo(time, true);
     };
+
+    self.getVolume = function (cb) {
+        if (!self.player || !self.player.getVolume || !self.player.isMuted) {
+            return;
+        }
+
+        // YouTube's API is strange in the sense that getVolume() returns
+        // the regular (unmuted) volume even if it is muted...
+        // YouTube's volume is 0..100, normalize it to 0..1
+        var vol = self.player.isMuted() ? 0 : (self.player.getVolume() / 100);
+        cb(vol);
+    };
+
+    self.setVolume = function (vol) {
+        if (self.player && self.player.setVolume) {
+            self.player.setVolume(vol * 100);
+        }
+    };
 };
 
 function handleMediaUpdate(data) {
     // Don't update if the position is past the video length, but
     // make an exception when the video length is 0 seconds
     if (typeof PLAYER.videoLength === "number") {
-        if (PLAYER.videoLength > 0 && 
+        if (PLAYER.videoLength > 0 &&
             data.currentTime > PLAYER.videoLength) {
             return;
         }
@@ -875,7 +1017,7 @@ function handleMediaUpdate(data) {
         }, tm);
         return;
     }
-    
+
     // Don't synch if leader or synch disabled
     if(CLIENT.leader || !USEROPTS.synch)
         return;
