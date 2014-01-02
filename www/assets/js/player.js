@@ -468,6 +468,11 @@ var SoundcloudPlayer = function (data) {
         self.videoLength = data.seconds;
         if(self.player && self.player.load) {
             self.player.load(data.id, { auto_play: true });
+            var soundcloudNeedsToFuckingFixTheirPlayer = function () {
+                self.setVolume(VOLUME);
+                self.player.unbind(SC.Widget.Events.PLAY_PROGRESS);
+            };
+            self.player.bind(SC.Widget.Events.PLAY_PROGRESS, soundcloudNeedsToFuckingFixTheirPlayer);
         }
     };
 
