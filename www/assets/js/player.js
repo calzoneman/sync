@@ -209,7 +209,9 @@ var VimeoPlayer = function (data) {
         };
 
         self.getVolume = function (cb) {
-            self.player.api("getVolume", cb);
+            if (self.player && self.player.api) {
+                self.player.api("getVolume", cb);
+            }
         };
 
         self.setVolume = function (vol) {
@@ -315,7 +317,9 @@ var VimeoFlashPlayer = function (data) {
     };
 
     self.getVolume = function (cb) {
-        cb(self.player.api_getVolume());
+        if (self.player && self.player.api_getVolume) {
+            cb(self.player.api_getVolume());
+        }
     };
 
     self.setVolume = function (vol) {
@@ -394,11 +398,15 @@ var DailymotionPlayer = function (data) {
     };
 
     self.getVolume = function (cb) {
-        cb(self.player.volume);
+        if (self.player) {
+            cb(self.player.volume);
+        }
     };
 
     self.setVolume = function (vol) {
-        self.player.api("volume", vol);
+        if (self.player && self.player.api) {
+            self.player.api("volume", vol);
+        }
     };
 };
 
@@ -535,8 +543,6 @@ var LivestreamPlayer = function (data) {
         );
     };
 
-    self.init();
-
     self.load = function(data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -556,6 +562,8 @@ var LivestreamPlayer = function (data) {
     self.getVolume = function () { };
 
     self.setVolume = function () { };
+
+    self.init();
 };
 
 var TwitchTVPlayer = function (data) {
@@ -583,10 +591,6 @@ var TwitchTVPlayer = function (data) {
         );
     };
 
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -606,6 +610,10 @@ var TwitchTVPlayer = function (data) {
     self.getVolume = function () { };
 
     self.setVolume = function () { };
+
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
 };
 
 var JustinTVPlayer = function (data) {
@@ -634,10 +642,6 @@ var JustinTVPlayer = function (data) {
         );
     };
 
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -657,6 +661,10 @@ var JustinTVPlayer = function (data) {
     self.getVolume = function () { };
 
     self.setVolume = function () { };
+
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
 };
 
 function rtmpEventHandler(id, ev, data) {
@@ -693,10 +701,6 @@ var RTMPPlayer = function (data) {
         );
     };
 
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -718,6 +722,10 @@ var RTMPPlayer = function (data) {
     };
 
     self.setVolume = function () { };
+
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
 };
 
 var JWPlayer = function (data) {
@@ -748,8 +756,6 @@ var JWPlayer = function (data) {
         });
         self.setVolume(VOLUME);
     };
-
-    waitUntilDefined(window, "jwplayer", function () { self.init(); });
 
     self.load = function (data) {
         self.videoId = data.id;
@@ -791,6 +797,8 @@ var JWPlayer = function (data) {
     self.setVolume = function (vol) {
         jwplayer().setVolume(vol * 100);
     };
+
+    waitUntilDefined(window, "jwplayer", function () { self.init(); });
 };
 
 var UstreamPlayer = function (data) {
@@ -809,8 +817,6 @@ var UstreamPlayer = function (data) {
         iframe.css("border", "none");
     };
 
-    self.init();
-
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -830,6 +836,8 @@ var UstreamPlayer = function (data) {
     self.getVolume = function () { };
 
     self.setVolume = function () { };
+
+    self.init();
 };
 
 var ImgurPlayer = function (data) {
@@ -846,8 +854,6 @@ var ImgurPlayer = function (data) {
         iframe.css("border", "none");
     };
 
-    self.init();
-
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -867,6 +873,8 @@ var ImgurPlayer = function (data) {
     self.getVolume = function () { };
 
     self.setVolume = function () { };
+
+    self.init();
 };
 
 var CustomPlayer = function (data) {
@@ -887,8 +895,6 @@ var CustomPlayer = function (data) {
         self.player.attr("height", VHEIGHT);
     };
 
-    self.init();
-
     self.load = function (data) {
         self.videoId = data.id;
         self.videoLength = data.seconds;
@@ -908,6 +914,8 @@ var CustomPlayer = function (data) {
     self.getVolume = function () { };
 
     self.setVolume = function () { };
+
+    self.init();
 };
 
 var GoogleDocsPlayer = function (data) {
@@ -927,8 +935,6 @@ var GoogleDocsPlayer = function (data) {
         removeOld($(self.player));
         self.setVolume(VOLUME);
     };
-
-    self.init(data);
 
     self.load = function (data) {
         self.init(data);
@@ -980,6 +986,8 @@ var GoogleDocsPlayer = function (data) {
             self.player.setVolume(vol * 100);
         }
     };
+
+    self.init(data);
 };
 
 function handleMediaUpdate(data) {
