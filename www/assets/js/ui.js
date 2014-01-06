@@ -95,6 +95,14 @@ $("#usercount").mouseleave(function () {
 $("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
 $("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
 
+$("#guestname").keydown(function (ev) {
+    if (ev.keyCode === 13) {
+        socket.emit("login", {
+            name: $("#guestname").val()
+        });
+    }
+});
+
 $("#chatline").keydown(function(ev) {
     // Enter/return
     if(ev.keyCode == 13) {
