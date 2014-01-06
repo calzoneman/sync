@@ -43,6 +43,7 @@ Callbacks = {
 
     /* fired when socket connection completes */
     connect: function() {
+        socket.emit("initChannelCallbacks");
         socket.emit("joinChannel", {
             name: CHANNEL.name
         });
