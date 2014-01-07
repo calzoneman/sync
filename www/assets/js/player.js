@@ -1,4 +1,4 @@
-/*
+/*}
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
 
@@ -990,6 +990,70 @@ var GoogleDocsPlayer = function (data) {
     self.init(data);
 };
 
+function MediaElementsPlayer(data) {
+    var self = this;
+    self.init = function (data) {
+        waitUntilDefined(window, "MediaElementPlayer", function () {
+            self.videoId = data.id;
+            self.videoURL = data.url;
+            var video = $("<video/>")
+                .attr("src", self.videoURL)
+                .attr("id", "#ytapiplayer")
+                .attr("width", VWIDTH)
+                .attr("height", VHEIGHT);
+            removeOld(video);
+
+            self.player = new MediaElementPlayer("#ytapiplayer");
+        });
+    };
+
+    self.load = function (data) {
+        self.init(data);
+    };
+
+    self.pause = function () {
+        if (self.player) {
+            self.player.pause();
+        }
+    };
+
+    self.play = function () {
+        if (self.player) {
+            self.player.play();
+        }
+    };
+
+    self.isPaused = function (callback) {
+        if (self.player) {
+            callback(self.player.paused);
+        }
+    };
+
+    self.getTime = function (callback) {
+        if (self.player) {
+            callback(self.player.media.currentTime);
+        }
+    };
+
+    self.seek = function (time) {
+        if (self.player) {
+            self.player.setCurrentTime(time);
+        }
+    };
+
+    self.getVolume = function (cb) {
+        if (self.player) {
+            cb(self.player.volume);
+        }
+    };
+
+    self.setVolume = function (vol) {
+        if (self.player) {
+            self.player.setVolume(vol);
+        }
+    };
+};
+
 function handleMediaUpdate(data) {
     // Don't update if the position is past the video length, but
     // make an exception when the video length is 0 seconds
@@ -1087,7 +1151,7 @@ var constructors = {
     "im": ImgurPlayer,
     "cu": CustomPlayer,
     "gd": GoogleDocsPlayer,
-    "me": MediaElementsPlayer
+    "me": MediaElementsPlayer,
 };
 
 function loadMediaPlayer(data) {

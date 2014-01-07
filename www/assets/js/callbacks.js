@@ -1030,11 +1030,16 @@ Callbacks = {
             $("<div/>").attr("id", "ytapiplayer")
                 .insertBefore($("#ytapiplayer_wrapper"));
             $("#ytapiplayer_wrapper").remove();
+        } else if(data.type != "me" && PLAYER.type == "me") {
+            var mejs = $(".mejs-container");
+            $("<div/>").attr("id", "ytapiplayer")
+                .insertBefore(mejs[0]);
+            mejs.remove();
         }
 
-        if (data.type === "vi" && data.direct) {
-            data.type = "jw";
-            data.id = data.direct.sd.url;
+        if (data.type === "vi" && data.direct && data.direct.sd) {
+            data.type = "me";
+            data.url = data.direct.sd.url;
         }
 
         if (data.type != PLAYER.type) {
