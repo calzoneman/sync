@@ -993,9 +993,9 @@ var GoogleDocsPlayer = function (data) {
 function MediaElementsPlayer(data) {
     var self = this;
     self.init = function (data) {
+        self.videoId = data.id;
+        self.videoURL = data.url;
         waitUntilDefined(window, "MediaElementPlayer", function () {
-            self.videoId = data.id;
-            self.videoURL = data.url;
             var video = $("<video/>")
                 .attr("src", self.videoURL)
                 .attr("id", "#ytapiplayer")
@@ -1004,6 +1004,7 @@ function MediaElementsPlayer(data) {
             removeOld(video);
 
             self.player = new MediaElementPlayer("#ytapiplayer");
+            self.setVolume(VOLUME);
         });
     };
 
@@ -1025,7 +1026,7 @@ function MediaElementsPlayer(data) {
 
     self.isPaused = function (callback) {
         if (self.player) {
-            callback(self.player.paused);
+            callback(self.player.media.paused);
         }
     };
 
@@ -1037,21 +1038,23 @@ function MediaElementsPlayer(data) {
 
     self.seek = function (time) {
         if (self.player) {
-            self.player.setCurrentTime(time);
+            self.player.media.currentTime = time;
         }
     };
 
     self.getVolume = function (cb) {
         if (self.player) {
-            cb(self.player.volume);
+            cb(self.player.media.volume);
         }
     };
 
     self.setVolume = function (vol) {
         if (self.player) {
-            self.player.setVolume(vol);
+            self.player.media.volume = vol;
         }
     };
+
+    self.init(data);
 };
 
 function handleMediaUpdate(data) {
@@ -1151,7 +1154,7 @@ var constructors = {
     "im": ImgurPlayer,
     "cu": CustomPlayer,
     "gd": GoogleDocsPlayer,
-    "me": MediaElementsPlayer,
+    "me": MediaElementsPlayer
 };
 
 function loadMediaPlayer(data) {
