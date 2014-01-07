@@ -990,22 +990,21 @@ var GoogleDocsPlayer = function (data) {
     self.init(data);
 };
 
-function MediaElementsPlayer(data) {
+function RawVideoPlayer(data) {
     var self = this;
     self.init = function (data) {
         self.videoId = data.id;
         self.videoURL = data.url;
-        waitUntilDefined(window, "MediaElementPlayer", function () {
-            var video = $("<video/>")
-                .attr("src", self.videoURL)
-                .attr("id", "#ytapiplayer")
-                .attr("width", VWIDTH)
-                .attr("height", VHEIGHT);
-            removeOld(video);
-
-            self.player = new MediaElementPlayer("#ytapiplayer");
-            self.setVolume(VOLUME);
-        });
+        var video = $("<video/>")
+            .attr("src", self.videoURL)
+            .attr("controls", "controls")
+            .attr("id", "#ytapiplayer")
+            .attr("width", VWIDTH)
+            .attr("height", VHEIGHT)
+            .html("Your browser does not support HTML5 <code>&lt;video&gt;</code> tags :(");
+        removeOld(video);
+        self.player = video[0];
+        self.setVolume(VOLUME);
     };
 
     self.load = function (data) {
@@ -1026,36 +1025,37 @@ function MediaElementsPlayer(data) {
 
     self.isPaused = function (callback) {
         if (self.player) {
-            callback(self.player.media.paused);
+            callback(self.player.paused);
         }
     };
 
     self.getTime = function (callback) {
         if (self.player) {
-            callback(self.player.media.currentTime);
+            callback(self.player.currentTime);
         }
     };
 
     self.seek = function (time) {
         if (self.player) {
-            self.player.media.currentTime = time;
+            self.player.currentTime = time;
         }
     };
 
     self.getVolume = function (cb) {
         if (self.player) {
-            cb(self.player.media.volume);
+            cb(self.player.volume);
         }
     };
 
     self.setVolume = function (vol) {
         if (self.player) {
-            self.player.media.volume = vol;
+            self.player.volume = vol;
         }
     };
 
     self.init(data);
 };
+
 
 function handleMediaUpdate(data) {
     // Don't update if the position is past the video length, but
@@ -1154,7 +1154,7 @@ var constructors = {
     "im": ImgurPlayer,
     "cu": CustomPlayer,
     "gd": GoogleDocsPlayer,
-    "me": MediaElementsPlayer
+    "rv": RawVideoPlayer
 };
 
 function loadMediaPlayer(data) {
