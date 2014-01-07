@@ -1086,7 +1086,8 @@ var constructors = {
     "jw": JWPlayer,
     "im": ImgurPlayer,
     "cu": CustomPlayer,
-    "gd": GoogleDocsPlayer
+    "gd": GoogleDocsPlayer,
+    "me": MediaElementsPlayer
 };
 
 function loadMediaPlayer(data) {

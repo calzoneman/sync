@@ -1032,7 +1032,12 @@ Callbacks = {
             $("#ytapiplayer_wrapper").remove();
         }
 
-        if(data.type != PLAYER.type) {
+        if (data.type === "vi" && data.direct) {
+            data.type = "jw";
+            data.id = data.direct.sd.url;
+        }
+
+        if (data.type != PLAYER.type) {
             loadMediaPlayer(data);
         }
 
