@@ -1,4 +1,4 @@
-/*
+/*}
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
 
@@ -731,12 +731,17 @@ var RTMPPlayer = function (data) {
 var JWPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
+    if (data.url) {
+        self.videoURL = data.url;
+    } else {
+        self.videoURL = data.id;
+    }
     self.videoLength = data.seconds;
     self.init = function () {
         removeOld();
 
         jwplayer("ytapiplayer").setup({
-            file: self.videoId,
+            file: self.videoURL,
             width: VWIDTH,
             height: VHEIGHT,
             autostart: true
@@ -990,6 +995,77 @@ var GoogleDocsPlayer = function (data) {
     self.init(data);
 };
 
+function RawVideoPlayer(data) {
+    var self = this;
+    self.init = function (data) {
+        self.videoId = data.id;
+        self.videoURL = data.url;
+        var video = $("<video/>")
+            .attr("src", self.videoURL)
+            .attr("controls", "controls")
+            .attr("id", "#ytapiplayer")
+            .attr("width", VWIDTH)
+            .attr("height", VHEIGHT)
+            .html("Your browser does not support HTML5 <code>&lt;video&gt;</code> tags :(");
+        removeOld(video);
+        self.player = video[0];
+        self.setVolume(VOLUME);
+    };
+
+    self.load = function (data) {
+        self.init(data);
+    };
+
+    self.pause = function () {
+        if (self.player) {
+            self.player.pause();
+        }
+    };
+
+    self.play = function () {
+        if (self.player) {
+            self.player.play();
+        }
+    };
+
+    self.isPaused = function (callback) {
+        if (self.player) {
+            callback(self.player.paused);
+        }
+    };
+
+    self.getTime = function (callback) {
+        if (self.player) {
+            callback(self.player.currentTime);
+        }
+    };
+
+    self.seek = function (time) {
+        if (self.player) {
+            self.player.currentTime = time;
+        }
+    };
+
+    self.getVolume = function (cb) {
+        if (self.player) {
+            if (self.player.muted) {
+                cb(0);
+            } else {
+                cb(self.player.volume);
+            }
+        }
+    };
+
+    self.setVolume = function (vol) {
+        if (self.player) {
+            self.player.volume = vol;
+        }
+    };
+
+    self.init(data);
+};
+
+
 function handleMediaUpdate(data) {
     // Don't update if the position is past the video length, but
     // make an exception when the video length is 0 seconds
@@ -1086,7 +1162,8 @@ var constructors = {
     "jw": JWPlayer,
     "im": ImgurPlayer,
     "cu": CustomPlayer,
-    "gd": GoogleDocsPlayer
+    "gd": GoogleDocsPlayer,
+    "rv": RawVideoPlayer
 };
 
 function loadMediaPlayer(data) {
