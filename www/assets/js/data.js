@@ -136,6 +136,8 @@ var USEROPTS = {
 var VOLUME = parseFloat(getOrDefault("volume", 1));
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
+// Change this to include your own domain if you enable Vimeo fallback
+var NO_VIMEO = Boolean(location.host.match("cytu.be"));
 
 var Rank = {
     Guest: 0,
