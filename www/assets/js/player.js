@@ -731,12 +731,17 @@ var RTMPPlayer = function (data) {
 var JWPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
+    if (data.url) {
+        self.videoURL = data.url;
+    } else {
+        self.videoURL = data.id;
+    }
     self.videoLength = data.seconds;
     self.init = function () {
         removeOld();
 
         jwplayer("ytapiplayer").setup({
-            file: self.videoId,
+            file: self.videoURL,
             width: VWIDTH,
             height: VHEIGHT,
             autostart: true

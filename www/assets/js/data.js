@@ -97,6 +97,15 @@ function getOrDefault(k, def) {
     return v;
 }
 
+function default_noh264() {
+    var ua = navigator.userAgent + "";
+    if (ua.match(/Firefox\/29.0|Chrome|Chromium/)) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 var USEROPTS = {
     theme                : getOrDefault("theme", "default"),
     css                  : getOrDefault("css", ""),
@@ -120,7 +129,8 @@ var USEROPTS = {
     sort_afk             : getOrDefault("sort_afk", false),
     default_quality      : getOrDefault("default_quality", "#quality_auto"),
     boop                 : getOrDefault("boop", false),
-    secure_connection    : getOrDefault("secure_connection", false)
+    secure_connection    : getOrDefault("secure_connection", false),
+    no_h264              : getOrDefault("no_h264", default_noh264())
 };
 
 var VOLUME = getOrDefault("volume", 1);

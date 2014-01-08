@@ -1033,7 +1033,11 @@ Callbacks = {
         }
 
         if (data.type === "vi" && data.direct && data.direct.sd) {
-            data.type = "rv";
+            if (USEROPTS.no_h264) {
+                data.type = "jw";
+            } else {
+                data.type = "rv";
+            }
             data.url = data.direct.sd.url;
         }
 

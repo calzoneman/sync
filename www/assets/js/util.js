@@ -662,6 +662,9 @@ function showOptionsMenu() {
                   "issues on some systems");
         addOption(playback, "", pl_wmodewarn);
 
+        var pl_noh264 = addCheckbox(playback, "h.264", "Use JWPlayer for h.264 playback");
+        pl_noh264.prop("checked", USEROPTS.no_h264);
+
         var pl_hide = addCheckbox(playback, "Hide Video",
                                   "Remove the video player");
         pl_hide.prop("checked", USEROPTS.hidevid);
@@ -731,6 +734,7 @@ function showOptionsMenu() {
             USEROPTS.hidevid              = pl_hide.prop("checked");
             USEROPTS.qbtn_hide            = pl_hidebtn.prop("checked");
             USEROPTS.qbtn_idontlikechange = pl_oldbtn.prop("checked");
+            USEROPTS.no_h264              = pl_noh264.prop("checked");
             USEROPTS.show_timestamps      = chat_time.prop("checked");
             USEROPTS.sort_rank            = chat_sort_rank.prop("checked");
             USEROPTS.sort_afk             = chat_sort_afk.prop("checked");
