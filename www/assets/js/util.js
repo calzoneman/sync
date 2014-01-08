@@ -110,6 +110,15 @@ function formatUserlistItem(div) {
                 .appendTo(profile);
         }
         $("<strong/>").text(data.name).appendTo(profile);
+
+        var meta = div.data("meta") || {};
+        if (meta.ip) {
+            $("<br/>").appendTo(profile);
+            $("<em/>").text(meta.ip).appendTo(profile);
+        }
+        if (meta.aliases) {
+            $("<p/>").text("aliases: " + meta.aliases.join(", ")).appendTo(profile);
+        }
         $("<p/>").text(data.profile.text).appendTo(profile);
     });
     name.mousemove(function(ev) {
@@ -555,7 +564,7 @@ function showUserOptions() {
     $("#us-chat-notice").prop("checked", USEROPTS.blink_title);
     $("#us-boop").prop("checked", USEROPTS.boop);
     $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
-    
+
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-joinmessage").prop("checked", USEROPTS.joinmessage);
 

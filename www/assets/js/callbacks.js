@@ -713,12 +713,21 @@ Callbacks = {
         div.data("rank", data.rank);
         div.data("leader", Boolean(data.leader));
         div.data("profile", data.profile);
-        div.data("icon", data.meta.icon);
+        div.data("meta", data.meta);
         div.data("afk", data.meta.afk);
         formatUserlistItem(div, data);
         addUserDropdown(div, data);
         div.appendTo($("#userlist"));
         sortUserlist();
+    },
+
+    setUserMeta: function (data) {
+        var user = findUserlistItem(data.name);
+        if (user == null) {
+            return;
+        }
+
+        user.data("meta", data);
     },
 
     setUserProfile: function (data) {
@@ -978,8 +987,8 @@ Callbacks = {
         handleMediaUpdate(data);
     },
 
-    setPlaylistLocked: function(data) {
-        CHANNEL.openqueue = !data.locked;
+    setPlaylistLocked: function (locked) {
+        CHANNEL.openqueue = !locked;
         handlePermissionChange();
         if(CHANNEL.openqueue) {
             $("#qlockbtn").removeClass("btn-danger")
@@ -1191,7 +1200,7 @@ Callbacks = {
     }
 }
 
-var SOCKET_DEBUG = false;
+var SOCKET_DEBUG = true;
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
