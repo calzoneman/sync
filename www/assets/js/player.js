@@ -1048,7 +1048,11 @@ function RawVideoPlayer(data) {
 
     self.getVolume = function (cb) {
         if (self.player) {
-            cb(self.player.volume);
+            if (self.player.muted) {
+                cb(0);
+            } else {
+                cb(self.player.volume);
+            }
         }
     };
 

@@ -1011,8 +1011,10 @@ Callbacks = {
     changeMedia: function(data) {
         if (PLAYER) {
             PLAYER.getVolume(function (v) {
-                VOLUME = v;
-                setOpt("volume", VOLUME);
+                if (typeof v === "number") {
+                    VOLUME = v;
+                    setOpt("volume", VOLUME);
+                }
             });
         }
 

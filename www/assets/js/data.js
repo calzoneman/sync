@@ -133,7 +133,7 @@ var USEROPTS = {
     no_h264              : getOrDefault("no_h264", default_noh264())
 };
 
-var VOLUME = getOrDefault("volume", 1);
+var VOLUME = parseFloat(getOrDefault("volume", 1));
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
 
