@@ -443,37 +443,27 @@ Callbacks = {
     },
 
     banlist: function(entries) {
-        var tbl = $("#banlist table");
-        // I originally added this check because of a race condition
-        // Now it seems to work without but I don't trust it
-        if(!tbl.hasClass("table")) {
-            setTimeout(function() {
-                Callbacks.banlist(entries);
-            }, 100);
-            return;
-        }
-        if(tbl.children().length > 1) {
-            $(tbl.children()[1]).remove();
-        }
+        var tbl = $("#cs-banlist table");
+        tbl.find("tbody").remove();
         for(var i = 0; i < entries.length; i++) {
-            var tr = document.createElement("tr");
+            var tr = $("<tr/>");
             var remove = $("<button/>").addClass("btn btn-xs btn-danger")
                 .appendTo($("<td/>").appendTo(tr));
             $("<span/>").addClass("glyphicon glyphicon-remove-circle").appendTo(remove);
-            var ip = $("<td/>").text(entries[i].ip_displayed).appendTo(tr);
+            var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
             var name = $("<td/>").text(entries[i].name).appendTo(tr);
-            var aliases = $("<td/>").text(entries[i].aliases.join(", ")).appendTo(tr);
-            var banner = $("<td/>").text(entries[i].banner).appendTo(tr);
+            var bannedby = $("<td/>").text(entries[i].bannedby).appendTo(tr);
 
-            var callback = (function(ip_hidden, name) { return function() {
-                socket.emit("unban", {
-                    ip_hidden: ip_hidden,
-                    name: name
+            (function (reason) {
+                reason = "Kept spamming links";
+                tr.popover({
+                    title: "Ban Reason",
+                    content: reason,
+                    placement: "left",
+                    trigger: "hover"
                 });
-            } })(entries[i].ip_hidden, entries[i].name);
-            remove.click(callback);
-
-            $(tr).appendTo(tbl);
+            })(entries[i].reason);
+            tr.appendTo(tbl);
         }
     },
 
@@ -502,79 +492,65 @@ Callbacks = {
     },
 
     channelRanks: function(entries) {
-        var tbl = $("#channelranks table");
-        // I originally added this check because of a race condition
-        // Now it seems to work without but I don't trust it
-        if(!tbl.hasClass("table")) {
-            setTimeout(function() {
-                Callbacks.channelRanks(entries);
-            }, 100);
-            return;
-        }
+        var tbl = $("#cs-chanranks table");
+        tbl.find("tbody").remove();
         entries.sort(function(a, b) {
-            var x = a.name.toLowerCase();
-            var y = b.name.toLowerCase();
-            return y == x ? 0 : (x < y ? -1 : 1);
+            if (a.rank === b.rank) {
+                var x = a.name.toLowerCase();
+                var y = b.name.toLowerCase();
+                return y == x ? 0 : (x < y ? -1 : 1);
+            }
+
+            return b.rank - a.rank;
         });
-        $("#channelranks").data("entries", entries);
-        if(tbl.children().length > 1) {
-            $(tbl.children()[1]).remove();
-        }
-        var p = tbl.data("paginator");
-        if(p) {
-            p.items = entries;
-            p.loadPage(0);
-        }
-        else {
-            var opts = {
-                preLoadPage: function (p) {
-                    tbl.find("tbody").remove();
-                    tbl.data("page", p);
-                },
-                generator: function (item, page, index) {
-                    var tr = $("<tr/>").appendTo(tbl);
-                    var name = $("<td/>").text(item.name).appendTo(tr);
-                    name.addClass(getNameColor(item.rank));
-                    var rank = $("<td/>").text(item.rank)
-                        .css("min-width", "220px")
-                        .appendTo(tr);
-                    rank.click(function() {
-                        if(this.find(".rank-edit").length > 0)
-                            return;
-                        var r = this.text();
-                        this.text("");
-                        var edit = $("<input/>").attr("type", "text")
-                            .attr("placeholder", r)
-                            .addClass("rank-edit")
-                            .appendTo(this)
-                            .focus();
-                        if(parseInt(r) >= CLIENT.rank) {
-                            edit.attr("disabled", true);
-                        }
-                        function save() {
-                            var r = this.val();
-                            var r2 = r;
-                            if(r.trim() == "" || parseInt(r) >= CLIENT.rank || parseInt(r) < 1)
-                                r = this.attr("placeholder");
-                            r = parseInt(r) + "";
-                            this.parent().text(r);
+
+        entries.forEach(function (entry) {
+            var tr = $("<tr/>");
+            var name = $("<td/>").text(entry.name).appendTo(tr);
+            name.addClass(getNameColor(entry.rank));
+            var rankwrap = $("<td/>");
+            var rank = $("<span/>").text(entry.rank).appendTo(rankwrap);
+            var rankedit = $("<button/>")
+                .addClass("btn btn-xs btn-default")
+                .css("margin-right", "10px")
+                .text("Edit")
+                .prependTo(rankwrap);
+            if (entry.rank >= CLIENT.rank) {
+                rankedit.addClass("disabled");
+            } else {
+                var editbox = null;
+                rankedit.click(function () {
+                    rankedit.hide();
+                    rank.hide();
+                    editbox = $("<input/>").addClass("form-control")
+                        .attr("placeholder", entry.rank)
+                        .appendTo(rankwrap)
+                        .focus();
+
+                    var finish = function () {
+                        if (editbox != null) {
                             socket.emit("setChannelRank", {
-                                user: item.name,
-                                rank: parseInt(r)
+                                user: entry.name,
+                                rank: parseInt(editbox.val())
                             });
+                            editbox.remove();
                         }
-                        edit.blur(save.bind(edit));
-                        edit.keydown(function(ev) {
-                            if(ev.keyCode == 13)
-                                save.bind(edit)();
-                        });
-                    }.bind(rank));
-                }
-            };
-            var p = Paginate(entries, opts);
-            p.paginator.insertBefore($("#channelranks table"));
-            tbl.data("paginator", p);
-        }
+
+                        rankedit.show();
+                        rank.show();
+                    };
+
+                    editbox.blur(finish);
+                    editbox.keydown(function (ev) {
+                        if (ev.keyCode === 13) {
+                            finish();
+                        }
+                    });
+                });
+            }
+            rankwrap.appendTo(tr);
+            tr.appendTo(tbl);
+        });
     },
 
     setChannelRank: function(data) {
