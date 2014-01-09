@@ -1763,3 +1763,78 @@ function formatCSModList() {
         tr.appendTo(tbl);
     });
 }
+
+function formatCSBanlist() {
+    var tbl = $("#cs-banlist table");
+    tbl.find("tbody").remove();
+    var entries = tbl.data("entries") || [];
+    var sparse = {};
+    for (var i = 0; i < entries.length; i++) {
+        if (!(entries[i].name in sparse)) {
+            sparse[entries[i].name] = [];
+        }
+        sparse[entries[i].name].push(entries[i]);
+    }
+
+    var flat = [];
+    for (var name in sparse) {
+        flat.push({
+            name: name,
+            bans: sparse[name]
+        });
+    }
+    flat.sort(function (a, b) {
+        var x = a.name.toLowerCase(),
+            y = b.name.toLowerCase();
+        return x === y ? 0 : (x > y ? 1 : -1);
+    });
+
+    var addBanRow = function (entry, after) {
+        var tr = $("<tr/>");
+        if (after) {
+            tr.insertAfter(after);
+        } else {
+            tr.appendTo(tbl);
+        }
+        var unban = $("<button/>").addClass("btn btn-xs btn-danger")
+            .appendTo($("<td/>").appendTo(tr));
+        $("<span/>").addClass("glyphicon glyphicon-remove-circle").appendTo(unban);
+        $("<td/>").text(entry.ip).appendTo(tr);
+        $("<td/>").text(entry.name).appendTo(tr);
+        $("<td/>").text(entry.bannedby).appendTo(tr);
+        tr.popover({
+            title: "Ban Reason",
+            content: entry.reason,
+            placement: "left",
+            trigger: "hover"
+        });
+        return tr;
+    };
+
+    flat.forEach(function (person) {
+        var bans = person.bans;
+        var name = person.name;
+        var first = addBanRow(bans.shift());
+
+        if (bans.length > 0) {
+            var showmore = $("<button/>").addClass("btn btn-xs btn-default pull-right");
+            $("<span/>").addClass("glyphicon glyphicon-list").appendTo(showmore);
+            showmore.appendTo(first.find("td")[1]);
+
+            showmore.click(function () {
+                if (showmore.data("elems")) {
+                    showmore.data("elems").forEach(function (e) {
+                        e.remove();
+                    });
+                    showmore.data("elems", null);
+                } else {
+                    var elems = [];
+                    bans.forEach(function (b) {
+                        elems.push(addBanRow(b, first));
+                    });
+                    showmore.data("elems", elems);
+                }
+            });
+        }
+    });
+}

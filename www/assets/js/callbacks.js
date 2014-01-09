@@ -444,27 +444,8 @@ Callbacks = {
 
     banlist: function(entries) {
         var tbl = $("#cs-banlist table");
-        tbl.find("tbody").remove();
-        for(var i = 0; i < entries.length; i++) {
-            var tr = $("<tr/>");
-            var remove = $("<button/>").addClass("btn btn-xs btn-danger")
-                .appendTo($("<td/>").appendTo(tr));
-            $("<span/>").addClass("glyphicon glyphicon-remove-circle").appendTo(remove);
-            var ip = $("<td/>").text(entries[i].ip).appendTo(tr);
-            var name = $("<td/>").text(entries[i].name).appendTo(tr);
-            var bannedby = $("<td/>").text(entries[i].bannedby).appendTo(tr);
-
-            (function (reason) {
-                reason = "Kept spamming links";
-                tr.popover({
-                    title: "Ban Reason",
-                    content: reason,
-                    placement: "left",
-                    trigger: "hover"
-                });
-            })(entries[i].reason);
-            tr.appendTo(tbl);
-        }
+        tbl.data("entries", entries);
+        formatCSBanlist();
     },
 
     recentLogins: function(entries) {
