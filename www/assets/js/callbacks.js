@@ -505,7 +505,7 @@ Callbacks = {
         });
 
         entries.forEach(function (entry) {
-            var tr = $("<tr/>");
+            var tr = $("<tr/>").addClass("cs-chanrank-tr-" + entry.name);
             var name = $("<td/>").text(entry.name).appendTo(tr);
             name.addClass(getNameColor(entry.rank));
             var rankwrap = $("<td/>");
@@ -523,6 +523,7 @@ Callbacks = {
                     rankedit.hide();
                     rank.hide();
                     editbox = $("<input/>").addClass("form-control")
+                        .attr("type", "text")
                         .attr("placeholder", entry.rank)
                         .appendTo(rankwrap)
                         .focus();
@@ -551,6 +552,10 @@ Callbacks = {
             rankwrap.appendTo(tr);
             tr.appendTo(tbl);
         });
+    },
+
+    channelRankFail: function (data) {
+        makeAlert("Error", data.msg, "alert-danger").prependTo($("#cs-chanranks"));
     },
 
     setChannelRank: function(data) {
@@ -752,6 +757,11 @@ Callbacks = {
     },
 
     setUserRank: function (data) {
+        var tr = $(".cs-chanrank-tr-" + data.name);
+        var tds = tr.find("td");
+        $(tds[0]).removeClass().addClass(getNameColor(data.rank));
+        $(tds[1]).find("span").text(data.rank);
+
         var user = findUserlistItem(data.name);
         if (user === null) {
             return;
@@ -764,8 +774,9 @@ Callbacks = {
         }
         formatUserlistItem(user);
         addUserDropdown(user);
-        if(USEROPTS.sort_rank)
+        if (USEROPTS.sort_rank) {
             sortUserlist();
+        }
     },
 
     setUserIcon: function (data) {

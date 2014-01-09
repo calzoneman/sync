@@ -490,3 +490,22 @@ if (location.protocol === "https:") {
     makeAlert(title, text, "alert-warning")
         .appendTo($("#announcements"));
 }
+
+/* channel ranks stuff */
+$("#cs-chanranks-mod").click(function () {
+    var name = $("#cs-chanranks-name").val();
+    var rank = 2;
+    socket.emit("setChannelRank", {
+        user: name,
+        rank: rank
+    });
+});
+
+$("#cs-chanranks-adm").click(function () {
+    var name = $("#cs-chanranks-name").val();
+    var rank = 3;
+    socket.emit("setChannelRank", {
+        user: name,
+        rank: rank
+    });
+});
