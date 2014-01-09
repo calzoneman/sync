@@ -492,20 +492,13 @@ if (location.protocol === "https:") {
 }
 
 /* channel ranks stuff */
-$("#cs-chanranks-mod").click(function () {
+function chanrankSubmit(rank) {
     var name = $("#cs-chanranks-name").val();
-    var rank = 2;
     socket.emit("setChannelRank", {
         user: name,
         rank: rank
     });
-});
-
-$("#cs-chanranks-adm").click(function () {
-    var name = $("#cs-chanranks-name").val();
-    var rank = 3;
-    socket.emit("setChannelRank", {
-        user: name,
-        rank: rank
-    });
-});
+}
+$("#cs-chanranks-mod").click(chanrankSubmit.bind(this, 2));
+$("#cs-chanranks-adm").click(chanrankSubmit.bind(this, 3));
+$("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));

@@ -337,21 +337,21 @@
 }
 
 .userlist_siteadmin {
-    color: #cc0000;
-    font-weight: bold;
+    color: #cc0000!important;
+    font-weight: bold!important;
 }
 
 .userlist_owner {
-    color: #0000cc;
-    font-weight: bold;
+    color: #0000cc!important;
+    font-weight: bold!important;
 }
 
 .userlist_op {
-    color: #00aa00;
+    color: #00aa00!important;
 }
 
 .userlist_guest {
-    color: #888888;
+    color: #888888!important;
 }
 
 .action {

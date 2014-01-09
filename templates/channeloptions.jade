@@ -92,12 +92,14 @@ mixin recentjoins
 
 mixin chanranks
   #cs-chanranks.tab-pane
+    h4 Moderator List
     form.form-inline(action="javascript:void(0)", role="form")
       .input-group
         input#cs-chanranks-name.form-control(type="text", placeholder="Name")
         span.input-group-btn
           button#cs-chanranks-mod.btn.btn-success +Mod
           button#cs-chanranks-adm.btn.btn-info +Admin
+          button#cs-chanranks-owner.btn.btn-info +Owner
     table.table.table-striped
       thead
         tr

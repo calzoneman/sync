@@ -493,85 +493,12 @@ Callbacks = {
 
     channelRanks: function(entries) {
         var tbl = $("#cs-chanranks table");
-        tbl.find("tbody").remove();
-        entries.sort(function(a, b) {
-            if (a.rank === b.rank) {
-                var x = a.name.toLowerCase();
-                var y = b.name.toLowerCase();
-                return y == x ? 0 : (x < y ? -1 : 1);
-            }
-
-            return b.rank - a.rank;
-        });
-
-        entries.forEach(function (entry) {
-            var tr = $("<tr/>").addClass("cs-chanrank-tr-" + entry.name);
-            var name = $("<td/>").text(entry.name).appendTo(tr);
-            name.addClass(getNameColor(entry.rank));
-            var rankwrap = $("<td/>");
-            var rank = $("<span/>").text(entry.rank).appendTo(rankwrap);
-            var rankedit = $("<button/>")
-                .addClass("btn btn-xs btn-default")
-                .css("margin-right", "10px")
-                .text("Edit")
-                .prependTo(rankwrap);
-            if (entry.rank >= CLIENT.rank) {
-                rankedit.addClass("disabled");
-            } else {
-                var editbox = null;
-                rankedit.click(function () {
-                    rankedit.hide();
-                    rank.hide();
-                    editbox = $("<input/>").addClass("form-control")
-                        .attr("type", "text")
-                        .attr("placeholder", entry.rank)
-                        .appendTo(rankwrap)
-                        .focus();
-
-                    var finish = function () {
-                        if (editbox != null) {
-                            socket.emit("setChannelRank", {
-                                user: entry.name,
-                                rank: parseInt(editbox.val())
-                            });
-                            editbox.remove();
-                        }
-
-                        rankedit.show();
-                        rank.show();
-                    };
-
-                    editbox.blur(finish);
-                    editbox.keydown(function (ev) {
-                        if (ev.keyCode === 13) {
-                            finish();
-                        }
-                    });
-                });
-            }
-            rankwrap.appendTo(tr);
-            tr.appendTo(tbl);
-        });
+        tbl.data("entries", entries);
+        formatCSModList();
     },
 
     channelRankFail: function (data) {
-        makeAlert("Error", data.msg, "alert-danger").prependTo($("#cs-chanranks"));
-    },
-
-    setChannelRank: function(data) {
-        var ents = $("#channelranks").data("entries");
-        if(typeof ents === "undefined" || ents === null)
-            return;
-        for(var i = 0; i < ents.length; i++) {
-            if(ents[i].name == data.user) {
-                ents[i].rank = data.rank;
-                break;
-            }
-        }
-        $("#channelranks").data("entries", ents);
-        $("#channelranks table").data("paginator").loadPage(
-            $("#channelranks table").data("page")
-        );
+        makeAlert("Error", data.msg, "alert-danger").insertAfter($("#cs-chanranks h4"));
     },
 
     readChanLog: function (data) {
@@ -757,10 +684,21 @@ Callbacks = {
     },
 
     setUserRank: function (data) {
-        var tr = $(".cs-chanrank-tr-" + data.name);
-        var tds = tr.find("td");
-        $(tds[0]).removeClass().addClass(getNameColor(data.rank));
-        $(tds[1]).find("span").text(data.rank);
+        var entries = $("#cs-chanranks table").data("entries");
+        var found = false;
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i].name === data.name) {
+                entries[i].rank = data.rank;
+                found = i;
+                break;
+            }
+        }
+        if (found === false) {
+            entries.push(data);
+        } else if (entries[found].rank < 2) {
+            entries.splice(found, 1);
+        }
+        formatCSModList();
 
         var user = findUserlistItem(data.name);
         if (user === null) {

@@ -754,6 +754,8 @@ function setVisible(selector, bool) {
 }
 
 function handleModPermissions() {
+    $("#cs-chanranks-adm").attr("disabled", CLIENT.rank < 4);
+    $("#cs-chanranks-owner").attr("disabled", CLIENT.rank < 4);
     /* update channel controls */
     $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
     $("#opt_pagetitle").attr("disabled", CLIENT.rank < 3);
@@ -1688,4 +1690,76 @@ function makeModal() {
         wrap.remove();
     });
     return wrap;
+}
+
+function formatCSModList() {
+    var tbl = $("#cs-chanranks table");
+    tbl.find("tbody").remove();
+    var entries = tbl.data("entries") || [];
+    entries.sort(function(a, b) {
+        if (a.rank === b.rank) {
+            var x = a.name.toLowerCase();
+            var y = b.name.toLowerCase();
+            return y == x ? 0 : (x < y ? -1 : 1);
+        }
+
+        return b.rank - a.rank;
+    });
+
+    entries.forEach(function (entry) {
+        var tr = $("<tr/>").addClass("cs-chanrank-tr-" + entry.name);
+        var name = $("<td/>").text(entry.name).appendTo(tr);
+        name.addClass(getNameColor(entry.rank));
+        var rankwrap = $("<td/>");
+        var rank = $("<span/>").text(entry.rank).appendTo(rankwrap);
+        var dd = $("<div/>").addClass("btn-group");
+        var toggle = $("<button/>")
+            .addClass("btn btn-xs btn-default dropdown-toggle")
+            .attr("data-toggle", "dropdown")
+            .html("Edit <span class=caret></span>")
+            .appendTo(dd);
+        if (CLIENT.rank <= entry.rank) {
+            toggle.addClass("disabled");
+        }
+
+        var menu = $("<ul/>").addClass("dropdown-menu")
+            .attr("role", "menu")
+            .appendTo(dd);
+
+        var ranks = [
+            { name: "Remove Moderator", rank: 1 },
+            { name: "Moderator", rank: 2 },
+            { name: "Channel Admin", rank: 3 },
+            { name: "Channel Owner", rank: 4 }
+        ];
+
+        ranks.forEach(function (r) {
+            var li = $("<li/>").appendTo(menu);
+            var a = $("<a/>")
+                .addClass(getNameColor(r.rank))
+                .attr("href", "javascript:void(0)")
+                .text(r.name)
+                .appendTo(li);
+            if (r.rank !== entry.rank) {
+                a.click(function () {
+                    socket.emit("setChannelRank", {
+                        user: entry.name,
+                        rank: r.rank
+                    });
+                });
+            } else {
+                $("<span/>").addClass("glyphicon glyphicon-ok pull-right")
+                    .appendTo(a);
+                li.addClass("disabled");
+            }
+
+            if (r.rank > CLIENT.rank || (CLIENT.rank < 4 && r.rank === CLIENT.rank)) {
+                li.addClass("disabled");
+            }
+        });
+
+        dd.css("margin-right", "10px").prependTo(rankwrap);
+        rankwrap.appendTo(tr);
+        tr.appendTo(tbl);
+    });
 }
