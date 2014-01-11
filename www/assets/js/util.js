@@ -1611,6 +1611,7 @@ function chatOnly() {
     $("#toprow").remove()
     $("#announcements").remove();
     $("#playlistrow").remove();
+    PLAYER.player = null;
     $("#videowrap").remove();
     $("#chatwrap").removeClass("span5").addClass("span12");
 }
