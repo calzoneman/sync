@@ -169,40 +169,11 @@ function addUserDropdown(entry) {
     $("<strong/>").text(name).appendTo(menu);
     $("<br/>").appendTo(menu);
 
-    /* rank selector (admin+ only)
-       to prevent odd behaviour, this selector is only visible
-       when the selected user has a normal rank (e.g. not a guest
-       or a non-moderator leader
-    */
-    if(CLIENT.rank >= 3 && CLIENT.rank > rank && rank > 0 && rank != 1.5) {
-        var sel = $("<select/>")
-            .addClass("form-control")
-            .appendTo(menu);
-        $("<option/>").attr("value", "1").text("Regular User")
-            .appendTo(sel);
-        $("<option/>").attr("value", "2").text("Moderator")
-            .appendTo(sel);
-        if(CLIENT.rank > 3) {
-            $("<option/>").attr("value", "3").text("Channel Admin")
-                .appendTo(sel);
-            if(rank > 3) {
-                $("<option/>").attr("value", ""+rank)
-                    .text("Current Rank (" + rank + ")")
-                    .appendTo(sel);
-            }
-        }
-        sel.change(function () {
-            socket.emit("setChannelRank", {
-                user: name,
-                rank: parseInt(sel.val())
-            });
-        });
-        sel.val(""+rank);
-    }
+    var btngroup = $("<div/>").addClass("btn-group-vertical").appendTo(menu);
 
     /* ignore button */
-    var ignore = $("<button/>").addClass("btn btn-xs btn-default btn-block")
-        .appendTo(menu)
+    var ignore = $("<button/>").addClass("btn btn-xs btn-default")
+        .appendTo(btngroup)
         .click(function () {
             if(IGNORED.indexOf(name) == -1) {
                 ignore.text("Unignore User");
@@ -220,8 +191,8 @@ function addUserDropdown(entry) {
 
     /* gib/remove leader (moderator+ only) */
     if(CLIENT.rank >= 2) {
-        var ldr = $("<button/>").addClass("btn btn-xs btn-default btn-block")
-            .appendTo(menu);
+        var ldr = $("<button/>").addClass("btn btn-xs btn-default")
+            .appendTo(btngroup);
         if(leader) {
             ldr.text("Remove Leader");
             ldr.click(function () {
@@ -241,34 +212,34 @@ function addUserDropdown(entry) {
 
     /* kick button */
     if(hasPermission("kick")) {
-        $("<button/>").addClass("btn btn-xs btn-default btn-block")
+        $("<button/>").addClass("btn btn-xs btn-default")
             .text("Kick")
             .click(function () {
                 socket.emit("chatMsg", {
                     msg: "/kick " + name
                 });
             })
-            .appendTo(menu);
+            .appendTo(btngroup);
     }
 
     /* ban buttons */
     if(hasPermission("ban")) {
-        $("<button/>").addClass("btn btn-xs btn-default btn-block")
+        $("<button/>").addClass("btn btn-xs btn-default")
             .text("Name Ban")
             .click(function () {
                 socket.emit("chatMsg", {
                     msg: "/ban " + name
                 });
             })
-            .appendTo(menu);
-        $("<button/>").addClass("btn btn-xs btn-default btn-block")
+            .appendTo(btngroup);
+        $("<button/>").addClass("btn btn-xs btn-default")
             .text("IP Ban")
             .click(function () {
                 socket.emit("chatMsg", {
                     msg: "/ipban " + name
                 });
             })
-            .appendTo(menu);
+            .appendTo(btngroup);
     }
 
     entry.contextmenu(function(ev) {
@@ -1798,6 +1769,12 @@ function formatCSBanlist() {
         }
         var unban = $("<button/>").addClass("btn btn-xs btn-danger")
             .appendTo($("<td/>").appendTo(tr));
+        unban.click(function () {
+            socket.emit("unban", {
+                id: entry.id,
+                name: entry.name
+            });
+        });
         $("<span/>").addClass("glyphicon glyphicon-remove-circle").appendTo(unban);
         $("<td/>").text(entry.ip).appendTo(tr);
         $("<td/>").text(entry.name).appendTo(tr);
