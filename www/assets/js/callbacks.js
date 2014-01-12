@@ -448,6 +448,24 @@ Callbacks = {
         formatCSBanlist();
     },
 
+    banlistRemove: function (data) {
+        var entries = $("#cs-banlist table").data("entries") || [];
+        var found = false;
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i].id === data.id) {
+                found = i;
+                break;
+            }
+        }
+
+        if (found !== false) {
+            entries.splice(i, 1);
+            $("#cs-banlist table").data("entries", entries);
+        }
+
+        formatCSBanlist();
+    },
+
     recentLogins: function(entries) {
         var tbl = $("#loginhistory table");
         // I originally added this check because of a race condition

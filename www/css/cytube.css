@@ -124,8 +124,13 @@
     margin-top: 5px;
 }
 
-#drinkbar {
-    margin-left: 0;
+.drink {
+    margin: 10px 10px;
+    padding: 10px 0px;
+    border: 2px solid #0000cc;
+}
+
+#drinkcount {
     background-color: #000000;
     color: #ffffff;
     text-align: center;
@@ -250,7 +255,7 @@
 }
 
 .queue_temp {
-    background-image: url(../img/stripe-diagonal.png);
+    background-image: url(/img/stripe-diagonal.png);
 }
 
 .queue_active {
