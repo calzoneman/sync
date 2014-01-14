@@ -796,12 +796,12 @@ Callbacks = {
                                 : "Added by: Unknown");
             if (data.after === "prepend") {
                 li.prependTo(q);
-                li.show("blind", function () {
+                li.show("fade", function () {
                     plq.release();
                 });
             } else if (data.after === "append") {
                 li.appendTo(q);
-                li.show("blind", function () {
+                li.show("fade", function () {
                     plq.release();
                 });
             } else {
@@ -811,7 +811,7 @@ Callbacks = {
                     return;
                 }
                 li.insertAfter(liafter);
-                li.show("blind", function () {
+                li.show("fade", function () {
                     plq.release();
                 });
             }
@@ -854,7 +854,7 @@ Callbacks = {
         PL_ACTION_QUEUE.queue(function (plq) {
             PL_WAIT_SCROLL = true;
             var li = $(".pluid-" + data.uid);
-            li.hide("blind", function() {
+            li.hide("fade", function() {
                 li.remove();
                 plq.release();
                 PL_WAIT_SCROLL = false;

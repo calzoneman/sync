@@ -21,7 +21,7 @@ function makeAlert(title, text, klass) {
     $("<strong/>").text(title).prependTo(al);
     $("<button/>").addClass("close pull-right").html("&times;")
         .click(function() {
-            al.hide("blind", function() {
+            al.hide("fade", function() {
                 al.remove();
             });
         })
@@ -817,7 +817,7 @@ function handlePermissionChange() {
                 .click(function() {
                     USEROPTS.first_visit = false;
                     storeOpts();
-                    al.hide("blind", function() {
+                    al.hide("fade", function() {
                         al.remove();
                     });
                 });
@@ -881,7 +881,7 @@ function addLibraryButtons(li, id, source) {
         .addClass("pull-left")
         .prependTo(li);
 
-    var type = (source === "library") ? undefined : source;
+    var type = (source === "library") ? "lib" : source;
 
     if(hasPermission("playlistadd")) {
         if(hasPermission("playlistnext")) {
@@ -914,7 +914,7 @@ function addLibraryButtons(li, id, source) {
                 socket.emit("uncache", {
                     id: id
                 });
-                li.hide("blind", function() {
+                li.hide("fade", function() {
                     li.remove();
                 });
             })
@@ -999,17 +999,17 @@ function playlistMove(from, after, cb) {
     var q = $("#queue");
 
     if(after === "prepend") {
-        lifrom.hide("blind", function() {
+        lifrom.hide("fade", function() {
             lifrom.detach();
             lifrom.prependTo(q);
-            lifrom.show("blind", cb);
+            lifrom.show("fade", cb);
         });
     }
     else if(after === "append") {
-        lifrom.hide("blind", function() {
+        lifrom.hide("fade", function() {
             lifrom.detach();
             lifrom.appendTo(q);
-            lifrom.show("blind", cb);
+            lifrom.show("fade", cb);
         });
     }
     else {
@@ -1018,10 +1018,10 @@ function playlistMove(from, after, cb) {
             cb(false);
             return;
         }
-        lifrom.hide("blind", function() {
+        lifrom.hide("fade", function() {
             lifrom.detach();
             lifrom.insertAfter(liafter);
-            lifrom.show("blind", cb);
+            lifrom.show("fade", cb);
         });
     }
 }

@@ -119,14 +119,16 @@ html(lang="en")
                 #customembed.collapse.plcontrol-collapse.col-lg-12.col-md-12
                   .vertical-spacer
                   .input-group
-                    input#customembed_title.form-control(type="text", placeholder="Title (optional)")
+                    input#customembed-title.form-control(type="text", placeholder="Title (optional)")
                     span.input-group-btn
                       button#ce_queue_next.btn.btn-default Next
                     span.input-group-btn
                       button#ce_queue_end.btn.btn-default At End
                   | Paste the embed code below and click Next or At End.
                   | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags.
-                  textarea#customembed_code.input-block-level.form-control(rows="3")
+                  textarea#customembed-content.input-block-level.form-control(rows="3")
+                #queuefail.col-lg-12.col-md-12
+                  .vertical-spacer
                 .col-lg-12.col-md-12
                   #queue.videolist
                   #plmeta

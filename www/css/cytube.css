@@ -245,11 +245,7 @@
     border-color: #bce8f1;
 }
 
-#queue {
-    margin-top: 10px;
-}
-
-#queue li:last-child {
+#queue > li:last-child {
     border-bottom: 0;
     margin-bottom: 0;
 }
@@ -478,4 +474,12 @@
 #useroptions .modal-body {
     padding-top: 0;
     margin-top: 0;
+}
+
+.qfalert {
+    margin-bottom: 10px;
+}
+
+#customembed-content {
+    font-family: Monospace;
 }

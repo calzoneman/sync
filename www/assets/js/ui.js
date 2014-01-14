@@ -270,65 +270,56 @@ $("#queue").sortable({
 });
 $("#queue").disableSelection();
 
-// TODO no more comma separated queueing.
-function queue(pos) {
-    if($("#customembed_code").val()) {
-        var title = false;
-        if($("#customembed_title").val()) {
-            title = $("#customembed_title").val();
-        }
-        socket.emit("queue", {
-            id: $("#customembed_code").val(),
-            title: title,
-            type: "cu",
-            pos: pos
-        });
-        $("#customembed_code").val("");
-        $("#customembed_title").val("");
-        return;
+function queue(pos, src) {
+    if (!src) {
+        src = "url";
     }
-    var links = $("#mediaurl").val().split(",");
-    var parsed = [];
-    links.forEach(function(link) {
-        var data = parseMediaLink(link);
-        if(data.id === null || data.type === null) {
-            makeAlert("Error", "Invalid link.  Please double check it and remove extraneous information", "alert-danger")
-                .insertBefore($("#extended_controls"));
-        }
-        else {
-            $("#mediaurl").val("");
-        }
-        parsed.push({
-            id: data.id,
-            type: data.type
-        });
-    });
 
-    if(parsed.length > 1) {
+    if (src === "customembed") {
+        var title = $("#customembed-title").val();
+        if (!title) {
+            title = false;
+        }
+        var content = $("#customembed-content").val();
+
         socket.emit("queue", {
-            id: false,
-            list: parsed,
-            type: "list",
-            pos: pos
+            id: content,
+            title: title,
+            pos: pos,
+            type: "cu"
         });
-    }
-    else {
-        parsed[0].pos = pos;
-        socket.emit("queue", parsed[0]);
+    } else {
+        var link = $("#mediaurl").val();
+        var data = parseMediaLink(link);
+        if (data.id == null || data.type == null) {
+            makeAlert("Error", "Failed to parse link.  Please check that it is correct",
+                      "alert-danger")
+                .insertAfter($("#addfromurl"));
+        } else {
+            $("#mediaurl").val("");
+            socket.emit("queue", {
+                id: data.id,
+                type: data.type,
+                pos: pos
+            });
+        }
     }
 }
 
-$("#queue_next").click(function() {
-    queue("next");
-});
-
-$("#queue_end").click(function() {
-    queue("end");
-});
+$("#queue_next").click(queue.bind(this, "next", "url"));
+$("#queue_end").click(queue.bind(this, "end", "url"));
+$("#ce_queue_next").click(queue.bind(this, "next", "customembed"));
+$("#ce_queue_end").click(queue.bind(this, "end", "customembed"));
 
 $("#mediaurl").keydown(function(ev) {
-    if(ev.keyCode == 13) {
-        queue("end");
+    if (ev.keyCode === 13) {
+        queue("end", "url");
+    }
+});
+
+$("#customembed-content").keydown(function(ev) {
+    if (ev.keyCode === 13) {
+        queue("end", "customembed");
     }
 });
 
@@ -339,13 +330,6 @@ $("#qlockbtn").click(function() {
 $("#voteskip").click(function() {
     socket.emit("voteskip");
     $("#voteskip").attr("disabled", true);
-});
-
-$("#customembed_btn").click(function () {
-    if($("#customembed_entry").css("display") == "none")
-        $("#customembed_entry").show("blind");
-    else
-        $("#customembed_entry").hide("blind");
 });
 
 $("#getplaylist").click(function() {
