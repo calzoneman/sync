@@ -516,12 +516,14 @@ Callbacks = {
     },
 
     voteskip: function(data) {
+        var icon = $("#voteskip").find(".glyphicon").remove();
         if(data.count > 0) {
-            $("#voteskip").text("Voteskip ("+data.count+"/"+data.need+")");
+            $("#voteskip").text(" ("+data.count+"/"+data.need+")");
+        } else {
+            $("#voteskip").text("");
         }
-        else {
-            $("#voteskip").text("Voteskip");
-        }
+
+        icon.prependTo($("#voteskip"));
     },
 
     /* REGION Rank Stuff */
@@ -918,7 +920,7 @@ Callbacks = {
             $("#qlockbtn").removeClass("btn-danger")
                 .addClass("btn-success")
                 .attr("title", "Playlist Unlocked");
-            $("#qlockbtn").find("i")
+            $("#qlockbtn").find("span")
                 .removeClass("glyphicon-lock")
                 .addClass("glyphicon-ok");
         }
@@ -926,7 +928,7 @@ Callbacks = {
             $("#qlockbtn").removeClass("btn-success")
                 .addClass("btn-danger")
                 .attr("title", "Playlist Locked");
-            $("#qlockbtn").find("i")
+            $("#qlockbtn").find("span")
                 .removeClass("glyphicon-ok")
                 .addClass("glyphicon-lock");
         }

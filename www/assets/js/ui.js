@@ -240,30 +240,6 @@ $("#userpl_save").click(function() {
 });
 
 /* video controls */
-// TODO this is ugly, change it?
-(function() {
-    function qualHandler(select, preset) {
-        $(select).click(function() {
-            VIDEOQUALITY = preset;
-            USEROPTS.default_quality = select;
-            storeOpts();
-            var btn = $("#qdrop");
-            var caret = btn.find(".caret").detach();
-            btn.text($(select).text());
-            caret.appendTo(btn);
-            if(PLAYER.type == "yt" && PLAYER.player.setPlaybackQuality)
-                PLAYER.player.setPlaybackQuality(VIDEOQUALITY);
-        });
-    }
-    qualHandler("#quality_auto", "");
-    qualHandler("#quality_240p", "small");
-    qualHandler("#quality_360p", "medium");
-    qualHandler("#quality_480p", "large");
-    qualHandler("#quality_720p", "hd720");
-    qualHandler("#quality_1080p", "hd1080");
-    if($(USEROPTS.default_quality).length > 0)
-        $(USEROPTS.default_quality).click();
-})();
 
 $("#mediarefresh").click(function() {
     PLAYER.type = "";
@@ -502,3 +478,11 @@ function chanrankSubmit(rank) {
 $("#cs-chanranks-mod").click(chanrankSubmit.bind(this, 2));
 $("#cs-chanranks-adm").click(chanrankSubmit.bind(this, 3));
 $("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));
+
+["#showmediaurl", "#showsearch", "#showcustomembed"].forEach(function (id) {
+    $(id).click(function () {
+        $(".plcontrol-collapse").collapse("hide");
+    });
+});
+$(".plcontrol-collapse").collapse();
+$(".plcontrol-collapse").collapse("hide");

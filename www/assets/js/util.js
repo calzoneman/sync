@@ -789,7 +789,8 @@ function handlePermissionChange() {
     setVisible("#guestlogin", CLIENT.rank < 0);
     setVisible("#chatline", CLIENT.rank >= 0);
 
-    setVisible("#playlistcontrolswrap", hasPermission("playlistadd"));
+    setVisible("#showmediaurl", hasPermission("playlistadd"));
+    setVisible("#showcustomembed", hasPermission("playlistaddcustom"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
     $("#qlockbtn").attr("disabled", CLIENT.rank < 2);
 
@@ -834,12 +835,6 @@ function handlePermissionChange() {
 
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
-    setVisible("#customembedwrap", hasPermission("playlistaddcustom"));
-    if(!hasPermission("playlistaddcustom")) {
-        $("#customembed_entry").hide();
-        $("#customembed_code").val("");
-    }
-
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
     $("#voteskip").attr("disabled", !hasPermission("voteskip") ||

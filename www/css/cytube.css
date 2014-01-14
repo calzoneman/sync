@@ -201,26 +201,8 @@
     padding-right: 0;
 }
 
-#library_search, #queue_next {
+#library_search, #queue_next, #ce_queue_next {
     border-radius: 0;
-}
-
-#voteskip, #getplaylist {
-    width: 46%;
-}
-
-#qlockbtn {
-    width: 8%;
-}
-
-#voteskip, #getplaylist, #qlockbtn {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-#getplaylist, #qlockbtn {
-    margin-left: 0;
-    border-left: 0;
 }
 
 #plmeta {
@@ -261,6 +243,10 @@
 .queue_active {
     background-color: #d9edf7;
     border-color: #bce8f1;
+}
+
+#queue {
+    margin-top: 10px;
 }
 
 #queue li:last-child {
