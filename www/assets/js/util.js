@@ -724,32 +724,38 @@ function setVisible(selector, bool) {
     $(selector).css("display", disp);
 }
 
+function setParentVisible(selector, bool) {
+    var disp = bool ? "" : "none";
+    $(selector).parent().css("display", disp);
+}
+
 function handleModPermissions() {
     $("#cs-chanranks-adm").attr("disabled", CLIENT.rank < 4);
     $("#cs-chanranks-owner").attr("disabled", CLIENT.rank < 4);
     /* update channel controls */
-    $("#opt_pagetitle").val(CHANNEL.opts.pagetitle);
-    $("#opt_pagetitle").attr("disabled", CLIENT.rank < 3);
-    $("#opt_externalcss").val(CHANNEL.opts.externalcss);
-    $("#opt_externalcss").attr("disabled", CLIENT.rank < 3);
-    $("#opt_externaljs").val(CHANNEL.opts.externaljs);
-    $("#opt_externaljs").attr("disabled", CLIENT.rank < 3);
+    $("#cs-pagetitle").val(CHANNEL.opts.pagetitle);
+    $("#cs-pagetitle").attr("disabled", CLIENT.rank < 3);
+    $("#cs-externalcss").val(CHANNEL.opts.externalcss);
+    $("#cs-externalcss").attr("disabled", CLIENT.rank < 3);
+    $("#cs-externaljs").val(CHANNEL.opts.externaljs);
+    $("#cs-externaljs").attr("disabled", CLIENT.rank < 3);
+    /* TODO FIX */
     $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
     if ("chat_antiflood_params" in CHANNEL.opts) {
         $("#opt_chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
         $("#opt_chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
     }
-    $("#opt_show_public").prop("checked", CHANNEL.opts.show_public);
-    $("#opt_show_public").attr("disabled", CLIENT.rank < 3);
-    $("#opt_password").val(CHANNEL.opts.password || "");
-    $("#opt_password").attr("disabled", CLIENT.rank < 3);
-    $("#opt_enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
-    $("#opt_afktimeout").val(CHANNEL.opts.afk_timeout);
-    $("#opt_allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
-    $("#opt_voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+    $("#cs-show_public").prop("checked", CHANNEL.opts.show_public);
+    $("#cs-show_public").attr("disabled", CLIENT.rank < 3);
+    $("#cs-password").val(CHANNEL.opts.password || "");
+    $("#cs-password").attr("disabled", CLIENT.rank < 3);
+    $("#cs-enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
+    $("#cs-afk_timeout").val(CHANNEL.opts.afk_timeout);
+    $("#cs-allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
+    $("#cs-voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
     (function() {
         if(typeof CHANNEL.opts.maxlength != "number") {
-            $("#opt_maxlength").val("");
+            $("#cs-maxlength").val("");
             return;
         }
         var h = parseInt(CHANNEL.opts.maxlength / 3600);
@@ -761,21 +767,19 @@ function handleModPermissions() {
         var s = parseInt(CHANNEL.opts.maxlength % 60);
         s = ""+s;
         if(s.length < 2) s = "0" + s;
-        $("#opt_maxlength").val(h + ":" + m + ":" + s);
+        $("#cs-maxlength").val(h + ":" + m + ":" + s);
     })();
-    $("#csstext").val(CHANNEL.css);
-    $("#jstext").val(CHANNEL.js);
-    $("#motdtext").val(CHANNEL.motd_text);
-    setVisible("#editmotd", hasPermission("motdedit"));
-    setVisible("#permedit_tab", CLIENT.rank >= 3);
-    setVisible("#banlist_tab", hasPermission("ban"));
-    setVisible("#motdedit_tab", hasPermission("motdedit"));
-    setVisible("#cssedit_tab", CLIENT.rank >= 3);
-    setVisible("#jsedit_tab", CLIENT.rank >= 3);
-    setVisible("#filteredit_tab", hasPermission("filteredit"));
-    setVisible("#channelranks_tab", CLIENT.rank >= 3);
-    setVisible("#chanlog_tab", CLIENT.rank >= 3);
-    setVisible("#chanopts_unregister_wrap", CLIENT.rank >= 10);
+    $("#cs-csstext").val(CHANNEL.css);
+    $("#cs-jstext").val(CHANNEL.js);
+    $("#cs-motdtext").val(CHANNEL.motd_text);
+    setParentVisible("a[href='#cs-motdeditor']", hasPermission("motdedit"));
+    setParentVisible("a[href='#cs-permissions']", CLIENT.rank >= 3);
+    setParentVisible("a[href='#cs-banlist']", hasPermission("ban"));
+    setParentVisible("a[href='#cs-csseditor']", CLIENT.rank >= 3);
+    setParentVisible("a[href='#cs-jseditor']", CLIENT.rank >= 3);
+    setParentVisible("a[href='#cs-filtereditor']", CLIENT.rank >= 3);
+    setParentVisible("a[href='#cs-chanranks']", CLIENT.rank >= 3);
+    setParentVisible("a[href='#cs-chanlog']", CLIENT.rank >= 3);
 }
 
 function handlePermissionChange() {

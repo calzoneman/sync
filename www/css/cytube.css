@@ -483,3 +483,7 @@
 #customembed-content {
     font-family: Monospace;
 }
+
+#cs-csssubmit, #cs-motdsubmit, #cs-jssubmit {
+    margin: 10px 0;
+}

@@ -470,3 +470,30 @@ $("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));
 });
 $(".plcontrol-collapse").collapse();
 $(".plcontrol-collapse").collapse("hide");
+
+$(".cs-checkbox").change(function () {
+    var box = $(this);
+    var key = box.attr("id").replace("cs-", "");
+    var value = box.prop("checked");
+    var data = {};
+    data[key] = value;
+    socket.emit("setOptions", data);
+});
+
+$(".cs-textbox").keyup(function () {
+    var box = $(this);
+    var key = box.attr("id").replace("cs-", "");
+    var value = box.val();
+    var lastkey = Date.now();
+    box.data("lastkey", lastkey);
+
+    setTimeout(function () {
+        if (box.data("lastkey") !== lastkey || box.val() !== value) {
+            return;
+        }
+
+        var data = {};
+        data[key] = value;
+        socket.emit("setOptions", data);
+    }, 1000);
+});
