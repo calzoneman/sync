@@ -30,9 +30,12 @@ mixin miscoptions
       mixin textbox("cs-voteskip_ratio", "Voteskip ratio", "0.5")
       mixin textbox("cs-maxlength", "Max video length", "HH:MM:SS")
       mixin textbox("cs-afk_timeout", "Auto-AFK Delay", "0 (disabled)")
+      mixin rcheckbox("cs-chat_antiflood", "Throttle chat")
+      mixin textbox("cs-chat_antiflood_burst", "# of messages allowed before throttling")
+      mixin textbox("cs-chat_antiflood_sustained", "# of messages (after burst) allowed per second")
       .form-group
         .col-sm-8.col-sm-offset-4
-          button.btn.btn-default#cs-miscoptionssubmit Save
+          span.text-info Changes are automatically saved.
 
 mixin adminoptions
   #cs-adminoptions.tab-pane
@@ -46,28 +49,28 @@ mixin adminoptions
       mixin rcheckbox("cs-show_public", "List channel publicly")
       .form-group
         .col-sm-8.col-sm-offset-4
-          button.btn.btn-default#cs-adminoptionssubmit Save
+          span.text-info Changes are automatically saved.
 
 mixin motdeditor
   #cs-motdeditor.tab-pane
     h4 MOTD editor
     p The MOTD can be formatted using a subset of HTML.  Tags which attempt to execute Javascript will be removed.
     textarea.form-control#cs-motdtext(rows="10")
-    button.btn.btn-primary.pull-right#cs-motdsubmit Save MOTD
+    button.btn.btn-primary#cs-motdsubmit Save MOTD
 
 mixin csseditor
   #cs-csseditor.tab-pane
     h4 CSS editor
     p Maximum size 20KB.  If more space is required, use the External CSS option under General Settings to link to an externally hosted stylesheet.
     textarea.form-control#cs-csstext(rows="10")
-    button.btn.btn-primary.pull-right#cs-csssubmit Save CSS
+    button.btn.btn-primary#cs-csssubmit Save CSS
 
 mixin jseditor
   #cs-jseditor.tab-pane
     h4 JS editor
     p Maximum size 20KB.  If more space is required, use the External JS option under General Settings to link to an externally hosted stylesheet.
     textarea.form-control#cs-jstext(rows="10")
-    button.btn.btn-primary.pull-right#cs-jssubmit Save JS
+    button.btn.btn-primary#cs-jssubmit Save JS
 
 mixin banlist
   #cs-banlist.tab-pane
@@ -105,3 +108,42 @@ mixin chanranks
         tr
           th Name
           th Rank
+
+mixin chatfilters
+  #cs-chatfilters.tab-pane
+    h4 Chat Filters
+    table.table.table-striped.table-condensed
+      thead
+        tr
+          th Control
+          th Name
+          th Active
+
+mixin chanlog
+  #cs-chanlog.tab-pane
+    h4 Channel Log
+    strong Filter Log:
+    form(role="form", action="javscript:void(0)")
+      .checkbox
+        label Everything
+          input#filter_all(type="checkbox", checked="checked")
+      .checkbox
+        label Chat
+          input#filter_chat(type="checkbox")
+      .checkbox
+        label Polls
+          input#filter_polls(type="checkbox")
+      .checkbox
+        label Playlist actions
+          input#filter_queue(type="checkbox")
+      .checkbox
+        label Bans
+          input#filter_bans(type="checkbox")
+      .checkbox
+        label Channel settings
+          input#filter_channelsettings(type="checkbox")
+      .checkbox
+        label Join/Quit messages
+          input#filter_joinquit(type="checkbox")
+    pre#chanlog_contents(style="max-height: 400px; overflow-y: scroll")
+    button.btn.btn-default#chanlog_refresh Refresh

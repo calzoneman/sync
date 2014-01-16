@@ -484,6 +484,14 @@
     font-family: Monospace;
 }
 
+#cs-csstext, #cs-jstext, #cs-motdtext {
+    font-family: Monospace;
+}
+
 #cs-csssubmit, #cs-motdsubmit, #cs-jssubmit {
-    margin: 10px 0;
+    margin-top: 10px;
+}
+
+#cs-chatfilters input[type='text'] {
+    font-family: Monospace;
 }

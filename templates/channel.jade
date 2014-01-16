@@ -166,8 +166,10 @@ html(lang="en")
             button.close(data-dismiss="modal", aria-hidden="true") &times;
             h4 Channel Settings
             ul.nav.nav-tabs
-              li: a(href="#cs-miscoptions" data-toggle="tab") General Settings
-              li: a(href="#cs-adminoptions" data-toggle="tab") Admin Settings
+              li: a(href="#cs-miscoptions", data-toggle="tab") General Settings
+              li: a(href="#cs-adminoptions", data-toggle="tab") Admin Settings
+              li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Channel Log
+              li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
               li.dropdown
                 a#cs-edit-dd-toggle(href="#", data-toggle="dropdown") Edit
                   span.caret
@@ -188,6 +190,8 @@ html(lang="en")
               mixin banlist()
               mixin recentjoins()
               mixin chanranks()
+              mixin chatfilters()
+              mixin chanlog()
           .modal-footer
             button.btn.btn-default(type="button", data-dismiss="modal") Close
     include footer

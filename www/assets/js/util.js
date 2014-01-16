@@ -739,11 +739,10 @@ function handleModPermissions() {
     $("#cs-externalcss").attr("disabled", CLIENT.rank < 3);
     $("#cs-externaljs").val(CHANNEL.opts.externaljs);
     $("#cs-externaljs").attr("disabled", CLIENT.rank < 3);
-    /* TODO FIX */
-    $("#opt_chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
+    $("#cs-chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
     if ("chat_antiflood_params" in CHANNEL.opts) {
-        $("#opt_chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
-        $("#opt_chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
+        $("#cs-chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
+        $("#cs-chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
     }
     $("#cs-show_public").prop("checked", CHANNEL.opts.show_public);
     $("#cs-show_public").attr("disabled", CLIENT.rank < 3);
@@ -1811,6 +1810,74 @@ function formatCSBanlist() {
                     showmore.data("elems", elems);
                 }
             });
+        }
+    });
+}
+
+function formatCSChatFilterList() {
+    var tbl = $("#cs-chatfilters table");
+    tbl.find("tbody").remove();
+    tbl.find(".ui-sortable").remove();
+    var entries = tbl.data("entries") || [];
+    entries.forEach(function (f) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var control = $("<button/>").addClass("btn btn-xs btn-default")
+            .attr("title", "Edit this filter")
+            .appendTo($("<td/>").appendTo(tr));
+        $("<span/>").addClass("glyphicon glyphicon-list").appendTo(control);
+        var name = $("<code/>").text(f.name).appendTo($("<td/>").appendTo(tr));
+        var activetd = $("<td/>").appendTo(tr);
+        var active = $("<input/>").attr("type", "checkbox")
+            .prop("checked", f.active)
+            .appendTo(activetd)
+            .change(function () {
+                f.active = $(this).prop("checked");
+                socket.emit("updateFilter", f);
+            });
+
+        control.click(function () {
+            var tr2 = $("<tr/>").insertAfter(tr);
+            var wrap = $("<td/>").attr("colspan", "3").appendTo(tr2);
+            var form = $("<form/>").addClass("form-inline").attr("role", "form")
+                .attr("action", "javascript:void(0)")
+                .appendTo(wrap);
+            var addTextbox = function (placeholder) {
+                var div = $("<div/>").addClass("form-group").appendTo(form)
+                    .css("margin-right", "10px")
+                    .css("max-width", "25%");
+                var input = $("<input/>").addClass("form-control")
+                    .attr("type", "text")
+                    .attr("placeholder", placeholder)
+                    .attr("title", placeholder)
+                    .appendTo(div);
+                return input;
+            };
+
+            var regex = addTextbox("Filter regex").val(f.source);
+            var flags = addTextbox("Regex flags").val(f.flags);
+            var replace = addTextbox("Replacement text").val(f.replace);
+
+            var checkwrap = $("<div/>").addClass("checkbox").appendTo(form);
+            var checklbl = $("<label/>").text("Filter Links").appendTo(checkwrap);
+                $("<input/>").attr("type", "checkbox").prependTo(checklbl);
+
+            var save = $("<button/>").addClass("btn btn-xs btn-success")
+                .insertAfter(control);
+            $("<span/>").addClass("glyphicon glyphicon-save").appendTo(save);
+        });
+    });
+    $(tbl.children()[1]).sortable({
+        start: function(ev, ui) {
+            FILTER_FROM = ui.item.prevAll().length;
+        },
+        update: function(ev, ui) {
+            FILTER_TO = ui.item.prevAll().length;
+            if(FILTER_TO != FILTER_FROM) {
+                socket.emit("moveFilter", {
+                    from: FILTER_FROM,
+                    to: FILTER_TO
+                });
+            }
         }
     });
 }

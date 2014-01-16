@@ -466,6 +466,8 @@ $("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));
 ["#showmediaurl", "#showsearch", "#showcustomembed"].forEach(function (id) {
     $(id).click(function () {
         $(".plcontrol-collapse").collapse("hide");
+        $("#plcontrol button").button("hide");
+        $(id).button("toggle");
     });
 });
 $(".plcontrol-collapse").collapse();
@@ -493,7 +495,47 @@ $(".cs-textbox").keyup(function () {
         }
 
         var data = {};
-        data[key] = value;
+        if (key.match(/chat_antiflood_(burst|sustained)/)) {
+            data = {
+                chat_antiflood_params: {
+                    burst: $("#cs-chat_antiflood_burst").val(),
+                    sustained: $("#cs-chat_antiflood_sustained").val()
+                }
+            };
+        } else {
+            data[key] = value;
+        }
         socket.emit("setOptions", data);
     }, 1000);
+});
+
+$("#chanlog_refresh").click(function () {
+    socket.emit("readChanLog");
+});
+
+$("#cs-chanlog input[type='checkbox']").change(function () {
+    var id = $(this).attr("id");
+    if (id !== "filter_all" && $(this).prop("checked")) {
+        $("#filter_all").prop("checked", false);
+    }
+
+    filterChannelLog();
+});
+
+$("#cs-motdsubmit").click(function () {
+    socket.emit("setMotd", {
+        motd: $("#cs-motdtext").val()
+    });
+});
+
+$("#cs-csssubmit").click(function () {
+    socket.emit("setChannelCSS", {
+        css: $("#cs-csstext").val()
+    });
+});
+
+$("#cs-jssubmit").click(function () {
+    socket.emit("setChannelJS", {
+        js: $("#cs-jstext").val()
+    });
 });
