@@ -1821,10 +1821,19 @@ function formatCSChatFilterList() {
     var entries = tbl.data("entries") || [];
     entries.forEach(function (f) {
         var tr = $("<tr/>").appendTo(tbl);
+        var controlgroup = $("<div/>").addClass("btn-group")
+            .appendTo($("<td/>").appendTo(tr));
         var control = $("<button/>").addClass("btn btn-xs btn-default")
             .attr("title", "Edit this filter")
-            .appendTo($("<td/>").appendTo(tr));
+            .appendTo(controlgroup);
         $("<span/>").addClass("glyphicon glyphicon-list").appendTo(control);
+        var del = $("<button/>").addClass("btn btn-xs btn-danger")
+            .appendTo(controlgroup);
+        $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(del);
+        del.click(function () {
+            socket.emit("removeFilter", f);
+            socket.emit("requestChatFilters");
+        });
         var name = $("<code/>").text(f.name).appendTo($("<td/>").appendTo(tr));
         var activetd = $("<td/>").appendTo(tr);
         var active = $("<input/>").attr("type", "checkbox")
@@ -1835,8 +1844,22 @@ function formatCSChatFilterList() {
                 socket.emit("updateFilter", f);
             });
 
+        var reset = function () {
+            control.data("editor") && control.data("editor").remove();
+            control.data("editor", null);
+            control.parent().find(".btn-success").remove();
+            var tbody = $(tbl.children()[1]);
+            if (tbody.find(".filter-edit-row").length === 0) {
+                tbody.sortable("enable");
+            }
+        };
+
         control.click(function () {
-            var tr2 = $("<tr/>").insertAfter(tr);
+            if (control.data("editor")) {
+                return reset();
+            }
+            $(tbl.children()[1]).sortable("disable");
+            var tr2 = $("<tr/>").insertAfter(tr).addClass("filter-edit-row");
             var wrap = $("<td/>").attr("colspan", "3").appendTo(tr2);
             var form = $("<form/>").addClass("form-inline").attr("role", "form")
                 .attr("action", "javascript:void(0)")
@@ -1859,11 +1882,31 @@ function formatCSChatFilterList() {
 
             var checkwrap = $("<div/>").addClass("checkbox").appendTo(form);
             var checklbl = $("<label/>").text("Filter Links").appendTo(checkwrap);
-                $("<input/>").attr("type", "checkbox").prependTo(checklbl);
+            var filterlinks = $("<input/>").attr("type", "checkbox")
+                .prependTo(checklbl)
+                .prop("checked", f.filterlinks);
 
             var save = $("<button/>").addClass("btn btn-xs btn-success")
+                .attr("title", "Save changes")
                 .insertAfter(control);
-            $("<span/>").addClass("glyphicon glyphicon-save").appendTo(save);
+            $("<span/>").addClass("glyphicon glyphicon-floppy-save").appendTo(save);
+            save.click(function () {
+                f.source = regex.val();
+                f.flags = flags.val();
+                f.replace = replace.val();
+                f.filterlinks = filterlinks.prop("checked");
+                try {
+                    new RegExp(f.source, f.flags);
+                } catch (e) {
+                    alert("Invalid regex: " + e);
+                }
+
+                socket.emit("updateFilter", f);
+                reset();
+                socket.emit("requestChatFilters");
+            });
+
+            control.data("editor", tr2);
         });
     });
     $(tbl.children()[1]).sortable({
