@@ -528,7 +528,7 @@ Callbacks = {
             return;
         }
 
-        user.data("meta", data);
+        user.data("meta", data.meta);
         if (data.meta.muted || data.meta.smuted) {
             user.data("icon", "glyphicon-volume-off");
         } else {
@@ -586,7 +586,7 @@ Callbacks = {
     },
 
     setUserRank: function (data) {
-        var entries = $("#cs-chanranks table").data("entries");
+        var entries = $("#cs-chanranks table").data("entries") || [];
         var found = false;
         for (var i = 0; i < entries.length; i++) {
             if (entries[i].name === data.name) {

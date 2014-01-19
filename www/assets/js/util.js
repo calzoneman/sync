@@ -159,7 +159,8 @@ function getNameColor(rank) {
 function addUserDropdown(entry) {
     var name = entry.data("name"),
         rank = entry.data("rank"),
-        leader = entry.data("leader");
+        leader = entry.data("leader"),
+        meta = entry.data("meta") || {};
     entry.find(".user-dropdown").remove();
     var menu = $("<div/>")
         .addClass("user-dropdown")
@@ -220,6 +221,49 @@ function addUserDropdown(entry) {
                 });
             })
             .appendTo(btngroup);
+    }
+
+    /* mute buttons */
+    if (hasPermission("mute")) {
+        var mute = $("<button/>").addClass("btn btn-xs btn-default")
+            .text("Mute")
+            .click(function () {
+                socket.emit("chatMsg", {
+                    msg: "/mute " + name
+                });
+                mute.hide();
+                smute.hide();
+                unmute.show();
+            })
+            .appendTo(btngroup);
+        var smute = $("<button/>").addClass("btn btn-xs btn-default")
+            .text("Shadow Mute")
+            .click(function () {
+                socket.emit("chatMsg", {
+                    msg: "/smute " + name
+                });
+                mute.hide();
+                smute.hide();
+                unmute.show();
+            })
+            .appendTo(btngroup);
+        var unmute = $("<button/>").addClass("btn btn-xs btn-default")
+            .text("Unmute")
+            .click(function () {
+                socket.emit("chatMsg", {
+                    msg: "/unmute " + name
+                });
+                unmute.hide();
+                mute.show();
+                smute.show();
+            })
+            .appendTo(btngroup);
+        if (meta.muted) {
+            mute.hide();
+            smute.hide();
+        } else {
+            unmute.hide();
+        }
     }
 
     /* ban buttons */
