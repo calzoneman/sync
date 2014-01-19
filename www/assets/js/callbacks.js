@@ -529,6 +529,15 @@ Callbacks = {
         }
 
         user.data("meta", data);
+        if (data.meta.muted || data.meta.smuted) {
+            user.data("icon", "glyphicon-volume-off");
+        } else {
+            user.data("icon", false);
+        }
+
+        formatUserlistItem(user, data);
+        addUserDropdown(user, data);
+        sortUserlist();
     },
 
     setUserProfile: function (data) {
