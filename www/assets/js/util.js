@@ -789,6 +789,7 @@ function handlePermissionChange() {
         handleModPermissions();
     }
 
+    setVisible("#showchansettings", CLIENT.rank >= 2);
     setVisible("#playlistmanagerwrap", CLIENT.rank >= 1);
     setVisible("#modflair", CLIENT.rank >= 2);
     setVisible("#adminflair", CLIENT.rank >= 255);

@@ -600,12 +600,5 @@ $("#cs-chatfilters-import").click(function () {
         return;
     }
 
-    var entries = $("#cs-chatfilters table").data("entries") || [];
-    entries.forEach(function (f) {
-        socket.emit("removeFilter", f);
-    });
-
-    data.forEach(function (f) {
-        socket.emit("updateFilter", f);
-    });
+    socket.emit("importFilters", data);
 });
