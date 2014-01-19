@@ -47,23 +47,17 @@ Callbacks = {
         socket.emit("joinChannel", {
             name: CHANNEL.name
         });
+
         if (CHANNEL.opts.password) {
             socket.emit("channelPassword", CHANNEL.opts.password);
         }
-        /*
-        if(NAME && SESSION) {
-            socket.emit("login", {
-                name: NAME,
-                session: SESSION
-            });
-        }
-        // Guest auto-relogin
-        else if(CLIENT.name) {
+
+        if (CLIENT.name && CLIENT.guest) {
             socket.emit("login", {
                 name: CLIENT.name
             });
         }
-        */
+
         $("<div/>").addClass("server-msg-reconnect")
             .text("Connected")
             .appendTo($("#messagebuffer"));
@@ -237,6 +231,44 @@ Callbacks = {
     chatFilters: function(entries) {
         var tbl = $("#cs-chatfilters table");
         tbl.data("entries", entries);
+        formatCSChatFilterList();
+    },
+
+    updateChatFilter: function (f) {
+        var entries = $("#cs-chatfilters table").data("entries") || [];
+        var found = false;
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i].name === f.name) {
+                entries[i] = f;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            entries.push(f);
+        }
+
+        $("#cs-chatfilters table").data("entries", entries);
+        formatCSChatFilterList();
+    },
+
+    deleteChatFilter: function (f) {
+        var entries = $("#cs-chatfilters table").data("entries") || [];
+        var found = false;
+        for (var i = 0; i < entries.length; i++) {
+            if (entries[i].name === f.name) {
+                entries[i] = f;
+                found = i;
+                break;
+            }
+        }
+
+        if (found !== false) {
+            entries.splice(found, 1);
+        }
+
+        $("#cs-chatfilters table").data("entries", entries);
         formatCSChatFilterList();
     },
 
@@ -429,6 +461,7 @@ Callbacks = {
         }
         else {
             CLIENT.name = data.name;
+            CLIENT.guest = data.guest;
             CLIENT.logged_in = true;
         }
     },
@@ -478,6 +511,11 @@ Callbacks = {
         div.data("profile", data.profile);
         div.data("meta", data.meta);
         div.data("afk", data.meta.afk);
+        if (data.meta.muted || data.meta.smuted) {
+            div.data("icon", "glyphicon-volume-off");
+        } else {
+            div.data("icon", false);
+        }
         formatUserlistItem(div, data);
         addUserDropdown(div, data);
         div.appendTo($("#userlist"));

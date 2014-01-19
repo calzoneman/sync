@@ -112,12 +112,27 @@ mixin chanranks
 mixin chatfilters
   #cs-chatfilters.tab-pane
     h4 Chat Filters
+    form.form-horizontal(action="javascript:void(0)", role="form")
+      +textbox("cs-chatfilters-newname", "Filter name")
+      +textbox("cs-chatfilters-newregex", "Filter regex")
+      .form-group
+        label.control-label.col-sm-4(for="cs-chatfilters-newflags") Flags
+        .col-sm-8
+          input#cs-chatfilters-newflags.form-control.cs-textbox(type="text", value="g")
+      +textbox("cs-chatfilters-newreplace", "Replacement")
+      .form-group
+        .col-sm-8.col-sm-offset-4
+          button#cs-chatfilters-newsubmit.btn.btn-primary Create Filter
     table.table.table-striped.table-condensed
       thead
         tr
           th Control
           th Name
           th Active
+
+    button#cs-chatfilters-export.btn.btn-default Export filter list
+    button#cs-chatfilters-import.btn.btn-default Import filter list
+    textarea#cs-chatfilters-exporttext.form-control(rows="5")
 
 mixin chanlog
   #cs-chanlog.tab-pane

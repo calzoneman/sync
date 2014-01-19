@@ -36,7 +36,6 @@ var CHANNEL = {
 };
 
 var PLAYER = false;
-var VIDEOQUALITY = false;
 var FLUIDLAYOUT = false;
 var VWIDTH;
 var VHEIGHT;
@@ -84,7 +83,7 @@ function setOpt(k, v) {
 
 function getOrDefault(k, def) {
     var v = getOpt(k);
-    if(v === null)
+    if(v === null || v === "null")
         return def;
     if(v === "true")
         return true;
@@ -118,7 +117,7 @@ var USEROPTS = {
     ignore_channeljs     : getOrDefault("ignore_channeljs", false),
     sort_rank            : getOrDefault("sort_rank", false),
     sort_afk             : getOrDefault("sort_afk", false),
-    default_quality      : getOrDefault("default_quality", "#quality_auto"),
+    default_quality      : getOrDefault("default_quality", ""),
     boop                 : getOrDefault("boop", false),
     secure_connection    : getOrDefault("secure_connection", false)
 };

@@ -67,10 +67,10 @@ var YouTubePlayer = function (data) {
     self.load = function (data) {
         if(self.player && self.player.loadVideoById) {
             self.player.loadVideoById(data.id, data.currentTime);
-            if(VIDEOQUALITY) {
-                self.player.setPlaybackQuality(VIDEOQUALITY);
+            if (USEROPTS.default_quality && USEROPTS.default_quality !== "auto") {
+                self.player.setPlaybackQuality(USEROPTS.default_quality);
                 // What's that?  Another stupid hack for the HTML5 player?
-                self.player.setPlaybackQuality(VIDEOQUALITY);
+                self.player.setPlaybackQuality(USEROPTS.default_quality);
             }
             self.videoId = data.id;
             self.videoLength = data.seconds;

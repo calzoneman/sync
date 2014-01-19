@@ -492,6 +492,10 @@
     margin-top: 10px;
 }
 
-#cs-chatfilters input[type='text'] {
+#cs-chatfilters input[type='text'], #cs-chatfilters textarea {
     font-family: Monospace;
+}
+
+#cs-chatfilters-exporttext {
+    margin-top: 5px;
 }

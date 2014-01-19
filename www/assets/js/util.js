@@ -139,7 +139,7 @@ function formatUserlistItem(div) {
         $("<span/>").addClass("glyphicon glyphicon-time").appendTo(icon);
     }
     if (data.icon) {
-        $("<span/>").addClass(data.icon).prependTo(icon);
+        $("<span/>").addClass("glyphicon " + data.icon).prependTo(icon);
     }
 }
 
@@ -506,7 +506,8 @@ function rebuildPlaylist() {
 /* user settings menu */
 function showUserOptions() {
     hidePlayer();
-    $("#useroptions").on("hidden", function () {
+    $("#useroptions").on("hidden.bs.modal", function () {
+        console.log("unhiding");
         unhidePlayer();
     });
 
@@ -528,6 +529,7 @@ function showUserOptions() {
     $("#us-hidevideo").prop("checked", USEROPTS.hidevid);
     $("#us-playlistbuttons").prop("checked", USEROPTS.qbtn_hide);
     $("#us-oldbtns").prop("checked", USEROPTS.qbtn_idontlikechange);
+    $("#us-default-quality").val(USEROPTS.default_quality || "auto");
 
     $("#us-chat-timestamp").prop("checked", USEROPTS.show_timestamps);
     $("#us-sort-rank").prop("checked", USEROPTS.sort_rank);
@@ -556,6 +558,7 @@ function saveUserOptions() {
     USEROPTS.hidevid              = $("#us-hidevideo").prop("checked");
     USEROPTS.qbtn_hide            = $("#us-playlistbuttons").prop("checked");
     USEROPTS.qbtn_idontlikechange = $("#us-oldbtns").prop("checked");
+    USEROPTS.default_quality      = $("#us-default-quality").val();
 
     USEROPTS.show_timestamps      = $("#us-chat-timestamp").prop("checked");
     USEROPTS.sort_rank            = $("#us-sort-rank").prop("checked");
@@ -838,6 +841,14 @@ function handlePermissionChange() {
 
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
+
+    // Weird things happen to the alignment in chromium when I toggle visibility
+    // of the above buttons
+    // This fixes it?
+    var wtf = $("#rightcontrols .pull-right").removeClass("pull-right")
+    setTimeout(function () {
+        wtf.addClass("pull-right");
+    }, 1);
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
     $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
@@ -1444,9 +1455,10 @@ function hidePlayer() {
         return;
 
     PLAYER.size = {
-        width: $("#ytapiplayer").attr("width"),
-        height: $("#ytapiplayer").attr("height")
+        width: $("#ytapiplayer").width(),
+        height: $("#ytapiplayer").height()
     };
+
     $("#ytapiplayer").attr("width", 1)
         .attr("height", 1);
 }
@@ -1458,8 +1470,8 @@ function unhidePlayer() {
     if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
         return;
 
-    $("#ytapiplayer").attr("width", PLAYER.size.width)
-        .attr("height", PLAYER.size.height);
+    $("#ytapiplayer").width(PLAYER.size.width)
+        .height(PLAYER.size.height);
 }
 
 function chatDialog(div) {
@@ -1654,7 +1666,7 @@ function makeModal() {
         .html("&times;")
         .appendTo(head);
 
-    wrap.on("hidden", function () {
+    wrap.on("hidden.bs.modal", function () {
         unhidePlayer();
         wrap.remove();
     });
@@ -1832,7 +1844,6 @@ function formatCSChatFilterList() {
         $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(del);
         del.click(function () {
             socket.emit("removeFilter", f);
-            socket.emit("requestChatFilters");
         });
         var name = $("<code/>").text(f.name).appendTo($("<td/>").appendTo(tr));
         var activetd = $("<td/>").appendTo(tr);
@@ -1903,7 +1914,6 @@ function formatCSChatFilterList() {
 
                 socket.emit("updateFilter", f);
                 reset();
-                socket.emit("requestChatFilters");
             });
 
             control.data("editor", tr2);

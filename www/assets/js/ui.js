@@ -539,3 +539,73 @@ $("#cs-jssubmit").click(function () {
         js: $("#cs-jstext").val()
     });
 });
+
+$("#cs-chatfilters-newsubmit").click(function () {
+    var name = $("#cs-chatfilters-newname").val();
+    var regex = $("#cs-chatfilters-newregex").val();
+    var flags = $("#cs-chatfilters-newflags").val();
+    var replace = $("#cs-chatfilters-newreplace").val();
+
+    try {
+        new RegExp(regex, flags);
+    } catch (e) {
+        alert("Regex error: " + e);
+        return;
+    }
+
+    console.log(name, regex, flags, replace);
+    socket.emit("updateFilter", {
+        name: name,
+        source: regex,
+        flags: flags,
+        replace: replace,
+        active: true
+    });
+
+    $("#cs-chatfilters-newname").val("");
+    $("#cs-chatfilters-newregex").val("");
+    $("#cs-chatfilters-newflags").val("");
+    $("#cs-chatfilters-newreplace").val("");
+});
+
+$("#cs-chatfilters-export").click(function () {
+    var callback = function (data) {
+        socket.listeners("chatFilters").splice(
+            socket.listeners("chatFilters").indexOf(callback)
+        );
+
+        $("#cs-chatfilters-exporttext").val(JSON.stringify(data));
+    };
+
+    socket.on("chatFilters", callback);
+    socket.emit("requestChatFilters");
+});
+
+$("#cs-chatfilters-import").click(function () {
+    var text = $("#cs-chatfilters-exporttext").val();
+    var choose = confirm("You are about to import filters from the contents of the textbox below the import button.  If this is empty, it will clear all of your filters.  Are you sure you want to continue?");
+    if (!choose) {
+        return;
+    }
+
+    if (text.trim() === "") {
+        text = "[]";
+    }
+
+    var data;
+    try {
+        data = JSON.parse(text);
+    } catch (e) {
+        alert("Invalid import data: " + e);
+        return;
+    }
+
+    var entries = $("#cs-chatfilters table").data("entries") || [];
+    entries.forEach(function (f) {
+        socket.emit("removeFilter", f);
+    });
+
+    data.forEach(function (f) {
+        socket.emit("updateFilter", f);
+    });
+});
