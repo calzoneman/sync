@@ -12,5 +12,30 @@ html(lang="en")
           ul.nav.navbar-nav
             mixin navdefaultlinks("/")
           mixin navloginlogout("/")
+      section#mainpage
+        .container
+          .col-lg-9.col-md-9
+            h3 Public Channels
+            table.table.table-bordered.table-striped
+              thead
+                th Channel
+                th # Connected
+                th Now Playing
+              tbody
+                each chan in channels
+                  tr
+                    td #{chan.pagetitle} (#{chan.name})
+                    td= chan.usercount
+                    td= chan.mediatitle
+          .col-lg-3.col-md-3
+            h3 Enter Channel
+            input#channelname.form-control(type="text", placeholder="Channel Name")
+            p.text-muted New channels can be registered from the <a href="/account/channels">My Channels</a> page.
     include footer
     mixin footer()
+    script(type="text/javascript").
+      $("#channelname").keydown(function (ev) {
+        if (ev.keyCode === 13) {
+          location.href = "/r/" + $("#channelname").val();
+        }
+      });
