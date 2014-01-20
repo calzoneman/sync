@@ -216,8 +216,9 @@ function addUserDropdown(entry) {
         $("<button/>").addClass("btn btn-xs btn-default")
             .text("Kick")
             .click(function () {
+                var reason = prompt("Enter kick reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/kick " + name
+                    msg: "/kick " + name + " " + reason
                 });
             })
             .appendTo(btngroup);
@@ -271,16 +272,18 @@ function addUserDropdown(entry) {
         $("<button/>").addClass("btn btn-xs btn-default")
             .text("Name Ban")
             .click(function () {
+                var reason = prompt("Enter ban reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/ban " + name
+                    msg: "/ban " + name + " " + reason
                 });
             })
             .appendTo(btngroup);
         $("<button/>").addClass("btn btn-xs btn-default")
             .text("IP Ban")
             .click(function () {
+                var reason = prompt("Enter ban reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/ipban " + name
+                    msg: "/ipban " + name + " " + reason
                 });
             })
             .appendTo(btngroup);
