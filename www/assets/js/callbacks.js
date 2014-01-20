@@ -300,8 +300,7 @@ Callbacks = {
 
     setPermissions: function(perms) {
         CHANNEL.perms = perms;
-        if(CLIENT.rank >= Rank.Admin)
-            genPermissionsEditor();
+        genPermissionsEditor();
         handlePermissionChange();
     },
 

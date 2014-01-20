@@ -177,6 +177,7 @@ html(lang="en")
                   li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") Edit MOTD
                   li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") Edit CSS
                   li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Edit Javascript
+                  li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Edit Permissions
                   li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Edit moderators
               li: a(href="#cs-banlist", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestBanlist')") Ban list
           .modal-body
@@ -192,6 +193,7 @@ html(lang="en")
               mixin chanranks()
               mixin chatfilters()
               mixin chanlog()
+              mixin permeditor()
           .modal-footer
             button.btn.btn-default(type="button", data-dismiss="modal") Close
     include footer

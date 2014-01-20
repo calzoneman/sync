@@ -1370,33 +1370,36 @@ function chatOnly() {
 
 // TODO fix
 function genPermissionsEditor() {
-    $("#permedit").html("");
+    $("#cs-permedit").html("");
     var form = $("<form/>").addClass("form-horizontal")
         .attr("action", "javascript:void(0)")
-        .appendTo($("#permedit"));
-    var fs = $("<fieldset/>").appendTo(form);
+        .appendTo($("#cs-permedit"));
 
     function makeOption(text, key, permset, defval) {
-        var group = $("<div/>").addClass("control-group")
-            .appendTo(fs);
-        $("<label/>").addClass("control-label")
+        var group = $("<div/>").addClass("form-group")
+            .appendTo(form);
+        $("<label/>").addClass("control-label col-sm-4")
             .text(text)
             .appendTo(group);
-        var controls = $("<div/>").addClass("controls")
+        var controls = $("<div/>").addClass("col-sm-8")
             .appendTo(group);
-        var select = $("<select/>").appendTo(controls);
-        select.data("key", key);
-        for(var i = 0; i < permset.length; i++) {
+        var select = $("<select/>").addClass("form-control")
+            .appendTo(controls)
+            .data("key", key);
+
+        for (var i = 0; i < permset.length; i++) {
             $("<option/>").attr("value", permset[i][1])
                 .text(permset[i][0])
-                .attr("selected", defval == permset[i][1])
+                .attr("selected", defval === permset[i][1])
                 .appendTo(select);
         }
     }
 
-    function addDivider(text) {
-        $("<hr/>").appendTo(fs);
-        $("<h3/>").text(text).appendTo(fs);
+    function addDivider(text, nonewline) {
+        $("<hr/>").appendTo(form);
+        if (!nonewline) {
+            $("<h3/>").text(text).appendTo(form);
+        }
     }
 
     var standard = [
@@ -1431,7 +1434,7 @@ function genPermissionsEditor() {
         ["Nobody"       , "1000000"]
     ];
 
-    $("<h3/>").text("Open playlist permissions").appendTo(fs);
+    $("<h3/>").text("Open playlist permissions").appendTo(form);
     makeOption("Add to playlist", "oplaylistadd", standard, CHANNEL.perms.oplaylistadd+"");
     makeOption("Add/move to next", "oplaylistnext", standard, CHANNEL.perms.oplaylistnext+"");
     makeOption("Move playlist items", "oplaylistmove", standard, CHANNEL.perms.oplaylistmove+"");
@@ -1471,15 +1474,28 @@ function genPermissionsEditor() {
     makeOption("Drink calls", "drink", modleader, CHANNEL.perms.drink+"");
     makeOption("Chat", "chat", noanon, CHANNEL.perms.chat+"");
 
-    var submit = $("<button/>").addClass("btn btn-primary").appendTo(fs);
+    var sgroup = $("<div/>").addClass("form-group").appendTo(form);
+    var sgroupinner = $("<div/>").addClass("col-sm-8 col-sm-offset-4").appendTo(sgroup);
+    var submit = $("<button/>").addClass("btn btn-primary").appendTo(sgroupinner);
     submit.text("Save");
     submit.click(function() {
         var perms = {};
-        fs.find("select").each(function() {
+        form.find("select").each(function() {
             perms[$(this).data("key")] = parseFloat($(this).val());
         });
         socket.emit("setPermissions", perms);
     });
+
+    var msggroup = $("<div/>").addClass("form-group").insertAfter(sgroup);
+    var msginner = $("<div/>").addClass("col-sm-8 col-sm-offset-4").appendTo(msggroup);
+    var text = $("<span/>").addClass("text-info").text("Permissions updated")
+        .appendTo(msginner);
+
+    setTimeout(function () {
+        msggroup.hide("fade", function () {
+            msggroup.remove();
+        });
+    }, 5000);
 }
 
 function waitUntilDefined(obj, key, fn) {
