@@ -26,11 +26,10 @@ html(lang="en")
                 .alert.alert-danger.center.messagebox
                   strong Profile Error
                   p= profileError
-              .media
-                a.pull-left(href="#")
-                  img.media-object(src=profileImage, alt="Profile Image")
-                .media-body
-                  = profileText
+              .profile-box(style="position: inherit")
+                img.profile-image(src=profileImage)
+                strong= loginName
+                p= profileText
               h3 Edit Profile
               form(action="/account/profile", method="post", role="form")
                 .form-group
@@ -38,8 +37,10 @@ html(lang="en")
                   input#profileimage.form-control(type="text", name="image")
                 .form-group
                   label.control-label(for="profiletext") Text
-                  textarea#profiletext.form-control(cols="10")
+                  textarea#profiletext.form-control(cols="10", name="text")= profileText
                 button.btn.btn-primary.btn-block(type="submit") Save
 
     include footer
     mixin footer()
+    script(type="text/javascript").
+      $("#profileimage").val("#{profileImage}");
