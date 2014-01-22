@@ -13,17 +13,15 @@ var Server = require("./lib/server");
 var Config = require("./lib/config");
 var Logger = require("./lib/logger");
 
-Config.load("cfg.json", function (cfg) {
-    cfg["debug"] = true;
-    var sv = Server.init(cfg);
-    if(!cfg["debug"]) {
-        process.on("uncaughtException", function (err) {
-            Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
-            Logger.errlog.log(err.stack);
-        });
+Config.load("config.yaml");
+var sv = Server.init();
+if (!Config.get("debug")) {
+    process.on("uncaughtException", function (err) {
+        Logger.errlog.log("[SEVERE] Uncaught Exception: " + err);
+        Logger.errlog.log(err.stack);
+    });
 
-        process.on("SIGINT", function () {
-            sv.shutdown();
-        });
-    }
-});
+    process.on("SIGINT", function () {
+        sv.shutdown();
+    });
+}

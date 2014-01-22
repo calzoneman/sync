@@ -1,0 +1,66 @@
+# MySQL server details
+# server: domain or IP of MySQL server
+# database: a MySQL database that the user specified has read/write access to
+# user: username to authenticate as
+# password: password for user
+mysql:
+  server: 'localhost'
+  database: 'cytube3'
+  user: 'cytube3'
+  password: 'pickles'
+
+# HTTP server details
+http:
+  host: ''
+  port: 8080
+  domain: 'http://localhost'
+
+# HTTPS server details
+https:
+  enabled: false
+  port: 8443
+  domain: 'https://localhost'
+  keyfile: 'localhost.key'
+  passphrase: ''
+  certfile: 'localhost.cert'
+
+# Socket.IO server details
+io:
+  port: 1337
+  # limit the number of concurrent socket connections per IP address
+  ip-connection-limit: 10
+
+# Mailer details (used for sending password reset links)
+# see https://github.com/andris9/Nodemailer
+mail:
+  enabled: false
+  transport: 'SMTP'
+  config:
+    service: 'Gmail'
+    auth:
+      user: 'some.user@gmail.com'
+      password: 'supersecretpassword'
+  from-address: 'some.user@gmail.com'
+
+# GData API v2 developer key (for non-anonymous youtube requests)
+youtube-v2-key: ''
+# Minutes between saving channel state to disk
+channel-save-interval: 5
+# Minimum number of seconds between guest logins from the same IP
+guest-login-delay: 60
+# Block known Tor IP addresses
+enable-tor-blocker: true
+
+# Configure statistics tracking
+stats:
+  # Interval (in milliseconds) between data points - default 1h
+  interval: 3600000
+  # Maximum age of a datapoint (ms) before it is deleted - default 24h
+  max-age: 86400000
+
+# Configure periodic clearing of old alias data
+aliases:
+  # Interval (in milliseconds) between subsequent runs of clearing
+  purge-interval: 3600000
+  # Maximum age of an alias (in milliseconds) - default 1 month
+  max-age: 2592000000
