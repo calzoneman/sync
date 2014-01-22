@@ -4,4 +4,7 @@ mixin footer
       p.text-muted.credit.
         Copyright &copy; 2013 Calvin Montgomery
   script(src="/js/jquery.js")
+  // Must be included before jQuery-UI since jQuery-UI overrides jQuery.fn.button
+  // I should really abandon this crap one day
+  script(src="//code.jquery.com/ui/1.10.3/jquery-ui.js")
   script(src="/js/bootstrap.js")

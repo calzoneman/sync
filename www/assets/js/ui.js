@@ -465,11 +465,17 @@ $("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));
 
 ["#showmediaurl", "#showsearch", "#showcustomembed"].forEach(function (id) {
     $(id).click(function () {
+        var wasActive = $(id).hasClass("active");
         $(".plcontrol-collapse").collapse("hide");
-        $("#plcontrol button").button("hide");
-        $(id).button("toggle");
+        $("#plcontrol button.active").button("toggle");
+        if (!wasActive) {
+            console.log($(id)[0].className);
+            $(id).button("toggle");
+        }
     });
 });
+$("#plcontrol button").button();
+$("#plcontrol button").button("hide");
 $(".plcontrol-collapse").collapse();
 $(".plcontrol-collapse").collapse("hide");
 

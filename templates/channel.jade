@@ -49,19 +49,6 @@ html(lang="en")
             #leftcontrols.col-lg-5.col-md-5
               button#newpollbtn.btn.btn-sm.btn-default New Poll
             #rightcontrols.col-lg-7.col-md-7
-              //#qualitywrap.dropdown.btn-group
-              //  button#qdrop.btn.btn-sm.btn-default.dropdown-toggle(data-toggle="dropdown") Quality
-              //    b.caret
-              //  mixin quality_item(id, text)
-              //    li(role="presentation")
-              //      a(id="#{id}", role="menuitem", href="javascript:void(0)") #{text}
-              //  ul.dropdown-menu(role="menu", aria-labelledby="qdrop")
-              //    mixin quality_item("quality_auto", "Quality: Auto")
-              //    mixin quality_item("quality_240p", "240p")
-              //    mixin quality_item("quality_360p", "360p")
-              //    mixin quality_item("quality_480p", "480p")
-              //    mixin quality_item("quality_720p", "720p")
-              //    mixin quality_item("quality_1080p", "1080p")
               #plcontrol.btn-group
                 button#showsearch.btn.btn-sm.btn-default(title="Search for a video", data-toggle="collapse", data-target="#searchcontrol")
                   span.glyphicon.glyphicon-search
@@ -198,7 +185,6 @@ html(lang="en")
             button.btn.btn-default(type="button", data-dismiss="modal") Close
     include footer
     mixin footer()
-    script(src="//code.jquery.com/ui/1.10.3/jquery-ui.js")
     script(src="/assets/js/iourl.js")
     //script(src="#{ioUrl}/socket.io/socket.io.js")
     //script(type="text/javascript").
