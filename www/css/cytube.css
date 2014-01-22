@@ -28,7 +28,7 @@
     border-radius: 5px;
 }
 
-#playlist, #userlist {
+#userlist {
     list-style: none outside none;
     padding: 0;
 }
@@ -199,6 +199,7 @@
 #library {
     padding-left: 0;
     padding-right: 0;
+    margin-bottom: 5px;
 }
 
 #library_search, #queue_next, #ce_queue_next {
@@ -230,10 +231,10 @@
 .queue_entry {
     line-height: 22px;
     background-color: #ffffff;
-    margin: 0 0 2px auto;
     padding: 2px;
     font-size: 8pt;
     border: 1px solid #aaaaaa;
+    border-top-width: 0;
 }
 
 .queue_temp {
@@ -245,9 +246,22 @@
     border-color: #bce8f1;
 }
 
+#queue {
+    padding: 0;
+    margin: 0;
+}
+
 #queue > li:last-child {
     border-bottom: 0;
     margin-bottom: 0;
+}
+
+.videolist > li:first-child {
+    border-top-width: 1px;
+}
+
+li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
+    border-top-width: 1px;
 }
 
 .qe_btn {
@@ -498,4 +512,8 @@
 
 #cs-chatfilters-exporttext {
     margin-top: 5px;
+}
+
+.pagination {
+    margin: 0;
 }

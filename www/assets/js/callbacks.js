@@ -862,11 +862,12 @@ Callbacks = {
                 $(li).appendTo($("#library"));
             },
 
-            itemsPerPage: 100
+            itemsPerPage: 10
         };
 
         var p = Paginate(data.results, opts);
-        p.paginator.insertBefore($("#library"))
+        p.paginator.insertAfter($("#library"))
+            .addClass("pull-right")
             .attr("id", "search_pagination");
         $("#library").data("paginator", p);
     },
