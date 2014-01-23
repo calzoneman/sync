@@ -24,7 +24,7 @@ html(lang="en")
               tbody
                 each chan in channels
                   tr
-                    td #{chan.pagetitle} (#{chan.name})
+                    td: a(href="/r/#{chan.name}") #{chan.pagetitle} (#{chan.name})
                     td= chan.usercount
                     td= chan.mediatitle
           .col-lg-3.col-md-3
