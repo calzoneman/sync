@@ -1061,17 +1061,17 @@ function playlistMove(from, after, cb) {
     var q = $("#queue");
 
     if(after === "prepend") {
-        lifrom.hide("fade", function() {
+        lifrom.hide("blind", function() {
             lifrom.detach();
             lifrom.prependTo(q);
-            lifrom.show("fade", cb);
+            lifrom.show("blind", cb);
         });
     }
     else if(after === "append") {
-        lifrom.hide("fade", function() {
+        lifrom.hide("blind", function() {
             lifrom.detach();
             lifrom.appendTo(q);
-            lifrom.show("fade", cb);
+            lifrom.show("blind", cb);
         });
     }
     else {
@@ -1080,10 +1080,10 @@ function playlistMove(from, after, cb) {
             cb(false);
             return;
         }
-        lifrom.hide("fade", function() {
+        lifrom.hide("blind", function() {
             lifrom.detach();
             lifrom.insertAfter(liafter);
-            lifrom.show("fade", cb);
+            lifrom.show("blind", cb);
         });
     }
 }
