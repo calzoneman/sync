@@ -155,18 +155,18 @@ html(lang="en")
             ul.nav.nav-tabs
               li: a(href="#cs-miscoptions", data-toggle="tab") General Settings
               li: a(href="#cs-adminoptions", data-toggle="tab") Admin Settings
-              li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Channel Log
-              li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
               li.dropdown
                 a#cs-edit-dd-toggle(href="#", data-toggle="dropdown") Edit
                   span.caret
                 ul.dropdown-menu
-                  li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") Edit MOTD
-                  li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") Edit CSS
-                  li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Edit Javascript
-                  li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Edit Permissions
-                  li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Edit moderators
+                  li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
+                  li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") MOTD
+                  li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") CSS
+                  li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Javascript
+                  li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Permissions
+                  li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Moderators
               li: a(href="#cs-banlist", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestBanlist')") Ban list
+              li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Log
           .modal-body
             .tab-content
               include channeloptions
@@ -185,17 +185,17 @@ html(lang="en")
             button.btn.btn-default(type="button", data-dismiss="modal") Close
     include footer
     mixin footer()
-    script(src="/assets/js/iourl.js")
-    //script(src="#{ioUrl}/socket.io/socket.io.js")
-    //script(type="text/javascript").
-    //  var IOSERVER = "#{ioUrl}";
-    //  var SOCKET = io.connect(IOSERVER);
-    //  $('#channeloptions').modal();
-    //  $('#channeloptions a[href="#cs-miscoptions"]').tab('show');
+    script(src=sioSource)
+    script(src="/sioconfig")
     script(src="/assets/js/data.js")
     script(src="/assets/js/util.js")
     script(src="/assets/js/player.js")
     script(src="/assets/js/paginator.js")
     script(src="/assets/js/ui.js")
     script(src="/assets/js/callbacks.js")
-    script(src="https://www.youtube.com/iframe_api")
+    script(defer, src="https://www.youtube.com/iframe_api")
+    script(defer, src="//api.dmcdn.net/all.js")
+    script(defer, src="/assets/js/jwplayer.js")
+    script(defer, src="/assets/js/sc.js")
+    script(defer, src="/assets/js/froogaloop.min.js")
+    script(defer, src="/assets/js/swf.js")
