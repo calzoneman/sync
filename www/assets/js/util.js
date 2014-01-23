@@ -190,8 +190,8 @@ function addUserDropdown(entry) {
         ignore.text("Unignore User");
     }
 
-    /* gib/remove leader (moderator+ only) */
-    if(CLIENT.rank >= 2) {
+    /* give/remove leader (moderator+ only) */
+    if (hasPermission("leaderctl")) {
         var ldr = $("<button/>").addClass("btn btn-xs btn-default")
             .appendTo(btngroup);
         if(leader) {
@@ -829,6 +829,8 @@ function handleModPermissions() {
     setParentVisible("a[href='#cs-filtereditor']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-chanranks']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-chanlog']", CLIENT.rank >= 3);
+    $("#qlockbtn").attr("disabled", !hasPermission("playlistlock"));
+    $("#cs-chatfilters-import").attr("disabled", !hasPermission("filterimport"));
 }
 
 function handlePermissionChange() {
@@ -846,7 +848,6 @@ function handlePermissionChange() {
     setVisible("#showmediaurl", hasPermission("playlistadd"));
     setVisible("#showcustomembed", hasPermission("playlistaddcustom"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
-    $("#qlockbtn").attr("disabled", CLIENT.rank < 2);
 
     if(hasPermission("playlistadd") ||
         hasPermission("playlistmove") ||
@@ -1371,7 +1372,6 @@ function chatOnly() {
 
 /* channel administration stuff */
 
-// TODO fix
 function genPermissionsEditor() {
     $("#cs-permedit").html("");
     var form = $("<form/>").addClass("form-horizontal")
@@ -1457,6 +1457,7 @@ function genPermissionsEditor() {
     makeOption("Exceed maximum media length", "exceedmaxlength", standard, CHANNEL.perms.exceedmaxlength+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");
+    makeOption("Lock/unlock playlist", "playlistlock", modleader, CHANNEL.perms.playlistlock+"");
     makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");
     makeOption("Clear playlist", "playlistclear", standard, CHANNEL.perms.playlistclear+"");
 
@@ -1467,11 +1468,13 @@ function genPermissionsEditor() {
     makeOption("Voteskip", "voteskip", standard, CHANNEL.perms.voteskip+"");
 
     addDivider("Moderation");
+    makeOption("Assign/Remove leader", "leaderctl", modplus, CHANNEL.perms.leaderctl+"");
     makeOption("Mute users", "mute", modleader, CHANNEL.perms.mute+"");
     makeOption("Kick users", "kick", modleader, CHANNEL.perms.kick+"");
     makeOption("Ban users", "ban", modplus, CHANNEL.perms.ban+"");
     makeOption("Edit MOTD", "motdedit", modplus, CHANNEL.perms.motdedit+"");
     makeOption("Edit chat filters", "filteredit", modplus, CHANNEL.perms.filteredit+"");
+    makeOption("Import chat filters", "filterimport", modplus, CHANNEL.perms.filterimport+"");
 
     addDivider("Misc");
     makeOption("Drink calls", "drink", modleader, CHANNEL.perms.drink+"");
