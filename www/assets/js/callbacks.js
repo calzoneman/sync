@@ -1040,20 +1040,19 @@ setupCallbacks = function() {
     }
 }
 
-$.getScript(IO_URL+"/socket.io/socket.io.js", function() {
-    try {
-        if(NO_WEBSOCKETS || USEROPTS.altsocket) {
-            var i = io.transports.indexOf("websocket");
-            if(i >= 0)
-                io.transports.splice(i, 1);
+try {
+    if (NO_WEBSOCKETS || USEROPTS.altsocket) {
+        var i = io.transports.indexOf("websocket");
+        if (i >= 0) {
+            io.transports.splice(i, 1);
         }
-        var opts = {};
-        if (location.protocol === "https:")
-            opts.secure = true;
-        socket = io.connect(IO_URL);
-        setupCallbacks();
     }
-    catch(e) {
-        Callbacks.disconnect();
+    var opts = {};
+    if (location.protocol === "https:" || USEROPTS.secure_connection) {
+        opts.secure = true;
     }
-});
+    socket = io.connect(IO_URL, opts);
+    setupCallbacks();
+} catch (e) {
+    Callbacks.disconnect();
+}

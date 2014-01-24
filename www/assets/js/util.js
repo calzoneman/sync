@@ -829,7 +829,6 @@ function handleModPermissions() {
     setParentVisible("a[href='#cs-filtereditor']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-chanranks']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-chanlog']", CLIENT.rank >= 3);
-    $("#qlockbtn").attr("disabled", !hasPermission("playlistlock"));
     $("#cs-chatfilters-import").attr("disabled", !hasPermission("filterimport"));
 }
 
@@ -838,6 +837,7 @@ function handlePermissionChange() {
         handleModPermissions();
     }
 
+    $("#qlockbtn").attr("disabled", !hasPermission("playlistlock"));
     setVisible("#showchansettings", CLIENT.rank >= 2);
     setVisible("#playlistmanagerwrap", CLIENT.rank >= 1);
     setVisible("#modflair", CLIENT.rank >= 2);
