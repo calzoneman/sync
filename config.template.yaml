@@ -24,6 +24,11 @@ https:
   passphrase: ''
   certfile: 'localhost.cert'
 
+# Page template values
+html-template:
+  title: 'CyTube',
+  description: 'Free, open source synchtube'
+
 # Socket.IO server details
 io:
   port: 1337
