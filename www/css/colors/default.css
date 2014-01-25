@@ -1,0 +1,24 @@
+body {
+    background-color: #f5f5f5;
+}
+
+#ytapiplayer {
+    background-color: #000000;
+}
+
+#chatheader, #currenttitle, #userlist, #messagebuffer, #plmeta {
+    background-color: #ffffff;
+}
+
+footer {
+    background-color: #eeeeee !important;
+}
+
+.queue_active {
+    background-color: #d9edf7;
+}
+
+.profile-box, .user-dropdown {
+    background-color: #ffffff;
+}
+

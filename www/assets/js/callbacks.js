@@ -1032,7 +1032,7 @@ setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
         socket.on(key, function(data) {
-            if(SOCKET_DEBUG)
+            if (SOCKET_DEBUG)
                 console.log(key, data);
             Callbacks[key](data);
         });

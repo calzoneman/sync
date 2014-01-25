@@ -608,3 +608,15 @@ $("#cs-chatfilters-import").click(function () {
 
     socket.emit("importFilters", data);
 });
+
+var toggleUserlist = function () {
+    if ($("#userlist").css("display") === "none") {
+        $("#userlist").show();
+    } else {
+        $("#userlist").hide();
+    }
+    scrollChat();
+};
+
+$("#usercount").click(toggleUserlist);
+$("#userlisttoggle").click(toggleUserlist);

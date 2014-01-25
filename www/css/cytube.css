@@ -10,10 +10,6 @@
     margin-top: 20px;
 }
 
-#ytapiplayer {
-    background-color: #000000;
-}
-
 #videowrap.hd-video-wrap {
     height: 410px;
     margin-bottom: 10px;
@@ -23,30 +19,16 @@
     margin-top: 10px;
 }
 
-#playlistwrap {
-    border: 1px solid #000000;
-    border-radius: 5px;
-}
-
 #userlist {
     list-style: none outside none;
     padding: 0;
 }
 
-#playlist > li {
-    margin: 3px 0;
-    border: 1px solid #000000;
-    line-height: 28px;
-    height: 28px;
-}
-
 #messagebuffer {
     width: auto;
-    border: 1px solid #ff0000;
 }
 
 #userlist {
-    border: 1px solid #0000ff;
     width: 120px;
     float: left;
     border-right: 0;
@@ -86,28 +68,6 @@
     margin-top: 3px;
 }
 
-#playlistheader > button {
-    margin-top: 5px;
-}
-
-.video-buttons {
-    margin-top: 2px;
-}
-
-.video-title, .video-buttons {
-    float: left;
-    margin-left: 5px;
-}
-
-.video-time {
-    float: right;
-    margin-right: 5px;
-}
-
-.video-title, .video-time {
-    font-size: 8pt;
-}
-
 .clear {
     clear: both;
 }
@@ -137,13 +97,7 @@
     font-weight: bold;
 }
 
-#chatheader, #currenttitle {
-    border: 1px solid #aaaaaa;
-    border-bottom: none;
-    margin: 0;
-}
-
-#chatheader > p, #currenttitle > p {
+#chatheader > p, #currenttitle {
     margin: 0;
 }
 
@@ -159,7 +113,6 @@
 }
 
 #ytapiplayer {
-    background-color: #000000;
     height: 380px;
 }
 
@@ -188,12 +141,8 @@
     margin: 5px 0;
 }
 
-#playlistcontrolswrap, #playlistmanagerwrap, #searchwrap, #voteskipwrap {
+#playlistmanagerwrap {
     margin-top: 10px;
-}
-
-#channelsettingswrap-outer {
-    margin-top: 20px;
 }
 
 #library {
@@ -230,7 +179,6 @@
 
 .queue_entry {
     line-height: 22px;
-    background-color: #ffffff;
     padding: 2px;
     font-size: 8pt;
     border: 1px solid #aaaaaa;
@@ -239,11 +187,6 @@
 
 .queue_temp {
     background-image: url(/img/stripe-diagonal.png);
-}
-
-.queue_active {
-    background-color: #d9edf7;
-    border-color: #bce8f1;
 }
 
 #queue {
@@ -406,7 +349,6 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     position: fixed;
     border: 1px solid #aaaaaa;
     border-radius: 5px;
-    background-color: #ffffff;
     max-width: 200px;
     padding: 5px;
 }
@@ -416,7 +358,6 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     position: absolute;
     border: 1px solid #aaaaaa;
     border-radius: 5px;
-    background-color: #ffffff;
     color: #000000;
     max-width: 200px;
     padding: 5px;
