@@ -119,8 +119,10 @@ function formatUserlistItem(div) {
             $("<em/>").text(meta.ip).appendTo(profile);
         }
         if (meta.aliases) {
-            $("<p/>").text("aliases: " + meta.aliases.join(", ")).appendTo(profile);
+            $("<br/>").appendTo(profile);
+            $("<em/>").text("aliases: " + meta.aliases.join(", ")).appendTo(profile);
         }
+        $("<hr/>").css("margin-top", "5px").css("margin-bottom", "5px").appendTo(profile);
         $("<p/>").text(data.profile.text).appendTo(profile);
     });
     name.mousemove(function(ev) {
@@ -642,7 +644,9 @@ function applyOpts() {
             .appendTo($("head"));
     }
 
-    switch(USEROPTS.layout) {
+    switch (USEROPTS.layout) {
+        case "synchtube-fluid":
+            fluidLayout();
         case "synchtube":
             synchtubeLayout();
             break;
@@ -657,7 +661,7 @@ function applyOpts() {
         $("#qualitywrap").html("");
         $("#videowrap").remove();
         $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
-        $("#chatline").removeClass().addClass("col-lg-12 col-md-12");
+        $("#chatline").removeClass().addClass("col-lg-12 col-md-12 form-control");
     }
 
     $("#chatbtn").remove();
