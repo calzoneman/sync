@@ -1355,7 +1355,7 @@ function addChatMessage(data) {
 
 function fluidLayout() {
     $(".container").removeClass("container").addClass("container-fluid");
-    // TODO resize
+    resizeStuff();
 }
 
 function synchtubeLayout() {
@@ -1374,6 +1374,22 @@ function chatOnly() {
     $("#controlsrow").remove();
     $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
 }
+
+function resizeStuff() {
+    // Only execute if we are on a fluid layout
+    if ($(".container-fluid").length === 0) {
+        return;
+    }
+    VWIDTH = $("#videowrap").width() + "";
+    VHEIGHT = Math.floor(parseInt(VWIDTH) * 9 / 16) + "";
+    $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
+
+    var h = parseInt(VHEIGHT) - 33;
+    $("#messagebuffer").height(h);
+    $("#userlist").height(h);
+}
+
+$(window).resize(resizeStuff);
 
 /* channel administration stuff */
 

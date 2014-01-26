@@ -43,6 +43,7 @@ var YouTubePlayer = function (data) {
                 },
                 events: {
                     onReady: function () {
+                        resizeStuff();
                     },
                     onStateChange: function (ev) {
                         if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
