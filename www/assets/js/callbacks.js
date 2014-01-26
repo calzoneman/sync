@@ -138,10 +138,7 @@ Callbacks = {
         var parent = chatDialog(div);
         parent.attr("id", "needpw");
         var sendpw = function () {
-            socket.emit("joinChannel", {
-                name: CHANNEL.name,
-                pw: pwbox.val()
-            });
+            socket.emit("channelPassword", pwbox.val());
             parent.remove();
         };
         submit.click(sendpw);

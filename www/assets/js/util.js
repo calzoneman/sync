@@ -1354,7 +1354,8 @@ function addChatMessage(data) {
 /* layouts */
 
 function fluidLayout() {
-    $(".container").css("max-width", "100%");
+    $(".container").removeClass("container").addClass("container-fluid");
+    // TODO resize
 }
 
 function synchtubeLayout() {
@@ -1547,7 +1548,11 @@ function unhidePlayer() {
 
 function chatDialog(div) {
     var parent = $("<div/>").addClass("profile-box")
-        .css("padding", "10px")
+        .css({
+            padding: "10px",
+            "z-index": "auto",
+            position: "absolute"
+        })
         .appendTo($("body"));
 
     div.appendTo(parent);

@@ -1,3 +1,10 @@
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #loginform > .form-group {
     margin-right: 5px;
 }
