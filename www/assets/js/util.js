@@ -99,10 +99,12 @@ function formatUserlistItem(div) {
         if (profile)
             profile.remove();
 
+        var top = ev.clientY + 5// - name.position().top;
+        var left = ev.clientX;
         profile = $("<div/>")
             .addClass("profile-box")
-            .css("top", (ev.pageY + 5) + "px")
-            .css("left", ev.pageX + "px")
+            .css("top", top + "px")
+            .css("left", left + "px")
             .appendTo(div);
         if(data.profile.image) {
             $("<img/>").addClass("profile-image")
@@ -122,8 +124,10 @@ function formatUserlistItem(div) {
         $("<p/>").text(data.profile.text).appendTo(profile);
     });
     name.mousemove(function(ev) {
-        profile.css("top", (ev.pageY + 5) + "px")
-            .css("left", ev.pageX + "px")
+        var top = ev.clientY + 5// - name.position().top;
+        var left = ev.clientX;
+        profile.css("top", top + "px")
+            .css("left", left + "px")
     });
     name.mouseleave(function() {
         profile.remove();
