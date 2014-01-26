@@ -1421,13 +1421,13 @@ function hdLayout() {
         .appendTo(plcontrolwrap);
 
     $("#controlswrap").remove();
-    $("#leftpane").remove();
 
     $("#pollwrap").detach()
         .insertAfter($("#leftcontrols"))
         .removeClass()
         .addClass("col-md-6 col-md-offset-6");
 
+    $("#leftpane").remove();
     $("nav.navbar-fixed-top").removeClass("navbar-fixed-top");
     $("#mainpage").css("padding-top", "0");
 
