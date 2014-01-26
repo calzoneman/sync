@@ -7,10 +7,11 @@ mysql:
   server: 'localhost'
   database: 'cytube3'
   user: 'cytube3'
-  password: 'pickles'
+  password: ''
 
 # HTTP server details
 http:
+  # If you want to bind a specific IP, put it here, otherwise leave empty
   host: ''
   port: 8080
   domain: 'http://localhost'
@@ -25,6 +26,7 @@ https:
   certfile: 'localhost.cert'
 
 # Page template values
+# title goes in the upper left corner, description goes in a <meta> tag
 html-template:
   title: 'CyTube',
   description: 'Free, open source synchtube'

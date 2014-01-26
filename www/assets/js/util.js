@@ -1278,8 +1278,8 @@ function formatChatMessage(data) {
     if (data.meta.superadminflair) {
         name.addClass("label")
             .addClass(data.meta.superadminflair.labelclass);
-        $("<i/>").addClass(data.meta.superadminflair.icon)
-            .addClass("icon-white")
+        $("<span/>").addClass(data.meta.superadminflair.icon)
+            .addClass("glyphicon")
             .prependTo(name);
     }
 

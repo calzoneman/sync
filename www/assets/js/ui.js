@@ -1,11 +1,11 @@
 /*
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
- 
+
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- 
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
- 
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
@@ -410,28 +410,6 @@ if(m) {
         CHANNEL.name = CHANNEL.name.substring(0, CHANNEL.name.indexOf("#"));
     }
 }
-/*
-else {
-    var main = $("#main");
-    var container = $("<div/>").addClass("container").insertBefore(main);
-    var row = $("<div/>").addClass("row").appendTo(container);
-    var div = $("<div/>").addClass("col-lg-6 col-md-6").appendTo(row);
-    main.css("display", "none");
-    var label = $("<label/>").text("Enter Channel:").appendTo(div);
-    var entry = $("<input/>").attr("type", "text").appendTo(div);
-    entry.keydown(function(ev) {
-        var host = document.protocol + "//" + document.host + "/";
-        if(ev.keyCode == 13) {
-            document.location = host + "r/" + entry.val();
-            container.remove();
-            main.css("display", "");
-        }
-    });
-}
-*/
-
-/* custom footer */
-$("#sitefooter").load("footer.html");
 
 /* oh internet explorer, how I hate thee */
 $(":input:not(textarea)").keypress(function(ev) {
