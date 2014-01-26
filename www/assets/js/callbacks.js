@@ -1,5 +1,4 @@
 /*
-return null;
 The MIT License (MIT)
 Copyright (c) 2013 Calvin Montgomery
 
@@ -13,32 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 Callbacks = {
 
     error: function (reason) {
-        // Don't show the error for when the server goes down
-        if(reason && reason.returnValue === true)
-            return;
-
-        var d = $("<div/>").addClass("alert alert-danger col-lg-12 col-md-12")
-            .appendTo($("#announcements"));
-        $("<h3/>").text("Uh-oh!").appendTo(d);
-        $("<p/>").html("The socket.io connection failed."+
-                       "Try going to the "+
-                       "'Options' menu and enabling 'Alternate socket "+
-                       " connection'.  If that doesn't help, talk to "+
-                       "someone on <a href='http://webchat.6irc.net/?"+
-                       "channels=synchtube'>IRC</a>").appendTo(d);
-        var data = {
-            iourl: IO_URL,
-            weburl: WEB_URL,
-            transports: io.transports,
-            fallback: USEROPTS.altsocket,
-            reason: reason
-        };
-
-        var r = JSON.stringify(data);
-        $("<em/>").text("When asking for help, give the following "+
-                        "information to an administrator:").appendTo(d);
-        $("<code/>").text(r).appendTo(d)
-            .css("white-space", "pre-wrap");
+        window.SOCKET_ERROR_REASON = reason;
     },
 
     /* fired when socket connection completes */
@@ -1041,6 +1015,15 @@ setupCallbacks = function() {
 }
 
 try {
+    if (typeof io === "undefined") {
+        makeAlert("Uh oh!", "It appears the connection to <code>" + IO_URL + "</code> " +
+                            "has failed.  If this error persists, a firewall or " +
+                            "antivirus is likely blocking the connection, or the " +
+                            "server is down.", "alert-danger")
+            .appendTo($("#announcements"));
+        throw false;
+    }
+
     if (NO_WEBSOCKETS || USEROPTS.altsocket) {
         var i = io.transports.indexOf("websocket");
         if (i >= 0) {
@@ -1054,5 +1037,7 @@ try {
     socket = io.connect(IO_URL, opts);
     setupCallbacks();
 } catch (e) {
-    Callbacks.disconnect();
+    if (e) {
+        Callbacks.disconnect();
+    }
 }

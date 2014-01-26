@@ -31,7 +31,7 @@ mixin us-general
           select#us-theme.form-control
             option(value="default") Default
             option(value="/css/bootstrap-theme.min.css") Bootstrap
-            option(value="/css/dark.css") Dark
+            //option(value="/css/dark.css") Dark
       .form-group
         label.control-label.col-sm-4(for="#us-layout") Layout
         .col-sm-8
@@ -39,6 +39,8 @@ mixin us-general
             option(value="default") Compact
             option(value="synchtube") Synchtube (flipped)
             option(value="fluid") Fluid
+            option(value="synchtube-fluid") Synchtube + Fluid
+            option(value="hd") HD
       .col-sm-4
       .col-sm-8
         p.text-danger Changing layouts may require refreshing to take effect.

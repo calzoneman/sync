@@ -14,19 +14,22 @@ function makeAlert(title, text, klass) {
         klass = "alert-info";
     }
 
+    var wrap = $("<div/>").addClass("col-md-12");
+
     var al = $("<div/>").addClass("alert")
         .addClass(klass)
-        .html(text);
+        .html(text)
+        .appendTo(wrap);
     $("<br/>").prependTo(al);
     $("<strong/>").text(title).prependTo(al);
     $("<button/>").addClass("close pull-right").html("&times;")
         .click(function() {
             al.hide("fade", function() {
-                al.remove();
+                wrap.remove();
             });
         })
         .prependTo(al);
-    return al;
+    return wrap;
 }
 
 function formatURL(data) {
@@ -652,6 +655,9 @@ function applyOpts() {
             break;
         case "fluid":
             fluidLayout();
+            break;
+        case "hd":
+            hdLayout();
             break;
         default:
             break;
@@ -1284,6 +1290,7 @@ function formatChatMessage(data) {
             .addClass(data.meta.superadminflair.labelclass);
         $("<span/>").addClass(data.meta.superadminflair.icon)
             .addClass("glyphicon")
+            .css("margin-right", "3px")
             .prependTo(name);
     }
 
@@ -1359,6 +1366,8 @@ function addChatMessage(data) {
 
 function fluidLayout() {
     $(".container").removeClass("container").addClass("container-fluid");
+    $("footer .container").removeClass("container-fluid").addClass("container");
+    $("body").addClass("fluid");
     resizeStuff();
 }
 
@@ -1367,6 +1376,62 @@ function synchtubeLayout() {
     $("#rightcontrols").detach().insertBefore($("#leftcontrols"));
     $("#rightpane").detach().insertBefore($("#leftpane"));
     $("#userlist").css("float", "right");
+    $("body").addClass("synchtube");
+}
+
+function hdLayout() {
+    var videowrap = $("#videowrap"),
+        chatwrap = $("#chatwrap"),
+        playlist = $("#rightpane")
+
+    videowrap.detach().insertAfter($("#drinkbar"))
+        .removeClass()
+        .addClass("col-md-8 col-md-offset-2");
+
+    playlist.detach().insertBefore(chatwrap)
+        .removeClass()
+        .addClass("col-md-6");
+
+    chatwrap.removeClass()
+        .addClass("col-md-6");
+
+    var ch = "320px";
+    $("#messagebuffer").css("max-height", ch);
+    $("#userlist").css("max-height", ch);
+    $("#queue").css("max-height", "312px");
+
+    $("#leftcontrols").detach()
+        .insertAfter(chatwrap)
+        .removeClass()
+        .addClass("col-md-6");
+
+    $("#playlistmanagerwrap").detach()
+        .insertBefore($("#leftcontrols"))
+        .css("margin-top", "0")
+        .removeClass()
+        .addClass("col-md-6");
+
+    $("#showplaylistmanager").addClass("btn-sm");
+
+    var plcontrolwrap = $("<div/>").addClass("col-md-12")
+        .prependTo($("#rightpane-inner"));
+
+    $("#plcontrol").detach().appendTo(plcontrolwrap);
+    $("#rightcontrols .btn-group.pull-right").detach()
+        .appendTo(plcontrolwrap);
+
+    $("#controlswrap").remove();
+    $("#leftpane").remove();
+
+    $("#pollwrap").detach()
+        .insertAfter($("#leftcontrols"))
+        .removeClass()
+        .addClass("col-md-6 col-md-offset-6");
+
+    $("nav.navbar-fixed-top").removeClass("navbar-fixed-top");
+    $("#mainpage").css("padding-top", "0");
+
+    $("body").addClass("hd");
 }
 
 function chatOnly() {
@@ -1380,13 +1445,14 @@ function chatOnly() {
 }
 
 function resizeStuff() {
-    // Only execute if we are on a fluid layout
-    if ($(".container-fluid").length === 0) {
-        return;
-    }
     VWIDTH = $("#videowrap").width() + "";
     VHEIGHT = Math.floor(parseInt(VWIDTH) * 9 / 16) + "";
     $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
+
+    // Only execute if we are on a fluid layout
+    if ($("body").hasClass("fluid")) {
+        return;
+    }
 
     var h = parseInt(VHEIGHT) - 33;
     $("#messagebuffer").height(h);
