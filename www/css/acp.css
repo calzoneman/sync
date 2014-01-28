@@ -1,0 +1,10 @@
+#acp-logview .input-group-btn > button, #acp-logview .input-group > input {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#acp-log {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-top: none;
+}
