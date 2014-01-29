@@ -28,6 +28,7 @@ https:
 # Page template values
 # title goes in the upper left corner, description goes in a <meta> tag
 html-template:
+  theme: 'cytube',
   title: 'CyTube',
   description: 'Free, open source synchtube'
 
