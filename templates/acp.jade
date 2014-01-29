@@ -12,6 +12,10 @@ html(lang="en")
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
             mixin navdefaultlinks("/acp")
+            li#nav-acp-section.dropdown
+              a#nav-acp-dd-toggle.dropdown-toggle(data-toggle="dropdown", href="javascript:void(0)") Menu
+                span.caret
+              ul.dropdown-menu
           mixin navloginlogout("/acp")
       section#mainpage
         .container
@@ -22,6 +26,7 @@ html(lang="en")
                 div.input-group-btn
                   button#acp-syslog-btn.btn.btn-default Syslog
                   button#acp-errlog-btn.btn.btn-default Error log
+                  button#acp-httplog-btn.btn.btn-default HTTP log
                 input#acp-chanlog-name.form-control(type="text", placeholder="Channel name")
               pre#acp-log
             #acp-announcements.col-md-12(style="display: none")
@@ -40,7 +45,7 @@ html(lang="en")
                   .form-group
                     .col-sm-10.col-sm-offset-2
                       button#acp-announce-submit.btn.btn-primary Announce
-            #acp-global-bans.col-md-12
+            #acp-global-bans.col-md-12(style="display: none")
               h3 Global Bans
               table.table.table-striped.table-bordered
                 thead
@@ -62,5 +67,60 @@ html(lang="en")
                   .form-group
                     .col-sm-9.col-sm-offset-3
                       button#acp-gban-submit.btn.btn-danger Add ban
+            #acp-user-lookup.col-md-12(style="display: none")
+              h3 Users
+              .input-group(style="max-width: 25%")
+                input#acp-ulookup-name.form-control(type="text")
+                span.input-group-btn
+                  button#acp-ulookup-btn.btn.btn-default Search
+              table.table.table-bordered.table-striped(style="margin-top: 20px")
+                thead
+                  tr
+                    th#acp-ulookup-id ID
+                    th#acp-ulookup-name Name
+                    th#acp-ulookup-rank Rank
+                    th#acp-ulookup-email Email
+            #acp-channel-lookup.col-md-12(style="display: none")
+              h3 Channels
+              form.form-inline(action="javascript:void(0)", role="form")
+                .form-group
+                  input#acp-clookup-value.form-control(type="text", placeholder="Name")
+                .form-group
+                  select#acp-clookup-field.form-control
+                    option(value="name") Channel Name
+                    option(value="owner") Channel Owner
+                button#acp-clookup-submit.btn.btn-default Search
+              table.table.table-bordered.table-striped(style="margin-top: 20px")
+                thead
+                  tr
+                    th ID
+                    th Name
+                    th Owner
+            #acp-loaded-channels.col-md-12(style="display: none")
+              h3 Loaded Channels
+              button#acp-lchannels-refresh.btn.btn-default Refresh
+              table.table.table-bordered.table-striped(style="margin-top: 20px")
+                thead
+                  tr
+                    th Title
+                    th Usercount
+                    th Now Playing
+                    th Registered
+                    th Public
+                    th Force Unload
+            #acp-eventlog.col-md-12(style="display: none")
+              h3 Event Log
+              strong Filter event types
+              select#acp-eventlog-filter.form-control(multiple="multiple", style="max-width: 25%")
+              pre#acp-eventlog-text(style="margin-top: 20px")
+            #acp-stats.col-md-12(style="display: none")
+              h3 User Count
+              canvas#stat_users(width="100%", height="400")
+              h3 Channel Count
+              canvas#stat_channels(width="100%", height="400")
+              h3 Memory Usage
+              canvas#stat_mem(width="100%", height="400")
+
     include footer
     mixin footer()
+    script(src="/js/acp.js")
