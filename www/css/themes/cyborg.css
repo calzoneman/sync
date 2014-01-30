@@ -7707,7 +7707,8 @@ footer {
     background-color: #2d2d2d !important;
 }
 
-input.form-control[type="text"], textarea.form-control {
+input.form-control[type="text"], input.form-control[type="password"],
+input.form-control[type="email"], textarea.form-control {
     background-color: #2d2d2d !important;
     color: #c8c8c8;
 }
