@@ -66,8 +66,8 @@ $("#usercount").mouseenter(function (ev) {
     // re-using profile-box class for convenience
     var popup = $("<div/>")
         .addClass("profile-box")
-        .css("top", (ev.pageY + 5) + "px")
-        .css("left", (ev.pageX) + "px")
+        .css("top", (ev.clientY + 5) + "px")
+        .css("left", (ev.clientX) + "px")
         .appendTo($("#usercount"));
 
     var contents = "";
@@ -84,8 +84,8 @@ $("#usercount").mousemove(function (ev) {
     if(popup.length == 0)
         return;
 
-    popup.css("top", (ev.pageY + 5) + "px");
-    popup.css("left", (ev.pageX) + "px");
+    popup.css("top", (ev.clientY + 5) + "px");
+    popup.css("left", (ev.clientX) + "px");
 });
 
 $("#usercount").mouseleave(function () {

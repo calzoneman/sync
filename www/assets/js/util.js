@@ -603,6 +603,7 @@ function showUserOptions() {
 
 function saveUserOptions() {
     USEROPTS.theme                = $("#us-theme").val();
+    createCookie("cytube-theme", USEROPTS.theme, 1000);
     USEROPTS.layout               = $("#us-layout").val();
     USEROPTS.ignore_channelcss    = $("#us-no-channelcss").prop("checked");
     USEROPTS.ignore_channeljs     = $("#us-no-channeljs").prop("checked");
@@ -629,6 +630,7 @@ function saveUserOptions() {
     }
 
     storeOpts();
+    applyOpts();
 }
 
 function storeOpts() {
@@ -638,13 +640,16 @@ function storeOpts() {
 }
 
 function applyOpts() {
-    $("#usertheme").remove();
-    if(USEROPTS.theme != "default") {
-        $("<link/>").attr("rel", "stylesheet")
-            .attr("type", "text/css")
-            .attr("id", "usertheme")
-            .attr("href", USEROPTS.theme)
-            .appendTo($("head"));
+    if ($("#usertheme").attr("href") !== USEROPTS.theme) {
+        $("#usertheme").remove();
+        if(USEROPTS.theme != "default") {
+            $("<link/>").attr("rel", "stylesheet")
+                .attr("type", "text/css")
+                .attr("id", "usertheme")
+                .attr("href", USEROPTS.theme)
+                .appendTo($("head"));
+        }
+        fixWeirdButtonAlignmentIssue();
     }
 
     switch (USEROPTS.layout) {
@@ -905,13 +910,7 @@ function handlePermissionChange() {
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
 
-    // Weird things happen to the alignment in chromium when I toggle visibility
-    // of the above buttons
-    // This fixes it?
-    var wtf = $("#rightcontrols .pull-right").removeClass("pull-right")
-    setTimeout(function () {
-        wtf.addClass("pull-right");
-    }, 1);
+    fixWeirdButtonAlignmentIssue();
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
     $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
@@ -940,6 +939,16 @@ function handlePermissionChange() {
 
     $("#chatline").attr("disabled", !hasPermission("chat"));
     rebuildPlaylist();
+}
+
+function fixWeirdButtonAlignmentIssue() {
+    // Weird things happen to the alignment in chromium when I toggle visibility
+    // of the above buttons
+    // This fixes it?
+    var wtf = $("#videocontrols").removeClass("pull-right");
+    setTimeout(function () {
+        wtf.addClass("pull-right");
+    }, 1);
 }
 
 /* search stuff */
@@ -1417,7 +1426,7 @@ function hdLayout() {
         .prependTo($("#rightpane-inner"));
 
     $("#plcontrol").detach().appendTo(plcontrolwrap);
-    $("#rightcontrols .btn-group.pull-right").detach()
+    $("#videocontrols").detach()
         .appendTo(plcontrolwrap);
 
     $("#controlswrap").remove();
@@ -1669,8 +1678,10 @@ function errDialog(err) {
     var cp = $("#chatwrap").offset();
     var x = cp.left + cw/2 - div.width()/2;
     var y = cp.top + ch/2 - div.height()/2;
-    div.css("left", x + "px");
-    div.css("top", y + "px");
+    div.css("left", x + "px")
+        .css("top", y + "px")
+        .css("position", "absolute");
+    return div;
 }
 
 function queueMessage(data, type) {
