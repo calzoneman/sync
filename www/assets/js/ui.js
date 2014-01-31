@@ -110,22 +110,50 @@ function chatTabComplete() {
         return;
     }
 
-    console.log($("#userlist").children().map);
-
-    var users = $("#userlist").children().map(function (_, elem) {
+    var __slice = Array.prototype.slice;
+    var users = __slice.call($("#userlist").children()).map(function (elem) {
         return elem.children[1].innerHTML;
-    }).filter(function (_, name) {
+    }).filter(function (name) {
         return name.toLowerCase().indexOf(current) === 0;
     });
 
     // users now contains a list of names that start with current word
+
     if (users.length === 0) {
         return;
     }
 
-    var min = Math.min.apply(Math, users.map(function (_, name) {
+    // trim possible names to the shortest possible completion
+    var min = Math.min.apply(Math, users.map(function (name) {
         return name.length;
     }));
+    users = users.map(function (name) {
+        return name.substring(0, min);
+    });
+
+    // continually trim off letters until all prefixes are the same
+    var changed = true;
+    var iter = 21;
+    while (changed) {
+        changed = false;
+        var first = users[0];
+        for (var i = 1; i < users.length; i++) {
+            if (users[i] !== first) {
+                users[i] = users[i].substring(0, users[i].length - 1);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            users[0] = users[0].substring(0, users[0].length - 1);
+        }
+
+        // In the event something above doesn't generate a break condition, limit
+        // the maximum number of repetitions
+        if (--iter < 0) {
+            break;
+        }
+    }
 
     current = users[0].substring(0, min);
     if (users.length === 1) {
