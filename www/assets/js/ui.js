@@ -106,6 +106,12 @@ $("#guestname").keydown(function (ev) {
 function chatTabComplete() {
     var words = $("#chatline").val().split(" ");
     var current = words[words.length - 1].toLowerCase();
+    if (!current.match(/^[\w-]{1,20}$/)) {
+        return;
+    }
+
+    console.log($("#userlist").children().map);
+
     var users = $("#userlist").children().map(function (_, elem) {
         return elem.children[1].innerHTML;
     }).filter(function (_, name) {
