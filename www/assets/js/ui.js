@@ -23,13 +23,13 @@ $("#togglemotd").click(function () {
     var hidden = $("#motd").css("display") === "none";
     $("#motd").toggle();
     if (hidden) {
-        $("#togglemotd").find(".icon-plus")
-            .removeClass("icon-plus")
-            .addClass("icon-minus");
+        $("#togglemotd").find(".glyphicon-plus")
+            .removeClass("glyphicon-plus")
+            .addClass("glyphicon-minus");
     } else {
-        $("#togglemotd").find(".icon-minus")
-            .removeClass("icon-minus")
-            .addClass("icon-plus");
+        $("#togglemotd").find(".glyphicon-minus")
+            .removeClass("glyphicon-minus")
+            .addClass("glyphicon-plus");
     }
 });
 
@@ -103,6 +103,35 @@ $("#guestname").keydown(function (ev) {
     }
 });
 
+function chatTabComplete() {
+    var words = $("#chatline").val().split(" ");
+    var current = words[words.length - 1].toLowerCase();
+    var users = $("#userlist").children().map(function (_, elem) {
+        return elem.children[1].innerHTML;
+    }).filter(function (_, name) {
+        return name.toLowerCase().indexOf(current) === 0;
+    });
+
+    // users now contains a list of names that start with current word
+    if (users.length === 0) {
+        return;
+    }
+
+    var min = Math.min.apply(Math, users.map(function (_, name) {
+        return name.length;
+    }));
+
+    current = users[0].substring(0, min);
+    if (users.length === 1) {
+        if (words.length === 1) {
+            current += ":";
+        }
+        current += " ";
+    }
+    words[words.length - 1] = current;
+    $("#chatline").val(words.join(" "));
+}
+
 $("#chatline").keydown(function(ev) {
     // Enter/return
     if(ev.keyCode == 13) {
@@ -135,31 +164,7 @@ $("#chatline").keydown(function(ev) {
         return;
     }
     else if(ev.keyCode == 9) { // Tab completion
-        var words = $("#chatline").val().split(" ");
-        var current = words[words.length - 1].toLowerCase();
-        var users = $("#userlist").children();
-        var match = null;
-        for(var i = 0; i < users.length; i++) {
-            var name = users[i].children[1].innerHTML.toLowerCase();
-            // Last word is a unique match for a userlist name
-            if(name.indexOf(current) == 0 && match == null) {
-                match = users[i].children[1].innerHTML;
-            }
-            // Last word is NOT a unique match- a match has already
-            // been found.  Bail because no unique completion is possible.
-            else if(name.indexOf(current) == 0) {
-                match = null;
-                break;
-            }
-        }
-        if(match != null) {
-            words[words.length - 1] = match;
-            if(words.length == 1)
-                words[0] += ": ";
-            else
-                words[words.length - 1] += " ";
-            $("#chatline").val(words.join(" "));
-        }
+        chatTabComplete();
         ev.preventDefault();
         return false;
     }

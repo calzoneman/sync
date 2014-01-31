@@ -393,7 +393,7 @@ Callbacks = {
         CLIENT.rank = r;
         handlePermissionChange();
         if(SUPERADMIN && $("#setrank").length == 0) {
-            $("<a/>").attr("href", "/acp.html")
+            $("<a/>").attr("href", "/acp")
                 .attr("target", "_blank")
                 .text("ACP")
                 .appendTo($("<li/>").appendTo($(".nav")[0]));

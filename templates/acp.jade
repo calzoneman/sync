@@ -20,7 +20,7 @@ html(lang="en")
       section#mainpage
         .container
           .row
-            #acp-logview.col-md-12(style="display: none")
+            #acp-logview.acp-panel.col-md-12(style="display: none")
               h3 Log Viewer
               .input-group
                 div.input-group-btn
@@ -29,10 +29,10 @@ html(lang="en")
                   button#acp-httplog-btn.btn.btn-default HTTP log
                 input#acp-chanlog-name.form-control(type="text", placeholder="Channel name")
               pre#acp-log
-            #acp-announcements.col-md-12(style="display: none")
+            #acp-announcements.acp-panel.col-md-6.col-md-offset-3(style="display: none")
               h3 Announcements
               h3 New Announcement
-              div(style="max-width: 50%")
+              div
                 form.form-horizontal(action="javascript:void(0)", role="form")
                   .form-group
                     label.control-label.col-sm-2(for="acp-announce-title") Title
@@ -45,7 +45,7 @@ html(lang="en")
                   .form-group
                     .col-sm-10.col-sm-offset-2
                       button#acp-announce-submit.btn.btn-primary Announce
-            #acp-global-bans.col-md-12(style="display: none")
+            #acp-global-bans.acp-panel.col-md-12(style="display: none")
               h3 Global Bans
               table.table.table-striped.table-bordered
                 thead
@@ -67,7 +67,7 @@ html(lang="en")
                   .form-group
                     .col-sm-9.col-sm-offset-3
                       button#acp-gban-submit.btn.btn-danger Add ban
-            #acp-user-lookup.col-md-12(style="display: none")
+            #acp-user-lookup.acp-panel.col-md-12(style="display: none")
               h3 Users
               .input-group(style="max-width: 25%")
                 input#acp-ulookup-name.form-control(type="text")
@@ -81,7 +81,7 @@ html(lang="en")
                     th#acp-users-rank Rank
                     th#acp-users-email Email
                     th Actions
-            #acp-channel-lookup.col-md-12(style="display: none")
+            #acp-channel-lookup.acp-panel.col-md-12(style="display: none")
               h3 Channels
               form.form-inline(action="javascript:void(0)", role="form")
                 .form-group
@@ -97,7 +97,7 @@ html(lang="en")
                     th ID
                     th Name
                     th Owner
-            #acp-loaded-channels.col-md-12(style="display: none")
+            #acp-loaded-channels.acp-panel.col-md-12(style="display: none")
               h3 Loaded Channels
               button#acp-lchannels-refresh.btn.btn-default Refresh
               table.table.table-bordered.table-striped(style="margin-top: 20px")
@@ -109,12 +109,12 @@ html(lang="en")
                     th Registered
                     th Public
                     th Force Unload
-            #acp-eventlog.col-md-12(style="display: none")
+            #acp-eventlog.acp-panel.col-md-12(style="display: none")
               h3 Event Log
               strong Filter event types
               select#acp-eventlog-filter.form-control(multiple="multiple", style="max-width: 25%")
               pre#acp-eventlog-text(style="margin-top: 20px")
-            #acp-stats.col-md-12(style="display: none")
+            #acp-stats.acp-panel.col-md-12(style="display: none")
               h3 User Count
               canvas#stat_users(width="100%", height="400")
               h3 Channel Count

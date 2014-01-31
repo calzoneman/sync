@@ -20,7 +20,7 @@ function addMenuItem(target, text) {
         .text(text)
         .appendTo(li)
         .click(function () {
-            $(".col-md-12").hide();
+            $(".acp-panel").hide();
             $(target).show();
         });
 };
