@@ -139,13 +139,15 @@ function chatTabComplete() {
         var first = users[0];
         for (var i = 1; i < users.length; i++) {
             if (users[i] !== first) {
-                users[i] = users[i].substring(0, users[i].length - 1);
                 changed = true;
+                break;
             }
         }
 
         if (changed) {
-            users[0] = users[0].substring(0, users[0].length - 1);
+            users = users.map(function (name) {
+                return name.substring(0, name.length - 1);
+            });
         }
 
         // In the event something above doesn't generate a break condition, limit
