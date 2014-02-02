@@ -388,6 +388,9 @@ Callbacks = {
     /* REGION Rank Stuff */
 
     rank: function(r) {
+        if (r >= 1) {
+            socket.emit("listPlaylists");
+        }
         if(r >= 255)
             SUPERADMIN = true;
         CLIENT.rank = r;
@@ -438,7 +441,6 @@ Callbacks = {
 
             if (!CLIENT.guest) {
                 socket.emit("initUserPLCallbacks");
-                socket.emit("listPlaylists");
             }
         }
     },
