@@ -265,17 +265,13 @@ $("#youtube_search").click(function () {
 
 /* user playlists */
 
-$("#showplaylistmanager").click(function() {
-    socket.emit("listPlaylists");
-});
-
 $("#userpl_save").click(function() {
     if($("#userpl_name").val().trim() == "") {
         makeAlert("Invalid Name", "Playlist name cannot be empty", "alert-danger")
             .insertAfter($("#userpl_save").parent());
         return;
     }
-    socket.emit("savePlaylist", {
+    socket.emit("clonePlaylist", {
         name: $("#userpl_name").val()
     });
 });
@@ -482,7 +478,8 @@ $("#cs-chanranks-mod").click(chanrankSubmit.bind(this, 2));
 $("#cs-chanranks-adm").click(chanrankSubmit.bind(this, 3));
 $("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));
 
-["#showmediaurl", "#showsearch", "#showcustomembed"].forEach(function (id) {
+["#showmediaurl", "#showsearch", "#showcustomembed", "#showplaylistmanager"]
+    .forEach(function (id) {
     $(id).click(function () {
         var wasActive = $(id).hasClass("active");
         $(".plcontrol-collapse").collapse("hide");

@@ -56,6 +56,8 @@ html(lang="en")
                   span.glyphicon.glyphicon-plus
                 button#showcustomembed.btn.btn-sm.btn-default(title="Embed a custom frame", data-toggle="collapse", data-target="#customembed")
                   span.glyphicon.glyphicon-th-large
+                button#showplaylistmanager.btn.btn-sm.btn-default(title="Manage playlists", data-toggle="collapse", data-target="#playlistmanager")
+                  span.glyphicon.glyphicon-list
                 button#clearplaylist.btn.btn-sm.btn-default(title="Clear the playlist")
                   span.glyphicon.glyphicon-trash
                 button#shuffleplaylist.btn.btn-sm.btn-default(title="Shuffle the playlist")
@@ -75,15 +77,6 @@ html(lang="en")
               #leftpane-inner.row
                 #pollwrap.col-lg-12.col-md-12
                 #playlistmanagerwrap.col-lg-12.col-md-12
-                  button#showplaylistmanager.btn.btn-default.btn-block(data-toggle="collapse", data-target="#playlistmanager") Playlist Manager
-                  #playlistmanager.collapse
-                    .row.vertical-spacer
-                      .col-lg-12.col-md-12
-                        .input-group
-                          input#userpl_name.form-control(type="text", placeholder="Playlist Name")
-                          span.input-group-btn
-                            button#userpl_save.btn.btn-default Save
-                      ul#userpl_list.col-lg-12.col-md-12
             #rightpane.col-lg-7.col-md-7
               #rightpane-inner.row
                 #addfromurl.collapse.plcontrol-collapse.col-lg-12.col-md-12
@@ -114,6 +107,13 @@ html(lang="en")
                   | Paste the embed code below and click Next or At End.
                   | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags.
                   textarea#customembed-content.input-block-level.form-control(rows="3")
+                #playlistmanager.collapse.plcontrol-collapse.col-lg-12.col-md-12
+                  .vertical-spacer
+                  .input-group
+                    input#userpl_name.form-control(type="text", placeholder="Playlist Name")
+                    span.input-group-btn
+                      button#userpl_save.btn.btn-default Save
+                  ul#userpl_list.videolist
                 #queuefail.col-lg-12.col-md-12
                   .vertical-spacer
                 .col-lg-12.col-md-12

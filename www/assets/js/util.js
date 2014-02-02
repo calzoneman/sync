@@ -563,7 +563,6 @@ function rebuildPlaylist() {
 function showUserOptions() {
     hidePlayer();
     $("#useroptions").on("hidden.bs.modal", function () {
-        console.log("unhiding");
         unhidePlayer();
     });
 
@@ -642,13 +641,15 @@ function storeOpts() {
 function applyOpts() {
     if ($("#usertheme").attr("href") !== USEROPTS.theme) {
         $("#usertheme").remove();
-        if(USEROPTS.theme != "default") {
-            $("<link/>").attr("rel", "stylesheet")
-                .attr("type", "text/css")
-                .attr("id", "usertheme")
-                .attr("href", USEROPTS.theme)
-                .appendTo($("head"));
+        var theme = USEROPTS.theme;
+        if (theme === "default") {
+            theme = "/css/themes/default.css";
         }
+        $("<link/>").attr("rel", "stylesheet")
+            .attr("type", "text/css")
+            .attr("id", "usertheme")
+            .attr("href", theme)
+            .appendTo($("head"));
         fixWeirdButtonAlignmentIssue();
     }
 
@@ -881,13 +882,13 @@ function handlePermissionChange() {
                 " style of playlist buttons.",
                 "<br>"].join(""))
                 .attr("id", "plonotification")
-                .insertBefore($("#queue"));
+                .insertAfter($("#queuefail"));
 
             al.find(".close").remove();
 
             $("<button/>").addClass("btn btn-primary")
                 .text("Dismiss")
-                .appendTo(al)
+                .appendTo(al.find(".alert"))
                 .click(function() {
                     USEROPTS.first_visit = false;
                     storeOpts();
@@ -2105,5 +2106,83 @@ function formatCSChatFilterList() {
                 });
             }
         }
+    });
+}
+
+function formatTime(sec) {
+    var h = Math.floor(sec / 3600) + "";
+    var m = Math.floor((sec % 3600) / 60) + "";
+    var s = sec % 60 + "";
+
+    if (h.length < 2) {
+        h = "0" + h;
+    }
+
+    if (m.length < 2) {
+        m = "0" + m;
+    }
+
+    if (s.length < 2) {
+        s = "0" + s;
+    }
+
+    if (h === "00") {
+        return [m, s].join(":");
+    } else {
+        return [h, m, s].join(":");
+    }
+}
+
+function formatUserPlaylistList() {
+    var list = $("#userpl_list").data("entries") || [];
+    list.sort(function (a, b) {
+        var x = a.name.toLowerCase();
+        var y = b.name.toLowerCase();
+        return x == y ? 0 : (x < y ? -1 : 1);
+    });
+
+    $("#userpl_list").html("");
+    list.forEach(function (pl) {
+        var li = $("<li/>").addClass("queue_entry").appendTo($("#userpl_list"));
+        var title = $("<span/>").addClass("qe_title").appendTo(li)
+            .text(pl.name);
+        var time = $("<span/>").addClass("pull-right").appendTo(li)
+            .text(pl.count + " items, playtime " + formatTime(pl.duration));
+        var clear = $("<div/>").addClass("qe_clear").appendTo(li);
+
+        var btns = $("<div/>").addClass("btn-group pull-left").prependTo(li);
+        if (hasPermission("playlistadd")) {
+            $("<button/>").addClass("btn btn-xs btn-default")
+                .text("End")
+                .appendTo(btns)
+                .click(function () {
+                    socket.emit("queuePlaylist", {
+                        name: pl.name,
+                        pos: "end"
+                    });
+                });
+        }
+
+        if (hasPermission("playlistadd") && hasPermission("playlistnext")) {
+            $("<button/>").addClass("btn btn-xs btn-default")
+                .text("Next")
+                .prependTo(btns)
+                .click(function () {
+                    socket.emit("queuePlaylist", {
+                        name: pl.name,
+                        pos: "next"
+                    });
+                });
+        }
+
+        $("<button/>").addClass("btn btn-xs btn-danger")
+            .html("<span class='glyphicon glyphicon-trash'></span>")
+            .attr("title", "Delete playlist")
+            .appendTo(btns)
+            .click(function () {
+                socket.emit("deletePlaylist", {
+                    name: pl.name
+                });
+            });
     });
 }

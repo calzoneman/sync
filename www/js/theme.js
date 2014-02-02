@@ -18,6 +18,7 @@
     css.setAttribute("rel", "stylesheet");
     css.setAttribute("type", "text/css");
     css.setAttribute("href", theme);
+    css.setAttribute("id", "usertheme");
     document.head.appendChild(css);
   }
 })();

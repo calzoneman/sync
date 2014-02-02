@@ -143,20 +143,20 @@ Callbacks = {
 
     channelNotRegistered: function() {
         var div = $("<div/>").addClass("alert alert-info")
-            .attr("id", "chregnotice")
-            .insertBefore($("#main"));
-        $("<button/>").addClass("close pull-right").html("&times;")
+            .appendTo($("<div/>").addClass("col-md-12").appendTo($("#announcements")));
+
+        $("<button/>").addClass("close pull-right")
             .appendTo(div)
-            .click(function() { div.remove(); });
-        $("<h3/>").text("This channel isn't registered").appendTo(div);
-        $("<button/>").addClass("btn btn-primary").text("Register it")
-            .attr("id", "chanregisterbtn")
-            .appendTo(div)
-            .click(function() {
-                $(this).attr("disabled", true)
-                    .text("Registering...");
-                socket.emit("registerChannel");
-            });
+            .click(function () {
+                div.parent().remove();
+            })
+            .html("&times;");
+        $("<h4/>").appendTo(div).text("Unregistered channel");
+        $("<p/>").appendTo(div)
+            .html("This channel is not registered to a CyTube account.  You can still " +
+                  "use it, but some features will not be available.  To register a " +
+                  "channel to your account, visit your <a href='/account/channels'>" +
+                  "channels</a> page.");
     },
 
     registerChannel: function(data) {
@@ -427,15 +427,19 @@ Callbacks = {
     },
 
     login: function(data) {
-        if(!data.success) {
-            if(data.error != "Session expired") {
-                alert(data.error);
+        if (!data.success) {
+            if (data.error != "Session expired") {
+                errDialog(data.error);
             }
-        }
-        else {
+        } else {
             CLIENT.name = data.name;
             CLIENT.guest = data.guest;
             CLIENT.logged_in = true;
+
+            if (!CLIENT.guest) {
+                socket.emit("initUserPLCallbacks");
+                socket.emit("listPlaylists");
+            }
         }
     },
 
@@ -911,24 +915,16 @@ Callbacks = {
         }
     },
 
-    savePlaylist: function(data) {
-        if(data.success) {
-            makeAlert("Success", "Playlist saved.", "alert-success");
-        }
-        else {
-            makeAlert("Error", data.error, "alert-danger")
-                .addClass("span12")
-                .insertBefore($("#userpl_list"));
-        }
-    },
-
     listPlaylists: function(data) {
+        $("#userpl_list").data("entries", data);
+        formatUserPlaylistList();
+        return;
         if(data.error) {
             makeAlert("Error", data.error, "alert-danger")
                 .insertBefore($("#userpl_list"));
         }
         else {
-            var pls = data.pllist;
+            var pls = data;
             pls.sort(function(a, b) {
                 var x = a.name.toLowerCase();
                 var y = b.name.toLowerCase();
@@ -948,7 +944,7 @@ Callbacks = {
                 if(pls[i].count != 1) {
                     metastr += "s";
                 }
-                metastr +=", playtime " + pls[i].time;
+                metastr +=", playtime " + pls[i].duration;
                 $("<div/>").text(metastr)
                     .css("float", "right")
                     .appendTo(li);

@@ -122,6 +122,7 @@
     margin-bottom: 10px;
 }
 
+
 #userpl_list {
     list-style: none outside none;
     margin-left: 0;
@@ -129,6 +130,7 @@
     overflow-y: scroll;
 }
 
+/*
 #userpl_list li {
     display: inline-block;
     line-height: 22px;
@@ -138,6 +140,7 @@
     padding: 2px;
     font-size: 8pt;
 }
+*/
 
 #customembed_wrap {
     margin: 5px 0;
@@ -191,14 +194,18 @@
     background-image: url(/img/stripe-diagonal.png);
 }
 
-#queue {
+.videolist {
     padding: 0;
     margin: 0;
 }
 
-#queue > li:last-child {
-    border-bottom: 0;
+.videolist > li:last-child {
+    border-bottom-width: 0;
     margin-bottom: 0;
+}
+
+#userpl_list > li:last-child {
+    border-bottom-width: 1px;
 }
 
 .videolist > li:first-child {
@@ -435,6 +442,8 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 
 .qfalert {
     margin-bottom: 10px;
+    padding-left: 0!important;
+    padding-right: 0!important;
 }
 
 #customembed-content {
