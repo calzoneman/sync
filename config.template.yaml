@@ -71,3 +71,6 @@ aliases:
   purge-interval: 3600000
   # Maximum age of an alias (in milliseconds) - default 1 month
   max-age: 2592000000
+
+# Workaround for Vimeo blocking my domain
+vimeo-workaround: false

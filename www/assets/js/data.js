@@ -122,7 +122,10 @@ var USEROPTS = {
     secure_connection    : getOrDefault("secure_connection", false)
 };
 
+var VOLUME = parseFloat(getOrDefault("volume", 1));
+
 var NO_WEBSOCKETS = USEROPTS.altsocket;
+var NO_VIMEO = Boolean(location.host.match("cytu.be"));
 
 var Rank = {
     Guest: 0,
