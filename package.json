@@ -14,6 +14,7 @@
     "socket.io": "~0.9.16",
     "nodemailer": "~0.6.0",
     "cookie": "~0.1.0",
-    "yamljs": "~0.1.4"
+    "yamljs": "~0.1.4",
+    "express-minify": "0.0.7"
   }
 }

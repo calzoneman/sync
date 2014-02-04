@@ -15,6 +15,8 @@ http:
   host: ''
   port: 8080
   domain: 'http://localhost'
+  # Use express-minify to minify CSS and Javascript
+  minify: false
 
 # HTTPS server details
 https:
