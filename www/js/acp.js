@@ -161,7 +161,7 @@ socket.on("acp-list-users", function (users) {
 
         generator: function (u, page, index) {
             var tr = $("<tr/>").appendTo(tbl);
-            tr.attr("title", u.name + " joined on " + new Date(u.time) + " from " + u.ip);
+            tr.attr("title", u.name + " joined on " + new Date(u.time) + " from IP " + u.ip);
             $("<td/>").text(u.id).appendTo(tr);
             $("<td/>").text(u.name).appendTo(tr);
             var rank = $("<td/>").text(u.global_rank).appendTo(tr);
@@ -195,9 +195,10 @@ socket.on("acp-list-users", function (users) {
                     }
 
                     socket.emit("acp-set-rank", {
-                        name: u.uname,
+                        name: u.name,
                         rank: parseInt(newrank)
                     });
+
                 };
 
                 editor.blur(save);
@@ -216,7 +217,7 @@ socket.on("acp-list-users", function (users) {
                         return;
                     }
                     socket.emit("acp-reset-password", {
-                        name: u.uname,
+                        name: u.name,
                         email: u.email
                     });
                 }).appendTo(reset);
@@ -224,6 +225,58 @@ socket.on("acp-list-users", function (users) {
     };
 
     p = Paginate(users, opts);
+    p.paginator.css("margin-top", "20px");
     p.paginator.insertBefore(tbl);
     tbl.data("paginator", p);
+});
+
+socket.on("acp-set-rank", function (data) {
+    var table = $("#acp-user-lookup table");
+    var p = table.data("paginator");
+    var e = table.data("entries");
+    if (e) {
+        for (var i = 0; i < e.length; i++) {
+            if (e[i].name === data.name) {
+                e[i].rank = data.rank;
+                break;
+            }
+
+        }
+        if (p) {
+            p.items = e;
+        }
+    }
+
+    table.find("td:contains('" + data.name + "')")
+        .parent()
+        .children()[2]
+        .innerHTML = data.rank;
+});
+
+/* Initialize keyed table sorts */
+$("table").each(function () {
+    var table = $(this);
+    var sortable = table.find("th.sort");
+    sortable.each(function () {
+        var th = $(this);
+        th.click(function () {
+            var p = table.data("paginator");
+            if (!p) {
+                return;
+            }
+            var key = th.attr("data-key");
+            if (!key) {
+                return;
+            }
+            var asc = -1*(table.data("ascending") || -1);
+            table.data("ascending", asc);
+            var entries = table.data("entries") || [];
+            entries.sort(function (a, b) {
+                return a[key] === b[key] ? 0 : asc*(a[key] > b[key] ? 1 : -1);
+            });
+            table.data("entries", entries);
+            p.items = entries;
+            p.loadPage(0);
+        });
+    });
 });

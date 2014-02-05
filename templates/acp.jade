@@ -76,10 +76,10 @@ html(lang="en")
               table.table.table-bordered.table-striped(style="margin-top: 20px")
                 thead
                   tr
-                    th#acp-users-id ID
-                    th#acp-users-name Name
-                    th#acp-users-rank Rank
-                    th#acp-users-email Email
+                    th.sort(data-key="id") ID
+                    th.sort(data-key="name") Name
+                    th.sort(data-key="global_rank") Rank
+                    th.sort(data-key="email") Email
                     th Actions
             #acp-channel-lookup.acp-panel.col-md-12(style="display: none")
               h3 Channels
