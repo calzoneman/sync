@@ -94,9 +94,10 @@ html(lang="en")
               table.table.table-bordered.table-striped(style="margin-top: 20px")
                 thead
                   tr
-                    th ID
-                    th Name
-                    th Owner
+                    th.sort(data-key="id") ID
+                    th.sort(data-key="name") Name
+                    th.sort(data-key="owner") Owner
+                    th Control
             #acp-loaded-channels.acp-panel.col-md-12(style="display: none")
               h3 Loaded Channels
               button#acp-lchannels-refresh.btn.btn-default Refresh

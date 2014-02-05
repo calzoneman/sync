@@ -253,6 +253,99 @@ socket.on("acp-set-rank", function (data) {
         .innerHTML = data.rank;
 });
 
+/* Channel listing */
+(function () {
+    var doSearch = function () {
+        if ($("#acp-clookup-value").val().trim() === "") {
+            if (!confirm("You are about to list the entire channels table. " +
+                         "This table might be very large and take a long " +
+                         "time to query.  Continue?")) {
+                return;
+            }
+        }
+        socket.emit("acp-list-channels", {
+            field: $("#acp-clookup-field").val(),
+            value: $("#acp-clookup-value").val()
+        });
+    };
+
+    $("#acp-clookup-submit").click(doSearch);
+    $("#acp-clookup-value").keyup(function (ev) {
+        if (ev.keyCode === 13) {
+            doSearch();
+        }
+    });
+})();
+
+socket.on("acp-list-channels", function (channels) {
+    var tbl = $("#acp-channel-lookup table");
+    tbl.data("entries", channels);
+    var p = tbl.data("paginator");
+    if (p) {
+        p.paginator.remove();
+    }
+
+    var opts = {
+        preLoadPage: function () {
+            tbl.find("tbody").remove();
+        },
+
+        generator: function (c, page, index) {
+            var tr = $("<tr/>").appendTo(tbl);
+            tr.attr("title", c.name + " was registered on " + new Date(c.time));
+            $("<td/>").text(c.id).appendTo(tr);
+            $("<td/>").text(c.name).appendTo(tr);
+            $("<td/>").text(c.owner).appendTo(tr);
+            var remove = $("<td/>").appendTo(tr);
+
+            // Drop channel
+            $("<button/>").addClass("btn btn-xs btn-danger")
+                .text("Delete channel")
+                .click(function () {
+                    if (!confirm("Really delete " + c.owner + "/" + c.name + "?")) {
+                        return;
+                    }
+                    socket.emit("acp-delete-channel", {
+                        name: c.name,
+                    });
+                }).appendTo(remove);
+        }
+    };
+
+    p = Paginate(channels, opts);
+    p.paginator.css("margin-top", "20px");
+    p.paginator.insertBefore(tbl);
+    tbl.data("paginator", p);
+});
+
+socket.on("acp-delete-channel", function (data) {
+    var table = $("#acp-channel-lookup table");
+    var p = table.data("paginator");
+    var e = table.data("entries");
+    var found = -1;
+    if (e) {
+        for (var i = 0; i < e.length; i++) {
+            if (e[i].name === data.name) {
+                found = i;
+                break;
+            }
+
+        }
+
+        if (found > 0) {
+            e.splice(found, 1);
+        }
+
+        if (p) {
+            p.items = e;
+        }
+    }
+
+    table.find("td:contains('" + data.name + "')")
+        .parent()
+        .remove();
+});
+
 /* Initialize keyed table sorts */
 $("table").each(function () {
     var table = $(this);
@@ -268,8 +361,8 @@ $("table").each(function () {
             if (!key) {
                 return;
             }
-            var asc = -1*(table.data("ascending") || -1);
-            table.data("ascending", asc);
+            var asc = -th.attr("data-sort-direction") || -1;
+            th.attr("data-sort-direction", asc);
             var entries = table.data("entries") || [];
             entries.sort(function (a, b) {
                 return a[key] === b[key] ? 0 : asc*(a[key] > b[key] ? 1 : -1);
