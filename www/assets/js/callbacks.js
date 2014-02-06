@@ -49,7 +49,11 @@ Callbacks = {
     },
 
     errorMsg: function(data) {
-        errDialog(data.msg);
+        if (data.alert) {
+            alert(data.msg);
+        } else {
+            errDialog(data.msg);
+        }
     },
 
     costanza: function (data) {

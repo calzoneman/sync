@@ -76,3 +76,19 @@ aliases:
 
 # Workaround for Vimeo blocking my domain
 vimeo-workaround: false
+
+# Regular expressions for defining reserved user and channel names and page titles
+# The list of regular expressions will be joined with an OR, and compared without
+# case sensitivity.
+#
+# Default: reserve any name containing "admin[istrator]" or "owner" as a word
+# but only if it is separated by a dash or underscore (e.g. dadmin is not reserved
+# but d-admin is)
+reserved-names:
+  usernames:
+    - '^(.*?[-_])?admin(istrator)?([-_].*)?$'
+    - '^(.*?[-_])?owner([-_].*)?$'
+  channels:
+    - '^(.*?[-_])?admin(istrator)?([-_].*)?$'
+    - '^(.*?[-_])?owner([-_].*)?$'
+  pagetitles: []
