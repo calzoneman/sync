@@ -671,9 +671,8 @@ function applyOpts() {
 
     if(USEROPTS.hidevid) {
         $("#qualitywrap").html("");
-        $("#videowrap").remove();
+        removeVideo();
         $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
-        $("#chatline").removeClass().addClass("col-lg-12 col-md-12 form-control");
     }
 
     $("#chatbtn").remove();
@@ -1442,14 +1441,13 @@ function hdLayout() {
     $("#mainpage").css("padding-top", "0");
 
     $("body").addClass("hd");
+    setTimeout(resizeStuff, 500);
 }
 
 function chatOnly() {
-    //fluidLayout();
     $("#toprow").remove()
-    $("#announcements").remove();
     $("#playlistrow").remove();
-    $("#videowrap").remove();
+    removeVideo();
     $("#controlsrow").remove();
     $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
 }
@@ -1460,7 +1458,7 @@ function resizeStuff() {
     $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
 
     // Only execute if we are on a fluid layout
-    if ($("body").hasClass("fluid")) {
+    if (!$("body").hasClass("fluid")) {
         return;
     }
 
@@ -1470,6 +1468,18 @@ function resizeStuff() {
 }
 
 $(window).resize(resizeStuff);
+
+function removeVideo() {
+    try {
+        PLAYER.setVolume(0);
+        if (PLAYER.type === "rv") {
+            $(PLAYER.player).remove();
+        }
+    } catch (e) {
+    }
+
+    $("#videowrap").remove();
+}
 
 /* channel administration stuff */
 

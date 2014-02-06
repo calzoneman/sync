@@ -55,6 +55,8 @@ mail:
 youtube-v2-key: ''
 # Minutes between saving channel state to disk
 channel-save-interval: 5
+# Limit for the number of channels a user can register
+max-channels-per-user: 5
 # Minimum number of seconds between guest logins from the same IP
 guest-login-delay: 60
 # Block known Tor IP addresses

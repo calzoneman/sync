@@ -485,7 +485,6 @@ $("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));
         $(".plcontrol-collapse").collapse("hide");
         $("#plcontrol button.active").button("toggle");
         if (!wasActive) {
-            console.log($(id)[0].className);
             $(id).button("toggle");
         }
     });
