@@ -7,6 +7,7 @@
     window.socket.on("connect", function () {
         window.socket.emit("initACP");
         window.socket.emit("acp-list-activechannels");
+        readEventlog();
     });
 
     window.socket.on("errMessage", function (data) {
@@ -54,6 +55,12 @@ function readHttplog() {
     $.ajax(location.protocol + "//" + location.host + "/acp/httplog").done(function (data) {
         $("#acp-log").text(data);
         $("#acp-log").scrollTop($("#acp-log").prop("scrollHeight"));
+    });
+}
+
+function readEventlog() {
+    $.ajax(location.protocol + "//" + location.host + "/acp/eventlog").done(function (data) {
+        handleEventLog(data);
     });
 }
 
@@ -388,6 +395,51 @@ socket.on("acp-list-activechannels", function (channels) {
 $("#acp-lchannels-refresh").click(function () {
     socket.emit("acp-list-activechannels");
 });
+
+/* Event log */
+
+function getEventKey(line) {
+    var left = line.indexOf("[", 1);
+    var right = line.indexOf("]", left);
+    return line.substring(left+1, right);
+}
+
+function handleEventLog(data) {
+    data = data.split("\n").filter(function (ln) { return ln.indexOf("[") === 0; });
+    var keys = {};
+    data.forEach(function (ln) {
+        keys[getEventKey(ln)] = true;
+    });
+
+    $("#acp-eventlog-text").data("lines", data);
+
+    $("#acp-eventlog-filter").html("");
+    for (var k in keys) {
+        $("<option/>").attr("value", k)
+            .text(k)
+            .appendTo($("#acp-eventlog-filter"));
+    }
+
+    filterEventLog();
+}
+
+function filterEventLog() {
+    var selected = $("#acp-eventlog-filter").val();
+    var all = selected == null || selected.length === 0;
+    var lines = $("#acp-eventlog-text").data("lines");
+    var show = [];
+    lines.forEach(function (ln) {
+        if (all || selected.indexOf(getEventKey(ln)) !== -1) {
+            show.push(ln);
+        }
+    });
+
+    $("#acp-eventlog-text").text(show.join("\n"));
+    $("#acp-eventlog-text").scrollTop($("#acp-eventlog-text").prop("scrollHeight"));
+}
+
+$("#acp-eventlog-filter").change(filterEventLog);
+$("#acp-eventlog-refresh").click(readEventlog);
 
 /* Initialize keyed table sorts */
 $("table").each(function () {
