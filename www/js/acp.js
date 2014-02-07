@@ -6,6 +6,7 @@
     window.socket = io.connect(IO_URL, opts);
     window.socket.on("connect", function () {
         window.socket.emit("initACP");
+        window.socket.emit("acp-list-activechannels");
     });
 
     window.socket.on("errMessage", function (data) {
@@ -344,6 +345,48 @@ socket.on("acp-delete-channel", function (data) {
     table.find("td:contains('" + data.name + "')")
         .parent()
         .remove();
+});
+
+/* Active channels */
+socket.on("acp-list-activechannels", function (channels) {
+    var tbl = $("#acp-loaded-channels table");
+    tbl.find("tbody").remove();
+
+    channels.sort(function (a, b) {
+        if (a.usercount === b.usercount) {
+            var x = a.name.toLowerCase();
+            var y = b.name.toLowerCase();
+            return x === y ? 0 : (x > y ? 1 : -1);
+        }
+
+        return a.usercount > b.usercount ? -1 : 1;
+    });
+
+    channels.forEach(function (c) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var name = $("<td/>").appendTo(tr);
+        $("<a/>").attr("href", "/r/" + c.name)
+            .text(c.pagetitle + " (/r/" + c.name + ")")
+            .appendTo(name);
+        var usercount = $("<td/>").text(c.usercount).appendTo(tr);
+        var nowplaying = $("<td/>").text(c.mediatitle).appendTo(tr);
+        var registered = $("<td/>").text(c.registered).appendTo(tr);
+        var public = $("<td/>").text(c.public).appendTo(tr);
+        var unload = $("<td/>").appendTo(tr);
+        $("<button/>").addClass("btn btn-danger btn-xs").text("Force Unload")
+            .appendTo(unload)
+            .click(function () {
+                if (confirm("Are you sure you want to unload /r/" + c.name + "?")) {
+                    socket.emit("acp-force-unload", {
+                        name: c.name
+                    });
+                }
+            });
+    });
+});
+
+$("#acp-lchannels-refresh").click(function () {
+    socket.emit("acp-list-activechannels");
 });
 
 /* Initialize keyed table sorts */
