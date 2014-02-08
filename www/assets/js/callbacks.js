@@ -364,18 +364,16 @@ Callbacks = {
     },
 
     readChanLog: function (data) {
-        var log = $("#chanlog_contents");
-        if(log.length == 0)
+        var log = $("#cs-chanlog-text");
+        if (log.length == 0)
             return;
 
-        if(data.success) {
-            log.data("log", data.data);
-            log.text(data.data);
+        if (data.success) {
+            setupChanlogFilter(data.data);
             filterChannelLog();
         } else {
-            log.text("Error reading channel log");
+            $("#cs-chanlog-text").text("Error reading channel log");
         }
-        log.scrollTop(log.prop("scrollHeight"));
     },
 
     voteskip: function(data) {

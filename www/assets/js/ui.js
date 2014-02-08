@@ -530,18 +530,11 @@ $(".cs-textbox").keyup(function () {
     }, 1000);
 });
 
-$("#chanlog_refresh").click(function () {
+$("#cs-chanlog-refresh").click(function () {
     socket.emit("readChanLog");
 });
 
-$("#cs-chanlog input[type='checkbox']").change(function () {
-    var id = $(this).attr("id");
-    if (id !== "filter_all" && $(this).prop("checked")) {
-        $("#filter_all").prop("checked", false);
-    }
-
-    filterChannelLog();
-});
+$("#cs-chanlog-filter").change(filterChannelLog);
 
 $("#cs-motdsubmit").click(function () {
     socket.emit("setMotd", {

@@ -469,3 +469,17 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 .pagination {
     margin: 0;
 }
+
+#cs-chanlog-filter {
+    border-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#cs-chanlog-text {
+    max-height: 300px;
+    overflow-y: scroll;
+    font-size: 8pt;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}

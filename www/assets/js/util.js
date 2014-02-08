@@ -1755,87 +1755,63 @@ function queueMessage(data, type) {
         .appendTo($("#queuefail"));
 }
 
+function setupChanlogFilter(data) {
+    var getKey = function (ln) {
+        var left = ln.indexOf("[", 1);
+        var right = ln.indexOf("]", left);
+        if (left === -1 || right === -1) {
+            return "unknown";
+        }
+        return ln.substring(left+1, right);
+    };
+
+    data = data.split("\n").filter(function (ln) {
+        return ln.indexOf("[") === 0 && ln.indexOf("]") > 0;
+    });
+
+    var log = $("#cs-chanlog-text");
+    var select = $("#cs-chanlog-filter");
+    select.html("");
+    log.data("lines", data);
+
+    var keys = {};
+    data.forEach(function (ln) {
+        keys[getKey(ln)] = true;
+    });
+
+    Object.keys(keys).forEach(function (key) {
+        $("<option/>").attr("value", key).text(key).appendTo(select);
+    });
+}
+
 function filterChannelLog() {
-    var cc = $("#chanlog_contents");
-    if (!cc.data("log")) {
-        cc.data("log", cc.text());
-    }
-    var all = $("#filter_all").prop("checked");
-    var chat = $("#filter_chat").prop("checked");
-    var polls = $("#filter_polls").prop("checked");
-    var queue = $("#filter_queue").prop("checked");
-    var bans = $("#filter_bans").prop("checked");
-    var channelsettings = $("#filter_channelsettings").prop("checked");
-    var joinquit = $("#filter_joinquit").prop("checked");
+    var log = $("#cs-chanlog-text");
+    var filter = $("#cs-chanlog-filter").val();
+    var getKey = function (ln) {
+        var left = ln.indexOf("[", 1);
+        var right = ln.indexOf("]", left);
+        return ln.substring(left+1, right);
+    };
 
-    var lines = cc.data("log").split("\n");
-    var include = [];
-    lines.forEach(function (line) {
-        if (line.trim() === "") {
-            return;
-        }
-        if (all) {
-            include.push(line);
-            return;
-        }
+    var getTimestamp = function (ln) {
+        var right = ln.indexOf("]");
+        return ln.substring(1, right);
+    };
 
-        var pre = line.split(" ")[5];
-        if (pre === undefined) {
-            return;
-        }
+    var getMessage = function (ln) {
+        var right = ln.indexOf("]");
+        return ln.substring(right + 2);
+    };
 
-        if (chat && pre.match(/<[\w-]+(\.\w*)?>/)) {
-            include.push(line);
-            return;
-        }
-
-        if (polls && pre === "***" && (line.indexOf("Opened Poll") >= 0 ||
-                                       line.indexOf("closed the active poll") >= 0)) {
-            include.push(line);
-            return;
-        }
-
-        if (queue && pre === "###") {
-            include.push(line);
-            return;
-        }
-
-        if (channelsettings && pre === "%%%") {
-            include.push(line);
-            return;
-        }
-
-        if (joinquit) {
-            if (pre === "+++" || pre === "---") {
-                include.push(line);
-                return;
-            }
-
-            if (pre.match(/(\d{1,3}\.){3}\d{1,3}/) &&
-                line.indexOf("logged in as") >= 0) {
-                include.push(line);
-                return;
-            }
-        }
-
-        if (bans && pre === "***" && line.indexOf("banned") >= 0) {
-            include.push(line);
-            return;
-        }
-
-        if (channelsettings && pre === "***") {
-            if (line.indexOf("Loading") >= 0 ||
-                line.indexOf("Loaded") >= 0 ||
-                line.indexOf("unloading") >= 0 ||
-                line.indexOf("rank") >= 0) {
-                include.push(line);
-                return;
-            }
-            return;
+    var show = [];
+    (log.data("lines")||[]).forEach(function (ln) {
+        if (!filter || filter.indexOf(getKey(ln)) >= 0) {
+            show.push(ln);
         }
     });
 
-    $("#chanlog_contents").text(include.join("\n"));
+    log.text(show.join("\n"));
+    log.scrollTop(log.prop("scrollHeight"));
 }
 
 function makeModal() {

@@ -138,30 +138,9 @@ mixin chanlog
   #cs-chanlog.tab-pane
     h4 Channel Log
     strong Filter Log:
-    form(role="form", action="javscript:void(0)")
-      .checkbox
-        label Everything
-          input#filter_all(type="checkbox", checked="checked")
-      .checkbox
-        label Chat
-          input#filter_chat(type="checkbox")
-      .checkbox
-        label Polls
-          input#filter_polls(type="checkbox")
-      .checkbox
-        label Playlist actions
-          input#filter_queue(type="checkbox")
-      .checkbox
-        label Bans
-          input#filter_bans(type="checkbox")
-      .checkbox
-        label Channel settings
-          input#filter_channelsettings(type="checkbox")
-      .checkbox
-        label Join/Quit messages
-          input#filter_joinquit(type="checkbox")
-    pre#chanlog_contents(style="max-height: 400px; overflow-y: scroll")
-    button.btn.btn-default#chanlog_refresh Refresh
+    select#cs-chanlog-filter.form-control(multiple="multiple")
+    pre#cs-chanlog-text
+    button.btn.btn-default#cs-chanlog-refresh Refresh
 
 mixin permeditor
   #cs-permedit.tab-pane
