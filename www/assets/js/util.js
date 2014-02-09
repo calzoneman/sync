@@ -720,6 +720,11 @@ function showPollMenu() {
         .attr("type", "text")
         .appendTo(menu);
 
+    $("<strong/>").text("Timeout (optional)").appendTo(menu);
+    var timeout = $("<input/>").addClass("form-control")
+        .attr("type", "text")
+        .appendTo(menu);
+
     var lbl = $("<label/>").addClass("checkbox")
         .text("Hide poll results")
         .appendTo(menu);
@@ -747,7 +752,7 @@ function showPollMenu() {
         .text("Open Poll")
         .appendTo(menu)
         .click(function() {
-            var opts = []
+            var opts = [];
             menu.find(".poll-menu-option").each(function() {
                 if($(this).val() != "")
                     opts.push($(this).val());
@@ -755,7 +760,8 @@ function showPollMenu() {
             socket.emit("newPoll", {
                 title: title.val(),
                 opts: opts,
-                obscured: hidden.prop("checked")
+                obscured: hidden.prop("checked"),
+                timeout: timeout.val() ? parseInt(timeout.val()) : undefined
             });
             menu.remove();
         });
