@@ -87,6 +87,10 @@ html(lang="en")
                       button#queue_next.btn.btn-default Next
                     span.input-group-btn
                       button#queue_end.btn.btn-default At End
+                  .checkbox
+                    label
+                      input.add-temp(type="checkbox")
+                      | Add as temporary
                 #searchcontrol.collapse.plcontrol-collapse.col-lg-12.col-md-12
                   .vertical-spacer
                   .input-group
@@ -95,6 +99,10 @@ html(lang="en")
                       button#library_search.btn.btn-default Library
                     span.input-group-btn
                       button#youtube_search.btn.btn-default YouTube
+                  .checkbox
+                    label
+                      input.add-temp(type="checkbox")
+                      | Add as temporary
                   ul#library.videolist.col-lg-12.col-md-12
                 #customembed.collapse.plcontrol-collapse.col-lg-12.col-md-12
                   .vertical-spacer
@@ -104,6 +112,10 @@ html(lang="en")
                       button#ce_queue_next.btn.btn-default Next
                     span.input-group-btn
                       button#ce_queue_end.btn.btn-default At End
+                  .checkbox
+                    label
+                      input.add-temp(type="checkbox")
+                      | Add as temporary
                   | Paste the embed code below and click Next or At End.
                   | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags.
                   textarea#customembed-content.input-block-level.form-control(rows="3")
@@ -113,6 +125,10 @@ html(lang="en")
                     input#userpl_name.form-control(type="text", placeholder="Playlist Name")
                     span.input-group-btn
                       button#userpl_save.btn.btn-default Save
+                  .checkbox
+                    label
+                      input.add-temp(type="checkbox")
+                      | Add as temporary
                   ul#userpl_list.videolist
                 #queuefail.col-lg-12.col-md-12
                   .vertical-spacer

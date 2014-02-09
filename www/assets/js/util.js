@@ -983,7 +983,8 @@ function addLibraryButtons(li, id, source) {
                     socket.emit("queue", {
                         id: id,
                         pos: "next",
-                        type: type
+                        type: type,
+                        temp: $(".add-temp").prop("checked")
                     });
                 })
                 .appendTo(btns);
@@ -994,7 +995,8 @@ function addLibraryButtons(li, id, source) {
                 socket.emit("queue", {
                     id: id,
                     pos: "end",
-                    type: type
+                    type: type,
+                    temp: $(".add-temp").prop("checked")
                 });
             })
             .appendTo(btns);

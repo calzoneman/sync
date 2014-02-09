@@ -323,7 +323,8 @@ function queue(pos, src) {
             id: content,
             title: title,
             pos: pos,
-            type: "cu"
+            type: "cu",
+            temp: $(".add-temp").prop("checked")
         });
     } else {
         var link = $("#mediaurl").val();
@@ -337,7 +338,8 @@ function queue(pos, src) {
             socket.emit("queue", {
                 id: data.id,
                 type: data.type,
-                pos: pos
+                pos: pos,
+                temp: $(".add-temp").prop("checked")
             });
         }
     }
@@ -628,3 +630,7 @@ var toggleUserlist = function () {
 
 $("#usercount").click(toggleUserlist);
 $("#userlisttoggle").click(toggleUserlist);
+
+$(".add-temp").change(function () {
+    $(".add-temp").prop("checked", $(this).prop("checked"));
+});
