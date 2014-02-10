@@ -329,16 +329,26 @@ function queue(pos, src) {
     } else {
         var link = $("#mediaurl").val();
         var data = parseMediaLink(link);
+        var duration = undefined;
+        if (link.indexOf("jw:") === 0) {
+            duration = parseInt($("#addfromurl-duration-val").val());
+            if (duration <= 0 || isNaN(duration)) {
+                duration = undefined;
+            }
+        }
+
         if (data.id == null || data.type == null) {
             makeAlert("Error", "Failed to parse link.  Please check that it is correct",
                       "alert-danger")
                 .insertAfter($("#addfromurl"));
         } else {
             $("#mediaurl").val("");
+            $("#addfromurl-duration").remove();
             socket.emit("queue", {
                 id: data.id,
                 type: data.type,
                 pos: pos,
+                duration: duration,
                 temp: $(".add-temp").prop("checked")
             });
         }
@@ -350,9 +360,24 @@ $("#queue_end").click(queue.bind(this, "end", "url"));
 $("#ce_queue_next").click(queue.bind(this, "next", "customembed"));
 $("#ce_queue_end").click(queue.bind(this, "end", "customembed"));
 
-$("#mediaurl").keydown(function(ev) {
+$("#mediaurl").keyup(function(ev) {
     if (ev.keyCode === 13) {
         queue("end", "url");
+    } else if ($("#mediaurl").val().indexOf("jw:") === 0) {
+        var duration = $("#addfromurl-duration");
+        if (duration.length === 0) {
+            duration = $("<div/>")
+                .attr("id", "addfromurl-duration")
+                .appendTo($("#addfromurl"));
+            $("<span/>").text("JWPlayer Duration (seconds) (optional)")
+                .appendTo(duration);
+            $("<input/>").addClass("form-control")
+                .attr("type", "text")
+                .attr("id", "addfromurl-duration-val")
+                .appendTo($("#addfromurl-duration"));
+        }
+    } else {
+        $("#addfromurl-duration").remove();
     }
 });
 
