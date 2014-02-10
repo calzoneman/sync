@@ -483,3 +483,8 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
+
+.channel-emote {
+    max-width: 200px;
+    max-height: 200px;
+}

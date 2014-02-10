@@ -32,7 +32,8 @@ var CHANNEL = {
     motd: "",
     motd_text: "",
     name: false,
-    usercount: 0
+    usercount: 0,
+    emotes: []
 };
 
 var PLAYER = false;

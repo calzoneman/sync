@@ -1032,7 +1032,31 @@ Callbacks = {
                 }
             }
         }
-    }
+    },
+
+    emoteList: function (data) {
+        loadEmotes(data);
+    },
+
+    updateEmote: function (data) {
+        data.regex = new RegExp(data.source, "gi");
+        var found = false;
+        for (var i = 0; i < CHANNEL.emotes.length; i++) {
+            if (CHANNEL.emotes[i].name === data.name) {
+                found = true;
+                CHANNEL.emotes[i] = data;
+                break;
+            }
+        }
+
+        if (!found) {
+            CHANNEL.emotes.push(data);
+        }
+    },
+
+    deleteEmote: function (data) {
+
+    },
 }
 
 var SOCKET_DEBUG = true;

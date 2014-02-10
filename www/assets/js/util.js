@@ -1270,6 +1270,8 @@ function formatChatMessage(data) {
     if (data.meta.forceShowName)
         skip = false;
 
+    data.msg = execEmotes(data.msg);
+
     LASTCHATNAME = data.username;
     LASTCHATTIME = data.time;
     var div = $("<div/>");
@@ -2179,4 +2181,25 @@ function formatUserPlaylistList() {
                 });
             });
     });
+}
+
+function loadEmotes(data) {
+    CHANNEL.emotes = [];
+    data.forEach(function (e) {
+        e.regex = new RegExp(e.source, "gi");
+        CHANNEL.emotes.push(e);
+    });
+}
+
+function execEmotes(msg) {
+    if (USEROPTS.no_emotes) {
+        return msg;
+    }
+
+    CHANNEL.emotes.forEach(function (e) {
+        msg = msg.replace(e.regex, '<img class="channel-emote" src="' +
+                                   e.image + '" title="' + e.name + '">');
+    });
+
+    return msg;
 }
