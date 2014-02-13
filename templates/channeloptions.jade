@@ -134,6 +134,26 @@ mixin chatfilters
     button#cs-chatfilters-import.btn.btn-default Import filter list
     textarea#cs-chatfilters-exporttext.form-control(rows="5")
 
+mixin emotes
+  #cs-emotes.tab-pane
+    h4 Emotes
+    form.form-horizontal(action="javascript:void(0)", role="form")
+      +textbox("cs-emotes-newname", "Emote name")
+      +textbox("cs-emotes-newimage", "Emote image")
+      .form-group
+        .col-sm-8.col-sm-offset-4
+          button#cs-emotes-newsubmit.btn.btn-primary Create Emote
+    table.table.table-striped.table-condensed
+      thead
+        tr
+          th Delete
+          th Name
+          th Image
+
+    button#cs-emotes-export.btn.btn-default Export emote list
+    button#cs-emotes-import.btn.btn-default Import emote list
+    textarea#cs-emotes-exporttext.form-control(rows="5")
+
 mixin chanlog
   #cs-chanlog.tab-pane
     h4 Channel Log

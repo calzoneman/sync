@@ -609,6 +609,19 @@ $("#cs-chatfilters-newsubmit").click(function () {
     $("#cs-chatfilters-newreplace").val("");
 });
 
+$("#cs-emotes-newsubmit").click(function () {
+    var name = $("#cs-emotes-newname").val();
+    var image = $("#cs-emotes-newimage").val();
+
+    socket.emit("updateEmote", {
+        name: name,
+        image: image,
+    });
+
+    $("#cs-emotes-newname").val("");
+    $("#cs-emotes-newimage").val("");
+});
+
 $("#cs-chatfilters-export").click(function () {
     var callback = function (data) {
         socket.listeners("chatFilters").splice(
@@ -642,6 +655,38 @@ $("#cs-chatfilters-import").click(function () {
     }
 
     socket.emit("importFilters", data);
+});
+
+$("#cs-emotes-export").click(function () {
+    var em = CHANNEL.emotes.map(function (f) {
+        return {
+            name: f.name,
+            image: f.image
+        };
+    });
+    $("#cs-emotes-exporttext").val(JSON.stringify(em));
+});
+
+$("#cs-emotes-import").click(function () {
+    var text = $("#cs-emotes-exporttext").val();
+    var choose = confirm("You are about to import emotes from the contents of the textbox below the import button.  If this is empty, it will clear all of your emotes.  Are you sure you want to continue?");
+    if (!choose) {
+        return;
+    }
+
+    if (text.trim() === "") {
+        text = "[]";
+    }
+
+    var data;
+    try {
+        data = JSON.parse(text);
+    } catch (e) {
+        alert("Invalid import data: " + e);
+        return;
+    }
+
+    socket.emit("importEmotes", data);
 });
 
 var toggleUserlist = function () {

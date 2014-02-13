@@ -177,6 +177,7 @@ html(lang="en")
                   span.caret
                 ul.dropdown-menu
                   li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
+                  li: a(href="#cs-emotes", data-toggle="tab") Emotes
                   li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") MOTD
                   li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") CSS
                   li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Javascript
@@ -196,6 +197,7 @@ html(lang="en")
               mixin recentjoins()
               mixin chanranks()
               mixin chatfilters()
+              mixin emotes()
               mixin chanlog()
               mixin permeditor()
           .modal-footer

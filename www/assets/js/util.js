@@ -1792,6 +1792,8 @@ function setupChanlogFilter(data) {
     Object.keys(keys).forEach(function (key) {
         $("<option/>").attr("value", key).text(key).appendTo(select);
     });
+
+    $("<option/>").attr("value", "chat").text("chat").prependTo(select);
 }
 
 function filterChannelLog() {
@@ -1800,6 +1802,9 @@ function filterChannelLog() {
     var getKey = function (ln) {
         var left = ln.indexOf("[", 1);
         var right = ln.indexOf("]", left);
+        if (left === -1) {
+            return false;
+        }
         return ln.substring(left+1, right);
     };
 
@@ -1815,7 +1820,10 @@ function filterChannelLog() {
 
     var show = [];
     (log.data("lines")||[]).forEach(function (ln) {
-        if (!filter || filter.indexOf(getKey(ln)) >= 0) {
+        var key = getKey(ln);
+        if (!filter || !key && filter.indexOf("chat") !== -1) {
+            show.push(ln);
+        } else if (filter.indexOf(key) >= 0) {
             show.push(ln);
         }
     });
@@ -2102,6 +2110,58 @@ function formatCSChatFilterList() {
                 });
             }
         }
+    });
+}
+
+function formatCSEmoteList() {
+    var tbl = $("#cs-emotes table");
+    tbl.find("tbody").remove();
+    var entries = CHANNEL.emotes || [];
+    entries.forEach(function (f) {
+        var tr = $("<tr/>").appendTo(tbl);
+        var del = $("<button/>").addClass("btn btn-xs btn-danger")
+            .appendTo($("<td/>").appendTo(tr));
+        $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(del);
+        del.click(function () {
+            socket.emit("removeEmote", f);
+        });
+        var name = $("<code/>").text(f.name).addClass("linewrap")
+            .appendTo($("<td/>").appendTo(tr));
+        var image = $("<code/>").text(f.image).addClass("linewrap")
+            .appendTo($("<td/>").appendTo(tr));
+        image.popover({
+            html: true,
+            trigger: "hover",
+            content: '<img src="' + f.image + '" class="channel-emote">'
+        });
+
+        image.click(function () {
+            var td = image.parent();
+            td.find(".popover").remove();
+            image.detach();
+            var edit = $("<input/>").addClass("form-control").attr("type", "text")
+                .appendTo(td);
+
+            edit.val(f.image);
+            edit.focus();
+
+            var finish = function () {
+                var val = edit.val();
+                edit.remove();
+                image.appendTo(td);
+                socket.emit("updateEmote", {
+                    name: f.name,
+                    image: val
+                });
+            };
+
+            edit.blur(finish);
+            edit.keyup(function (ev) {
+                if (ev.keyCode === 13) {
+                    finish();
+                }
+            });
+        });
     });
 }
 

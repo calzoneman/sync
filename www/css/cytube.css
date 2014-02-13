@@ -459,10 +459,18 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 }
 
 #cs-chatfilters input[type='text'], #cs-chatfilters textarea {
-    font-family: Monospace;
+    font-family: monospace;
 }
 
 #cs-chatfilters-exporttext {
+    margin-top: 5px;
+}
+
+#cs-emotes input[type='text'], #cs-emotes textarea {
+    font-family: monospace;
+}
+
+#cs-emotes-exporttext {
     margin-top: 5px;
 }
 
@@ -487,4 +495,8 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 .channel-emote {
     max-width: 200px;
     max-height: 200px;
+}
+
+#cs-emotes td:nth-child(3) {
+    max-width: 300px;
 }

@@ -1036,6 +1036,9 @@ Callbacks = {
 
     emoteList: function (data) {
         loadEmotes(data);
+        var tbl = $("#cs-emotes table");
+        tbl.data("entries", data);
+        formatCSEmoteList();
     },
 
     updateEmote: function (data) {
@@ -1045,18 +1048,32 @@ Callbacks = {
             if (CHANNEL.emotes[i].name === data.name) {
                 found = true;
                 CHANNEL.emotes[i] = data;
+                formatCSEmoteList();
                 break;
             }
         }
 
         if (!found) {
             CHANNEL.emotes.push(data);
+            formatCSEmoteList();
         }
     },
 
-    deleteEmote: function (data) {
+    removeEmote: function (data) {
+        var found = -1;
+        for (var i = 0; i < CHANNEL.emotes.length; i++) {
+            if (CHANNEL.emotes[i].name === data.name) {
+                found = i;
+                break;
+            }
+        }
 
-    },
+        if (found !== -1) {
+            var row = $("code:contains('" + data.name + "')").parent().parent();
+            row.hide("fade", row.remove.bind(row));
+            CHANNEL.emotes.splice(i, 1);
+        }
+    }
 }
 
 var SOCKET_DEBUG = true;
