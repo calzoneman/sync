@@ -441,6 +441,79 @@ function filterEventLog() {
 $("#acp-eventlog-filter").change(filterEventLog);
 $("#acp-eventlog-refresh").click(readEventlog);
 
+/* Stats */
+
+$("a:contains('Stats')").click(function () {
+    socket.emit("acp-list-stats");
+});
+
+socket.on("acp-list-stats", function (rows) {
+    var labels = [];
+    var ucounts = [];
+    var ccounts = [];
+    var mcounts = [];
+    var lastdate = "";
+    rows.forEach(function (r) {
+        var d = new Date(parseInt(r.time));
+        var t = "";
+        if (d.toDateString() !== lastdate) {
+            lastdate = d.toDateString();
+            t = d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+            t += " " + d.toTimeString().split(" ")[0];
+        } else {
+            t = d.toTimeString().split(" ")[0];
+        }
+
+        labels.push(t);
+        ucounts.push(r.usercount);
+        ccounts.push(r.chancount);
+        mcounts.push(r.mem / 1048576);
+    });
+
+    var userdata = {
+        labels: labels,
+        datasets: [
+            {
+                fillColor: "rgba(151, 187, 205, 0.5)",
+                strokeColor: "rgba(151, 187, 205, 1)",
+                pointColor: "rgba(151, 187, 205, 1)",
+                pointStrokeColor: "#fff",
+                data: ucounts
+            }
+        ]
+    };
+
+    var channeldata = {
+        labels: labels,
+        datasets: [
+            {
+                fillColor: "rgba(151, 187, 205, 0.5)",
+                strokeColor: "rgba(151, 187, 205, 1)",
+                pointColor: "rgba(151, 187, 205, 1)",
+                pointStrokeColor: "#fff",
+                data: ccounts
+            }
+        ]
+    };
+
+    var memdata = {
+        labels: labels,
+        datasets: [
+            {
+                fillColor: "rgba(151, 187, 205, 0.5)",
+                strokeColor: "rgba(151, 187, 205, 1)",
+                pointColor: "rgba(151, 187, 205, 1)",
+                pointStrokeColor: "#fff",
+                data: mcounts
+            }
+        ]
+    };
+    
+    new Chart($("#stat_users")[0].getContext("2d")).Line(userdata);
+    new Chart($("#stat_channels")[0].getContext("2d")).Line(channeldata);
+    new Chart($("#stat_mem")[0].getContext("2d")).Line(memdata);
+});
+
 /* Initialize keyed table sorts */
 $("table").each(function () {
     var table = $(this);
