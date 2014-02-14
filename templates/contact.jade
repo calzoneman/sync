@@ -1,0 +1,47 @@
+mixin email(e, k)
+  button.btn.btn-xs.btn-default(onclick="showEmail(this, '#{e}', '#{k}')") Show Email
+
+doctype html
+html(lang="en")
+  head
+    include head
+    mixin head()
+  body
+    #wrap
+      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+        include nav
+        mixin navheader()
+        #nav-collapsible.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            mixin navdefaultlinks("/contact")
+          mixin navloginlogout("/contact")
+      section#mainpage
+        .container
+          .col-md-8.col-md-offset-2
+            h1 Contact
+            h3 Email
+            each contact in contacts
+              strong= contact.name
+              p.text-muted= contact.title
+              mixin email(contact.email, contact.emkey)
+              br
+              hr
+            h3 IRC
+            p.
+              The developer and other knowledgeable people are usually available on IRC for quick questions or comments.  Official support can be provided for cytu.be and synchtube.6irc.net at <a href="http://webchat.6irc.net/?channels=cytube">irc.6irc.net#cytube</a>.  These people can also address general questions about the software, but cannot provide technical support for third-party websites using this code.
+    include footer
+    mixin footer()
+    script(type="text/javascript").
+      function showEmail(btn, email, key) {
+        email = unescape(email);
+        key = unescape(key);
+        var dest = new Array(email.length);
+        for (var i = 0; i < email.length; i++) {
+          dest[i] = String.fromCharCode(email.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        email = dest.join("");
+        $("<a/>").attr("href", "mailto:" + email)
+          .text(email)
+          .insertBefore(btn);
+        $(btn).remove();
+      }

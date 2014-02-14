@@ -96,3 +96,9 @@ reserved-names:
     - '^(.*?[-_])?admin(istrator)?([-_].*)?$'
     - '^(.*?[-_])?owner([-_].*)?$'
   pagetitles: []
+
+# Provide a contact list for the /contact page
+contacts:
+  - name: 'calzoneman'
+    title: 'Developer'
+    email: 'cyzon@cytu.be'
