@@ -199,6 +199,15 @@ function addUserDropdown(entry) {
         ignore.text("Unignore User");
     }
 
+    /* pm button */
+    var pm = $("<button/>").addClass("btn btn-xs btn-default")
+        .text("Private Message")
+        .appendTo(btngroup)
+        .click(function () {
+            initPm(name).find(".panel-heading").click();
+            menu.hide();
+        });
+
     /* give/remove leader (moderator+ only) */
     if (hasPermission("leaderctl")) {
         var ldr = $("<button/>").addClass("btn btn-xs btn-default")
@@ -1251,7 +1260,7 @@ function sendVideoUpdate() {
 
 /* chat */
 
-function formatChatMessage(data) {
+function formatChatMessage(data, last) {
     // Backwards compat
     if (!data.meta || data.msgclass) {
         data.meta = {
@@ -1261,7 +1270,7 @@ function formatChatMessage(data) {
         };
     }
     // Phase 1: Determine whether to show the username or not
-    var skip = data.username === LASTCHATNAME;
+    var skip = data.username === last.name;
     if(data.meta.addClass === "server-whisper")
         skip = true;
     // Prevent impersonation by abuse of the bold filter
@@ -1272,8 +1281,7 @@ function formatChatMessage(data) {
 
     data.msg = execEmotes(data.msg);
 
-    LASTCHATNAME = data.username;
-    LASTCHATTIME = data.time;
+    last.name = data.username;
     var div = $("<div/>");
     /* drink is a special case because the entire container gets the class, not
        just the message */
@@ -1332,7 +1340,7 @@ function addChatMessage(data) {
     if(IGNORED.indexOf(data.username) !== -1) {
         return;
     }
-    var div = formatChatMessage(data);
+    var div = formatChatMessage(data, LASTCHAT);
     // Incoming: a bunch of crap for the feature where if you hover over
     // a message, it highlights messages from that user
     div.data("sender", data.username);
@@ -2264,4 +2272,73 @@ function execEmotes(msg) {
     });
 
     return msg;
+}
+
+function initPm(user) {
+    if ($("#pm-" + user).length > 0) {
+        return $("#pm-" + user);
+    }
+
+    var pm = $("<div/>").addClass("panel panel-default pm-panel")
+        .appendTo($("#pmbar"))
+        .data("last", { name: "" })
+        .attr("id", "pm-" + user);
+
+    var title = $("<div/>").addClass("panel-heading").text(user).appendTo(pm);
+    var close = $("<button/>").addClass("close pull-right")
+        .html("&times;")
+        .appendTo(title).click(function () {
+            pm.remove();
+            $("#pm-placeholder-" + user).remove();
+        });
+
+    var body = $("<div/>").addClass("panel-body").appendTo(pm).hide();
+    var placeholder;
+    title.click(function () {
+        body.toggle();
+        pm.removeClass("panel-primary").addClass("panel-default");
+        if (!body.is(":hidden")) {
+            placeholder = $("<div/>").addClass("pm-panel-placeholder")
+                .attr("id", "pm-placeholder-" + user)
+                .insertAfter(pm);
+            var left = pm.position().left;
+            pm.css("position", "absolute")
+                .css("bottom", "0px")
+                .css("left", left);
+        } else {
+            pm.css("position", "");
+            $("#pm-placeholder-" + user).remove();
+        }
+    });
+    var buffer = $("<div/>").addClass("pm-buffer linewrap").appendTo(body);
+    $("<hr/>").appendTo(body);
+    var input = $("<input/>").addClass("form-control pm-input").attr("type", "text")
+        .appendTo(body);
+
+    input.keyup(function (ev) {
+        if (ev.keyCode === 13) {
+            var meta = {};
+            var msg = input.val();
+            if (msg.trim() === "") {
+                return;
+            }
+
+            if (USEROPTS.modhat && CLIENT.rank >= Rank.Moderator) {
+                meta.modflair = CLIENT.rank;
+            }
+
+            if (CLIENT.rank >= 2 && msg.indexOf("/m ") === 0) {
+                meta.modflair = CLIENT.rank;
+                msg = msg.substring(3);
+            }
+            socket.emit("pm", {
+                to: user,
+                msg: msg,
+                meta: meta
+            });
+            input.val("");
+        }
+    });
+
+    return pm;
 }

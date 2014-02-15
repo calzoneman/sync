@@ -461,6 +461,25 @@ Callbacks = {
         addChatMessage(data);
     },
 
+    pm: function (data) {
+        var name = data.username;
+        if (IGNORED.indexOf(name) !== -1) {
+            return;
+        }
+
+        if (data.username === CLIENT.name) {
+            name = data.to;
+        }
+        var pm = initPm(name);
+        var msg = formatChatMessage(data, pm.data("last"));
+        var buffer = pm.find(".pm-buffer");
+        msg.appendTo(buffer);
+        buffer.scrollTop(buffer.prop("scrollHeight"));
+        if (pm.find(".panel-body").is(":hidden")) {
+            pm.removeClass("panel-default").addClass("panel-primary");
+        }
+    },
+
     joinMessage: function(data) {
         if(USEROPTS.joinmessage)
             addChatMessage(data);

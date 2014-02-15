@@ -56,8 +56,9 @@ var CHATHIST = [];
 var CHATHISTIDX = 0;
 var CHATTHROTTLE = false;
 var SCROLLCHAT = true;
-var LASTCHATNAME = "";
-var LASTCHATTIME = 0;
+var LASTCHAT = {
+    name: ""
+};
 var FOCUSED = true;
 var PAGETITLE = "CyTube";
 var TITLE_BLINK;

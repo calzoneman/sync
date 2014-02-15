@@ -500,3 +500,47 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 #cs-emotes td:nth-child(3) {
     max-width: 300px;
 }
+
+#pmbar {
+    position: fixed;
+    bottom: 0;
+}
+
+.pm-panel, .pm-panel-placeholder {
+    margin-left: 5px;
+    margin-bottom: 20px;
+    float: left;
+    width: 250px;
+}
+
+.pm-panel {
+    margin-bottom: 0!important;
+    border-radius: 0!important;
+    border-radius: 0!important;
+}
+
+.pm-panel > .panel-heading {
+    cursor: pointer;
+    border-radius: 0!important;
+    border-radius: 0!important;
+}
+
+.pm-panel > .panel-body {
+    padding: 0;
+}
+
+.pm-panel > .panel-body > .pm-buffer {
+    height: 200px;
+    overflow-y: scroll;
+}
+
+.pm-panel > .panel-body > hr {
+    margin: 0;
+}
+
+.pm-input {
+    margin: 0;
+    width: 100%;
+    border-top-left-radius: 0!important;
+    border-top-right-radius: 0!important;
+}
