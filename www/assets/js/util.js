@@ -200,13 +200,15 @@ function addUserDropdown(entry) {
     }
 
     /* pm button */
-    var pm = $("<button/>").addClass("btn btn-xs btn-default")
-        .text("Private Message")
-        .appendTo(btngroup)
-        .click(function () {
-            initPm(name).find(".panel-heading").click();
-            menu.hide();
-        });
+    if (name !== CLIENT.name) {
+        var pm = $("<button/>").addClass("btn btn-xs btn-default")
+            .text("Private Message")
+            .appendTo(btngroup)
+            .click(function () {
+                initPm(name).find(".panel-heading").click();
+                menu.hide();
+            });
+    }
 
     /* give/remove leader (moderator+ only) */
     if (hasPermission("leaderctl")) {
