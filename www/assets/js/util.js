@@ -1596,6 +1596,8 @@ function genPermissionsEditor() {
     makeOption("Edit MOTD", "motdedit", modplus, CHANNEL.perms.motdedit+"");
     makeOption("Edit chat filters", "filteredit", modplus, CHANNEL.perms.filteredit+"");
     makeOption("Import chat filters", "filterimport", modplus, CHANNEL.perms.filterimport+"");
+    makeOption("Edit chat emotes", "emoteedit", modplus, CHANNEL.perms.emoteedit+"");
+    makeOption("Import chat emotes", "emoteimport", modplus, CHANNEL.perms.emoteimport+"");
 
     addDivider("Misc");
     makeOption("Drink calls", "drink", modleader, CHANNEL.perms.drink+"");
