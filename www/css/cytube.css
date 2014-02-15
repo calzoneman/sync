@@ -38,7 +38,7 @@
 }
 
 #messagebuffer, #userlist {
-    height: 300px;
+    height: 329px;
     overflow-x: hidden;
     overflow-y: scroll;
     margin-bottom: 0;

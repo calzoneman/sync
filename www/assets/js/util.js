@@ -1482,7 +1482,7 @@ function resizeStuff() {
         return;
     }
 
-    var h = parseInt(VHEIGHT) - 33;
+    var h = parseInt(VHEIGHT) - $("#chatline").outerHeight() - 1;
     $("#messagebuffer").height(h);
     $("#userlist").height(h);
 }
