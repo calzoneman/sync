@@ -1395,7 +1395,7 @@ function addChatMessage(data) {
 
 function fluidLayout() {
     $(".container").removeClass("container").addClass("container-fluid");
-    $("footer .container").removeClass("container-fluid").addClass("container");
+    $("footer .container-fluid").removeClass("container-fluid").addClass("container");
     $("body").addClass("fluid");
     resizeStuff();
 }
