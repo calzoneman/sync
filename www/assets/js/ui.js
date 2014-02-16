@@ -450,20 +450,6 @@ $("#shuffleplaylist").click(function() {
     }
 });
 
-/* layout stuff */
-/*
-$(window).resize(function() {
-    VWIDTH = $("#videowidth").css("width").replace("px", "");
-    VHEIGHT = ""+parseInt(parseInt(VWIDTH) * 9 / 16);
-    $("#messagebuffer").css("height", (VHEIGHT - 31) + "px");
-    $("#userlist").css("height", (VHEIGHT - 31) + "px");
-    if($("#ytapiplayer").length > 0) {
-        $("#ytapiplayer").attr("width", VWIDTH);
-        $("#ytapiplayer").attr("height", VHEIGHT);
-    }
-});
-*/
-
 /* load channel */
 
 var loc = document.location+"";

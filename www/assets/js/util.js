@@ -1465,14 +1465,39 @@ function hdLayout() {
 }
 
 function chatOnly() {
-    $("#toprow").remove()
-    $("#playlistrow").remove();
+    var chat = $("#chatwrap").detach();
     removeVideo();
-    $("#controlsrow").remove();
-    $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
+    $("#wrap").remove();
+    $("footer").remove();
+    chat.prependTo($("body"));
+    chat.css({
+        "min-height": "100%",
+        "min-width": "100%",
+        margin: "0",
+        padding: "0"
+    });
+    $("<span/>").addClass("label label-default pull-right pointer")
+        .text("User Options")
+        .appendTo($("#chatheader"))
+        .click(showUserOptions);
+    $("<span/>").addClass("label label-default pull-right pointer")
+        .text("Channel Settings")
+        .appendTo($("#chatheader"))
+        .click(function () {
+            $("#channeloptions").modal();
+        });
+    $("body").addClass("chatOnly");
+    resizeStuff();
 }
 
 function resizeStuff() {
+    if ($("body").hasClass("chatOnly")) {
+        var h = $("body").outerHeight() - $("#chatline").outerHeight() -
+                $("#chatheader").outerHeight();
+        $("#messagebuffer").outerHeight(h);
+        $("#userlist").outerHeight(h);
+        return;
+    }
     VWIDTH = $("#videowrap").width() + "";
     VHEIGHT = Math.floor(parseInt(VWIDTH) * 9 / 16) + "";
     $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
@@ -1499,6 +1524,7 @@ function removeVideo() {
     }
 
     $("#videowrap").remove();
+    $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-md-12");
 }
 
 /* channel administration stuff */
