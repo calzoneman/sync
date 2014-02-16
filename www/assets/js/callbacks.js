@@ -360,7 +360,9 @@ Callbacks = {
     },
 
     channelRankFail: function (data) {
-        makeAlert("Error", data.msg, "alert-danger").insertAfter($("#cs-chanranks h4"));
+        makeAlert("Error", data.msg, "alert-danger")
+            .removeClass().addClass("vertical-spacer")
+            .insertAfter($("#cs-chanranks form"));
     },
 
     readChanLog: function (data) {
