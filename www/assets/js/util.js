@@ -2269,8 +2269,8 @@ function execEmotes(msg) {
     }
 
     CHANNEL.emotes.forEach(function (e) {
-        msg = msg.replace(e.regex, '<img class="channel-emote" src="' +
-                                   e.image + '" title="' + e.name + '">');
+        msg = msg.replace(e.regex, '$1<img class="channel-emote" src="' +
+                                   e.image + '" title="' + e.name + '">$2');
     });
 
     return msg;
