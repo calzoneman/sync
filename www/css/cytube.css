@@ -504,6 +504,7 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 #pmbar {
     position: fixed;
     bottom: 0;
+    z-index: 10000;
 }
 
 .pm-panel, .pm-panel-placeholder {
