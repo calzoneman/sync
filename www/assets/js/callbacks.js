@@ -586,10 +586,11 @@ Callbacks = {
     },
 
     setUserRank: function (data) {
+        data.name = data.name.toLowerCase();
         var entries = $("#cs-chanranks table").data("entries") || [];
         var found = false;
         for (var i = 0; i < entries.length; i++) {
-            if (entries[i].name === data.name) {
+            if (entries[i].name.toLowerCase() === data.name) {
                 entries[i].rank = data.rank;
                 found = i;
                 break;
