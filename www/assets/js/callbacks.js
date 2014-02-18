@@ -790,6 +790,10 @@ Callbacks = {
     },
 
     changeMedia: function(data) {
+        if ($("body").hasClass("chatOnly")) {
+            return;
+        }
+
         if (PLAYER && typeof PLAYER.getVolume === "function") {
             PLAYER.getVolume(function (v) {
                 if (typeof v === "number") {
@@ -848,6 +852,10 @@ Callbacks = {
     },
 
     mediaUpdate: function(data) {
+        if ($("body").hasClass("chatOnly")) {
+            return;
+        }
+
         handleMediaUpdate(data);
     },
 

@@ -505,6 +505,13 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     position: fixed;
     bottom: 0;
     z-index: 10000;
+    min-width: 100%;
+}
+
+body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
+    margin-left: 0;
+    margin-right: 5px;
+    float: right;
 }
 
 .pm-panel, .pm-panel-placeholder {

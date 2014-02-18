@@ -888,6 +888,9 @@ function handlePermissionChange() {
     setVisible("#adminflair", CLIENT.rank >= 255);
     setVisible("#guestlogin", CLIENT.rank < 0);
     setVisible("#chatline", CLIENT.rank >= 0);
+    setVisible("#queue", hasPermission("seeplaylist"));
+    setVisible("#plmeta", hasPermission("seeplaylist"));
+    $("#getplaylist").attr("disabled", !hasPermission("seeplaylist"));
 
     setVisible("#showmediaurl", hasPermission("playlistadd"));
     setVisible("#showcustomembed", hasPermission("playlistaddcustom"));
@@ -1617,6 +1620,7 @@ function genPermissionsEditor() {
     makeOption("Queue playlist", "oplaylistaddlist", standard, CHANNEL.perms.oplaylistaddlist+"");
 
     addDivider("General playlist permissions");
+    makeOption("View the playlist", "seeplaylist", standard, CHANNEL.perms.seeplaylist+"");
     makeOption("Add to playlist", "playlistadd", standard, CHANNEL.perms.playlistadd+"");
     makeOption("Add/move to next", "playlistnext", standard, CHANNEL.perms.playlistnext+"");
     makeOption("Move playlist items", "playlistmove", standard, CHANNEL.perms.playlistmove+"");
