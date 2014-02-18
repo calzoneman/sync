@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var CL_VERSION = "2.4.3";
+var CL_VERSION = "3.0.0";
 
 var CLIENT = {
     rank: -1,
@@ -117,7 +117,7 @@ var USEROPTS = {
     first_visit          : getOrDefault("first_visit", true),
     ignore_channelcss    : getOrDefault("ignore_channelcss", false),
     ignore_channeljs     : getOrDefault("ignore_channeljs", false),
-    sort_rank            : getOrDefault("sort_rank", false),
+    sort_rank            : getOrDefault("sort_rank", true),
     sort_afk             : getOrDefault("sort_afk", false),
     default_quality      : getOrDefault("default_quality", ""),
     boop                 : getOrDefault("boop", false),

@@ -587,7 +587,15 @@ function showUserOptions() {
     $("#us-layout").val(USEROPTS.layout);
     $("#us-no-channelcss").prop("checked", USEROPTS.ignore_channelcss);
     $("#us-no-channeljs").prop("checked", USEROPTS.ignore_channeljs);
-    $("#us-ssl").prop("checked", USEROPTS.secure_connection);
+    if (!ALLOW_SSL) {
+        $("#us-ssl").prop("checked", false);
+        $("#us-ssl").attr("disabled", true);
+        $("#us-ssl").attr("title", "This server has not enabled SSL");
+    } else {
+        $("#us-ssl").prop("checked", USEROPTS.secure_connection);
+        $("#us-ssl").attr("disabled", false);
+        $("#us-ssl").attr("title", "");
+    }
 
     $("#us-synch").prop("checked", USEROPTS.synch);
     $("#us-synch-accuracy").val(USEROPTS.synch_accuracy);
@@ -926,6 +934,12 @@ function handlePermissionChange() {
 
     setVisible("#clearplaylist", hasPermission("playlistclear"));
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
+    if (!hasPermission("addnontemp")) {
+        $(".add-temp").prop("checked", true);
+        $(".add-temp").attr("disabled", true);
+    } else {
+        $(".add-temp").attr("disabled", false);
+    }
 
     fixWeirdButtonAlignmentIssue();
 
