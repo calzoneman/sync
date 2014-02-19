@@ -690,3 +690,5 @@ $("#userlisttoggle").click(toggleUserlist);
 $(".add-temp").change(function () {
     $(".add-temp").prop("checked", $(this).prop("checked"));
 });
+
+applyOpts();

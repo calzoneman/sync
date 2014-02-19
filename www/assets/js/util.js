@@ -719,8 +719,6 @@ function applyOpts() {
     }
 }
 
-applyOpts();
-
 function showPollMenu() {
     $("#pollwrap .poll-menu").remove();
     var menu = $("<div/>").addClass("well poll-menu")
