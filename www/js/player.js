@@ -569,7 +569,9 @@ var LivestreamPlayer = function (data) {
 
     self.setVolume = function () { };
 
-    self.init();
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
 };
 
 var TwitchTVPlayer = function (data) {

@@ -62,7 +62,7 @@ var LASTCHAT = {
 var FOCUSED = true;
 var PAGETITLE = "CyTube";
 var TITLE_BLINK;
-var CHATSOUND = new Audio("boop.wav");
+var CHATSOUND = new Audio("/boop.wav");
 var KICKED = false;
 var NAME = readCookie("cytube_uname");
 var SESSION = readCookie("cytube_session");

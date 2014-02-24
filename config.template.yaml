@@ -17,6 +17,8 @@ http:
   domain: 'http://localhost'
   # Use express-minify to minify CSS and Javascript
   minify: false
+  # Static content cache (in seconds)
+  cache-ttl: 0
 
 # HTTPS server details
 https:
