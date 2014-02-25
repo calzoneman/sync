@@ -9,7 +9,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var CL_VERSION = "3.0.0";
+var CL_VERSION = 3.0;
 
 var CLIENT = {
     rank: -1,
@@ -99,9 +99,8 @@ function getOrDefault(k, def) {
 }
 
 var USEROPTS = {
-    theme                : getOrDefault("theme", "default"),
-    css                  : getOrDefault("css", ""),
-    layout               : getOrDefault("layout", "default"),
+    theme                : getOrDefault("theme", "/css/themes/slate.css"),
+    layout               : getOrDefault("layout", "fluid"),
     synch                : getOrDefault("synch", true),
     hidevid              : getOrDefault("hidevid", false),
     show_timestamps      : getOrDefault("show_timestamps", true),
@@ -163,6 +162,17 @@ function readCookie(name) {
 function eraseCookie(name) {
     createCookie(name,"",-1);
 }
+
+(function () {
+    var localVersion = parseFloat(getOpt("version"));
+    if (isNaN(localVersion)) {
+        USEROPTS.theme = "/css/themes/slate.css";
+        USEROPTS.layout = "fluid";
+        setOpt("theme", "/css/themes/slate.css");
+        setOpt("layout", "fluid");
+        setOpt("version", CL_VERSION);
+    }
+})();
 
 /* to be implemented in callbacks.js */
 function setupCallbacks() { }

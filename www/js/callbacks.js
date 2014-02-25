@@ -908,7 +908,7 @@ Callbacks = {
                 $(li).appendTo($("#library"));
             },
 
-            itemsPerPage: 10
+            itemsPerPage: 100
         };
 
         var p = Paginate(data.results, opts);

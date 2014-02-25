@@ -662,7 +662,7 @@ function applyOpts() {
         $("#usertheme").remove();
         var theme = USEROPTS.theme;
         if (theme === "default") {
-            theme = "/css/themes/default.css";
+            theme = "/css/themes/slate.css";
         }
         $("<link/>").attr("rel", "stylesheet")
             .attr("type", "text/css")
