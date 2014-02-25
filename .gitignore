@@ -9,3 +9,4 @@ node_modules
 *.cert
 *.key
 torlist
+www/cache
