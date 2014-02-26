@@ -44,7 +44,9 @@ mixin navloginlogout(redirect)
 
 mixin navloginform(redirect)
   .visible-md.visible-lg
-    form#loginform.navbar-form.navbar-right(action="/login", method="post")
+    if loginDomain == null
+      - loginDomain = ""
+    form#loginform.navbar-form.navbar-right(action="#{loginDomain}/login", method="post")
       input(type="hidden", name="redirect", value=redirect)
       .form-group
         input#username.form-control(type="text", name="name", placeholder="Username")
