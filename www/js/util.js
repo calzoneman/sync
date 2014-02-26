@@ -888,6 +888,7 @@ function handlePermissionChange() {
     setVisible("#chatline", CLIENT.rank >= 0);
     setVisible("#queue", hasPermission("seeplaylist"));
     setVisible("#plmeta", hasPermission("seeplaylist"));
+    resizeStuff();
     $("#getplaylist").attr("disabled", !hasPermission("seeplaylist"));
 
     setVisible("#showmediaurl", hasPermission("playlistadd"));

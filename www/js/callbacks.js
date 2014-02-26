@@ -1111,8 +1111,9 @@ setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
         socket.on(key, function(data) {
-            if (SOCKET_DEBUG)
+            if (SOCKET_DEBUG) {
                 console.log(key, data);
+            }
             Callbacks[key](data);
         });
         })(key);
@@ -1135,11 +1136,11 @@ try {
             io.transports.splice(i, 1);
         }
     }
-    var opts = {};
-    if (location.protocol === "https:" || USEROPTS.secure_connection) {
-        opts.secure = true;
+    if (ALLOW_SSL && (location.protocol === "https:" || USEROPTS.secure_connection)) {
+        socket = io.connect(IO_URL, opts);
+    } else {
+        socket = io.connect(IO_URL);
     }
-    socket = io.connect(IO_URL, opts);
     setupCallbacks();
 } catch (e) {
     if (e) {
