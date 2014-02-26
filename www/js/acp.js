@@ -369,6 +369,7 @@ socket.on("acp-list-activechannels", function (channels) {
         return a.usercount > b.usercount ? -1 : 1;
     });
 
+    var count = 0;
     channels.forEach(function (c) {
         var tr = $("<tr/>").appendTo(tbl);
         var name = $("<td/>").appendTo(tr);
@@ -376,6 +377,7 @@ socket.on("acp-list-activechannels", function (channels) {
             .text(c.pagetitle + " (/r/" + c.name + ")")
             .appendTo(name);
         var usercount = $("<td/>").text(c.usercount).appendTo(tr);
+        count += c.usercount;
         var nowplaying = $("<td/>").text(c.mediatitle).appendTo(tr);
         var registered = $("<td/>").text(c.registered).appendTo(tr);
         var public = $("<td/>").text(c.public).appendTo(tr);
@@ -390,6 +392,14 @@ socket.on("acp-list-activechannels", function (channels) {
                 }
             });
     });
+
+    var total = $("<tr/>").appendTo(tbl);
+    $("<td/>").html("<strong>Total</strong>").appendTo(total);
+    $("<td/>").html("<strong>" + count + "</strong>").appendTo(total);
+    $("<td/>").appendTo(total);
+    $("<td/>").appendTo(total);
+    $("<td/>").appendTo(total);
+    $("<td/>").appendTo(total);
 });
 
 $("#acp-lchannels-refresh").click(function () {
