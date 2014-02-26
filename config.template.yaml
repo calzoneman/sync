@@ -40,6 +40,12 @@ html-template:
 
 # Socket.IO server details
 io:
+  # In most cases this will be the same as the http.domain.
+  # However, if your HTTP traffic is going through a proxy (e.g. cloudflare)
+  # you will want to set up a passthrough domain for socket.io.
+  # If the root of this domain is not the same as the root of your HTTP domain
+  # (or HTTPS if SSL is enabled), logins won't work.
+  domain: 'http://localhost'
   port: 1337
   # limit the number of concurrent socket connections per IP address
   ip-connection-limit: 10
