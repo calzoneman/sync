@@ -105,7 +105,7 @@ function formatUserlistItem(div) {
         var top = ev.clientY + 5// - name.position().top;
         var left = ev.clientX;
         profile = $("<div/>")
-            .addClass("profile-box")
+            .addClass("profile-box linewrap")
             .css("top", top + "px")
             .css("left", left + "px")
             .appendTo(div);
