@@ -1943,8 +1943,9 @@ function formatCSModList() {
         var ranks = [
             { name: "Remove Moderator", rank: 1 },
             { name: "Moderator", rank: 2 },
-            { name: "Channel Admin", rank: 3 },
-            { name: "Channel Owner", rank: 4 }
+            { name: "Admin", rank: 3 },
+            { name: "Owner", rank: 4 },
+            { name: "Founder", rank: 5 }
         ];
 
         ranks.forEach(function (r) {
@@ -1962,7 +1963,7 @@ function formatCSModList() {
                     });
                 });
             } else {
-                $("<span/>").addClass("glyphicon glyphicon-ok pull-right")
+                $("<span/>").addClass("glyphicon glyphicon-ok")
                     .appendTo(a);
                 li.addClass("disabled");
             }

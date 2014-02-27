@@ -199,9 +199,9 @@ function copyChannelTables(name, cb) {
 
             rows = rows.map(function (r) {
                 if (r.rank === 10) {
-                    r.rank = 4;
+                    r.rank = 5;
                 } else if (r.rank >= 3 && r.rank < 10) {
-                    r.rank = 3;
+                    r.rank = 4;
                 }
                 return [r.name, r.rank];
             });

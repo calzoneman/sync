@@ -25,3 +25,20 @@ if (!Config.get("debug")) {
         sv.shutdown();
     });
 }
+
+var stdinbuf = "";
+process.stdin.on("data", function (data) {
+    stdinbuf += data;
+    if (stdinbuf.indexOf("\n") !== -1) {
+        var line = stdinbuf.substring(0, stdinbuf.indexOf("\n"));
+        stdinbuf = stdinbuf.substring(stdinbuf.indexOf("\n") + 1);
+        handleLine(line);
+    }
+});
+
+function handleLine(line) {
+    if (line === "/reload") {
+        Logger.syslog.log("Reloading config");
+        Config.load("config.yaml");
+    }
+}
