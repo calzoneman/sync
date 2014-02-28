@@ -864,14 +864,16 @@ function handleModPermissions() {
     $("#cs-jstext").val(CHANNEL.js);
     $("#cs-motdtext").val(CHANNEL.motd_text);
     setParentVisible("a[href='#cs-motdeditor']", hasPermission("motdedit"));
-    setParentVisible("a[href='#cs-permissions']", CLIENT.rank >= 3);
+    setParentVisible("a[href='#cs-permedit']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-banlist']", hasPermission("ban"));
     setParentVisible("a[href='#cs-csseditor']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-jseditor']", CLIENT.rank >= 3);
-    setParentVisible("a[href='#cs-filtereditor']", CLIENT.rank >= 3);
+    setParentVisible("a[href='#cs-chatfilters']", hasPermission("filteredit"));
+    setParentVisible("a[href='#cs-emotes']", hasPermission("emoteedit"));
     setParentVisible("a[href='#cs-chanranks']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-chanlog']", CLIENT.rank >= 3);
     $("#cs-chatfilters-import").attr("disabled", !hasPermission("filterimport"));
+    $("#cs-emotes-import").attr("disabled", !hasPermission("filterimport"));
 }
 
 function handlePermissionChange() {

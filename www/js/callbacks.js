@@ -445,6 +445,9 @@ Callbacks = {
 
             if (!CLIENT.guest) {
                 socket.emit("initUserPLCallbacks");
+                if ($("#loginform").length === 0) {
+                    return;
+                }
                 var logoutform = $("<p/>").attr("id", "logoutform")
                     .addClass("navbar-text pull-right")
                     .insertAfter($("#loginform"));
@@ -1151,7 +1154,7 @@ try {
         }
     }
     if (ALLOW_SSL && (location.protocol === "https:" || USEROPTS.secure_connection)) {
-        socket = io.connect(IO_URL, opts);
+        socket = io.connect(IO_URL, { secure: true });
     } else {
         socket = io.connect(IO_URL);
     }

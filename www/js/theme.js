@@ -11,6 +11,10 @@
     }
   }
 
+  if (theme == null || !theme.match(/^\/css\/themes\/\w+.css$/)) {
+    return;
+  }
+
   if (theme !== "/css/themes/slate.css") {
     console.log("THEME COOKIE:", theme);
     var cur = document.getElementById("usertheme");
