@@ -18,6 +18,10 @@ http:
   # Specifies the root domain for cookies.  If you have multiple domains
   # e.g. a.example.com and b.example.com, the root domain is example.com
   root-domain: 'localhost'
+  # Specify alternate domains/hosts that are allowed to set the login cookie
+  # Leave out the http://
+  alt-domains:
+    - '127.0.0.1'
   # Use express-minify to minify CSS and Javascript
   minify: false
   # Static content cache (in seconds)
