@@ -98,6 +98,19 @@ function getOrDefault(k, def) {
     return v;
 }
 
+function default_noh264() {
+    var ua = navigator.userAgent + "";
+    if (ua.match(/Chrome|Chromium/)) {
+        return false;
+    } else if (ua.match(/Firefox/)) {
+        var version = ua.match(/Firefox\/(\d+)/)[1];
+        version = parseInt(version);
+        return version >= 29;
+    } else {
+        return true;
+    }
+}
+
 var USEROPTS = {
     theme                : getOrDefault("theme", "/css/themes/slate.css"),
     layout               : getOrDefault("layout", "fluid"),
@@ -120,7 +133,8 @@ var USEROPTS = {
     sort_afk             : getOrDefault("sort_afk", false),
     default_quality      : getOrDefault("default_quality", ""),
     boop                 : getOrDefault("boop", false),
-    secure_connection    : getOrDefault("secure_connection", false)
+    secure_connection    : getOrDefault("secure_connection", false),
+    no_h264              : getOrDefault("no_h264", default_noh264())
 };
 
 var VOLUME = parseFloat(getOrDefault("volume", 1));

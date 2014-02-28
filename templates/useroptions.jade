@@ -59,6 +59,10 @@ mixin us-playback
       .col-sm-4
       .col-sm-8
         p.text-info Setting <code>wmode=transparent</code> allows objects to be displayed above the video player, but may cause performance issues on some systems.
+      mixin rcheckbox("us-no-h264", "Use JWPlayer for h.264 playback")
+      .col-sm-4
+      .col-sm-8
+        p.text-info Some browsers (e.g. Firefox &lt;=28) do not support native h.264 video playback.  This option allows such content to be played using JWPlayer's flash player.
       mixin rcheckbox("us-hidevideo", "Remove the video player")
       mixin rcheckbox("us-playlistbuttons", "Hide playlist buttons by default")
       mixin rcheckbox("us-oldbtns", "Old style playlist buttons")
