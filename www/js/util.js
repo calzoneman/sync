@@ -1502,11 +1502,13 @@ function chatOnly() {
         .appendTo($("#chatheader"))
         .click(showUserOptions);
     $("<span/>").addClass("label label-default pull-right pointer")
+        .attr("id", "showchansettings")
         .text("Channel Settings")
         .appendTo($("#chatheader"))
         .click(function () {
             $("#channeloptions").modal();
         });
+    setVisible("#showchansettings", CLIENT.rank >= 2);
     $("body").addClass("chatOnly");
     resizeStuff();
 }
@@ -1778,7 +1780,7 @@ function queueMessage(data, type) {
         title = "Warning";
     }
 
-    var alerts = $(".qfalert.qf-" + type);
+    var alerts = $(".qfalert.qf-" + type + " .alert");
     for (var i = 0; i < alerts.length; i++) {
         var al = $(alerts[i]);
         var cl = al.clone();
