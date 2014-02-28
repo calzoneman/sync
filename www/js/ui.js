@@ -112,9 +112,9 @@ function chatTabComplete() {
 
     var __slice = Array.prototype.slice;
     var users = __slice.call($("#userlist").children()).map(function (elem) {
-        return elem.children[1].innerHTML;
+        return elem.children[1].innerHTML.toLowerCase();
     }).filter(function (name) {
-        return name.toLowerCase().indexOf(current) === 0;
+        return name.indexOf(current) === 0;
     });
 
     // users now contains a list of names that start with current word
@@ -580,7 +580,6 @@ $("#cs-chatfilters-newsubmit").click(function () {
         return;
     }
 
-    console.log(name, regex, flags, replace);
     socket.emit("updateFilter", {
         name: name,
         source: regex,

@@ -358,8 +358,9 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     position: fixed;
     border: 1px solid #aaaaaa;
     border-radius: 5px;
-    max-width: 200px;
     padding: 5px;
+    max-width: 200px;
+    max-height: 300px;
 }
 
 .user-dropdown {
