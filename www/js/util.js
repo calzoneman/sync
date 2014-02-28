@@ -891,7 +891,6 @@ function handlePermissionChange() {
     setVisible("#chatline", CLIENT.rank >= 0);
     setVisible("#queue", hasPermission("seeplaylist"));
     setVisible("#plmeta", hasPermission("seeplaylist"));
-    resizeStuff();
     $("#getplaylist").attr("disabled", !hasPermission("seeplaylist"));
 
     setVisible("#showmediaurl", hasPermission("playlistadd"));
@@ -975,6 +974,7 @@ function handlePermissionChange() {
 
     $("#chatline").attr("disabled", !hasPermission("chat"));
     rebuildPlaylist();
+    resizeStuff();
 }
 
 function fixWeirdButtonAlignmentIssue() {
@@ -1518,7 +1518,7 @@ function resizeStuff() {
         return;
     }
     VWIDTH = $("#videowrap").width() + "";
-    VHEIGHT = Math.floor(parseInt(VWIDTH) * 9 / 16) + "";
+    VHEIGHT = Math.floor(parseInt(VWIDTH) * 9 / 16 + 1) + "";
     $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
 
     // Only execute if we are on a fluid layout
