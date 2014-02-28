@@ -321,6 +321,7 @@ function addUserDropdown(entry) {
                 }
             });
             menu.show();
+            menu.css("top", entry.position().top);
         } else {
             menu.hide();
         }
