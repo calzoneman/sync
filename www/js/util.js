@@ -1778,7 +1778,7 @@ function queueMessage(data, type) {
         title = "Warning";
     }
 
-    var alerts = $(".qfalert.qf-" + type);
+    var alerts = $(".qfalert.qf-" + type + " .alert");
     for (var i = 0; i < alerts.length; i++) {
         var al = $(alerts[i]);
         var cl = al.clone();
