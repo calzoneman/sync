@@ -2273,7 +2273,8 @@ function formatUserPlaylistList() {
                 .click(function () {
                     socket.emit("queuePlaylist", {
                         name: pl.name,
-                        pos: "end"
+                        pos: "end",
+                        temp: $(".add-temp").prop("checked")
                     });
                 });
         }
@@ -2285,7 +2286,8 @@ function formatUserPlaylistList() {
                 .click(function () {
                     socket.emit("queuePlaylist", {
                         name: pl.name,
-                        pos: "next"
+                        pos: "next",
+                        temp: $(".add-temp").prop("checked")
                     });
                 });
         }

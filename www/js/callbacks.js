@@ -811,6 +811,8 @@ Callbacks = {
             return;
         }
 
+        var shouldResize = $("#ytapiplayer").html() === "";
+
         if (PLAYER && typeof PLAYER.getVolume === "function") {
             PLAYER.getVolume(function (v) {
                 if (typeof v === "number") {
@@ -863,6 +865,10 @@ Callbacks = {
 
         if(data.type != PLAYER.type) {
             loadMediaPlayer(data);
+        }
+
+        if ($("#ytapiplayer").height() != VHEIGHT) {
+            resizeStuff();
         }
 
         handleMediaUpdate(data);
@@ -1003,82 +1009,6 @@ Callbacks = {
     listPlaylists: function(data) {
         $("#userpl_list").data("entries", data);
         formatUserPlaylistList();
-        return;
-        if(data.error) {
-            makeAlert("Error", data.error, "alert-danger")
-                .insertBefore($("#userpl_list"));
-        }
-        else {
-            var pls = data;
-            pls.sort(function(a, b) {
-                var x = a.name.toLowerCase();
-                var y = b.name.toLowerCase();
-                if(x < y) return -1;
-                if(x > y) return 1;
-                return 0;
-            });
-            $("#userpl_list").html("");
-            for(var i = 0; i < pls.length; i++) {
-                var li = $("<li/>").appendTo($("#userpl_list"))
-                    .addClass("well");
-                li.data("pl-name", pls[i].name);
-                $("<div/>").text(pls[i].name).appendTo(li)
-                    .css("float", "left")
-                    .css("margin-left", "1em");
-                var metastr = pls[i].count + " item";
-                if(pls[i].count != 1) {
-                    metastr += "s";
-                }
-                metastr +=", playtime " + pls[i].duration;
-                $("<div/>").text(metastr)
-                    .css("float", "right")
-                    .appendTo(li);
-                var bg = $("<div/>").addClass("btn-group")
-                    .css("float", "left")
-                    .prependTo(li);
-                var del = $("<button/>")
-                    .addClass("btn btn-xs btn-danger")
-                    .prependTo(bg);
-                $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(del);
-                (function(li) {
-                del.click(function() {
-                    var go = confirm("Are you sure you want to delete playlist '" + li.data("pl-name") + "'?");
-                    if(go) {
-                        socket.emit("deletePlaylist", {
-                            name: li.data("pl-name")
-                        });
-                    }
-                });
-                })(li);
-                if(hasPermission("playlistaddlist")) {
-                    (function(li) {
-                    $("<button/>").addClass("btn btn-xs btn-default")
-                        .text("End")
-                        .prependTo(bg)
-                        .click(function() {
-                            socket.emit("queuePlaylist", {
-                                name: li.data("pl-name"),
-                                pos: "end"
-                            });
-                        });
-                    })(li);
-
-                    if(hasPermission("playlistnext")) {
-                        (function(li) {
-                        $("<button/>").addClass("btn btn-xs btn-default")
-                            .text("Next")
-                            .prependTo(bg)
-                            .click(function() {
-                                socket.emit("queuePlaylist", {
-                                    name: li.data("pl-name"),
-                                    pos: "next"
-                                });
-                            });
-                        })(li);
-                    }
-                }
-            }
-        }
     },
 
     emoteList: function (data) {

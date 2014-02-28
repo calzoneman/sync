@@ -44,6 +44,7 @@ var YouTubePlayer = function (data) {
                 events: {
                     onReady: function () {
                         PLAYER.setVolume(VOLUME);
+                        $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
                     },
                     onStateChange: function (ev) {
                         if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
@@ -137,8 +138,6 @@ var VimeoPlayer = function (data) {
         self.init = function () {
             var iframe = $("<iframe/>");
             removeOld(iframe);
-            iframe.attr("width", VWIDTH);
-            iframe.attr("height", VHEIGHT);
             var prto = location.protocol;
             iframe.attr("src", prto+"//player.vimeo.com/video/"+self.videoId+"?api=1&player_id=ytapiplayer");
             iframe.attr("webkitAllowFullScreen", "");
@@ -147,6 +146,9 @@ var VimeoPlayer = function (data) {
             if(USEROPTS.wmode_transparent)
                 iframe.attr("wmode", "transparent");
             iframe.css("border", "none");
+            iframe.width(VWIDTH);
+            iframe.height(VHEIGHT);
+            console.log(iframe.width(), iframe.height());
 
             $f(iframe[0]).addEvent("ready", function () {
                 self.player = $f(iframe[0]);
