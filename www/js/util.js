@@ -1939,7 +1939,7 @@ function formatCSModList() {
             .attr("data-toggle", "dropdown")
             .html("Edit <span class=caret></span>")
             .appendTo(dd);
-        if (CLIENT.rank <= entry.rank) {
+        if (CLIENT.rank <= entry.rank && !(CLIENT.rank === 4 && entry.rank === 4)) {
             toggle.addClass("disabled");
         }
 
