@@ -358,7 +358,7 @@ function calcUserBreakdown() {
 
         total++;
 
-        if($(item).find(".icon-time").length > 0)
+        if($(item).data("afk"))
             breakdown["AFK"]++;
     });
 
