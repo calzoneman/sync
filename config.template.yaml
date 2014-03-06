@@ -35,6 +35,7 @@ https:
   keyfile: 'localhost.key'
   passphrase: ''
   certfile: 'localhost.cert'
+  cafile: ''
 
 # Page template values
 # title goes in the upper left corner, description goes in a <meta> tag
