@@ -1541,7 +1541,7 @@ function removeVideo() {
     try {
         PLAYER.setVolume(0);
         if (PLAYER.type === "rv") {
-            $(PLAYER.player).remove();
+            killVideoUntilItIsDead($(PLAYER.player));
         }
     } catch (e) {
     }
@@ -2396,4 +2396,30 @@ function initPm(user) {
     });
 
     return pm;
+}
+
+function killVideoUntilItIsDead(video) {
+    try {
+        video[0].volume = 0;
+        video[0].muted = true;
+        video.attr("src", "");
+        video.remove();
+    } catch (e) {
+    }
+}
+
+function fallbackRaw(data) {
+    $("<div/>").insertBefore($("#ytapiplayer")).attr("id", "ytapiplayer");
+    $("video").each(function () {
+        killVideoUntilItIsDead($(this));
+    });
+    data.type = "fl";
+    data.url = data.direct.sd.url;
+    PLAYER.player = undefined;
+    PLAYER = new FlashPlayer(data);
+    if ($("#ytapiplayer").height() != VHEIGHT) {
+        resizeStuff();
+    }
+
+    handleMediaUpdate(data);
 }
