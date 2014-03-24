@@ -78,14 +78,8 @@ Features
 Installing
 ----------
 
-Installation instructions are available here: https://github.com/calzoneman/sync/wiki/Installing
+Installation instructions are available here: https://github.com/calzoneman/sync/wiki/CyTube-3.0-Installation-Guide
 
-Running
--------
-
-Start the server: `node index.js`
-You should now be able to connect via `yourhostname:port` where `port` is
-the port you defined in config.js
 
 Feedback
 --------
