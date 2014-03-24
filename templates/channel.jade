@@ -19,8 +19,8 @@ html(lang="en")
               a.dropdown-toggle(href="#", data-toggle="dropdown") Layout
                 b.caret
               ul.dropdown-menu
-                li: a(href="javascript:chatOnly()") Chat Only
-                li: a(href="javascript:removeVideo()") Remove Video
+                li: a(href="#" onclick="javascript:chatOnly()") Chat Only
+                li: a(href="#" onclick="javascript:removeVideo()") Remove Video
           mixin navloginlogout(cname)
       section#mainpage
         .container
