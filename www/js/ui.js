@@ -111,8 +111,11 @@ function chatTabComplete() {
     }
 
     var __slice = Array.prototype.slice;
-    var users = __slice.call($("#userlist").children()).map(function (elem) {
-        return elem.children[1].innerHTML.toLowerCase();
+    var usersWithCap = __slice.call($("#userlist").children()).map(function (elem) {
+        return elem.children[1].innerHTML;
+    });
+    var users = __slice.call(usersWithCap).map(function (user) {
+        return user.toLowerCase();
     }).filter(function (name) {
         return name.indexOf(current) === 0;
     });
@@ -158,6 +161,13 @@ function chatTabComplete() {
     }
 
     current = users[0].substring(0, min);
+    for (var i = 0; i < usersWithCap.length; i++) {
+        if (usersWithCap[i].toLowerCase() === current) {
+            current = usersWithCap[i];
+            break;
+        }
+    }
+
     if (users.length === 1) {
         if (words.length === 1) {
             current += ":";

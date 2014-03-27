@@ -148,7 +148,6 @@ var VimeoPlayer = function (data) {
             iframe.css("border", "none");
             iframe.width(VWIDTH);
             iframe.height(VHEIGHT);
-            console.log(iframe.width(), iframe.height());
 
             $f(iframe[0]).addEvent("ready", function () {
                 self.player = $f(iframe[0]);
@@ -738,6 +737,126 @@ var RTMPPlayer = function (data) {
     });
 };
 
+function flashEventHandler(id, ev, data) {
+    switch (ev) {
+        case "timeupdate":
+            PLAYER.currentTime = data.currentTime;
+            break;
+        case "pause":
+            PLAYER.paused = data.paused;
+            if (CLIENT.leader)
+                sendVideoUpdate();
+            break;
+        case "play":
+            PLAYER.paused = data.paused;
+            if (CLIENT.leader)
+                sendVideoUpdate();
+            break;
+        case "volumechange":
+            PLAYER.volume = (data.muted ? 0 : data.volume);
+            break;
+        case "progress":
+            break;
+        case "onJavaScriptBridgeCreated":
+            PLAYER.player = $("#ytapiplayer")[0];
+            break;
+        default:
+            break;
+    }
+}
+
+var FlashPlayer = function (data) {
+    removeOld();
+    var self = this;
+    self.volume = VOLUME;
+    self.videoId = data.id;
+    self.videoUrl = data.url;
+    self.videoLength = data.seconds;
+    self.paused = false;
+    self.currentTime = 0;
+
+    self.init = function () {
+        var params = {
+            allowFullScreen: "true",
+            allowScriptAccess: "always",
+            allowNetworking: "all",
+            wMode: "direct"
+        };
+
+        var flashvars = {
+            src: encodeURIComponent(self.videoUrl),
+            // For some reason this param seems not to work
+            clipStartTime: Math.floor(data.currentTime),
+            javascriptCallbackFunction: "flashEventHandler",
+            autoPlay: true,
+            volume: VOLUME
+        };
+
+        if (self.videoUrl.indexOf("rtmp") === 0) {
+            flashvars.streamType = "live";
+        } else {
+            flashvars.streamType = "recorded";
+        }
+
+        swfobject.embedSWF("/StrobeMediaPlayback.swf",
+            "ytapiplayer",
+            VWIDTH, VHEIGHT,
+            "10.1.0",
+            null,
+            flashvars,
+            params,
+            { name: "ytapiplayer" }
+        );
+
+        self.player = $("#ytapiplayer")[0];
+    };
+
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.videoUrl = data.url;
+        self.videoLength = data.seconds;
+        self.init();
+    };
+
+    self.pause = function () {
+        if (self.player && self.player.pause)
+            self.player.pause();
+    };
+
+    self.play = function () {
+        // Why is it play2?  What happened to play1?
+        if (self.player && self.player.play2)
+            self.player.play2();
+    };
+
+    self.isPaused = function (cb) {
+        cb(self.paused);
+    };
+
+    self.getTime = function (cb) {
+        cb(self.currentTime);
+    };
+
+    self.seek = function (to) {
+        if (self.player && self.player.seek) {
+            self.player.seek(Math.floor(to));
+        }
+    };
+
+    self.getVolume = function (cb) {
+        cb(self.volume);
+    };
+
+    self.setVolume = function (vol) {
+        if (self.player && self.player.setVolume)
+            self.player.setVolume(vol);
+    };
+
+    waitUntilDefined(window, "swfobject", function () {
+        self.init();
+    });
+};
+
 var JWPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
@@ -1017,6 +1136,11 @@ function RawVideoPlayer(data) {
             .attr("width", VWIDTH)
             .attr("height", VHEIGHT)
             .html("Your browser does not support HTML5 <code>&lt;video&gt;</code> tags :(");
+        video.error(function (err) {
+            setTimeout(function () {
+                fallbackRaw(data);
+            }, 100);
+        });
         removeOld(video);
         self.player = video[0];
         self.setVolume(VOLUME);
@@ -1168,12 +1292,13 @@ var constructors = {
     "tw": TwitchTVPlayer,
     "jt": JustinTVPlayer,
     "us": UstreamPlayer,
-    "rt": RTMPPlayer,
+    "rt": FlashPlayer,
     "jw": JWPlayer,
     "im": ImgurPlayer,
     "cu": CustomPlayer,
     "gd": GoogleDocsPlayer,
-    "rv": RawVideoPlayer
+    "rv": RawVideoPlayer,
+    "fl": FlashPlayer
 };
 
 function loadMediaPlayer(data) {

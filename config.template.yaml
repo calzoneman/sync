@@ -35,6 +35,7 @@ https:
   keyfile: 'localhost.key'
   passphrase: ''
   certfile: 'localhost.cert'
+  cafile: ''
 
 # Page template values
 # title goes in the upper left corner, description goes in a <meta> tag
@@ -63,7 +64,7 @@ mail:
     service: 'Gmail'
     auth:
       user: 'some.user@gmail.com'
-      password: 'supersecretpassword'
+      pass: 'supersecretpassword'
   from-address: 'some.user@gmail.com'
 
 # GData API v2 developer key (for non-anonymous youtube requests)

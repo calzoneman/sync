@@ -854,13 +854,17 @@ Callbacks = {
         if (NO_VIMEO && data.type === "vi" && data.direct && data.direct.sd) {
             // For browsers that don't support native h264 playback
             if (USEROPTS.no_h264) {
-                data.type = "jw";
+                data.type = "fl";
             } else {
                 data.type = "rv";
             }
             // Right now only plays standard definition.
             // In the future, I may add a quality selector for mobile/standard/HD
             data.url = data.direct.sd.url;
+        }
+
+        if (data.type === "rt") {
+            data.url = data.id;
         }
 
         if(data.type != PLAYER.type) {
