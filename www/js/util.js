@@ -688,6 +688,7 @@ function applyOpts() {
             hdLayout();
             break;
         default:
+            compactLayout();
             break;
     }
 
@@ -1413,6 +1414,55 @@ function addChatMessage(data) {
 }
 
 /* layouts */
+
+function compactLayout() {
+    /* Undo synchtube layout */
+    if ($("body").hasClass("synchtube")) {
+        $("#chatwrap").detach().insertBefore($("#videowrap"));
+        $("#leftcontrols").detach().insertBefore($("#rightcontrols"));
+        $("#leftpane").detach().insertBefore($("#rightpane"));
+        $("#userlist").css("float", "left");
+    }
+
+    /* Undo fluid layout */
+    $(".container-fluid").removeClass("container-fluid").addClass("container");
+
+    /* Undo HD layout */
+    if ($("body").hasClass("hd")) {
+        $("#drinkbar").detach().removeClass().addClass("col-lg-12 col-md-12")
+          .appendTo("#drinkbarwrap");
+        $("#chatwrap").detach().removeClass().addClass("col-lg-5 col-md-5")
+          .appendTo("#main");
+        $("#videowrap").detach().removeClass().addClass("col-lg-7 col-md-7")
+          .appendTo("#main");
+
+        $("#leftcontrols").detach().removeClass().addClass("col-lg-5 col-md-5")
+          .prependTo("#controlsrow");
+
+        $("#plcontrol").detach().appendTo("#rightcontrols");
+        $("#videocontrols").detach().appendTo("#rightcontrols");
+
+        $("#playlistrow").prepend('<div id="leftpane" class="col-lg-5 col-md-5" />');
+        $("#leftpane").append('<div id="leftpane-inner" class="row" />');
+
+        $("#pollwrap").detach().removeClass().addClass("col-lg-12 col-md-12")
+          .appendTo("#leftpane-inner");
+        $("#playlistmanagerwrap").detach().removeClass().addClass("col-lg-12 col-md-12")
+          .css("margin-top", "10px")
+          .appendTo("#leftpane-inner");
+
+        $("#rightpane").detach().removeClass().addClass("col-lg-7 col-md-7")
+          .appendTo("#playlistrow");
+
+        $("nav").addClass("navbar-fixed-top");
+        $("#mainpage").css("padding-top", "60px");
+        $("#queue").css("max-height", "500px");
+        $("#messagebuffer, #userlist").css("max-height", "");
+        $("body").removeClass("hd");
+    }
+
+    setTimeout(resizeStuff, 500);
+}
 
 function fluidLayout() {
     $(".container").removeClass("container").addClass("container-fluid");
