@@ -1425,7 +1425,9 @@ function compactLayout() {
     }
 
     /* Undo fluid layout */
-    $(".container-fluid").removeClass("container-fluid").addClass("container");
+    if ($("body").hasClass("fluid")) {
+        $(".container-fluid").removeClass("container-fluid").addClass("container");
+    }
 
     /* Undo HD layout */
     if ($("body").hasClass("hd")) {
