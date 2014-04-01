@@ -616,6 +616,7 @@ function showUserOptions() {
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-joinmessage").prop("checked", USEROPTS.joinmessage);
+    $("#us-shadowchat").prop("checked", USEROPTS.show_shadowchat);
 
     $("a[href='#us-general']").click();
     $("#useroptions").modal();
@@ -648,6 +649,7 @@ function saveUserOptions() {
     if (CLIENT.rank >= 2) {
         USEROPTS.modhat      = $("#us-modflair").prop("checked");
         USEROPTS.joinmessage = $("#us-joinmessage").prop("checked");
+        USEROPTS.show_shadowchat = $("#us-shadowchat").prop("checked");
     }
 
     storeOpts();
@@ -1357,11 +1359,17 @@ function formatChatMessage(data, last) {
     if (data.meta.addClass) {
         message.addClass(data.meta.addClass);
     }
+    if (data.meta.shadow) {
+        div.addClass("chat-shadow");
+    }
     return div;
 }
 
 function addChatMessage(data) {
     if(IGNORED.indexOf(data.username) !== -1) {
+        return;
+    }
+    if (data.meta.shadow && !USEROPTS.show_shadowchat) {
         return;
     }
     var div = formatChatMessage(data, LASTCHAT);

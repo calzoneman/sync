@@ -7725,3 +7725,7 @@ input.form-control[type="email"], textarea.form-control {
     color: #c8c8c8;
     background-color: #2d2d2d;
 }
+
+.chat-shadow {
+    color: #777777;
+}

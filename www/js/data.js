@@ -134,7 +134,8 @@ var USEROPTS = {
     default_quality      : getOrDefault("default_quality", ""),
     boop                 : getOrDefault("boop", false),
     secure_connection    : getOrDefault("secure_connection", false),
-    no_h264              : getOrDefault("no_h264", default_noh264())
+    no_h264              : getOrDefault("no_h264", default_noh264()),
+    show_shadowchat      : getOrDefault("show_shadowchat", false)
 };
 
 var VOLUME = parseFloat(getOrDefault("volume", 1));
