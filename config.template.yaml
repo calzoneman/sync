@@ -97,6 +97,16 @@ aliases:
 # Workaround for Vimeo blocking my domain
 vimeo-workaround: false
 
+# OPTIONAL: Use Vimeo's OAuth API instead of the anonymous API.
+# This allows you to add private videos that have embedding enabled.
+# See https://developer.vimeo.com/apps/new to register for this API.
+# Note that in order to use this feature you must agree to Vimeo's
+# Terms of Service and License Agreement.
+vimeo-oauth:
+  enabled: true
+  consumer-key: ''
+  secret: ''
+
 # Regular expressions for defining reserved user and channel names and page titles
 # The list of regular expressions will be joined with an OR, and compared without
 # case sensitivity.
