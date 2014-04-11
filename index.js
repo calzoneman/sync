@@ -40,5 +40,12 @@ function handleLine(line) {
     if (line === "/reload") {
         Logger.syslog.log("Reloading config");
         Config.load("config.yaml");
+    } else if (line === "/gc") {
+        if (global && global.gc) {
+            Logger.syslog.log("Running GC");
+            global.gc();
+        } else {
+            Logger.syslog.log("Failed to invoke GC: node started without --expose-gc");
+        }
     }
 }
