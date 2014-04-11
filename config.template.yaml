@@ -9,11 +9,43 @@ mysql:
   user: 'cytube3'
   password: ''
 
+# Define IPs/ports to listen on
+# Each entry MUST define ip and port (ip can be '' to bind all available addresses)
+# Each entry should set http, https, and/or io to true to listen for the corresponding
+# service on that port.  http/io and https/io can be combined, but if http and https
+# are both specified, only https will be bound to that port.
+#
+# NOTE: You can technically bind an IPv6 address this way, but much of the code has not
+# yet been updated to work with IPv6 addresses (ban ranges, IP masking, etc.)
+# IPv6 support is planned, and the below method of binding servers is one step in that
+# direction
+listen:
+# Default HTTP server - default interface, port 8080
+  - ip: ''
+    port: 8080
+    http: true
+# Uncomment below to enable HTTPS/SSL websockets
+# Note that you must also set https->enabled = true in the https definition
+#  - ip: ''
+#    port: 8443
+#    https: true
+#    io: true
+# Default Socket.IO server - default interface, port 1337
+  - ip: ''
+    port: 1337
+    io: true
+# Example of how to bind an extra port to HTTP and Socket.IO
+#  - ip: ''
+#    port: 8081
+#    http: true
+#    io: true
+
 # HTTP server details
 http:
-  # If you want to bind a specific IP, put it here, otherwise leave empty
-  host: ''
-  port: 8080
+  # Even though you may specify multiple ports to listen on for HTTP above,
+  # one port must be specified as default for the purposes of generating
+  # links with the appropriate port
+  default-port: 8080
   domain: 'http://localhost'
   # Specifies the root domain for cookies.  If you have multiple domains
   # e.g. a.example.com and b.example.com, the root domain is example.com
@@ -30,7 +62,10 @@ http:
 # HTTPS server details
 https:
   enabled: false
-  port: 8443
+  # Even though you may specify multiple ports to listen on for HTTPS above,
+  # one port must be specified as default for the purposes of generating
+  # links with the appropriate port
+  default-port: 8443
   domain: 'https://localhost'
   keyfile: 'localhost.key'
   passphrase: ''
@@ -51,7 +86,10 @@ io:
   # If the root of this domain is not the same as the root of your HTTP domain
   # (or HTTPS if SSL is enabled), logins won't work.
   domain: 'http://localhost'
-  port: 1337
+  # Even though you may specify multiple ports to listen on for HTTP above,
+  # one port must be specified as default for the purposes of generating
+  # links with the appropriate port
+  default-port: 1337
   # limit the number of concurrent socket connections per IP address
   ip-connection-limit: 10
 
