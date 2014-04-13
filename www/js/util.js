@@ -2127,6 +2127,25 @@ function formatCSBanlist() {
     });
 }
 
+function checkEntitiesInStr(str) {
+    var entities = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+        "(": "&#40;",
+        ")": "&#41;"
+    };
+
+    var m = str.match(/([&<>"'\(\)])/);
+    if (m && m[1] in entities) {
+        return { src: m[1], replace: entities[m[1]] };
+    } else {
+        return false;
+    }
+}
+
 function formatCSChatFilterList() {
     var tbl = $("#cs-chatfilters table");
     tbl.find("tbody").remove();
@@ -2204,6 +2223,13 @@ function formatCSChatFilterList() {
             $("<span/>").addClass("glyphicon glyphicon-floppy-save").appendTo(save);
             save.click(function () {
                 f.source = regex.val();
+                var entcheck = checkEntitiesInStr(f.source);
+                if (entcheck) {
+                    alert("Warning: " + entcheck.src + " will be replaced by " +
+                          entcheck.replace + " in the message preprocessor.  This " +
+                          "regular expression may not match what you intended it to " +
+                          "match.");
+                }
                 f.flags = flags.val();
                 f.replace = replace.val();
                 f.filterlinks = filterlinks.prop("checked");
