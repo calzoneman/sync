@@ -8000,8 +8000,8 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 .queue_active.queue_temp {
-    background-color: #8a9196;
-    background-image: url(/img/stripe-diagonal.png);
+    background-color: #70787d;
+    background-image: url(/img/stripe-diagonal-black.png);
     background-repeat: repeat;
 }
 
