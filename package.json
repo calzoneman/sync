@@ -16,6 +16,7 @@
     "cookie": "~0.1.0",
     "yamljs": "~0.1.4",
     "express-minify": "0.0.7",
-    "q": "^1.0.0"
+    "q": "^1.0.0",
+    "json-typecheck": "^0.1.0"
   }
 }
