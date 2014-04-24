@@ -35,3 +35,7 @@ footer {
 .profile-box, .user-dropdown {
     background-color: #ffffff;
 }
+
+.chat-shadow {
+    color: #aaaaaa;
+}

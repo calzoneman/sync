@@ -8012,3 +8012,7 @@ input.form-control[type="email"], textarea.form-control {
 .poll-notify {
     color: #ff9900;
 }
+
+.chat-shadow {
+    color: #777777;
+}
