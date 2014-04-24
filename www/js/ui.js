@@ -582,6 +582,13 @@ $("#cs-chatfilters-newsubmit").click(function () {
     var regex = $("#cs-chatfilters-newregex").val();
     var flags = $("#cs-chatfilters-newflags").val();
     var replace = $("#cs-chatfilters-newreplace").val();
+    var entcheck = checkEntitiesInStr(regex);
+    if (entcheck) {
+        alert("Warning: " + entcheck.src + " will be replaced by " +
+              entcheck.replace + " in the message preprocessor.  This " +
+              "regular expression may not match what you intended it to " +
+              "match.");
+    }
 
     try {
         new RegExp(regex, flags);

@@ -7999,6 +7999,12 @@ input.form-control[type="email"], textarea.form-control {
     background-repeat: no-repeat;
 }
 
+.queue_active.queue_temp {
+    background-color: #70787d;
+    background-image: url(/img/stripe-diagonal-black.png);
+    background-repeat: repeat;
+}
+
 .navbar-inverse {
     background-image: -webkit-linear-gradient(#484e55, #3a3f44 60%, #313539) !important;
     background-image: linear-gradient(#484e55, #3a3f44 60%, #313539) !important;

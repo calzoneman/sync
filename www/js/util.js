@@ -599,7 +599,7 @@ function showUserOptions() {
     }
 
     $("#us-synch").prop("checked", USEROPTS.synch);
-    $("#us-synch-accuracy").val(USEROPTS.synch_accuracy);
+    $("#us-synch-accuracy").val(USEROPTS.sync_accuracy);
     $("#us-wmode-transparent").prop("checked", USEROPTS.wmode_transparent);
     $("#us-no-h264").prop("checked", USEROPTS.no_h264);
     $("#us-hidevideo").prop("checked", USEROPTS.hidevid);
@@ -631,7 +631,7 @@ function saveUserOptions() {
     USEROPTS.secure_connection    = $("#us-ssl").prop("checked");
 
     USEROPTS.synch                = $("#us-synch").prop("checked");
-    USEROPTS.synch_accuracy       = parseFloat($("#us-synch-accuracy").val()) || 2;
+    USEROPTS.sync_accuracy        = parseFloat($("#us-synch-accuracy").val()) || 2;
     USEROPTS.wmode_transparent    = $("#us-wmode-transparent").prop("checked");
     USEROPTS.no_h264              = $("#us-no-h264").prop("checked");
     USEROPTS.hidevid              = $("#us-hidevideo").prop("checked");
@@ -2127,6 +2127,25 @@ function formatCSBanlist() {
     });
 }
 
+function checkEntitiesInStr(str) {
+    var entities = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+        "(": "&#40;",
+        ")": "&#41;"
+    };
+
+    var m = str.match(/([&<>"'\(\)])/);
+    if (m && m[1] in entities) {
+        return { src: m[1], replace: entities[m[1]] };
+    } else {
+        return false;
+    }
+}
+
 function formatCSChatFilterList() {
     var tbl = $("#cs-chatfilters table");
     tbl.find("tbody").remove();
@@ -2204,6 +2223,13 @@ function formatCSChatFilterList() {
             $("<span/>").addClass("glyphicon glyphicon-floppy-save").appendTo(save);
             save.click(function () {
                 f.source = regex.val();
+                var entcheck = checkEntitiesInStr(f.source);
+                if (entcheck) {
+                    alert("Warning: " + entcheck.src + " will be replaced by " +
+                          entcheck.replace + " in the message preprocessor.  This " +
+                          "regular expression may not match what you intended it to " +
+                          "match.");
+                }
                 f.flags = flags.val();
                 f.replace = replace.val();
                 f.filterlinks = filterlinks.prop("checked");
