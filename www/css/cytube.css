@@ -289,6 +289,10 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     font-size: 14pt;
 }
 
+.userlist_item {
+    cursor: pointer;
+}
+
 .userlist_siteadmin {
     color: #cc0000!important;
     font-weight: bold!important;

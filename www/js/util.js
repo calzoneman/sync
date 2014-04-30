@@ -309,7 +309,7 @@ function addUserDropdown(entry) {
             .appendTo(btngroup);
     }
 
-    entry.contextmenu(function(ev) {
+    var showdd = function(ev) {
         ev.preventDefault();
         if(menu.css("display") == "none") {
             $(".user-dropdown").hide();
@@ -326,7 +326,9 @@ function addUserDropdown(entry) {
             menu.hide();
         }
         return false;
-    });
+    };
+    entry.contextmenu(showdd);
+    entry.click(showdd);
 }
 
 function calcUserBreakdown() {
