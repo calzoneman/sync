@@ -57,7 +57,7 @@ function formatURL(data) {
         case "us":
             return "http://ustream.tv/" + data.id;
         case "gd":
-            return data.id;
+            return "https://docs.google.com/file/d/" + data.id;
         default:
             return "#";
     }
@@ -1259,7 +1259,7 @@ function parseMediaLink(url) {
         };
     }
 
-    if ((m = url.match(/docs\.google\.com\/file\/d\/(.*?)\/edit/))) {
+    if ((m = url.match(/docs\.google\.com\/file\/d\/(.*)(\/edit)?/))) {
         return {
             id: m[1],
             type: "gd"
