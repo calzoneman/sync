@@ -72,7 +72,7 @@ html(lang="en")
           $("<p/>").addClass("text-danger")
             .attr("id", "usernameerror")
             .text("Username must consist of 1-20 characters a-Z, A-Z, 0-9 " +
-                  ", -, _, and accented letters.")
+                  ", -, or _.")
             .insertAfter($("#username"));
           return false;
         } else {
