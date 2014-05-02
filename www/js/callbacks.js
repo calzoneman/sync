@@ -360,9 +360,13 @@ Callbacks = {
     },
 
     channelRankFail: function (data) {
-        makeAlert("Error", data.msg, "alert-danger")
-            .removeClass().addClass("vertical-spacer")
-            .insertAfter($("#cs-chanranks form"));
+        if ($("#cs-chanranks").is(":visible")) {
+            makeAlert("Error", data.msg, "alert-danger")
+                .removeClass().addClass("vertical-spacer")
+                .insertAfter($("#cs-chanranks form"));
+        } else {
+            Callbacks.noflood({ action: "/rank", msg: data.msg });
+        }
     },
 
     readChanLog: function (data) {

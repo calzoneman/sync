@@ -493,7 +493,7 @@ if (location.protocol === "https:") {
 function chanrankSubmit(rank) {
     var name = $("#cs-chanranks-name").val();
     socket.emit("setChannelRank", {
-        user: name,
+        name: name,
         rank: rank
     });
 }
