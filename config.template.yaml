@@ -171,3 +171,11 @@ contacts:
 # periodically, the garbage collector will be invoked immediately.
 # The server must be invoked with node --expose-gc index.js for this to have any effect.
 aggressive-gc: false
+
+playlist:
+  # Maximum number of items on a playlist.
+  max-items: 4000
+  # Interval (seconds) between subsequent mediaUpdate packets.  The internal lead
+  # function will fire every second regardless of what is sent here, but broadcasts
+  # of current state will only occur every update-interval seconds.
+  update-interval: 5
