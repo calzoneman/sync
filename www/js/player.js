@@ -1059,11 +1059,12 @@ var GoogleDocsPlayer = function (data) {
         self.videoLength = data.seconds;
         self.paused = false;
         var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
-        self.player = $("<object/>", data.object)[0];
-        $(self.player).attr("data", data.object.data);
+        var meta = data.meta;
+        self.player = $("<object/>", meta.object)[0];
+        $(self.player).attr("data", meta.object.data);
         $(self.player).attr("width", VWIDTH)
                       .attr("height", VHEIGHT);
-        data.params.forEach(function (p) {
+        meta.params.forEach(function (p) {
             $("<param/>", p).appendTo(self.player);
         });
         removeOld($(self.player));
