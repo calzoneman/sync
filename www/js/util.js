@@ -238,7 +238,8 @@ function addUserDropdown(entry) {
             .click(function () {
                 var reason = prompt("Enter kick reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/kick " + name + " " + reason
+                    msg: "/kick " + name + " " + reason,
+                    meta: {}
                 });
             })
             .appendTo(btngroup);
@@ -250,7 +251,8 @@ function addUserDropdown(entry) {
             .text("Mute")
             .click(function () {
                 socket.emit("chatMsg", {
-                    msg: "/mute " + name
+                    msg: "/mute " + name,
+                    meta: {}
                 });
                 mute.hide();
                 smute.hide();
@@ -261,7 +263,8 @@ function addUserDropdown(entry) {
             .text("Shadow Mute")
             .click(function () {
                 socket.emit("chatMsg", {
-                    msg: "/smute " + name
+                    msg: "/smute " + name,
+                    meta: {}
                 });
                 mute.hide();
                 smute.hide();
@@ -272,7 +275,8 @@ function addUserDropdown(entry) {
             .text("Unmute")
             .click(function () {
                 socket.emit("chatMsg", {
-                    msg: "/unmute " + name
+                    msg: "/unmute " + name,
+                    meta: {}
                 });
                 unmute.hide();
                 mute.show();
@@ -294,7 +298,8 @@ function addUserDropdown(entry) {
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/ban " + name + " " + reason
+                    msg: "/ban " + name + " " + reason,
+                    meta: {}
                 });
             })
             .appendTo(btngroup);
@@ -303,7 +308,8 @@ function addUserDropdown(entry) {
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/ipban " + name + " " + reason
+                    msg: "/ipban " + name + " " + reason,
+                    meta: {}
                 });
             })
             .appendTo(btngroup);
@@ -711,7 +717,8 @@ function applyOpts() {
         btn.click(function() {
             if($("#chatline").val().trim()) {
                 socket.emit("chatMsg", {
-                    msg: $("#chatline").val()
+                    msg: $("#chatline").val(),
+                    meta: {}
                 });
                 $("#chatline").val("");
             }

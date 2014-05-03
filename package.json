@@ -17,7 +17,7 @@
     "yamljs": "~0.1.4",
     "express-minify": "0.0.7",
     "q": "^1.0.0",
-    "json-typecheck": "^0.1.0"
+    "json-typecheck": "^0.1.0",
     "oauth": "^0.9.11"
   }
 }
