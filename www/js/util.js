@@ -254,9 +254,6 @@ function addUserDropdown(entry) {
                     msg: "/mute " + name,
                     meta: {}
                 });
-                mute.hide();
-                smute.hide();
-                unmute.show();
             })
             .appendTo(btngroup);
         var smute = $("<button/>").addClass("btn btn-xs btn-default")
@@ -266,9 +263,6 @@ function addUserDropdown(entry) {
                     msg: "/smute " + name,
                     meta: {}
                 });
-                mute.hide();
-                smute.hide();
-                unmute.show();
             })
             .appendTo(btngroup);
         var unmute = $("<button/>").addClass("btn btn-xs btn-default")
@@ -278,9 +272,6 @@ function addUserDropdown(entry) {
                     msg: "/unmute " + name,
                     meta: {}
                 });
-                unmute.hide();
-                mute.show();
-                smute.show();
             })
             .appendTo(btngroup);
         if (meta.muted) {

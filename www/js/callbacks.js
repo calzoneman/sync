@@ -132,7 +132,7 @@ Callbacks = {
         $("#needpw").remove();
     },
 
-    chatCooldown: function (time) {
+    cooldown: function (time) {
         time = time + 200;
         $("#chatline").css("color", "#ff0000");
         if (CHATTHROTTLE && $("#chatline").data("throttle_timer")) {
