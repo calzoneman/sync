@@ -10,9 +10,32 @@ mixin rcheckbox(id, label)
     .col-sm-8.col-sm-offset-4
       .checkbox
         label.control-label(for=id)= label
-          input.cs-checkbox(type="checkbox", id=id)
+          input(type="checkbox", id=id)
 
 mixin textbox(id, label, placeholder)
+  .form-group
+    label.control-label.col-sm-4(for=id)= label
+    .col-sm-8
+      if placeholder
+        input.form-control(id=id, type="text", placeholder=placeholder)
+      else
+        input.form-control(id=id, type="text")
+
+mixin lcheckbox-auto(id, label)
+  .form-group
+    label.control-label.col-sm-4(for=id)= label
+    .col-sm-8
+      .checkbox
+        input.cs-checkbox(type="checkbox", id=id)
+
+mixin rcheckbox-auto(id, label)
+  .form-group
+    .col-sm-8.col-sm-offset-4
+      .checkbox
+        label.control-label(for=id)= label
+          input.cs-checkbox(type="checkbox", id=id)
+
+mixin textbox-auto(id, label, placeholder)
   .form-group
     label.control-label.col-sm-4(for=id)= label
     .col-sm-8
@@ -25,14 +48,14 @@ mixin miscoptions
   #cs-miscoptions.tab-pane
     h4 General Settings
     form.form-horizontal(action="javascript:void(0)")
-      mixin rcheckbox("cs-enable_link_regex", "Convert URLs in chat to links")
-      mixin rcheckbox("cs-allow_voteskip", "Allow voteskip")
-      mixin textbox("cs-voteskip_ratio", "Voteskip ratio", "0.5")
-      mixin textbox("cs-maxlength", "Max video length", "HH:MM:SS")
-      mixin textbox("cs-afk_timeout", "Auto-AFK Delay", "0 (disabled)")
-      mixin rcheckbox("cs-chat_antiflood", "Throttle chat")
-      mixin textbox("cs-chat_antiflood_burst", "# of messages allowed before throttling")
-      mixin textbox("cs-chat_antiflood_sustained", "# of messages (after burst) allowed per second")
+      mixin rcheckbox-auto("cs-enable_link_regex", "Convert URLs in chat to links")
+      mixin rcheckbox-auto("cs-allow_voteskip", "Allow voteskip")
+      mixin textbox-auto("cs-voteskip_ratio", "Voteskip ratio", "0.5")
+      mixin textbox-auto("cs-maxlength", "Max video length", "HH:MM:SS")
+      mixin textbox-auto("cs-afk_timeout", "Auto-AFK Delay", "0 (disabled)")
+      mixin rcheckbox-auto("cs-chat_antiflood", "Throttle chat")
+      mixin textbox-auto("cs-chat_antiflood_burst", "# of messages allowed before throttling")
+      mixin textbox-auto("cs-chat_antiflood_sustained", "# of messages (after burst) allowed per second")
       .form-group
         .col-sm-8.col-sm-offset-4
           span.text-info Changes are automatically saved.
@@ -42,11 +65,11 @@ mixin adminoptions
     h4 Admin-Only Settings
     form.form-horizontal(action="javascript:void(0)")
       - var defname = "CyTube - /r/" + channelName
-      mixin textbox("cs-pagetitle", "Page title", defname)
-      mixin textbox("cs-password", "Password", "leave blank to disable")
-      mixin textbox("cs-externalcss", "External CSS", "Stylesheet URL")
-      mixin textbox("cs-externaljs", "External Javascript", "Script URL")
-      mixin rcheckbox("cs-show_public", "List channel publicly")
+      mixin textbox-auto("cs-pagetitle", "Page title", defname)
+      mixin textbox-auto("cs-password", "Password", "leave blank to disable")
+      mixin textbox-auto("cs-externalcss", "External CSS", "Stylesheet URL")
+      mixin textbox-auto("cs-externaljs", "External Javascript", "Script URL")
+      mixin rcheckbox-auto("cs-show_public", "List channel publicly")
       .form-group
         .col-sm-8.col-sm-offset-4
           span.text-info Changes are automatically saved.
