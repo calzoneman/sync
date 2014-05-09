@@ -2025,7 +2025,7 @@ function formatCSModList() {
             if (r.rank !== entry.rank) {
                 a.click(function () {
                     socket.emit("setChannelRank", {
-                        user: entry.name,
+                        name: entry.name,
                         rank: r.rank
                     });
                 });
