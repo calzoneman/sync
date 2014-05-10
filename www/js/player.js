@@ -1251,6 +1251,8 @@ function handleMediaUpdate(data) {
             PLAYER.pause();
         }
         return;
+    } else if (PLAYER.type === "yt") {
+        PLAYER.theYouTubeDevsNeedToFixThisShit = false;
     }
 
     // Don't synch if leader or synch disabled
