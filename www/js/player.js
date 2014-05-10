@@ -28,6 +28,7 @@ var YouTubePlayer = function (data) {
             self.paused = false;
             self.videoId = data.id;
             self.videoLength = data.seconds;
+            self.theYouTubeDevsNeedToFixThisShit = false;
             var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
             self.player = new YT.Player("ytapiplayer", {
                 height: VHEIGHT,
@@ -47,6 +48,19 @@ var YouTubePlayer = function (data) {
                         $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
                     },
                     onStateChange: function (ev) {
+
+                        /**
+                         * Race conditions suck.
+                         * Race conditions in other peoples' code that you can't fix
+                         * but are forced to work around suck more.
+                         */
+                        if (ev.data === YT.PlayerState.PLAYING &&
+                            self.theYouTubeDevsNeedToFixThisShit) {
+                            PLAYER.seek(0);
+                            PLAYER.pause();
+                            self.theYouTubeDevsNeedToFixThisShit = false;
+                        }
+
                         if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
                            !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
                             self.paused = (ev.data == YT.PlayerState.PAUSED);
@@ -1220,20 +1234,23 @@ function handleMediaUpdate(data) {
     }
 
     if (wait) {
-        var tm = 1;
         /* Stupid hack -- In this thrilling episode of
            "the YouTube API developers should eat a boat", the
            HTML5 player apparently breaks if I play()-seek(0)-pause()
            quickly (as a "start buffering but don't play yet"
            mechanism)
+
+           Addendum 2014-05-09
+           Made this slightly less hacky by waiting for a PLAYING event
+           to fire instead of just waiting 500ms and assuming that's
+           long enough
         */
         if (PLAYER.type === "yt") {
-            tm = 500;
-        }
-        setTimeout(function () {
+            PLAYER.theYouTubeDevsNeedToFixThisShit = true;
+        } else {
             PLAYER.seek(0);
             PLAYER.pause();
-        }, tm);
+        }
         return;
     }
 
