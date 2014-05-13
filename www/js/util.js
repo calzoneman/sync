@@ -587,6 +587,7 @@ function showUserOptions() {
     $("#us-layout").val(USEROPTS.layout);
     $("#us-no-channelcss").prop("checked", USEROPTS.ignore_channelcss);
     $("#us-no-channeljs").prop("checked", USEROPTS.ignore_channeljs);
+    /*
     if (!ALLOW_SSL) {
         $("#us-ssl").prop("checked", false);
         $("#us-ssl").attr("disabled", true);
@@ -596,6 +597,24 @@ function showUserOptions() {
         $("#us-ssl").attr("disabled", false);
         $("#us-ssl").attr("title", "");
     }
+    */
+    var conninfo = "<strong>Connection Information: </strong>" +
+                   "Connected to <code>" + IO_URL + "</code> (";
+    if (IO_URL === IO_URLS["ipv6-ssl"] || IO_URL === IO_URLS["ipv6-nossl"]) {
+        conninfo += "IPv6, ";
+    } else {
+        conninfo += "IPv4, ";
+    }
+
+    if (IO_URL === IO_URLS["ipv4-ssl"] || IO_URL === IO_URLS["ipv6-ssl"]) {
+        conninfo += "SSL)";
+    } else {
+        conninfo += "no SSL)";
+    }
+
+    conninfo += ".  SSL is enabled by default if it is supported by the server.";
+    $("#us-conninfo").html(conninfo);
+
 
     $("#us-synch").prop("checked", USEROPTS.synch);
     $("#us-synch-accuracy").val(USEROPTS.sync_accuracy);

@@ -15,10 +15,12 @@ mysql:
 # service on that port.  http/io and https/io can be combined, but if http and https
 # are both specified, only https will be bound to that port.
 #
-# NOTE: You can technically bind an IPv6 address this way, but much of the code has not
-# yet been updated to work with IPv6 addresses (ban ranges, IP masking, etc.)
-# IPv6 support is planned, and the below method of binding servers is one step in that
-# direction
+# IPv6 listeners are supported, BUT! you must also provide a url: key specifying the
+# URL for the socket to connect to.  This is because Socket.IO cannot connect to raw
+# IPv6 addresses, only to domains with a AAAA record.
+#
+# The IO_URL defined for the client is now determined automatically.  It prefers
+# IPv6 and SSL, but will fall back to IPv4/non-SSL where appropriate.
 listen:
 # Default HTTP server - default interface, port 8080
   - ip: ''
@@ -34,6 +36,11 @@ listen:
   - ip: ''
     port: 1337
     io: true
+# Example of how to bind an IPv6 Socket.IO listener to the loopback address
+#  - ip: '::1'
+#    port: 1337
+#    io: true
+#    url: 'http://local6:1337'
 # Example of how to bind an extra port to HTTP and Socket.IO
 #  - ip: ''
 #    port: 8081

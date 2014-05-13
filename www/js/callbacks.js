@@ -1091,7 +1091,8 @@ try {
             io.transports.splice(i, 1);
         }
     }
-    if (ALLOW_SSL && (location.protocol === "https:" || USEROPTS.secure_connection)) {
+
+    if (IO_URL === IO_URLS["ipv4-ssl"] || IO_URL === IO_URLS["ipv6-ssl"]) {
         socket = io.connect(IO_URL, { secure: true });
     } else {
         socket = io.connect(IO_URL);
