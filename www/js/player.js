@@ -1083,6 +1083,7 @@ var GoogleDocsPlayer = function (data) {
         });
         removeOld($(self.player));
         self.setVolume(VOLUME);
+        resizeStuff();
     };
 
     self.load = function (data) {
