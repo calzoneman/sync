@@ -189,21 +189,17 @@ Callbacks = {
     setMotd: function(data) {
         CHANNEL.motd = data.html;
         CHANNEL.motd_text = data.motd;
-        if ($("#motdwrap").find(".motdeditor").length > 0) {
-            $("#motdwrap .motdeditor").val(CHANNEL.motd_text);
-        } else {
-            $("#motd").html(CHANNEL.motd);
-        }
-        $("#motdtext").val(CHANNEL.motd_text);
-        if(data.motd != "") {
+        $("#motd").html(CHANNEL.motd);
+        $("#cs-motdtext").val(CHANNEL.motd_text);
+        if (data.motd != "") {
             $("#motdwrap").show();
             $("#motd").show();
             $("#togglemotd").find(".glyphicon-plus")
                 .removeClass("glyphicon-plus")
                 .addClass("glyphicon-minus");
-        }
-        else
+        } else {
             $("#motdwrap").hide();
+        }
     },
 
     chatFilters: function(entries) {
