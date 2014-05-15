@@ -869,6 +869,7 @@ function handleModPermissions() {
     $("#cs-afk_timeout").val(CHANNEL.opts.afk_timeout);
     $("#cs-allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#cs-voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+    $("#cs-allow_dupes").val(CHANNEL.opts.allow_dupes);
     (function() {
         if(typeof CHANNEL.opts.maxlength != "number") {
             $("#cs-maxlength").val("");
