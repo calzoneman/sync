@@ -40,10 +40,16 @@ function handleLine(line) {
     if (line === "/reload") {
         Logger.syslog.log("Reloading config");
         Config.load("config.yaml");
-    } else if (line === "/gc") {
+    } else if (line.indexOf("/gc") === 0) {
         if (global && global.gc) {
-            Logger.syslog.log("Running GC");
-            global.gc();
+            var args = line.split(" ");
+            if (args.length < 2) {
+                args[1] = 1;
+            }
+            Logger.syslog.log("Running GC " + parseInt(args[1]) + " times");
+            for (var i = 0; i < parseInt(args[1]); i++) {
+                global.gc();
+            }
         } else {
             Logger.syslog.log("Failed to invoke GC: node started without --expose-gc");
         }
