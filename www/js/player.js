@@ -350,11 +350,32 @@ var DailymotionPlayer = function (data) {
         removeOld();
         self.videoId = data.id;
         self.videoLength = data.seconds;
+
+        var q = undefined;
+        if (USEROPTS.default_quality) {
+            /* Map youtube-style quality names to dailymotion values */
+            q = {
+                small: 240,
+                medium: 380,
+                large: 480,
+                hd720: 720,
+                hd1080: 1080,
+                highres: 1080
+            }[USEROPTS.default_quality];
+        }
+
+        var params = {
+            autoplay: 1,
+            wmode: USEROPTS.wmode_transparent ? "transparent" : "opaque",
+            quality: q,
+            logo: 0
+        };
+
         self.player = DM.player("ytapiplayer", {
             video: data.id,
             width: parseInt(VWIDTH, 10),
             height: parseInt(VHEIGHT, 10),
-            params: { autoplay: 1 }
+            params: params
         });
 
         self.player.addEventListener("apiready", function (e) {
