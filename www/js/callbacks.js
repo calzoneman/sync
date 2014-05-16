@@ -858,9 +858,32 @@ Callbacks = {
             } else {
                 data.type = "rv";
             }
-            // Right now only plays standard definition.
-            // In the future, I may add a quality selector for mobile/standard/HD
-            data.url = data.direct.sd.url;
+
+            /* Convert youtube-style quality key to vimeo workaround quality */
+            var q = {
+                small: "mobile",
+                medium: "sd",
+                large: "sd",
+                hd720: "hd",
+                hd1080:"hd",
+                highres: "hd"
+            }[USEROPTS.default_quality] || "sd";
+
+            var fallback = {
+                hd: "sd",
+                sd: "mobile",
+                mobile: false
+            };
+
+            while (!(q in data.direct) && q != false) {
+                q = fallback[q];
+            }
+
+            if (!q) {
+                q = "sd";
+            }
+
+            data.url = data.direct[q].url;
         }
 
         if (data.type === "rt") {
