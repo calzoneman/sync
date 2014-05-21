@@ -2160,13 +2160,13 @@ function checkEntitiesInStr(str) {
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;",
-        "(": "&#40;",
-        ")": "&#41;"
+        "\\(": "&#40;",
+        "\\)": "&#41;"
     };
 
-    var m = str.match(/([&<>"'\(\)])/);
+    var m = str.match(/([&<>"'])|(\\\()|(\\\))/);
     if (m && m[1] in entities) {
-        return { src: m[1], replace: entities[m[1]] };
+        return { src: m[1].replace(/^\\/, ""), replace: entities[m[1]] };
     } else {
         return false;
     }
