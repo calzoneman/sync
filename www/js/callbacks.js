@@ -851,7 +851,7 @@ Callbacks = {
             domains every time one gets blocked.  No thanks to Vimeo, who were of no help
             and unwilling to compromise on the issue.
         */
-        if (NO_VIMEO && data.type === "vi" && data.direct && data.direct.sd) {
+        if (NO_VIMEO && data.type === "vi" && data.meta.direct) {
             // For browsers that don't support native h264 playback
             if (USEROPTS.no_h264) {
                 data.type = "fl";
@@ -875,7 +875,7 @@ Callbacks = {
                 mobile: false
             };
 
-            while (!(q in data.direct) && q != false) {
+            while (!(q in data.meta.direct) && q != false) {
                 q = fallback[q];
             }
 
@@ -883,7 +883,7 @@ Callbacks = {
                 q = "sd";
             }
 
-            data.url = data.direct[q].url;
+            data.url = data.meta.direct[q].url;
         }
 
         if (data.type === "rt") {
