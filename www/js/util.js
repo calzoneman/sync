@@ -238,7 +238,8 @@ function addUserDropdown(entry) {
             .click(function () {
                 var reason = prompt("Enter kick reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/kick " + name + " " + reason
+                    msg: "/kick " + name + " " + reason,
+                    meta: {}
                 });
             })
             .appendTo(btngroup);
@@ -250,33 +251,27 @@ function addUserDropdown(entry) {
             .text("Mute")
             .click(function () {
                 socket.emit("chatMsg", {
-                    msg: "/mute " + name
+                    msg: "/mute " + name,
+                    meta: {}
                 });
-                mute.hide();
-                smute.hide();
-                unmute.show();
             })
             .appendTo(btngroup);
         var smute = $("<button/>").addClass("btn btn-xs btn-default")
             .text("Shadow Mute")
             .click(function () {
                 socket.emit("chatMsg", {
-                    msg: "/smute " + name
+                    msg: "/smute " + name,
+                    meta: {}
                 });
-                mute.hide();
-                smute.hide();
-                unmute.show();
             })
             .appendTo(btngroup);
         var unmute = $("<button/>").addClass("btn btn-xs btn-default")
             .text("Unmute")
             .click(function () {
                 socket.emit("chatMsg", {
-                    msg: "/unmute " + name
+                    msg: "/unmute " + name,
+                    meta: {}
                 });
-                unmute.hide();
-                mute.show();
-                smute.show();
             })
             .appendTo(btngroup);
         if (meta.muted) {
@@ -294,7 +289,8 @@ function addUserDropdown(entry) {
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/ban " + name + " " + reason
+                    msg: "/ban " + name + " " + reason,
+                    meta: {}
                 });
             })
             .appendTo(btngroup);
@@ -303,7 +299,8 @@ function addUserDropdown(entry) {
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
                 socket.emit("chatMsg", {
-                    msg: "/ipban " + name + " " + reason
+                    msg: "/ipban " + name + " " + reason,
+                    meta: {}
                 });
             })
             .appendTo(btngroup);
@@ -590,6 +587,7 @@ function showUserOptions() {
     $("#us-layout").val(USEROPTS.layout);
     $("#us-no-channelcss").prop("checked", USEROPTS.ignore_channelcss);
     $("#us-no-channeljs").prop("checked", USEROPTS.ignore_channeljs);
+    /*
     if (!ALLOW_SSL) {
         $("#us-ssl").prop("checked", false);
         $("#us-ssl").attr("disabled", true);
@@ -599,6 +597,24 @@ function showUserOptions() {
         $("#us-ssl").attr("disabled", false);
         $("#us-ssl").attr("title", "");
     }
+    */
+    var conninfo = "<strong>Connection Information: </strong>" +
+                   "Connected to <code>" + IO_URL + "</code> (";
+    if (IO_URL === IO_URLS["ipv6-ssl"] || IO_URL === IO_URLS["ipv6-nossl"]) {
+        conninfo += "IPv6, ";
+    } else {
+        conninfo += "IPv4, ";
+    }
+
+    if (IO_URL === IO_URLS["ipv4-ssl"] || IO_URL === IO_URLS["ipv6-ssl"]) {
+        conninfo += "SSL)";
+    } else {
+        conninfo += "no SSL)";
+    }
+
+    conninfo += ".  SSL is enabled by default if it is supported by the server.";
+    $("#us-conninfo").html(conninfo);
+
 
     $("#us-synch").prop("checked", USEROPTS.synch);
     $("#us-synch-accuracy").val(USEROPTS.sync_accuracy);
@@ -711,7 +727,8 @@ function applyOpts() {
         btn.click(function() {
             if($("#chatline").val().trim()) {
                 socket.emit("chatMsg", {
-                    msg: $("#chatline").val()
+                    msg: $("#chatline").val(),
+                    meta: {}
                 });
                 $("#chatline").val("");
             }
@@ -852,6 +869,7 @@ function handleModPermissions() {
     $("#cs-afk_timeout").val(CHANNEL.opts.afk_timeout);
     $("#cs-allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#cs-voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
+    $("#cs-allow_dupes").val(CHANNEL.opts.allow_dupes);
     (function() {
         if(typeof CHANNEL.opts.maxlength != "number") {
             $("#cs-maxlength").val("");
@@ -2033,7 +2051,7 @@ function formatCSModList() {
             if (r.rank !== entry.rank) {
                 a.click(function () {
                     socket.emit("setChannelRank", {
-                        user: entry.name,
+                        name: entry.name,
                         rank: r.rank
                     });
                 });
@@ -2142,11 +2160,11 @@ function checkEntitiesInStr(str) {
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;",
-        "\\(": "&#40;",
-        "\\)": "&#41;"
+        "(": "&#40;",
+        ")": "&#41;"
     };
 
-    var m = str.match(/([&<>"']|\\\(|\\\))/);
+    var m = str.match(/([&<>"'\(\)])/);
     if (m && m[1] in entities) {
         return { src: m[1], replace: entities[m[1]] };
     } else {

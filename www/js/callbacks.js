@@ -132,7 +132,7 @@ Callbacks = {
         $("#needpw").remove();
     },
 
-    chatCooldown: function (time) {
+    cooldown: function (time) {
         time = time + 200;
         $("#chatline").css("color", "#ff0000");
         if (CHATTHROTTLE && $("#chatline").data("throttle_timer")) {
@@ -189,21 +189,17 @@ Callbacks = {
     setMotd: function(data) {
         CHANNEL.motd = data.html;
         CHANNEL.motd_text = data.motd;
-        if ($("#motdwrap").find(".motdeditor").length > 0) {
-            $("#motdwrap .motdeditor").val(CHANNEL.motd_text);
-        } else {
-            $("#motd").html(CHANNEL.motd);
-        }
-        $("#motdtext").val(CHANNEL.motd_text);
-        if(data.motd != "") {
+        $("#motd").html(CHANNEL.motd);
+        $("#cs-motdtext").val(CHANNEL.motd_text);
+        if (data.motd != "") {
             $("#motdwrap").show();
             $("#motd").show();
             $("#togglemotd").find(".glyphicon-plus")
                 .removeClass("glyphicon-plus")
                 .addClass("glyphicon-minus");
-        }
-        else
+        } else {
             $("#motdwrap").hide();
+        }
     },
 
     chatFilters: function(entries) {
@@ -360,9 +356,13 @@ Callbacks = {
     },
 
     channelRankFail: function (data) {
-        makeAlert("Error", data.msg, "alert-danger")
-            .removeClass().addClass("vertical-spacer")
-            .insertAfter($("#cs-chanranks form"));
+        if ($("#cs-chanranks").is(":visible")) {
+            makeAlert("Error", data.msg, "alert-danger")
+                .removeClass().addClass("vertical-spacer")
+                .insertAfter($("#cs-chanranks form"));
+        } else {
+            Callbacks.noflood({ action: "/rank", msg: data.msg });
+        }
     },
 
     readChanLog: function (data) {
@@ -1110,7 +1110,8 @@ try {
             io.transports.splice(i, 1);
         }
     }
-    if (ALLOW_SSL && (location.protocol === "https:" || USEROPTS.secure_connection)) {
+
+    if (IO_URL === IO_URLS["ipv4-ssl"] || IO_URL === IO_URLS["ipv6-ssl"]) {
         socket = io.connect(IO_URL, { secure: true });
     } else {
         socket = io.connect(IO_URL);
