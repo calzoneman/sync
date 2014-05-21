@@ -811,6 +811,11 @@ Callbacks = {
             return;
         }
 
+        /* Failsafe */
+        if (isNaN(VOLUME)) {
+            VOLUME = 1;
+        }
+
         var shouldResize = $("#ytapiplayer").html() === "";
 
         if (PLAYER && typeof PLAYER.getVolume === "function") {
