@@ -47,7 +47,10 @@ mixin us-general
         p.text-danger Changing layouts may require refreshing to take effect.
       mixin rcheckbox("us-no-channelcss", "Ignore Channel CSS")
       mixin rcheckbox("us-no-channeljs", "Ignore Channel Javascript")
-      mixin rcheckbox("us-ssl", "Encrypt connection with SSL")
+      .col-sm-4
+      .col-sm-8
+        p#us-conninfo.text-info <strong>Connection Information: </strong>
+      .clear
 
 mixin us-playback
   #us-playback.tab-pane

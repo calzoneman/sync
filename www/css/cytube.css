@@ -199,7 +199,7 @@
     margin: 0;
 }
 
-.videolist > li:last-child {
+#queue > li:last-child {
     border-bottom-width: 0;
     margin-bottom: 0;
 }
