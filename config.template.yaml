@@ -171,3 +171,7 @@ contacts:
 # periodically, the garbage collector will be invoked immediately.
 # The server must be invoked with node --expose-gc index.js for this to have any effect.
 aggressive-gc: false
+
+# Allows you to blacklist certain channels.  Users will be automatically kicked
+# upon trying to join one.
+channel-blacklist: []
