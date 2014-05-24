@@ -355,6 +355,72 @@ socket.on("acp-delete-channel", function (data) {
 });
 
 /* Active channels */
+
+function showChannelDetailModal(c) {
+    var wrap = $("<div/>").addClass("modal fade").appendTo($("body"));
+    var dialog = $("<div/>").addClass("modal-dialog").appendTo(wrap);
+    var content = $("<div/>").addClass("modal-content").appendTo(dialog);
+    var head = $("<div/>").addClass("modal-header").appendTo(content);
+    $("<button/>").addClass("close")
+        .attr("data-dismiss", "modal")
+        .attr("data-hidden", "true")
+        .html("&times;")
+        .appendTo(head);
+    $("<h4/>").addClass("modal-title").text(c.name).appendTo(head);
+
+    var body = $("<div/>").addClass("modal-body").appendTo(content);
+
+    var table = $("<table/>").addClass("table table-striped table-compact")
+        .appendTo(body);
+    var tr;
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("Page Title").appendTo(tr);
+    $("<td/>").text(c.pagetitle).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("Media Title").appendTo(tr);
+    $("<td/>").text(c.mediatitle).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("User Count").appendTo(tr);
+    $("<td/>").text(c.usercount).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("User List").appendTo(tr);
+    $("<td/>").text(c.users.join(" ")).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("Registered").appendTo(tr);
+    $("<td/>").text(c.registered).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("Public").appendTo(tr);
+    $("<td/>").text(c.public).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("ActiveLock Count").appendTo(tr);
+    $("<td/>").text(c.activeLockCount).appendTo(tr);
+
+    $("<h3/>").text("Recent Chat").appendTo(body);
+    $("<pre/>").text(c.chat.map(function (data) {
+        var msg = "<" + data.username;
+        if (data.addClass) {
+            msg += "." + data.addClass;
+        }
+        msg += "> " + data.msg;
+
+        msg = "[" + new Date(data.time).toTimeString().split(" ")[0] + "] " + msg;
+        return msg;
+    }).join("\n")).appendTo(body);
+
+    wrap.on("hidden.bs.modal", function () {
+        wrap.remove();
+    });
+
+    wrap.modal();
+}
+
 socket.on("acp-list-activechannels", function (channels) {
     var tbl = $("#acp-loaded-channels table");
     tbl.find("tbody").remove();
@@ -381,9 +447,15 @@ socket.on("acp-list-activechannels", function (channels) {
         var nowplaying = $("<td/>").text(c.mediatitle).appendTo(tr);
         var registered = $("<td/>").text(c.registered).appendTo(tr);
         var public = $("<td/>").text(c.public).appendTo(tr);
-        var unload = $("<td/>").appendTo(tr);
+        var controlOuter = $("<td/>").appendTo(tr);
+        var controlInner = $("<div/>").addClass("btn-group").appendTo(controlOuter);
+        $("<button/>").addClass("btn btn-default btn-xs").text("Details")
+            .appendTo(controlInner)
+            .click(function () {
+                showChannelDetailModal(c);
+            });
         $("<button/>").addClass("btn btn-danger btn-xs").text("Force Unload")
-            .appendTo(unload)
+            .appendTo(controlInner)
             .click(function () {
                 if (confirm("Are you sure you want to unload /r/" + c.name + "?")) {
                     socket.emit("acp-force-unload", {
