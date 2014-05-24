@@ -379,8 +379,10 @@ function showChannelDetailModal(c) {
     $("<td/>").text(c.pagetitle).appendTo(tr);
 
     tr = $("<tr/>").appendTo(table);
-    $("<td/>").text("Media Title").appendTo(tr);
-    $("<td/>").text(c.mediatitle).appendTo(tr);
+    $("<td/>").text("Current Media").appendTo(tr);
+    $("<a/>").attr("href", c.mediaLink).text(c.mediatitle).appendTo(
+        $("<td/>").appendTo(tr)
+    );
 
     tr = $("<tr/>").appendTo(table);
     $("<td/>").text("User Count").appendTo(tr);
@@ -402,6 +404,14 @@ function showChannelDetailModal(c) {
     $("<td/>").text("ActiveLock Count").appendTo(tr);
     $("<td/>").text(c.activeLockCount).appendTo(tr);
 
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("Chat Filter Count").appendTo(tr);
+    $("<td/>").text(c.chatFilterCount).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("Emote Count").appendTo(tr);
+    $("<td/>").text(c.emoteCount).appendTo(tr);
+
     $("<h3/>").text("Recent Chat").appendTo(body);
     $("<pre/>").text(c.chat.map(function (data) {
         var msg = "<" + data.username;
@@ -422,6 +432,7 @@ function showChannelDetailModal(c) {
 }
 
 socket.on("acp-list-activechannels", function (channels) {
+console.log(channels[0]);
     var tbl = $("#acp-loaded-channels table");
     tbl.find("tbody").remove();
 
@@ -449,12 +460,16 @@ socket.on("acp-list-activechannels", function (channels) {
         var public = $("<td/>").text(c.public).appendTo(tr);
         var controlOuter = $("<td/>").appendTo(tr);
         var controlInner = $("<div/>").addClass("btn-group").appendTo(controlOuter);
-        $("<button/>").addClass("btn btn-default btn-xs").text("Details")
+        $("<button/>").addClass("btn btn-default btn-xs")
+            .html("<span class='glyphicon glyphicon-list-alt'></span>")//.text("Details")
+            .attr("title", "Details")
             .appendTo(controlInner)
             .click(function () {
                 showChannelDetailModal(c);
             });
-        $("<button/>").addClass("btn btn-danger btn-xs").text("Force Unload")
+        $("<button/>").addClass("btn btn-danger btn-xs")
+            .html("<span class='glyphicon glyphicon-remove'></span>")//.text("Force Unload")
+            .attr("title", "Unload")
             .appendTo(controlInner)
             .click(function () {
                 if (confirm("Are you sure you want to unload /r/" + c.name + "?")) {
