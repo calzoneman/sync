@@ -118,7 +118,7 @@ var USEROPTS = {
     hidevid              : getOrDefault("hidevid", false),
     show_timestamps      : getOrDefault("show_timestamps", true),
     modhat               : getOrDefault("modhat", false),
-    blink_title          : getOrDefault("blink_title", false),
+    blink_title          : getOrDefault("blink_title", "onlyping"),
     sync_accuracy        : getOrDefault("sync_accuracy", 2),
     wmode_transparent    : getOrDefault("wmode_transparent", true),
     chatbtn              : getOrDefault("chatbtn", false),
@@ -132,11 +132,31 @@ var USEROPTS = {
     sort_rank            : getOrDefault("sort_rank", true),
     sort_afk             : getOrDefault("sort_afk", false),
     default_quality      : getOrDefault("default_quality", ""),
-    boop                 : getOrDefault("boop", false),
+    boop                 : getOrDefault("boop", "never"),
     secure_connection    : getOrDefault("secure_connection", false),
     no_h264              : getOrDefault("no_h264", default_noh264()),
     show_shadowchat      : getOrDefault("show_shadowchat", false)
 };
+
+/* Backwards compatibility check */
+if (USEROPTS.blink_title === true) {
+    USEROPTS.blink_title = "always";
+} else if (USEROPTS.blink_title === false) {
+    USEROPTS.blink_title = "onlyping";
+}
+/* Last ditch */
+if (["never", "onlyping", "always"].indexOf(USEROPTS.blink_title) === -1) {
+    USEROPTS.blink_title = "onlyping";
+}
+
+if (USEROPTS.boop === true) {
+    USEROPTS.boop = "onlyping";
+} else if (USEROPTS.boop === false) {
+    USEROPTS.boop = "never";
+}
+if (["never", "onlyping", "always"].indexOf(USEROPTS.boop) === -1) {
+    USEROPTS.boop = "onlyping";
+}
 
 var VOLUME = parseFloat(getOrDefault("volume", 1));
 

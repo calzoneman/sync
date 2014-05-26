@@ -488,6 +488,8 @@ Callbacks = {
 
         if (data.username === CLIENT.name) {
             name = data.to;
+        } else {
+            pingMessage(true);
         }
         var pm = initPm(name);
         var msg = formatChatMessage(data, pm.data("last"));

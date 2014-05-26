@@ -628,8 +628,8 @@ function showUserOptions() {
     $("#us-chat-timestamp").prop("checked", USEROPTS.show_timestamps);
     $("#us-sort-rank").prop("checked", USEROPTS.sort_rank);
     $("#us-sort-afk").prop("checked", USEROPTS.sort_afk);
-    $("#us-chat-notice").prop("checked", USEROPTS.blink_title);
-    $("#us-boop").prop("checked", USEROPTS.boop);
+    $("#us-blink-title").val(USEROPTS.blink_title);
+    $("#us-ping-sound").val(USEROPTS.boop);
     $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
@@ -660,8 +660,8 @@ function saveUserOptions() {
     USEROPTS.show_timestamps      = $("#us-chat-timestamp").prop("checked");
     USEROPTS.sort_rank            = $("#us-sort-rank").prop("checked");
     USEROPTS.sort_afk             = $("#us-sort-afk").prop("checked");
-    USEROPTS.blink_title          = $("#us-chat-notice").prop("checked");
-    USEROPTS.boop                 = $("#us-boop").prop("checked");
+    USEROPTS.blink_title          = $("#us-blink-title").val();
+    USEROPTS.boop                 = $("#us-ping-sound").val();
     USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
 
     if (CLIENT.rank >= 2) {
@@ -1422,27 +1422,34 @@ function addChatMessage(data) {
     }
     if(SCROLLCHAT)
         scrollChat();
-    if(USEROPTS.blink_title && !FOCUSED && !TITLE_BLINK) {
-        USEROPTS.boop && CHATSOUND.play();
-        TITLE_BLINK = setInterval(function() {
-            if(document.title == "*Chat*")
-                document.title = PAGETITLE;
-            else
-                document.title = "*Chat*";
-        }, 1000);
-    }
-    if(CLIENT.name && data.username != CLIENT.name) {
-        if(data.msg.toUpperCase().indexOf(CLIENT.name.toUpperCase()) != -1) {
+
+    var isHighlight = false;
+    if (CLIENT.name && data.username != CLIENT.name) {
+        if (data.msg.toLowerCase().indexOf(CLIENT.name.toLowerCase()) != -1) {
             div.addClass("nick-highlight");
-            if(!FOCUSED && !TITLE_BLINK) {
-                USEROPTS.boop && CHATSOUND.play();
-                TITLE_BLINK = setInterval(function() {
-                    if(document.title == "*Chat*")
-                        document.title = PAGETITLE;
-                    else
-                        document.title = "*Chat*";
-                }, 1000);
-            }
+            isHighlight = true;
+        }
+    }
+
+    pingMessage(isHighlight);
+
+}
+
+function pingMessage(isHighlight) {
+    if (!FOCUSED) {
+        if (!TITLE_BLINK && (USEROPTS.blink_title === "always" ||
+            USEROPTS.blink_title === "onlyping" && isHighlight)) {
+            TITLE_BLINK = setInterval(function() {
+                if(document.title == "*Chat*")
+                    document.title = PAGETITLE;
+                else
+                    document.title = "*Chat*";
+            }, 1000);
+        }
+
+        if (USEROPTS.boop === "always" || (USEROPTS.boop === "onlyping" &&
+            isHighlight)) {
+            CHATSOUND.play();
         }
     }
 }

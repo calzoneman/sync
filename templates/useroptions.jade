@@ -88,11 +88,23 @@ mixin us-chat
       mixin rcheckbox("us-chat-timestamp", "Show timestamps in chat")
       mixin rcheckbox("us-sort-rank", "Sort userlist by rank")
       mixin rcheckbox("us-sort-afk", "Sort AFKers to bottom")
-      mixin rcheckbox("us-chat-notice", "Ping on all new messages")
       .col-sm-4
       .col-sm-8
-        p.text-info When unchecked, you will only be pinged if your name is mentioned
-      mixin rcheckbox("us-boop", "Play a sound when pinged")
+        p.text-info The following 2 options apply to how and when you will be notified if a new chat message is received while CyTube is not the active window.
+      .form-group
+        label.control-label.col-sm-4(for="#us-blink-title") Blink page title on new messages
+        .col-sm-8
+          select#us-blink-title
+            option(value="never") Never
+            option(value="onlyping") Only when I am mentioned or PMed
+            option(value="always") Always
+      .form-group
+        label.control-label.col-sm-4(for="#us-ping-sound") Notification sound on new messages
+        .col-sm-8
+          select#us-ping-sound
+            option(value="never") Never
+            option(value="onlyping") Only when I am mentioned or PMed
+            option(value="always") Always
       mixin rcheckbox("us-sendbtn", "Add a send button to chat")
 
 mixin us-mod
