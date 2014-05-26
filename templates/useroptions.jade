@@ -94,14 +94,14 @@ mixin us-chat
       .form-group
         label.control-label.col-sm-4(for="#us-blink-title") Blink page title on new messages
         .col-sm-8
-          select#us-blink-title
+          select#us-blink-title.form-control
             option(value="never") Never
             option(value="onlyping") Only when I am mentioned or PMed
             option(value="always") Always
       .form-group
         label.control-label.col-sm-4(for="#us-ping-sound") Notification sound on new messages
         .col-sm-8
-          select#us-ping-sound
+          select#us-ping-sound.form-control
             option(value="never") Never
             option(value="onlyping") Only when I am mentioned or PMed
             option(value="always") Always
