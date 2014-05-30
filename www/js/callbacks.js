@@ -809,7 +809,7 @@ Callbacks = {
     },
 
     changeMedia: function(data) {
-        if ($("body").hasClass("chatOnly")) {
+        if ($("body").hasClass("chatOnly") || $("#videowrap").length === 0) {
             return;
         }
 
