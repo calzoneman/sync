@@ -859,11 +859,10 @@ Callbacks = {
             and unwilling to compromise on the issue.
         */
         if (NO_VIMEO && data.type === "vi" && data.meta.direct) {
+            data.type = "fi";
             // For browsers that don't support native h264 playback
             if (USEROPTS.no_h264) {
-                data.type = "fl";
-            } else {
-                data.type = "rv";
+                data.forceFlash = true;
             }
 
             /* Convert youtube-style quality key to vimeo workaround quality */
@@ -895,6 +894,8 @@ Callbacks = {
 
         if (data.type === "rt") {
             data.url = data.id;
+            data.type = "fi";
+            data.forceFlash = true;
         }
 
         if(data.type != PLAYER.type) {
