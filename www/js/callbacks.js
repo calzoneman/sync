@@ -845,6 +845,14 @@ Callbacks = {
             $("#ytapiplayer_wrapper").remove();
         }
 
+        if (data.type === "fi") {
+            if (USEROPTS.no_h264 && data.meta.codec !== "matroska/vp8") {
+                data.forceFlash = true;
+            }
+
+            data.url = data.id;
+        }
+
         /*
             VIMEO SIMULATOR 2014
 
