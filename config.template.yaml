@@ -175,3 +175,10 @@ aggressive-gc: false
 # Allows you to blacklist certain channels.  Users will be automatically kicked
 # upon trying to join one.
 channel-blacklist: []
+
+# If you have ffmpeg installed, you can query metadata from raw files, allowing
+# server-synched raw file playback.  This requires the following:
+#   * ffmpeg must be installed on the server
+#   * you must install the fluent-ffmpeg module (npm install fluent-ffmpeg)
+ffmpeg:
+  enabled: false
