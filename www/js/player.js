@@ -1155,7 +1155,14 @@ function FilePlayer(data) {
     self.init = function (data) {
         self.videoId = data.id;
         self.videoURL = data.url;
-        var video = $("<video/>")
+        var isAudio = data.meta.codec && data.meta.codec.match(/^mp3$|^vorbis$/);
+        var video;
+        if (isAudio) {
+            video = $("<audio/>");
+        } else {
+            video = $("<video/>")
+        }
+        video
             .attr("src", self.videoURL)
             .attr("controls", "controls")
             .attr("id", "#ytapiplayer")
@@ -1175,7 +1182,11 @@ function FilePlayer(data) {
     };
 
     self.load = function (data) {
-        self.init(data);
+        if (data.forceFlash) {
+            self.initFlash(data);
+        } else {
+            self.init(data);
+        }
     };
 
     self.pause = function () {

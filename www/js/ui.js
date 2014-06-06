@@ -398,7 +398,7 @@ $("#mediaurl").keyup(function(ev) {
         }
 
         var url = $("#mediaurl").val().split("?")[0];
-        if (url.match(/^https?:\/\/(.*)?\.(flv|mp4|ogg|webm)$/)) {
+        if (url.match(/^https?:\/\/(.*)?\.(flv|mp4|og[gv]|webm|mp3)$/)) {
             var title = $("#addfromurl-title");
             if (title.length === 0) {
                 title = $("<div/>")
