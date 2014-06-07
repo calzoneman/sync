@@ -55,11 +55,13 @@ mixin navloginform(redirect)
       button#login.btn.btn-default(type="submit") Login
 
 mixin navlogoutform(redirect)
+  if loginDomain == null
+    - loginDomain = ""
   if redirect
-    - url = "/logout?redirect=" + redirect
+    - url = "logout?redirect=" + redirect
   else
-    - url = "/logout"
+    - url = "logout"
   p#logoutform.navbar-text.pull-right
     span#welcome Welcome, #{loginName}
     span &nbsp;&middot;&nbsp;
-    a#logout.navbar-link(href=url) Logout
+    a#logout.navbar-link(href="#{loginDomain}/#{url}") Logout
