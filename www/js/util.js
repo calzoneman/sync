@@ -58,6 +58,8 @@ function formatURL(data) {
             return "http://ustream.tv/" + data.id;
         case "gd":
             return "https://docs.google.com/file/d/" + data.id;
+        case "fi":
+            return data.id;
         default:
             return "#";
     }
@@ -1284,6 +1286,24 @@ function parseMediaLink(url) {
         };
     }
 
+    /* Raw file */
+    var tmp = url.split("?")[0];
+    if (tmp.match(/^https?:\/\//)) {
+        if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3)$/)) {
+            return {
+                id: url,
+                type: "fi"
+            };
+        } else {
+            Callbacks.queueFail({
+                link: url,
+                msg: "The file you are attempting to queue does not match the supported " +
+                     "file extensions mp4, flv, webm, ogg, ogv, mp3."
+            });
+            throw new Error("ERROR_QUEUE_UNSUPPORTED_EXTENSION");
+        }
+    }
+
     return {
         id: null,
         type: null
@@ -1728,6 +1748,7 @@ function genPermissionsEditor() {
     makeOption("Queue playlist", "playlistaddlist", standard, CHANNEL.perms.playlistaddlist+"");
     makeOption("Queue livestream", "playlistaddlive", standard, CHANNEL.perms.playlistaddlive+"");
     makeOption("Embed custom media", "playlistaddcustom", standard, CHANNEL.perms.playlistaddcustom + "");
+    makeOption("Add raw video file", "playlistaddrawfile", standard, CHANNEL.perms.playlistaddrawfile + "");
     makeOption("Exceed maximum media length", "exceedmaxlength", standard, CHANNEL.perms.exceedmaxlength+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");

@@ -800,98 +800,6 @@ function flashEventHandler(id, ev, data) {
     }
 }
 
-var FlashPlayer = function (data) {
-    removeOld();
-    var self = this;
-    self.volume = VOLUME;
-    self.videoId = data.id;
-    self.videoUrl = data.url;
-    self.videoLength = data.seconds;
-    self.paused = false;
-    self.currentTime = 0;
-
-    self.init = function () {
-        var params = {
-            allowFullScreen: "true",
-            allowScriptAccess: "always",
-            allowNetworking: "all",
-            wMode: "direct"
-        };
-
-        var flashvars = {
-            src: encodeURIComponent(self.videoUrl),
-            // For some reason this param seems not to work
-            clipStartTime: Math.floor(data.currentTime),
-            javascriptCallbackFunction: "flashEventHandler",
-            autoPlay: true,
-            volume: VOLUME
-        };
-
-        if (self.videoUrl.indexOf("rtmp") === 0) {
-            flashvars.streamType = "live";
-        } else {
-            flashvars.streamType = "recorded";
-        }
-
-        swfobject.embedSWF("/StrobeMediaPlayback.swf",
-            "ytapiplayer",
-            VWIDTH, VHEIGHT,
-            "10.1.0",
-            null,
-            flashvars,
-            params,
-            { name: "ytapiplayer" }
-        );
-
-        self.player = $("#ytapiplayer")[0];
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoUrl = data.url;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () {
-        if (self.player && self.player.pause)
-            self.player.pause();
-    };
-
-    self.play = function () {
-        // Why is it play2?  What happened to play1?
-        if (self.player && self.player.play2)
-            self.player.play2();
-    };
-
-    self.isPaused = function (cb) {
-        cb(self.paused);
-    };
-
-    self.getTime = function (cb) {
-        cb(self.currentTime);
-    };
-
-    self.seek = function (to) {
-        if (self.player && self.player.seek) {
-            self.player.seek(Math.floor(to));
-        }
-    };
-
-    self.getVolume = function (cb) {
-        cb(self.volume);
-    };
-
-    self.setVolume = function (vol) {
-        if (self.player && self.player.setVolume)
-            self.player.setVolume(vol);
-    };
-
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-};
-
 var JWPlayer = function (data) {
     var self = this;
     self.videoId = data.id;
@@ -1161,12 +1069,100 @@ var GoogleDocsPlayer = function (data) {
     self.init(data);
 };
 
-function RawVideoPlayer(data) {
+function FilePlayer(data) {
     var self = this;
+
+    self.initFlash = function (data) {
+        waitUntilDefined(window, "swfobject", function () {
+            self.volume = VOLUME;
+            self.videoId = data.id;
+            self.videoURL = data.url;
+            self.videoLength = data.seconds;
+            self.paused = false;
+            self.currentTime = 0;
+
+            var params = {
+                allowFullScreen: "true",
+                allowScriptAccess: "always",
+                allowNetworking: "all",
+                wMode: "direct"
+            };
+
+            var flashvars = {
+                src: encodeURIComponent(self.videoURL),
+                // For some reason this param seems not to work
+                clipStartTime: Math.floor(data.currentTime),
+                javascriptCallbackFunction: "flashEventHandler",
+                autoPlay: true,
+                volume: VOLUME
+            };
+
+            if (self.videoURL.indexOf("rtmp") === 0) {
+                flashvars.streamType = "live";
+            } else {
+                flashvars.streamType = "recorded";
+            }
+
+            swfobject.embedSWF("/StrobeMediaPlayback.swf",
+                "ytapiplayer",
+                VWIDTH, VHEIGHT,
+                "10.1.0",
+                null,
+                flashvars,
+                params,
+                { name: "ytapiplayer" }
+            );
+
+            self.player = $("#ytapiplayer")[0];
+            resizeStuff();
+
+            self.pause = function () {
+                if (self.player && self.player.pause)
+                    self.player.pause();
+            };
+
+            self.play = function () {
+                // Why is it play2?  What happened to play1?
+                if (self.player && self.player.play2)
+                    self.player.play2();
+            };
+
+            self.isPaused = function (cb) {
+                cb(self.paused);
+            };
+
+            self.getTime = function (cb) {
+                cb(self.currentTime);
+            };
+
+            self.seek = function (to) {
+                if (self.player && self.player.seek) {
+                    self.player.seek(Math.floor(to));
+                }
+            };
+
+            self.getVolume = function (cb) {
+                cb(self.volume);
+            };
+
+            self.setVolume = function (vol) {
+                if (self.player && self.player.setVolume)
+                    self.player.setVolume(vol);
+            };
+        });
+    };
+
     self.init = function (data) {
         self.videoId = data.id;
         self.videoURL = data.url;
-        var video = $("<video/>")
+        var isAudio = data.meta.codec && data.meta.codec.match(/^mp3$|^vorbis$/);
+        var video;
+        if (isAudio) {
+            video = $("<audio/>");
+        } else {
+            video = $("<video/>")
+        }
+        video
             .attr("src", self.videoURL)
             .attr("controls", "controls")
             .attr("id", "#ytapiplayer")
@@ -1175,16 +1171,22 @@ function RawVideoPlayer(data) {
             .html("Your browser does not support HTML5 <code>&lt;video&gt;</code> tags :(");
         video.error(function (err) {
             setTimeout(function () {
-                fallbackRaw(data);
+                console.log("<video> tag failed, falling back to Flash");
+                self.initFlash(data);
             }, 100);
         });
         removeOld(video);
         self.player = video[0];
         self.setVolume(VOLUME);
+        resizeStuff();
     };
 
     self.load = function (data) {
-        self.init(data);
+        if (data.forceFlash) {
+            self.initFlash(data);
+        } else {
+            self.init(data);
+        }
     };
 
     self.pause = function () {
@@ -1213,7 +1215,10 @@ function RawVideoPlayer(data) {
 
     self.seek = function (time) {
         if (self.player) {
-            self.player.currentTime = time;
+            try {
+                self.player.currentTime = time;
+            } catch (e) {
+            }
         }
     };
 
@@ -1233,9 +1238,12 @@ function RawVideoPlayer(data) {
         }
     };
 
-    self.init(data);
+    if (data.forceFlash) {
+        self.initFlash(data);
+    } else {
+        self.init(data);
+    }
 };
-
 
 function handleMediaUpdate(data) {
     // Don't update if the position is past the video length, but
@@ -1334,13 +1342,14 @@ var constructors = {
     "tw": TwitchTVPlayer,
     "jt": JustinTVPlayer,
     "us": UstreamPlayer,
-    "rt": FlashPlayer,
     "jw": JWPlayer,
     "im": ImgurPlayer,
     "cu": CustomPlayer,
     "gd": GoogleDocsPlayer,
-    "rv": RawVideoPlayer,
-    "fl": FlashPlayer
+    "rt": FilePlayer,
+    "rv": FilePlayer,
+    "fl": FilePlayer,
+    "fi": FilePlayer
 };
 
 function loadMediaPlayer(data) {

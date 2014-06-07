@@ -340,11 +340,15 @@ function queue(pos, src) {
         var link = $("#mediaurl").val();
         var data = parseMediaLink(link);
         var duration = undefined;
+        var title = undefined;
         if (link.indexOf("jw:") === 0) {
             duration = parseInt($("#addfromurl-duration-val").val());
             if (duration <= 0 || isNaN(duration)) {
                 duration = undefined;
             }
+        }
+        if (data.type === "fi") {
+            title = $("#addfromurl-title-val").val();
         }
 
         if (data.id == null || data.type == null) {
@@ -354,11 +358,13 @@ function queue(pos, src) {
         } else {
             $("#mediaurl").val("");
             $("#addfromurl-duration").remove();
+            $("#addfromurl-title").remove();
             socket.emit("queue", {
                 id: data.id,
                 type: data.type,
                 pos: pos,
                 duration: duration,
+                title: title,
                 temp: $(".add-temp").prop("checked")
             });
         }
@@ -373,21 +379,46 @@ $("#ce_queue_end").click(queue.bind(this, "end", "customembed"));
 $("#mediaurl").keyup(function(ev) {
     if (ev.keyCode === 13) {
         queue("end", "url");
-    } else if ($("#mediaurl").val().indexOf("jw:") === 0) {
-        var duration = $("#addfromurl-duration");
-        if (duration.length === 0) {
-            duration = $("<div/>")
-                .attr("id", "addfromurl-duration")
-                .appendTo($("#addfromurl"));
-            $("<span/>").text("JWPlayer Duration (seconds) (optional)")
-                .appendTo(duration);
-            $("<input/>").addClass("form-control")
-                .attr("type", "text")
-                .attr("id", "addfromurl-duration-val")
-                .appendTo($("#addfromurl-duration"));
-        }
     } else {
-        $("#addfromurl-duration").remove();
+        if ($("#mediaurl").val().indexOf("jw:") === 0) {
+            var duration = $("#addfromurl-duration");
+            if (duration.length === 0) {
+                duration = $("<div/>")
+                    .attr("id", "addfromurl-duration")
+                    .appendTo($("#addfromurl"));
+                $("<span/>").text("JWPlayer Duration (seconds) (optional)")
+                    .appendTo(duration);
+                $("<input/>").addClass("form-control")
+                    .attr("type", "text")
+                    .attr("id", "addfromurl-duration-val")
+                    .appendTo($("#addfromurl-duration"));
+            }
+        } else {
+            $("#addfromurl-duration").remove();
+        }
+
+        var url = $("#mediaurl").val().split("?")[0];
+        if (url.match(/^https?:\/\/(.*)?\.(flv|mp4|og[gv]|webm|mp3)$/)) {
+            var title = $("#addfromurl-title");
+            if (title.length === 0) {
+                title = $("<div/>")
+                    .attr("id", "addfromurl-title")
+                    .appendTo($("#addfromurl"));
+                $("<span/>").text("Title (optional)")
+                    .appendTo(title);
+                $("<input/>").addClass("form-control")
+                    .attr("type", "text")
+                    .attr("id", "addfromurl-title-val")
+                    .keyup(function (ev) {
+                        if (ev.keyCode === 13) {
+                            queue("end", "url");
+                        }
+                    })
+                    .appendTo($("#addfromurl-title"));
+            }
+        } else {
+            $("#addfromurl-title").remove();
+        }
     }
 });
 
