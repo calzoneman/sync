@@ -179,6 +179,6 @@ channel-blacklist: []
 # If you have ffmpeg installed, you can query metadata from raw files, allowing
 # server-synched raw file playback.  This requires the following:
 #   * ffmpeg must be installed on the server
-#   * you must install the fluent-ffmpeg module (npm install fluent-ffmpeg)
+#   * you must install the fluent-ffmpeg module (npm install fluent-ffmpeg@~1.7.2)
 ffmpeg:
   enabled: false
