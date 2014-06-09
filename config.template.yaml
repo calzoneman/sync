@@ -167,6 +167,11 @@ contacts:
     title: 'Developer'
     email: 'cyzon@cytu.be'
 
+playlist:
+  max-items: 4000
+  # How often (in seconds), mediaUpdate packets are broadcast to clients
+  update-interval: 5
+
 # If set to true, when the ipThrottle and lastguestlogin rate limiters are cleared
 # periodically, the garbage collector will be invoked immediately.
 # The server must be invoked with node --expose-gc index.js for this to have any effect.
@@ -179,6 +184,5 @@ channel-blacklist: []
 # If you have ffmpeg installed, you can query metadata from raw files, allowing
 # server-synched raw file playback.  This requires the following:
 #   * ffmpeg must be installed on the server
-#   * you must install the fluent-ffmpeg module (npm install fluent-ffmpeg@~1.7.2)
 ffmpeg:
   enabled: false
