@@ -602,7 +602,7 @@ function showUserOptions() {
     */
     var conninfo = "<strong>Connection Information: </strong>" +
                    "Connected to <code>" + IO_URL + "</code> (";
-    if (IO_URL === IO_URLS["ipv6-ssl"] || IO_URL === IO_URLS["ipv6-nossl"]) {
+    if (IO_V6) {
         conninfo += "IPv6, ";
     } else {
         conninfo += "IPv4, ";
