@@ -15,10 +15,9 @@ mysql:
 # service on that port.  http/io and https/io can be combined, but if http and https
 # are both specified, only https will be bound to that port.
 #
-# NOTE: You can technically bind an IPv6 address this way, but much of the code has not
-# yet been updated to work with IPv6 addresses (ban ranges, IP masking, etc.)
-# IPv6 support is planned, and the below method of binding servers is one step in that
-# direction
+# If you don't specify a url, the url io.domain:port or https.domain:port will be assumed
+# for non-ssl and ssl websockets, respectively.  You can override this by specifying the
+# url for a websocket listener.
 listen:
 # Default HTTP server - default interface, port 8080
   - ip: ''
@@ -39,6 +38,7 @@ listen:
 #    port: 8081
 #    http: true
 #    io: true
+#    url: 'http://my-other-thing.site.com:8081'
 
 # HTTP server details
 http:
