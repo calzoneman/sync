@@ -47,5 +47,11 @@ function handleLine(line) {
         } else {
             Logger.syslog.log("Failed to invoke GC: node started without --expose-gc");
         }
+    } else if (line === "/delete_old_tables") {
+        require("./lib/database/update").deleteOldChannelTables(function (err) {
+            if (!err) {
+                Logger.syslog.log("Deleted old channel tables");
+            }
+        });
     }
 }
