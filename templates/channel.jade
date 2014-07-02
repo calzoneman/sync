@@ -158,6 +158,7 @@ html(lang="en")
               li: a(href="#us-general", data-toggle="tab") General
               li: a(href="#us-playback", data-toggle="tab") Playback
               li: a(href="#us-chat", data-toggle="tab") Chat
+              li: a(href="#us-scriptcontrol", data-toggle="tab") Script Access
               li: a(href="#us-mod", data-toggle="tab", style="") Moderator
           .modal-body
             .tab-content
@@ -165,6 +166,7 @@ html(lang="en")
               mixin us-general()
               mixin us-playback()
               mixin us-chat()
+              mixin us-scripts()
               mixin us-mod()
           .modal-footer
             button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save

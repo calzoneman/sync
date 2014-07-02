@@ -250,6 +250,7 @@ Callbacks = {
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
         $("#chanexternalcss").remove();
+
         if(opts.externalcss.trim() != "" && !USEROPTS.ignore_channelcss) {
             $("<link/>")
                 .attr("rel", "stylesheet")
@@ -257,10 +258,14 @@ Callbacks = {
                 .attr("id", "chanexternalcss")
                 .appendTo($("head"));
         }
-        if(opts.externaljs.trim() != "" && !USEROPTS.ignore_channeljs) {
-            if(opts.externaljs != CHANNEL.opts.externaljs) {
-                $.getScript(opts.externaljs);
-            }
+
+        if(opts.externaljs.trim() != "" && !USEROPTS.ignore_channeljs &&
+           opts.externaljs !== CHANNEL.opts.externaljs) {
+            checkScriptAccess(opts.externaljs, "external", function (pref) {
+                if (pref === "ALLOW") {
+                    $.getScript(opts.externaljs);
+                }
+            });
         }
 
         CHANNEL.opts = opts;
@@ -294,10 +299,26 @@ Callbacks = {
         $("#jstext").val(data.js);
 
         if(data.js && !USEROPTS.ignore_channeljs) {
-            $("<script/>").attr("type", "text/javascript")
-                .attr("id", "chanjs")
-                .text(data.js)
-                .appendTo($("body"));
+            var src = data.js
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/\n/g, "<br>")
+                .replace(/\t/g, "    ")
+                .replace(/ /g, "&nbsp;");
+            src = encodeURIComponent(src);
+
+            var viewsource = "data:text/html, <body style='font: 9pt monospace;" +
+                             "max-width:60rem;margin:0 auto;padding:4rem;'>" +
+                             src + "</body>";
+            checkScriptAccess(viewsource, "embedded", function (pref) {
+                if (pref === "ALLOW") {
+                    $("<script/>").attr("type", "text/javascript")
+                        .attr("id", "chanjs")
+                        .text(data.js)
+                        .appendTo($("body"));
+                }
+            });
         }
     },
 

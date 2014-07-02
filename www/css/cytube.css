@@ -562,3 +562,15 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
 .chat-shadow {
     text-decoration: line-through;
 }
+
+#chanjs-allow-prompt {
+    text-align: center;
+}
+
+#chanjs-allow-prompt-buttons {
+    margin-top: 10px;
+}
+
+#chanjs-allow-prompt-buttons button:first-child {
+    margin-right: 5px;
+}

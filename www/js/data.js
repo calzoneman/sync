@@ -76,10 +76,15 @@ var FILTER_TO = 0;
 var NO_STORAGE = typeof localStorage == "undefined" || localStorage === null;
 
 function getOpt(k) {
-    return NO_STORAGE ? readCookie(k) : localStorage.getItem(k);
+    var v = NO_STORAGE ? readCookie(k) : localStorage.getItem(k);
+    try {
+        v = JSON.parse(v);
+    } catch (e) { }
+    return v;
 }
 
 function setOpt(k, v) {
+    v = JSON.stringify(v);
     NO_STORAGE ? createCookie(k, v, 1000) : localStorage.setItem(k, v);
 }
 
@@ -91,9 +96,9 @@ function getOrDefault(k, def) {
         return true;
     if(v === "false")
         return false;
-    if(v.match(/^[0-9]+$/))
+    if(v.match && v.match(/^[0-9]+$/))
         return parseInt(v);
-    if(v.match(/^[0-9\.]+$/))
+    if(v.match && v.match(/^[0-9\.]+$/))
         return parseFloat(v);
     return v;
 }
@@ -162,6 +167,8 @@ var VOLUME = parseFloat(getOrDefault("volume", 1));
 
 var NO_WEBSOCKETS = USEROPTS.altsocket;
 var NO_VIMEO = Boolean(location.host.match("cytu.be"));
+
+var JSPREF = getOpt("channel_js_pref") || {};
 
 var Rank = {
     Guest: 0,

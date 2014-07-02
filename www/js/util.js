@@ -589,17 +589,6 @@ function showUserOptions() {
     $("#us-layout").val(USEROPTS.layout);
     $("#us-no-channelcss").prop("checked", USEROPTS.ignore_channelcss);
     $("#us-no-channeljs").prop("checked", USEROPTS.ignore_channeljs);
-    /*
-    if (!ALLOW_SSL) {
-        $("#us-ssl").prop("checked", false);
-        $("#us-ssl").attr("disabled", true);
-        $("#us-ssl").attr("title", "This server has not enabled SSL");
-    } else {
-        $("#us-ssl").prop("checked", USEROPTS.secure_connection);
-        $("#us-ssl").attr("disabled", false);
-        $("#us-ssl").attr("title", "");
-    }
-    */
     var conninfo = "<strong>Connection Information: </strong>" +
                    "Connected to <code>" + IO_URL + "</code> (";
     if (IO_V6) {
@@ -637,6 +626,8 @@ function showUserOptions() {
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-joinmessage").prop("checked", USEROPTS.joinmessage);
     $("#us-shadowchat").prop("checked", USEROPTS.show_shadowchat);
+
+    formatScriptAccessPrefs();
 
     $("a[href='#us-general']").click();
     $("#useroptions").modal();
@@ -1845,14 +1836,13 @@ function chatDialog(div) {
             "z-index": "auto",
             position: "absolute"
         })
-        .appendTo($("body"));
+        .appendTo($("#chatwrap"));
 
     div.appendTo(parent);
     var cw = $("#chatwrap").width();
     var ch = $("#chatwrap").height();
-    var cp = $("#chatwrap").offset();
-    var x = cp.left + cw/2 - parent.width()/2;
-    var y = cp.top + ch/2 - parent.height()/2;
+    var x = cw/2 - parent.width()/2;
+    var y = ch/2 - parent.height()/2;
     parent.css("left", x + "px");
     parent.css("top", y + "px");
     return parent;
@@ -2562,4 +2552,123 @@ function fallbackRaw(data) {
     }
 
     handleMediaUpdate(data);
+}
+
+function checkScriptAccess(source, type, cb) {
+    var pref = JSPREF[CHANNEL.name.toLowerCase() + "_" + type];
+    if (pref === "ALLOW") {
+        return cb("ALLOW");
+    } else if (pref !== "DENY") {
+        var div = $("#chanjs-allow-prompt");
+        if (div.length > 0) {
+            setTimeout(function () {
+                checkScriptAccess(source, type, cb);
+            }, 500);
+            return;
+        }
+
+        div = $("<div/>").attr("id", "chanjs-allow-prompt");
+        var close = $("<button/>").addClass("close pull-right")
+            .html("&times;")
+            .appendTo(div);
+        var form = $("<form/>")
+            .attr("id", "chanjs-allow-prompt")
+            .attr("style", "text-align: center")
+            .appendTo(div);
+        form.append("<span>This channel is requesting permission to run a 3rd-party " +
+                    "script for additional features.  <strong>Only " +
+                    "run scripts from channels you trust.</strong></span><br>");
+        $("<a/>").attr("href", source)
+            .attr("target", "_blank")
+            .text(type === "embedded" ? "view embedded script" : source)
+            .appendTo(form);
+        form.append("<div id='chanjs-allow-prompt-buttons'>" +
+                        "<button id='chanjs-allow' class='btn btn-xs btn-danger'>Allow</button>" +
+                        "<button id='chanjs-deny' class='btn btn-xs btn-danger'>Deny</button>" +
+                    "</div>");
+        form.append("<div class='checkbox'><label><input type='checkbox' " +
+                    "id='chanjs-save-pref'/>Remember my choice for this channel" +
+                    "</label></div>");
+        var dialog = chatDialog(div);
+
+        close.click(function () {
+            dialog.remove();
+            /* Implicit denial of script access */
+            cb("DENY");
+        });
+
+        $("#chanjs-allow").click(function () {
+            var save = $("#chanjs-save-pref").is(":checked");
+            dialog.remove();
+            if (save) {
+                JSPREF[CHANNEL.name.toLowerCase() + "_" + type] = "ALLOW";
+                setOpt("channel_js_pref", JSPREF);
+            }
+            cb("ALLOW");
+        });
+
+        $("#chanjs-deny").click(function () {
+            var save = $("#chanjs-save-pref").is(":checked");
+            dialog.remove();
+            if (save) {
+                JSPREF[CHANNEL.name.toLowerCase() + "_" + type] = "DENY";
+                setOpt("channel_js_pref", JSPREF);
+            }
+            cb("DENY");
+        });
+    }
+}
+
+function formatScriptAccessPrefs() {
+    var tbl = $("#us-scriptcontrol table");
+    tbl.find("tbody").remove();
+
+    var channels = Object.keys(JSPREF).sort();
+    channels.forEach(function (channel) {
+        var parts = channel.split("_");
+        if (!parts[1].match(/^(external|embedded)$/)) {
+            return;
+        }
+
+        var pref = JSPREF[channel];
+        var tr = $("<tr/>").appendTo(tbl);
+        $("<td/>").text(parts[0]).appendTo(tr);
+        $("<td/>").text(parts[1]).appendTo(tr);
+
+        var pref_td = $("<td/>").appendTo(tr);
+        var allow_label = $("<label/>").addClass("radio-inline")
+            .text("Allow").appendTo(pref_td);
+        var allow = $("<input/>").attr("type", "radio")
+            .prop("checked", pref === "ALLOW").
+            prependTo(allow_label);
+        allow.change(function () {
+            if (allow.is(":checked")) {
+                JSPREF[channel] = "ALLOW";
+                setOpt("channel_js_pref", JSPREF);
+                deny.prop("checked", false);
+            }
+        });
+
+        var deny_label = $("<label/>").addClass("radio-inline")
+            .text("Deny").appendTo(pref_td);
+        var deny = $("<input/>").attr("type", "radio")
+            .prop("checked", pref === "DENY").
+            prependTo(deny_label);
+        deny.change(function () {
+            if (deny.is(":checked")) {
+                JSPREF[channel] = "DENY";
+                setOpt("channel_js_pref", JSPREF);
+                allow.prop("checked", false);
+            }
+        });
+
+        var clearpref = $("<button/>").addClass("btn btn-sm btn-danger")
+            .text("Clear Preference")
+            .appendTo($("<td/>").appendTo(tr))
+            .click(function () {
+                delete JSPREF[channel];
+                setOpt("channel_js_pref", JSPREF);
+                tr.remove();
+            });
+    });
 }
