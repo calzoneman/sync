@@ -2572,6 +2572,7 @@ function checkScriptAccess(source, type, cb) {
             .html("&times;")
             .appendTo(div);
         var form = $("<form/>")
+            .attr("action", "javascript:void(0)")
             .attr("id", "chanjs-allow-prompt")
             .attr("style", "text-align: center")
             .appendTo(div);
