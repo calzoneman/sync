@@ -2576,9 +2576,7 @@ function checkScriptAccess(source, type, cb) {
             .attr("id", "chanjs-allow-prompt")
             .attr("style", "text-align: center")
             .appendTo(div);
-        form.append("<span>This channel is requesting permission to run a 3rd-party " +
-                    "script for additional features.  <strong>Only " +
-                    "run scripts from channels you trust.</strong></span><br>");
+        form.append("<span>This channel has special features that require your permission to run.</span><br>");
         $("<a/>").attr("href", source)
             .attr("target", "_blank")
             .text(type === "embedded" ? "view embedded script" : source)
