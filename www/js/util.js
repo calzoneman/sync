@@ -535,6 +535,9 @@ function addQueueButtons(li) {
     else if(menu.find(".btn").length != 0) {
         li.unbind("contextmenu");
         li.contextmenu(function(ev) {
+            // Allow shift+click to open context menu
+            // (Chrome workaround, works by default on Firefox)
+            if (ev.shiftKey) return true;
             ev.preventDefault();
             if(menu.css("display") == "none")
                 menu.show("blind");
