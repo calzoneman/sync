@@ -850,16 +850,16 @@ Callbacks = {
             });
         }
 
-        if(CHANNEL.opts.allow_voteskip)
+        if (CHANNEL.opts.allow_voteskip)
             $("#voteskip").attr("disabled", false);
 
         $("#currenttitle").text("Currently Playing: " + data.title);
 
-        if(data.type != "sc" && PLAYER.type == "sc")
+        if (data.type != "sc" && PLAYER.type == "sc")
             // [](/goddamnitmango)
             fixSoundcloudShit();
 
-        if(data.type != "jw" && PLAYER.type == "jw") {
+        if (data.type != "jw" && PLAYER.type == "jw") {
             // Is it so hard to not mess up my DOM?
             $("<div/>").attr("id", "ytapiplayer")
                 .insertBefore($("#ytapiplayer_wrapper"));
@@ -874,60 +874,18 @@ Callbacks = {
             data.url = data.id;
         }
 
-        /*
-            VIMEO SIMULATOR 2014
-
-            Vimeo decided to block my domain.  After repeated emails, they refused to
-            unblock it.  Rather than give in to their demands, there is a serverside
-            option which extracts direct links to the h264 encoded MP4 video files.
-            These files can be loaded in a custom player to allow Vimeo playback without
-            triggering their dumb API domain block.
-
-            It's a little bit hacky, but my only other option is to keep buying new
-            domains every time one gets blocked.  No thanks to Vimeo, who were of no help
-            and unwilling to compromise on the issue.
-        */
         if (NO_VIMEO && data.type === "vi" && data.meta.direct) {
-            data.type = "fi";
-            // For browsers that don't support native h264 playback
-            if (USEROPTS.no_h264) {
-                data.forceFlash = true;
-            }
-
-            /* Convert youtube-style quality key to vimeo workaround quality */
-            var q = {
-                small: "mobile",
-                medium: "sd",
-                large: "sd",
-                hd720: "hd",
-                hd1080:"hd",
-                highres: "hd"
-            }[USEROPTS.default_quality] || "sd";
-
-            var fallback = {
-                hd: "sd",
-                sd: "mobile",
-                mobile: false
-            };
-
-            while (!(q in data.meta.direct) && q != false) {
-                q = fallback[q];
-            }
-
-            if (!q) {
-                q = "sd";
-            }
-
-            data.url = data.meta.direct[q].url;
+            data = vimeoSimulator2014(data);
         }
 
+        /* RTMP player has been replaced with the general flash player */
         if (data.type === "rt") {
             data.url = data.id;
             data.type = "fi";
             data.forceFlash = true;
         }
 
-        if(data.type != PLAYER.type) {
+        if (data.type != PLAYER.type) {
             loadMediaPlayer(data);
         }
 
