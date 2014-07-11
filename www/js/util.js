@@ -1770,6 +1770,7 @@ function genPermissionsEditor() {
     addDivider("Misc");
     makeOption("Drink calls", "drink", modleader, CHANNEL.perms.drink+"");
     makeOption("Chat", "chat", noanon, CHANNEL.perms.chat+"");
+    makeOption("Clear Chat", "chatclear", modleader, CHANNEL.perms.chatclear+"");
 
     var sgroup = $("<div/>").addClass("form-group").appendTo(form);
     var sgroupinner = $("<div/>").addClass("col-sm-8 col-sm-offset-4").appendTo(sgroup);
