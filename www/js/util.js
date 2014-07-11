@@ -2674,3 +2674,53 @@ function formatScriptAccessPrefs() {
             });
     });
 }
+
+/*
+    VIMEO SIMULATOR 2014
+
+    Vimeo decided to block my domain.  After repeated emails, they refused to
+    unblock it.  Rather than give in to their demands, there is a serverside
+    option which extracts direct links to the h264 encoded MP4 video files.
+    These files can be loaded in a custom player to allow Vimeo playback without
+    triggering their dumb API domain block.
+
+    It's a little bit hacky, but my only other option is to keep buying new
+    domains every time one gets blocked.  No thanks to Vimeo, who were of no help
+    and unwilling to compromise on the issue.
+*/
+function vimeoSimulator2014(data) {
+    /* Vimeo Simulator uses the raw file player */
+    data.type = "fi";
+
+    /* For browsers that don't support native h264 playback */
+    if (USEROPTS.no_h264) {
+        data.forceFlash = true;
+    }
+
+    /* Convert youtube-style quality key to vimeo workaround quality */
+    var q = {
+        small: "mobile",
+        medium: "sd",
+        large: "sd",
+        hd720: "hd",
+        hd1080:"hd",
+        highres: "hd"
+    }[USEROPTS.default_quality] || "sd";
+
+    var fallback = {
+        hd: "sd",
+        sd: "mobile",
+        mobile: false
+    };
+
+    /* Pick highest quality less than or equal to user's preference from the options */
+    while (!(q in data.meta.direct) && q != false) {
+        q = fallback[q];
+    }
+    if (!q) {
+        q = "sd";
+    }
+
+    data.url = data.meta.direct[q].url;
+    return data;
+}

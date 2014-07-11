@@ -1002,7 +1002,15 @@ var GoogleDocsPlayer = function (data) {
         self.videoLength = data.seconds;
         self.paused = false;
         var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
+
         var meta = data.meta;
+        if (!meta || !meta.object || !meta.params) {
+            // Reset videoId so that a changeMedia with the appropriate data
+            // will properly reset the player
+            self.videoId = "";
+            return;
+        }
+
         self.player = $("<object/>", meta.object)[0];
         $(self.player).attr("data", meta.object.data);
         $(self.player).attr("width", VWIDTH)
