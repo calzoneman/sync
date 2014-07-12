@@ -1082,6 +1082,9 @@ function FilePlayer(data) {
 
     self.initFlash = function (data) {
         waitUntilDefined(window, "swfobject", function () {
+            if (!data.url) {
+                return;
+            }
             self.volume = VOLUME;
             self.videoId = data.id;
             self.videoURL = data.url;
@@ -1161,6 +1164,9 @@ function FilePlayer(data) {
     };
 
     self.init = function (data) {
+        if (!data.url) {
+            return;
+        }
         self.videoId = data.id;
         self.videoURL = data.url;
         var isAudio = data.meta.codec && data.meta.codec.match(/^mp3$|^vorbis$/);

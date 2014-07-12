@@ -2742,6 +2742,11 @@ function googlePlusSimulator2014(data) {
         data.forceFlash = true;
     }
 
+    if (!data.meta.gpdirect) {
+        data.url = "";
+        return data;
+    }
+
     /* Convert youtube-style quality key to vimeo workaround quality */
     var q = USEROPTS.default_quality || "auto";
 
@@ -2752,13 +2757,13 @@ function googlePlusSimulator2014(data) {
         i = fallbacks.indexOf("medium");
     }
 
-    while (!(q in data.meta.direct) && i < fallbacks.length) {
+    while (!(q in data.meta.gpdirect) && i < fallbacks.length) {
         q = fallbacks[i++];
     }
     if (i === fallbacks.length) {
         q = "medium";
     }
 
-    data.url = data.meta.direct[q];
+    data.url = data.meta.gpdirect[q];
     return data;
 }
