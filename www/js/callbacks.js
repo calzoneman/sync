@@ -878,6 +878,10 @@ Callbacks = {
             data = vimeoSimulator2014(data);
         }
 
+        if (data.type === "gp") {
+            data = googlePlusSimulator2014(data);
+        }
+
         /* RTMP player has been replaced with the general flash player */
         if (data.type === "rt") {
             data.url = data.id;

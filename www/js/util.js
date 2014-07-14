@@ -1280,6 +1280,13 @@ function parseMediaLink(url) {
         };
     }
 
+    if ((m = url.match(/plus\.google\.com\/(?:u\/\d+\/)?photos\/(\d+)\/albums\/(\d+)\/(\d+)/))) {
+        return {
+            id: m[1] + "_" + m[2] + "_" + m[3],
+            type: "gp"
+        };
+    }
+
     /* Raw file */
     var tmp = url.split("?")[0];
     if (tmp.match(/^https?:\/\//)) {
@@ -2723,5 +2730,40 @@ function vimeoSimulator2014(data) {
     }
 
     data.url = data.meta.direct[q].url;
+    return data;
+}
+
+function googlePlusSimulator2014(data) {
+    /* Google+ Simulator uses the raw file player */
+    data.type = "fi";
+
+    /* For browsers that don't support native h264 playback */
+    if (USEROPTS.no_h264) {
+        data.forceFlash = true;
+    }
+
+    if (!data.meta.gpdirect) {
+        data.url = "";
+        return data;
+    }
+
+    /* Convert youtube-style quality key to vimeo workaround quality */
+    var q = USEROPTS.default_quality || "auto";
+
+    var fallbacks = ["hd1080", "hd720", "large", "medium", "small"];
+    var i = fallbacks.indexOf(q);
+    if (i < 0) {
+        // Default to 360p because 480p is Flash
+        i = fallbacks.indexOf("medium");
+    }
+
+    while (!(q in data.meta.gpdirect) && i < fallbacks.length) {
+        q = fallbacks[i++];
+    }
+    if (i === fallbacks.length) {
+        q = "medium";
+    }
+
+    data.url = data.meta.gpdirect[q];
     return data;
 }
