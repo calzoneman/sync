@@ -48,12 +48,13 @@ mixin miscoptions
   #cs-miscoptions.tab-pane
     h4 General Settings
     form.form-horizontal(action="javascript:void(0)")
-      mixin rcheckbox-auto("cs-enable_link_regex", "Convert URLs in chat to links")
       mixin rcheckbox-auto("cs-allow_voteskip", "Allow voteskip")
+      mixin rcheckbox-auto("cs-allow_dupes", "Allow duplicate videos on the playlist")
       mixin textbox-auto("cs-voteskip_ratio", "Voteskip ratio", "0.5")
       mixin textbox-auto("cs-maxlength", "Max video length", "HH:MM:SS")
       mixin textbox-auto("cs-afk_timeout", "Auto-AFK Delay", "0 (disabled)")
-      mixin rcheckbox-auto("cs-allow_dupes", "Allow duplicate videos on the playlist")
+      h4 Chat Settings
+      mixin rcheckbox-auto("cs-enable_link_regex", "Convert URLs in chat to links")
       mixin rcheckbox-auto("cs-chat_antiflood", "Throttle chat")
       mixin textbox-auto("cs-chat_antiflood_burst", "# of messages allowed before throttling")
       mixin textbox-auto("cs-chat_antiflood_sustained", "# of messages (after burst) allowed per second")
