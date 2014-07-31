@@ -45,7 +45,7 @@ mixin textbox-auto(id, label, placeholder)
         input.form-control.cs-textbox(id=id, type="text")
 
 mixin miscoptions
-  #cs-miscoptions.tab-pane
+  #cs-miscoptions.tab-pane.active
     h4 General Settings
     form.form-horizontal(action="javascript:void(0)")
       mixin rcheckbox-auto("cs-allow_voteskip", "Allow voteskip")
