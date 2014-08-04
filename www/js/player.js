@@ -476,7 +476,7 @@ var SoundcloudPlayer = function (data) {
             range: "min",
             value: VOLUME * 100,
             stop: function (event, ui) {
-                self.player.setVolume(ui.value);
+                self.player.setVolume(ui.value / 100);
                 self.soundcloudIsSeriouslyFuckingBroken = ui.value / 100;
             }
         });
