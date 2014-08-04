@@ -561,7 +561,7 @@ var SoundcloudPlayer = function (data) {
     };
 
     self.setVolume = function (vol) {
-        self.player.setVolume(vol * 100);
+        self.player.setVolume(vol);
     };
 };
 
