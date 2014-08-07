@@ -878,7 +878,10 @@ Callbacks = {
             data = vimeoSimulator2014(data);
         }
 
-        if (data.type === "gp") {
+        /*
+         * Google Docs now uses the same simulator as Google+
+         */
+        if (data.type === "gp" || data.type === "gd") {
             data = googlePlusSimulator2014(data);
         }
 

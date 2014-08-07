@@ -2737,11 +2737,6 @@ function googlePlusSimulator2014(data) {
     /* Google+ Simulator uses the raw file player */
     data.type = "fi";
 
-    /* For browsers that don't support native h264 playback */
-    if (USEROPTS.no_h264) {
-        data.forceFlash = true;
-    }
-
     if (!data.meta.gpdirect) {
         data.url = "";
         return data;
