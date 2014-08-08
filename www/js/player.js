@@ -103,15 +103,6 @@ var YouTubePlayer = function (data) {
             self.player.playVideo();
     };
 
-    self.isPaused = function (callback) {
-        if(self.player && self.player.getPlayerState) {
-            var state = self.player.getPlayerState();
-            callback(state != YT.PlayerState.PLAYING);
-        } else {
-            callback(false);
-        }
-    };
-
     self.getTime = function (callback) {
         if(self.player && self.player.getCurrentTime)
             callback(self.player.getCurrentTime());
@@ -203,10 +194,6 @@ var VimeoPlayer = function (data) {
         self.play = function () {
             if(self.player && self.player.api)
                 self.player.api("play");
-        };
-
-        self.isPaused = function (callback) {
-            callback(self.paused);
         };
 
         self.getTime = function (callback) {
@@ -315,10 +302,6 @@ var VimeoFlashPlayer = function (data) {
             self.player.api_play();
     };
 
-    self.isPaused = function (callback) {
-        callback(self.paused);
-    };
-
     self.getTime = function (callback) {
         if(self.player && self.player.api_getCurrentTime) {
             var t = parseFloat(self.player.api_getCurrentTime());
@@ -423,10 +406,6 @@ var DailymotionPlayer = function (data) {
     self.play = function () {
         if(self.player && self.player.api)
             self.player.api("play");
-    };
-
-    self.isPaused = function (callback) {
-        callback(self.paused);
     };
 
     self.getTime = function (callback) {
@@ -536,13 +515,6 @@ var SoundcloudPlayer = function (data) {
             self.player.play();
     };
 
-    self.isPaused = function (callback) {
-        if(self.player && self.player.isPaused)
-            self.player.isPaused(callback);
-        else
-            callback(false);
-    };
-
     self.getTime = function (callback) {
         if(self.player && self.player.getPosition) {
             self.player.getPosition(function (pos) {
@@ -595,8 +567,6 @@ var LivestreamPlayer = function (data) {
 
     self.play = function () { };
 
-    self.isPaused = function () { };
-
     self.getTime = function () { };
 
     self.seek = function () { };
@@ -644,8 +614,6 @@ var TwitchTVPlayer = function (data) {
     self.pause = function () { };
 
     self.play = function () { };
-
-    self.isPaused = function () { };
 
     self.getTime = function () { };
 
@@ -695,8 +663,6 @@ var JustinTVPlayer = function (data) {
     self.pause = function () { };
 
     self.play = function () { };
-
-    self.isPaused = function () { };
 
     self.getTime = function () { };
 
@@ -754,8 +720,6 @@ var RTMPPlayer = function (data) {
     self.pause = function () { };
 
     self.play = function () { };
-
-    self.isPaused = function () { };
 
     self.getTime = function () { };
 
@@ -850,11 +814,6 @@ var JWPlayer = function (data) {
             jwplayer().play(true);
     };
 
-    self.isPaused = function (callback) {
-        if(jwplayer)
-            callback(jwplayer().getState() !== "PLAYING");
-    };
-
     self.getTime = function (callback) {
         // Only return time for non-live media
         if(jwplayer && jwplayer().getDuration() != -1) {
@@ -904,8 +863,6 @@ var UstreamPlayer = function (data) {
 
     self.play = function () { };
 
-    self.isPaused = function () { };
-
     self.getTime = function () { };
 
     self.seek = function () { };
@@ -940,8 +897,6 @@ var ImgurPlayer = function (data) {
     self.pause = function () { };
 
     self.play = function () { };
-
-    self.isPaused = function () { };
 
     self.getTime = function () { };
 
@@ -982,8 +937,6 @@ var CustomPlayer = function (data) {
 
     self.play = function () { };
 
-    self.isPaused = function () { };
-
     self.getTime = function () { };
 
     self.seek = function () { };
@@ -993,88 +946,6 @@ var CustomPlayer = function (data) {
     self.setVolume = function () { };
 
     self.init();
-};
-
-var GoogleDocsPlayer = function (data) {
-    var self = this;
-    self.init = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.paused = false;
-        var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
-
-        var meta = data.meta;
-        if (!meta || !meta.object || !meta.params) {
-            // Reset videoId so that a changeMedia with the appropriate data
-            // will properly reset the player
-            self.videoId = "";
-            return;
-        }
-
-        self.player = $("<object/>", meta.object)[0];
-        $(self.player).attr("data", meta.object.data);
-        $(self.player).attr("width", VWIDTH)
-                      .attr("height", VHEIGHT);
-        meta.params.forEach(function (p) {
-            $("<param/>", p).appendTo(self.player);
-        });
-        removeOld($(self.player));
-        self.setVolume(VOLUME);
-        resizeStuff();
-    };
-
-    self.load = function (data) {
-        self.init(data);
-    };
-
-    self.pause = function () {
-        if(self.player && self.player.pauseVideo)
-            self.player.pauseVideo();
-    };
-
-    self.play = function () {
-        if(self.player && self.player.playVideo)
-            self.player.playVideo();
-    };
-
-    self.isPaused = function (callback) {
-        if(self.player && self.player.getPlayerState) {
-            var state = self.player.getPlayerState();
-            callback(state != YT.PlayerState.PLAYING);
-        } else {
-            callback(false);
-        }
-    };
-
-    self.getTime = function (callback) {
-        if(self.player && self.player.getCurrentTime)
-            callback(self.player.getCurrentTime());
-    };
-
-    self.seek = function (time) {
-        if(self.player && self.player.seekTo)
-            self.player.seekTo(time, true);
-    };
-
-    self.getVolume = function (cb) {
-        if (!self.player || !self.player.getVolume || !self.player.isMuted) {
-            return;
-        }
-
-        // YouTube's API is strange in the sense that getVolume() returns
-        // the regular (unmuted) volume even if it is muted...
-        // YouTube's volume is 0..100, normalize it to 0..1
-        var vol = self.player.isMuted() ? 0 : (self.player.getVolume() / 100);
-        cb(vol);
-    };
-
-    self.setVolume = function (vol) {
-        if (self.player && self.player.setVolume) {
-            self.player.setVolume(vol * 100);
-        }
-    };
-
-    self.init(data);
 };
 
 function FilePlayer(data) {
@@ -1138,10 +1009,6 @@ function FilePlayer(data) {
                     self.player.play2();
             };
 
-            self.isPaused = function (cb) {
-                cb(self.paused);
-            };
-
             self.getTime = function (cb) {
                 cb(self.currentTime);
             };
@@ -1191,6 +1058,30 @@ function FilePlayer(data) {
         });
         removeOld(video);
         self.player = video[0];
+        if (!Object.hasOwnProperty.call(self, "paused")) {
+            Object.defineProperty(self, "paused", {
+                get: function () {
+                    return self.player.paused;
+                }
+            });
+        }
+        self.player.onpause = function () {
+            self.paused = true;
+            if (CLIENT.leader) {
+                sendVideoUpdate();
+            }
+        };
+        self.player.onplay = function () {
+            self.paused = false;
+            if (CLIENT.leader) {
+                sendVideoUpdate();
+            }
+        };
+        self.player.onended = function () {
+            if (CLIENT.leader) {
+                socket.emit("playNext");
+            }
+        };
         self.setVolume(VOLUME);
         resizeStuff();
     };
@@ -1212,12 +1103,6 @@ function FilePlayer(data) {
     self.play = function () {
         if (self.player) {
             self.player.play();
-        }
-    };
-
-    self.isPaused = function (callback) {
-        if (self.player) {
-            callback(self.player.paused);
         }
     };
 
@@ -1306,17 +1191,14 @@ function handleMediaUpdate(data) {
 
     // Handle pause/unpause
     if(data.paused) {
-        PLAYER.isPaused(function (paused) {
-            if (!paused) {
-                PLAYER.seek(data.currentTime);
-                PLAYER.pause();
-            }
-        });
+        if (!PLAYER.paused) {
+            PLAYER.seek(data.currentTime);
+            PLAYER.pause();
+        }
     } else {
-        PLAYER.isPaused(function (paused) {
-            if(paused)
-                PLAYER.play();
-        });
+        if (PLAYER.paused) {
+            PLAYER.play();
+        }
     }
 
     // Handle time change
@@ -1359,7 +1241,6 @@ var constructors = {
     "jw": JWPlayer,
     "im": ImgurPlayer,
     "cu": CustomPlayer,
-    "gd": GoogleDocsPlayer,
     "rt": FilePlayer,
     "rv": FilePlayer,
     "fl": FilePlayer,
