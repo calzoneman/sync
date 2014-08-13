@@ -574,3 +574,15 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
 #chanjs-allow-prompt-buttons button:first-child {
     margin-right: 5px;
 }
+
+@media screen and (min-width: 768px) {
+    .modal {
+        padding: 30px;
+    }
+
+    .modal-dialog {
+        min-width: 600px!important;
+        max-width: 1200px!important;
+        width: auto!important;
+    }
+}
