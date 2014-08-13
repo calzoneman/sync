@@ -628,55 +628,6 @@ var TwitchTVPlayer = function (data) {
     });
 };
 
-var JustinTVPlayer = function (data) {
-    removeOld();
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        var prto = location.protocol;
-        var url = "http://www.justin.tv/widgets/live_embed_player.swf?channel="+self.videoId;
-        var params = {
-            allowFullScreen: "true",
-            allowScriptAccess: "always",
-            allowNetworking: "all",
-            movie: "http://www.justin.tv/widgets/live_embed_player.swf",
-            id: "live_embed_player_flash",
-            flashvars: "hostname=www.justin.tv&channel="+self.videoId+"&auto_play=true&start_volume=" + VOLUME
-        };
-        swfobject.embedSWF(url,
-            "ytapiplayer",
-            VWIDTH, VHEIGHT,
-            "8",
-            null, null,
-            params,
-            {}
-        );
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function () { };
-
-    self.setVolume = function () { };
-
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-};
-
 function rtmpEventHandler(id, ev, data) {
     if (ev === "volumechange") {
         PLAYER.volume = (data.muted ? 0 : data.volume);
@@ -1236,7 +1187,6 @@ var constructors = {
     "sc": SoundcloudPlayer,
     "li": LivestreamPlayer,
     "tw": TwitchTVPlayer,
-    "jt": JustinTVPlayer,
     "us": UstreamPlayer,
     "jw": JWPlayer,
     "im": ImgurPlayer,
