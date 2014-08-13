@@ -1171,6 +1171,16 @@ function playlistMove(from, after, cb) {
     }
 }
 
+function extractQueryParam(query, param) {
+    var params = {};
+    query.split("&").forEach(function (kv) {
+        kv = kv.split("=");
+        params[kv[0]] = kv[1];
+    });
+
+    return params[param];
+}
+
 function parseMediaLink(url) {
     if(typeof url != "string") {
         return {
@@ -1196,28 +1206,28 @@ function parseMediaLink(url) {
     }
 
     var m;
-    if((m = url.match(/youtube\.com\/watch\?v=([^&#]+)/))) {
+    if((m = url.match(/youtube\.com\/watch\?([^#]+)/))) {
+        return {
+            id: extractQueryParam(m[1], "v"),
+            type: "yt"
+        };
+    }
+
+    if((m = url.match(/youtu\.be\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "yt"
         };
     }
 
-    if((m = url.match(/youtu\.be\/([^&#]+)/))) {
+    if((m = url.match(/youtube\.com\/playlist\?([^#]+)/))) {
         return {
-            id: m[1],
-            type: "yt"
-        };
-    }
-
-    if((m = url.match(/youtube\.com\/playlist\?list=([^&#]+)/))) {
-        return {
-            id: m[1],
+            id: extractQueryParam(m[1], "list"),
             type: "yp"
         };
     }
 
-    if((m = url.match(/twitch\.tv\/([^&#]+)/))) {
+    if((m = url.match(/twitch\.tv\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "tw"
@@ -1231,42 +1241,42 @@ function parseMediaLink(url) {
         };
     }
 
-    if((m = url.match(/livestream\.com\/([^&#]+)/))) {
+    if((m = url.match(/livestream\.com\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "li"
         };
     }
 
-    if((m = url.match(/ustream\.tv\/([^&#]+)/))) {
+    if((m = url.match(/ustream\.tv\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "us"
         };
     }
 
-    if((m = url.match(/vimeo\.com\/([^&#]+)/))) {
+    if((m = url.match(/vimeo\.com\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "vi"
         };
     }
 
-    if((m = url.match(/dailymotion\.com\/video\/([^&#]+)/))) {
+    if((m = url.match(/dailymotion\.com\/video\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "dm"
         };
     }
 
-    if((m = url.match(/imgur\.com\/a\/([^&#]+)/))) {
+    if((m = url.match(/imgur\.com\/a\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "im"
         };
     }
 
-    if((m = url.match(/soundcloud\.com\/([^&#]+)/))) {
+    if((m = url.match(/soundcloud\.com\/([^\?&#]+)/))) {
         return {
             id: url,
             type: "sc"
