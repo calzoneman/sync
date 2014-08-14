@@ -2749,15 +2749,18 @@ function googlePlusSimulator2014(data) {
     var fallbacks = ["hd1080", "hd720", "large", "medium", "small"];
     var i = fallbacks.indexOf(q);
     if (i < 0) {
-        // Default to 360p because 480p is Flash
         i = fallbacks.indexOf("medium");
     }
 
     while (!(q in data.meta.gpdirect) && i < fallbacks.length) {
         q = fallbacks[i++];
     }
+
     if (i === fallbacks.length) {
-        q = "medium";
+        var hasCodecs = Object.keys(data.meta.gpdirect);
+        if (hasCodecs.length > 0) {
+            q = hasCodecs[0];
+        }
     }
 
     data.url = data.meta.gpdirect[q];
