@@ -115,8 +115,6 @@ max-channels-per-user: 5
 max-accounts-per-ip: 5
 # Minimum number of seconds between guest logins from the same IP
 guest-login-delay: 60
-# Block known Tor IP addresses
-enable-tor-blocker: true
 
 # Configure statistics tracking
 stats:

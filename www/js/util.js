@@ -864,6 +864,7 @@ function handleModPermissions() {
     $("#cs-allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#cs-voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
     $("#cs-allow_dupes").val(CHANNEL.opts.allow_dupes);
+    $("#cs-torbanned").val(CHANNEL.opts.torbanned);
     (function() {
         if(typeof CHANNEL.opts.maxlength != "number") {
             $("#cs-maxlength").val("");
