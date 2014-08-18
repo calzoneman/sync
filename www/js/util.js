@@ -2147,12 +2147,7 @@ function formatCSBanlist() {
         $("<td/>").text(entry.ip).appendTo(tr);
         $("<td/>").text(entry.name).appendTo(tr);
         $("<td/>").text(entry.bannedby).appendTo(tr);
-        tr.popover({
-            title: "Ban Reason",
-            content: entry.reason,
-            placement: "left",
-            trigger: "hover"
-        });
+        tr.attr("title", "Ban Reason: " + entry.reason);
         return tr;
     };
 
