@@ -611,7 +611,6 @@ function showUserOptions() {
     $("#us-synch").prop("checked", USEROPTS.synch);
     $("#us-synch-accuracy").val(USEROPTS.sync_accuracy);
     $("#us-wmode-transparent").prop("checked", USEROPTS.wmode_transparent);
-    $("#us-no-h264").prop("checked", USEROPTS.no_h264);
     $("#us-hidevideo").prop("checked", USEROPTS.hidevid);
     $("#us-playlistbuttons").prop("checked", USEROPTS.qbtn_hide);
     $("#us-oldbtns").prop("checked", USEROPTS.qbtn_idontlikechange);
@@ -645,7 +644,6 @@ function saveUserOptions() {
     USEROPTS.synch                = $("#us-synch").prop("checked");
     USEROPTS.sync_accuracy        = parseFloat($("#us-synch-accuracy").val()) || 2;
     USEROPTS.wmode_transparent    = $("#us-wmode-transparent").prop("checked");
-    USEROPTS.no_h264              = $("#us-no-h264").prop("checked");
     USEROPTS.hidevid              = $("#us-hidevideo").prop("checked");
     USEROPTS.qbtn_hide            = $("#us-playlistbuttons").prop("checked");
     USEROPTS.qbtn_idontlikechange = $("#us-oldbtns").prop("checked");
@@ -2696,11 +2694,6 @@ function formatScriptAccessPrefs() {
 function vimeoSimulator2014(data) {
     /* Vimeo Simulator uses the raw file player */
     data.type = "fi";
-
-    /* For browsers that don't support native h264 playback */
-    if (USEROPTS.no_h264) {
-        data.forceFlash = true;
-    }
 
     /* Convert youtube-style quality key to vimeo workaround quality */
     var q = {

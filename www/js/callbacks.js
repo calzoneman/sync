@@ -867,10 +867,6 @@ Callbacks = {
         }
 
         if (data.type === "fi") {
-            if (USEROPTS.no_h264 && data.meta.codec === "mov/h264") {
-                data.forceFlash = true;
-            }
-
             data.url = data.id;
         }
 
@@ -883,13 +879,6 @@ Callbacks = {
          */
         if (data.type === "gp" || data.type === "gd") {
             data = googlePlusSimulator2014(data);
-        }
-
-        /* RTMP player has been replaced with the general flash player */
-        if (data.type === "rt") {
-            data.url = data.id;
-            data.type = "fi";
-            data.forceFlash = true;
         }
 
         if (data.type != PLAYER.type) {
