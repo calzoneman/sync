@@ -15,10 +15,12 @@
     "express-minify": "0.0.11",
     "jade": "~1.1.5",
     "json-typecheck": "^0.1.0",
+    "morgan": "^1.2.3",
     "mysql": "~2.0.1",
     "nodemailer": "~0.6.0",
     "oauth": "^0.9.11",
     "q": "^1.0.0",
+    "serve-static": "^1.5.3",
     "socket.io": "~0.9.16",
     "yamljs": "~0.1.4"
   }
