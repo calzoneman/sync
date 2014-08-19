@@ -97,7 +97,6 @@ io:
 # see https://github.com/andris9/Nodemailer
 mail:
   enabled: false
-  transport: 'SMTP'
   config:
     service: 'Gmail'
     auth:
