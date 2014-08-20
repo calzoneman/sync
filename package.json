@@ -2,22 +2,25 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
   "dependencies": {
-    "express": "~3.4.8",
-    "bcrypt": "~0.7.7",
-    "mysql": "~2.0.1",
-    "jade": "~1.1.5",
-    "socket.io": "~0.9.16",
-    "nodemailer": "~0.6.0",
-    "cookie": "~0.1.0",
-    "yamljs": "~0.1.4",
-    "express-minify": "0.0.7",
-    "q": "^1.0.0",
+    "bcrypt": "^0.8.0",
+    "body-parser": "^1.6.5",
+    "cookie-parser": "^1.3.2",
+    "express": "^4.8.5",
+    "express-minify": "0.0.11",
+    "jade": "^1.5.0",
     "json-typecheck": "^0.1.0",
-    "oauth": "^0.9.11"
+    "morgan": "^1.2.3",
+    "mysql": "^2.4.2",
+    "nodemailer": "^1.2.0",
+    "oauth": "^0.9.12",
+    "q": "^1.0.1",
+    "serve-static": "^1.5.3",
+    "socket.io": "~0.9.16",
+    "yamljs": "^0.1.5"
   }
 }

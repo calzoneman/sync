@@ -11,7 +11,7 @@
     }
   }
 
-  if (theme == null || !theme.match(/^\/css\/themes\/\w+.css$/)) {
+  if (theme == null || !theme.match(/^\/css\/themes\/.+?.css$/)) {
     return;
   }
 
