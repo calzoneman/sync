@@ -893,7 +893,7 @@ Callbacks = {
     },
 
     mediaUpdate: function(data) {
-        if ($("body").hasClass("chatOnly")) {
+        if ($("body").hasClass("chatOnly") || $("#videowrap").length === 0) {
             return;
         }
 
@@ -1071,16 +1071,22 @@ Callbacks = {
     }
 }
 
-var SOCKET_DEBUG = true;
+var SOCKET_DEBUG = false;
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
-        socket.on(key, function(data) {
-            if (SOCKET_DEBUG) {
-                console.log(key, data);
-            }
-            Callbacks[key](data);
-        });
+            socket.on(key, function(data) {
+                if (SOCKET_DEBUG) {
+                    console.log(key, data);
+                }
+                try {
+                    Callbacks[key](data);
+                } catch (e) {
+                    if (SOCKET_DEBUG) {
+                        console.log("EXCEPTION: " + e.stack);
+                    }
+                }
+            });
         })(key);
     }
 }
