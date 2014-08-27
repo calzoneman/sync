@@ -249,14 +249,19 @@ Callbacks = {
     channelOpts: function(opts) {
         document.title = opts.pagetitle;
         PAGETITLE = opts.pagetitle;
-        $("#chanexternalcss").remove();
 
-        if(opts.externalcss.trim() != "" && !USEROPTS.ignore_channelcss) {
-            $("<link/>")
-                .attr("rel", "stylesheet")
-                .attr("href", opts.externalcss)
-                .attr("id", "chanexternalcss")
-                .appendTo($("head"));
+        if (!USEROPTS.ignore_channelcss &&
+            opts.externalcss !== CHANNEL.opts.externalcss) {
+            $("#chanexternalcss").remove();
+
+            if (opts.externalcss.trim() !== "") {
+                $("#chanexternalcss").remove();
+                $("<link/>")
+                    .attr("rel", "stylesheet")
+                    .attr("href", opts.externalcss)
+                    .attr("id", "chanexternalcss")
+                    .appendTo($("head"));
+            }
         }
 
         if(opts.externaljs.trim() != "" && !USEROPTS.ignore_channeljs &&
