@@ -307,6 +307,8 @@ function addUserDropdown(entry) {
     }
 
     var showdd = function(ev) {
+        // Workaround for Chrome
+        if (ev.shiftKey) return true;
         ev.preventDefault();
         if(menu.css("display") == "none") {
             $(".user-dropdown").hide();
