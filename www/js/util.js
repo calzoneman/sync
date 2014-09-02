@@ -1276,7 +1276,7 @@ function parseMediaLink(url) {
         };
     }
 
-    if ((m = url.match(/docs\.google\.com\/file\/d\/([^\/]*)/))) {
+    if ((m = url.match(/(?:docs|drive)\.google\.com\/file\/d\/([^\/]*)/))) {
         return {
             id: m[1],
             type: "gd"
