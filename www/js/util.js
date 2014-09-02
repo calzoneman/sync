@@ -863,7 +863,7 @@ function handleModPermissions() {
     $("#cs-afk_timeout").val(CHANNEL.opts.afk_timeout);
     $("#cs-allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
     $("#cs-voteskip_ratio").val(CHANNEL.opts.voteskip_ratio);
-    $("#cs-allow_dupes").val(CHANNEL.opts.allow_dupes);
+    $("#cs-allow_dupes").prop("checked", CHANNEL.opts.allow_dupes);
     $("#cs-torbanned").prop("checked", CHANNEL.opts.torbanned);
     $("#cs-allow_ascii_control").prop("checked", CHANNEL.opts.allow_ascii_control);
     (function() {
