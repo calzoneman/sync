@@ -13,8 +13,8 @@ html(lang="en")
           - var cname = "/r/" + channelName
           ul.nav.navbar-nav
             mixin navdefaultlinks(cname)
-            li: a(href="#", onclick="javascript:showUserOptions()") Options
-            li: a#showchansettings(href="#", onclick="javascript:$('#channeloptions').modal()") Channel Settings
+            li: a(href="javascript:void(0)", onclick="javascript:showUserOptions()") Options
+            li: a#showchansettings(href="javascript:void(0)", onclick="javascript:$('#channeloptions').modal()") Channel Settings
             li.dropdown
               a.dropdown-toggle(href="#", data-toggle="dropdown") Layout
                 b.caret

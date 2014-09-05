@@ -914,6 +914,7 @@ function handlePermissionChange() {
     setVisible("#plmeta", hasPermission("seeplaylist"));
     $("#getplaylist").attr("disabled", !hasPermission("seeplaylist"));
 
+    setVisible("#showplaylistmanager", hasPermission("seeplaylist"));
     setVisible("#showmediaurl", hasPermission("playlistadd"));
     setVisible("#showcustomembed", hasPermission("playlistaddcustom"));
     $("#queue_next").attr("disabled", !hasPermission("playlistnext"));

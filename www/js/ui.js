@@ -242,6 +242,15 @@ $("#newpollbtn").click(showPollMenu);
 
 /* search controls */
 $("#library_search").click(function() {
+    if (!hasPermission("seeplaylist")) {
+        $("#searchcontrol .alert").remove();
+        var al = makeAlert("Permission Denied",
+            "This channel does not allow you to search its library",
+            "alert-danger");
+        al.find(".alert").insertAfter($("#library_query").parent());
+        return;
+    }
+
     socket.emit("searchMedia", {
         source: "library",
         query: $("#library_query").val().toLowerCase()
@@ -250,6 +259,15 @@ $("#library_search").click(function() {
 
 $("#library_query").keydown(function(ev) {
     if(ev.keyCode == 13) {
+        if (!hasPermission("seeplaylist")) {
+            $("#searchcontrol .alert").remove();
+            var al = makeAlert("Permission Denied",
+                "This channel does not allow you to search its library",
+                "alert-danger");
+            al.find(".alert").insertAfter($("#library_query").parent());
+            return;
+        }
+
         socket.emit("searchMedia", {
             source: "library",
             query: $("#library_query").val().toLowerCase()
