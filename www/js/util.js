@@ -1766,6 +1766,7 @@ function genPermissionsEditor() {
     makeOption("Vote", "pollvote", standard, CHANNEL.perms.pollvote+"");
     makeOption("View hidden poll results", "viewhiddenpoll", standard, CHANNEL.perms.viewhiddenpoll+"");
     makeOption("Voteskip", "voteskip", standard, CHANNEL.perms.voteskip+"");
+    makeOption("View voteskip results", "viewvoteskip", standard, CHANNEL.perms.viewvoteskip+"");
 
     addDivider("Moderation");
     makeOption("Assign/Remove leader", "leaderctl", modplus, CHANNEL.perms.leaderctl+"");
@@ -2756,6 +2757,7 @@ function googlePlusSimulator2014(data) {
         }
     }
 
-    data.url = data.meta.gpdirect[q];
+    data.url = data.meta.gpdirect[q].url;
+    data.contentType = data.meta.gpdirect[q].contentType;
     return data;
 }

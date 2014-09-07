@@ -703,8 +703,14 @@ var JWPlayer = function (data) {
             file: self.videoURL,
             width: VWIDTH,
             height: VHEIGHT,
-            autostart: true
+            autostart: true,
+            type: data.contentType
         });
+
+        jwplayer().onReady(function () {
+            resizeStuff();
+        });
+
         jwplayer().onPlay(function() {
             self.paused = false;
             if(CLIENT.leader)

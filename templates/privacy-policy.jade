@@ -1,0 +1,53 @@
+doctype html
+html(lang="en")
+  head
+    include head
+    mixin head()
+  body
+    #wrap
+      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+        include nav
+        mixin navheader()
+        #nav-collapsible.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            mixin navdefaultlinks("/policies/privacy")
+          mixin navloginlogout("/policies/privacy")
+      section#mainpage
+        .container
+          .col-md-12
+            h1 Privacy Policy
+            p.
+              Your privacy is very important to us.  Accordingly, we have developed this Policy in order for you to understand how we collect, use, communicate, and disclose and make use of personal information.  Some of this information is collected automatically, while other information is provided by you.  By visiting #{siteTitle} (#{domain}), you agree to allow #{siteTitle} to collect and use the information in the manner described in this policy.
+            h2 Collected Automatically
+            h4 Browser Information
+            p
+              | When you visit #{siteTitle}, certain information is automatically sent by your browser, including:
+              ul
+                li Your IP (Internet Protocol) address, which may be associated with an Internet Service Provider and country of residence
+                li The name and version of the browser you are connecting with (User-Agent string)
+                li The page or resource you are requesting
+              | This information is not shared with third parties, except if you consent to disclosure or we are required by law to disclose this information.  Your IP address may be logged and used to identify you for administrative purposes, such as revoking access to abusive users.  It may also be used in aggregation of anonymous statistics.  Your browser's name and version number (User-Agent string) may be used to provide content best suited for your device, in the case of resources which have multiple representations.
+            h4 Cookies
+            p
+              | Certain information, such as authentication tokens used to identify your account after logging in, and your theme preference are stored in "cookies" on your browser.  This information is sent to #{siteTitle}'s servers automatically when you request a page.  The login cookie is used to verify your identity with respect to your account, and the theme cookie is used to present the page using your preferred theme.  Neither cookie is explicitly shared with third parties, however it is possible they may be observed by an intermediary, especially if you are browsing on an insecure network.
+            h4 localStorage
+              | Information about your website preferences, such as those configurable from the Options dialog on a channel page, is stored in your browser via the HTML5 localStorage interface.  This information is used to persist your desired settings across multiple sessions on the website.  This information is not explicitly shared with third parties, however any entity which has access to your browser, including userscripts, may read or modify it.
+            h2 Provided by You
+            h4 Account Information
+            p
+              | In order to register an account, you must provide the following information:
+              ul
+                li A username, which uniquely identifies the account
+                li A password
+              | Your username and password will be stored on #{siteTitle}'s servers and used for the purposes of authentication.  Passwords are hashed with bcrypt before storage; at no time is the plain password recorded in persistent storage.  Usernames and passwords are never shared with third parties, to the extent permitted by United States law.
+              | You may optionally provide additional information associated with your account:
+              ul
+                li An email address
+                li A profile image
+                li A brief profile summary (text)
+              | All of this information is stored on #{siteTitle}'s servers.  Your email address will only be used for the purposes of verifying your identity in case you are unable to login to your account.  It is not shared with third parties, nor will it be used to communicate arbitrary information to you.  Your profile image and summary are visible publicly.
+            h4 Channel Information
+            p
+              | When you register a channel on #{siteTitle}, you may optionally provide certain information
+    include footer
+    mixin footer()
