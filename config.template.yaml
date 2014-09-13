@@ -183,3 +183,5 @@ channel-blacklist: []
 #   * ffmpeg must be installed on the server
 ffmpeg:
   enabled: false
+
+link-domain-blacklist: []
