@@ -586,3 +586,8 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
         width: auto!important;
     }
 }
+
+table td {
+    max-width: 200px;
+    word-wrap: break-word;
+}
