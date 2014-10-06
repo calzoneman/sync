@@ -77,6 +77,10 @@ mixin adminoptions
       mixin rcheckbox-auto("cs-show_public", "List channel publicly")
       mixin rcheckbox-auto("cs-torbanned", "Block connections from Tor")
       mixin rcheckbox-auto("cs-allow_ascii_control", "Allow ASCII control characters (e.g. newlines)")
+      mixin textbox-auto("cs-playlist_max_per_user", "Maximum # of videos per user")
+      .form-group
+        .col-sm-8.col-sm-offset-4
+          span.text-info Set to 0 for no limit
       .form-group
         .col-sm-8.col-sm-offset-4
           span.text-info Changes are automatically saved.
