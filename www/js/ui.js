@@ -520,11 +520,6 @@ if(m) {
     }
 }
 
-/* oh internet explorer, how I hate thee */
-$(":input:not(textarea)").keypress(function(ev) {
-    return ev.keyCode != 13;
-});
-
 if (location.protocol === "https:") {
     var title = "Warning";
     var text = "You connected to this page via HTTPS.  Due to browser "+
