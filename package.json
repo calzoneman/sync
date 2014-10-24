@@ -20,7 +20,7 @@
     "oauth": "^0.9.12",
     "q": "^1.0.1",
     "serve-static": "^1.5.3",
-    "socket.io": "Automattic/socket.io#5863903",
+    "socket.io": "^1.1.0",
     "yamljs": "^0.1.5"
   }
 }

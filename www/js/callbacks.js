@@ -1106,11 +1106,12 @@ try {
         throw false;
     }
 
+    var opts = { transports: ["websocket", "polling"] };
     if (IO_URL === IO_URLS["ipv4-ssl"] || IO_URL === IO_URLS["ipv6-ssl"]) {
+        opts.secure = true;
         socket = io(IO_URL, { secure: true });
-    } else {
-        socket = io(IO_URL);
     }
+    socket = io(IO_URL, opts);
     setupCallbacks();
 } catch (e) {
     if (e) {
