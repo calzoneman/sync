@@ -624,6 +624,7 @@ function showUserOptions() {
     $("#us-blink-title").val(USEROPTS.blink_title);
     $("#us-ping-sound").val(USEROPTS.boop);
     $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
+    $("#us-no-emotes").prop("checked", USEROPTS.no_emotes);
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-joinmessage").prop("checked", USEROPTS.joinmessage);
@@ -657,6 +658,7 @@ function saveUserOptions() {
     USEROPTS.blink_title          = $("#us-blink-title").val();
     USEROPTS.boop                 = $("#us-ping-sound").val();
     USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
+    USEROPTS.no_emotes            = $("#us-no-emotes").prop("checked");
 
     if (CLIENT.rank >= 2) {
         USEROPTS.modhat      = $("#us-modflair").prop("checked");
