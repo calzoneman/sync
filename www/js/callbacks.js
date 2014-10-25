@@ -1106,18 +1106,12 @@ try {
         throw false;
     }
 
-    if (NO_WEBSOCKETS || USEROPTS.altsocket) {
-        var i = io.transports.indexOf("websocket");
-        if (i >= 0) {
-            io.transports.splice(i, 1);
-        }
-    }
-
+    var opts = { transports: ["websocket", "polling"] };
     if (IO_URL === IO_URLS["ipv4-ssl"] || IO_URL === IO_URLS["ipv6-ssl"]) {
-        socket = io.connect(IO_URL, { secure: true });
-    } else {
-        socket = io.connect(IO_URL);
+        opts.secure = true;
+        socket = io(IO_URL, { secure: true });
     }
+    socket = io(IO_URL, opts);
     setupCallbacks();
 } catch (e) {
     if (e) {
