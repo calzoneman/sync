@@ -56,7 +56,7 @@ var YouTubePlayer = function (data) {
                          */
                         if (ev.data === YT.PlayerState.PLAYING &&
                             self.theYouTubeDevsNeedToFixThisShit) {
-                            PLAYER.seek(0);
+                            PLAYER.seek(0.000001);
                             PLAYER.pause();
                             self.theYouTubeDevsNeedToFixThisShit = false;
                         }
