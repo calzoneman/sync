@@ -13,7 +13,7 @@ var VIMEO_FLASH = false;
 
 function removeOld(replace) {
     $("#sc_volume").remove();
-    replace = replace || $("<div/>");
+    replace = replace || $("<div/>").addClass("embed-responsive-item");
     var old = $("#ytapiplayer");
     replace.insertBefore(old);
     old.remove();
@@ -31,8 +31,6 @@ var YouTubePlayer = function (data) {
             self.theYouTubeDevsNeedToFixThisShit = false;
             var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
             self.player = new YT.Player("ytapiplayer", {
-                height: VHEIGHT,
-                width: VWIDTH,
                 videoId: data.id,
                 playerVars: {
                     autohide: 1,        // Autohide controls
@@ -45,7 +43,6 @@ var YouTubePlayer = function (data) {
                 events: {
                     onReady: function () {
                         PLAYER.setVolume(VOLUME);
-                        $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
                     },
                     onStateChange: function (ev) {
 
@@ -707,10 +704,6 @@ var JWPlayer = function (data) {
             type: data.contentType
         });
 
-        jwplayer().onReady(function () {
-            resizeStuff();
-        });
-
         jwplayer().onPlay(function() {
             self.paused = false;
             if(CLIENT.leader)
@@ -934,7 +927,6 @@ function FilePlayer(data) {
             }
         };
         self.setVolume(VOLUME);
-        resizeStuff();
     };
 
     self.load = function (data) {

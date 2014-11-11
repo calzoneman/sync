@@ -999,7 +999,6 @@ function handlePermissionChange() {
 
     $("#chatline").attr("disabled", !hasPermission("chat"));
     rebuildPlaylist();
-    resizeStuff();
 }
 
 function fixWeirdButtonAlignmentIssue() {
@@ -1531,15 +1530,12 @@ function compactLayout() {
         $("#messagebuffer, #userlist").css("max-height", "");
         $("body").removeClass("hd");
     }
-
-    setTimeout(resizeStuff, 500);
 }
 
 function fluidLayout() {
     $(".container").removeClass("container").addClass("container-fluid");
     $("footer .container-fluid").removeClass("container-fluid").addClass("container");
     $("body").addClass("fluid");
-    resizeStuff();
 }
 
 function synchtubeLayout() {
@@ -1603,7 +1599,6 @@ function hdLayout() {
     $("#mainpage").css("padding-top", "0");
 
     $("body").addClass("hd");
-    setTimeout(resizeStuff, 500);
 }
 
 function chatOnly() {
@@ -1631,32 +1626,38 @@ function chatOnly() {
         });
     setVisible("#showchansettings", CLIENT.rank >= 2);
     $("body").addClass("chatOnly");
-    resizeStuff();
+    handleWindowResize();
 }
 
-function resizeStuff() {
+function handleWindowResize() {
     if ($("body").hasClass("chatOnly")) {
         var h = $("body").outerHeight() - $("#chatline").outerHeight() -
                 $("#chatheader").outerHeight();
         $("#messagebuffer").outerHeight(h);
         $("#userlist").outerHeight(h);
         return;
+    } else {
+        handleVideoResize();
     }
-    VWIDTH = $("#videowrap").width() + "";
-    VHEIGHT = Math.floor(parseInt(VWIDTH) * 9 / 16 + 1) + "";
-    $("#ytapiplayer").width(VWIDTH).height(VHEIGHT);
-
-    // Only execute if we are on a fluid layout
-    if (!$("body").hasClass("fluid")) {
-        return;
-    }
-
-    var h = parseInt(VHEIGHT) - $("#chatline").outerHeight() - 1;
-    $("#messagebuffer").height(h);
-    $("#userlist").height(h);
 }
 
-$(window).resize(resizeStuff);
+function handleVideoResize() {
+    var intv, ticks = 0;
+    var resize = function () {
+        if (++ticks > 10) clearInterval(intv);
+        if ($("#ytapiplayer").height() === 0) return;
+        clearInterval(intv);
+
+        var height = $("#ytapiplayer").height() - $("#chatline").outerHeight() - 2;
+        $("#messagebuffer").height(height);
+        $("#userlist").height(height);
+    };
+
+    if ($("#ytapiplayer").height() > 0) resize();
+    var intv = setInterval(resize, 500);
+}
+
+$(window).resize(handleWindowResize);
 
 function removeVideo() {
     try {
@@ -2562,9 +2563,6 @@ function fallbackRaw(data) {
     data.url = data.direct.sd.url;
     PLAYER.player = undefined;
     PLAYER = new FlashPlayer(data);
-    if ($("#ytapiplayer").height() != VHEIGHT) {
-        resizeStuff();
-    }
 
     handleMediaUpdate(data);
 }

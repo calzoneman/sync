@@ -114,14 +114,13 @@
     border: 1px solid #aaaaaa;
 }
 
-#ytapiplayer {
-    height: 380px;
-}
-
 #chatwrap, #videowrap {
     margin-bottom: 10px;
 }
 
+.embed-responsive-chat {
+    padding-bottom: 78.75%;
+}
 
 #userpl_list {
     list-style: none outside none;
