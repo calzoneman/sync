@@ -102,13 +102,13 @@ function formatUserlistItem(div) {
         if (profile)
             profile.remove();
 
-        var top = ev.clientY + 5// - name.position().top;
-        var left = ev.clientX;
+        var top = ev.clientY + 5;
+        var horiz = ev.clientX;
         profile = $("<div/>")
             .addClass("profile-box linewrap")
             .css("top", top + "px")
-            .css("left", left + "px")
             .appendTo(div);
+
         if(data.profile.image) {
             $("<img/>").addClass("profile-image")
                 .attr("src", data.profile.image)
@@ -127,12 +127,17 @@ function formatUserlistItem(div) {
         }
         $("<hr/>").css("margin-top", "5px").css("margin-bottom", "5px").appendTo(profile);
         $("<p/>").text(data.profile.text).appendTo(profile);
+
+        if ($("body").hasClass("synchtube")) horiz -= profile.outerWidth();
+        profile.css("left", horiz + "px")
     });
     name.mousemove(function(ev) {
-        var top = ev.clientY + 5// - name.position().top;
-        var left = ev.clientX;
-        profile.css("top", top + "px")
-            .css("left", left + "px")
+        var top = ev.clientY + 5;
+        var horiz = ev.clientX;
+
+        if ($("body").hasClass("synchtube")) horiz -= profile.outerWidth();
+        profile.css("left", horiz + "px")
+            .css("top", top + "px");
     });
     name.mouseleave(function() {
         profile.remove();
