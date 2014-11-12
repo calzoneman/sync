@@ -148,8 +148,6 @@ var VimeoPlayer = function (data) {
             if(USEROPTS.wmode_transparent)
                 iframe.attr("wmode", "transparent");
             iframe.css("border", "none");
-            iframe.width(VWIDTH);
-            iframe.height(VHEIGHT);
 
             $f(iframe[0]).addEvent("ready", function () {
                 self.player = $f(iframe[0]);
@@ -438,14 +436,16 @@ var SoundcloudPlayer = function (data) {
     waitUntilDefined(window, "SC", function () {
         unfixSoundcloudShit();
         var iframe = $("<iframe/>");
-        removeOld(iframe);
+        removeOld();
+        iframe.appendTo($("#ytapiplayer"));
 
-        iframe.attr("id", "ytapiplayer");
+        iframe.attr("id", "scplayer");
         iframe.attr("src", "https://w.soundcloud.com/player/?url="+self.videoId);
-        iframe.css("width", "100%").attr("height", "166");
+        iframe.css("height", "166px");
         iframe.css("border", "none");
 
         var volslider = $("<div/>").attr("id", "sc_volume")
+            .css("top", "170px")
             .insertAfter(iframe);
 
         volslider.slider({
@@ -457,7 +457,7 @@ var SoundcloudPlayer = function (data) {
             }
         });
 
-        self.player = SC.Widget("ytapiplayer");
+        self.player = SC.Widget("scplayer");
 
         self.player.bind(SC.Widget.Events.READY, function () {
             self.player.load(self.videoId, { auto_play: true });
@@ -768,8 +768,7 @@ var UstreamPlayer = function (data) {
         removeOld(iframe);
         iframe.attr("width", VWIDTH);
         iframe.attr("height", VHEIGHT);
-        var prto = location.protocol;
-        iframe.attr("src", prto+"//www.ustream.tv/embed/"+self.videoId+"?v=3&wmode=direct");
+        iframe.attr("src", "//www.ustream.tv/embed/"+self.videoId+"?v=3&wmode=direct");
         iframe.attr("frameborder", "0");
         iframe.attr("scrolling", "no");
         iframe.css("border", "none");

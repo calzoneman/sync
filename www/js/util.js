@@ -1530,6 +1530,8 @@ function compactLayout() {
         $("#messagebuffer, #userlist").css("max-height", "");
         $("body").removeClass("hd");
     }
+
+    $("body").addClass("compact");
 }
 
 function fluidLayout() {
@@ -1642,6 +1644,7 @@ function handleWindowResize() {
 }
 
 function handleVideoResize() {
+    console.trace();
     var intv, ticks = 0;
     var resize = function () {
         if (++ticks > 10) clearInterval(intv);
@@ -1649,15 +1652,22 @@ function handleVideoResize() {
         clearInterval(intv);
 
         var height = $("#ytapiplayer").height() - $("#chatline").outerHeight() - 2;
+        //console.log(height);
         $("#messagebuffer").height(height);
         $("#userlist").height(height);
+
+        //$("#ytapiplayer").attr("height", VHEIGHT = $("#ytapiplayer").height());
+        //$("#ytapiplayer").attr("width", VWIDTH = $("#ytapiplayer").width());
     };
 
     if ($("#ytapiplayer").height() > 0) resize();
-    var intv = setInterval(resize, 500);
+    else intv = setInterval(resize, 500);
 }
 
 $(window).resize(handleWindowResize);
+//setInterval(function () { console.log($("#ytapiplayer").height()); }, 10);
+handleWindowResize();
+console.log('after');
 
 function removeVideo() {
     try {

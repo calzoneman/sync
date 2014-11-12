@@ -761,16 +761,17 @@ applyOpts();
                 if (!record.addedNodes || record.addedNodes.length === 0) return;
 
                 var elem = record.addedNodes[0];
-                if (elem.id === "ytapiplayer") {
-                    handleVideoResize();
-                    $(elem).parent().resize(function () {
-                        console.log('resized');
-                    });
-                }
+                if (elem.id === "ytapiplayer") handleVideoResize();
             });
         });
 
         mr.observe($("#videowrap").find(".embed-responsive")[0], { childList: true });
+
+        var mr2 = new MutationObserver(function (records) {
+            handleVideoResize();
+        });
+
+        mr2.observe(document.body, { attributes: true, attributeFilter: ["class"] });
     } else {
         /*
          * DOMNodeInserted is deprecated.  This code is here only as a fallback
@@ -778,6 +779,12 @@ applyOpts();
          */
         $("#videowrap").find(".embed-responsive")[0].addEventListener("DOMNodeInserted", function (ev) {
             if (ev.target.id === "ytapiplayer") handleVideoResize();
+        });
+
+        document.body.addEventListener("DOMAttrModified", function (ev) {
+            if (ev.target !== document.body || ev.attrName !== "class") return;
+            console.log(ev);
+            handleVideoResize();
         });
     }
 })();
