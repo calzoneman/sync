@@ -9,8 +9,9 @@ mixin rcheckbox(id, label)
   .form-group
     .col-sm-8.col-sm-offset-4
       .checkbox
-        label.control-label(for=id)= label
+        label(for=id)
           input(type="checkbox", id=id)
+          = label
 
 mixin textbox(id, label, placeholder)
   .form-group
@@ -32,8 +33,9 @@ mixin rcheckbox-auto(id, label)
   .form-group
     .col-sm-8.col-sm-offset-4
       .checkbox
-        label.control-label(for=id)= label
+        label(for=id)
           input.cs-checkbox(type="checkbox", id=id)
+          = label
 
 mixin textbox-auto(id, label, placeholder)
   .form-group

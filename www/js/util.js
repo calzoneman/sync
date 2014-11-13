@@ -1532,12 +1532,14 @@ function compactLayout() {
     }
 
     $("body").addClass("compact");
+    handleVideoResize();
 }
 
 function fluidLayout() {
     $(".container").removeClass("container").addClass("container-fluid");
     $("footer .container-fluid").removeClass("container-fluid").addClass("container");
     $("body").addClass("fluid");
+    handleVideoResize();
 }
 
 function synchtubeLayout() {
@@ -1601,6 +1603,7 @@ function hdLayout() {
     $("#mainpage").css("padding-top", "0");
 
     $("body").addClass("hd");
+    handleVideoResize();
 }
 
 function chatOnly() {
@@ -1644,7 +1647,7 @@ function handleWindowResize() {
 }
 
 function handleVideoResize() {
-    console.trace();
+    //console.trace();
     var intv, ticks = 0;
     var resize = function () {
         if (++ticks > 10) clearInterval(intv);
@@ -1652,7 +1655,7 @@ function handleVideoResize() {
         clearInterval(intv);
 
         var height = $("#ytapiplayer").height() - $("#chatline").outerHeight() - 2;
-        //console.log(height);
+        console.log(height);
         $("#messagebuffer").height(height);
         $("#userlist").height(height);
 
@@ -2267,8 +2270,7 @@ function formatCSChatFilterList() {
                 .appendTo(wrap);
             var addTextbox = function (placeholder) {
                 var div = $("<div/>").addClass("form-group").appendTo(form)
-                    .css("margin-right", "10px")
-                    .css("max-width", "25%");
+                    .css("margin-right", "10px");
                 var input = $("<input/>").addClass("form-control")
                     .attr("type", "text")
                     .attr("placeholder", placeholder)
