@@ -698,10 +698,15 @@ var JWPlayer = function (data) {
 
         jwplayer("ytapiplayer").setup({
             file: self.videoURL,
-            width: VWIDTH,
-            height: VHEIGHT,
+            width: "100%",
+            height: "100%",
             autostart: true,
             type: data.contentType
+        });
+
+        jwplayer().onReady(function() {
+            $("#ytapiplayer").addClass("embed-responsive-item");
+            handleVideoResize();
         });
 
         jwplayer().onPlay(function() {
@@ -717,11 +722,17 @@ var JWPlayer = function (data) {
         jwplayer().onComplete(function() {
             socket.emit("playNext");
         });
+
         self.setVolume(VOLUME);
     };
 
     self.load = function (data) {
         self.videoId = data.id;
+        if (data.url) {
+            self.videoURL = data.url;
+        } else {
+            self.videoURL = data.id;
+        }
         self.videoLength = data.seconds;
         self.init();
     };
