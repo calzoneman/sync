@@ -1652,6 +1652,8 @@ function handleWindowResize() {
 }
 
 function handleVideoResize() {
+    if ($("#ytapiplayer").length === 0) return;
+
     var intv, ticks = 0;
     var resize = function () {
         if (++ticks > 10) clearInterval(intv);
