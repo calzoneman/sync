@@ -752,3 +752,27 @@ $(".add-temp").change(function () {
 });
 
 applyOpts();
+
+(function () {
+    if (typeof window.MutationObserver === "function") {
+        var mr = new MutationObserver(function (records) {
+            records.forEach(function (record) {
+                if (record.type !== "childList") return;
+                if (!record.addedNodes || record.addedNodes.length === 0) return;
+
+                var elem = record.addedNodes[0];
+                if (elem.id === "ytapiplayer") handleVideoResize();
+            });
+        });
+
+        mr.observe($("#videowrap").find(".embed-responsive")[0], { childList: true });
+    } else {
+        /*
+         * DOMNodeInserted is deprecated.  This code is here only as a fallback
+         * for browsers that do not support MutationObserver
+         */
+        $("#videowrap").find(".embed-responsive")[0].addEventListener("DOMNodeInserted", function (ev) {
+            if (ev.target.id === "ytapiplayer") handleVideoResize();
+        });
+    }
+})();

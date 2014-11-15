@@ -114,14 +114,13 @@
     border: 1px solid #aaaaaa;
 }
 
-#ytapiplayer {
-    height: 380px;
-}
-
 #chatwrap, #videowrap {
     margin-bottom: 10px;
 }
 
+.embed-responsive-chat {
+    padding-bottom: 78.75%;
+}
 
 #userpl_list {
     list-style: none outside none;
@@ -590,4 +589,12 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
 table td {
     max-width: 200px;
     word-wrap: break-word;
+}
+
+#cs-chatfilters table .form-group {
+    max-width: 25%;
+}
+
+#cs-chatfilters table .form-group > input {
+    max-width: 100%;
 }

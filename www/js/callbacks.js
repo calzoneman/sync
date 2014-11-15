@@ -890,10 +890,6 @@ Callbacks = {
             loadMediaPlayer(data);
         }
 
-        if ($("#ytapiplayer").height() != VHEIGHT) {
-            resizeStuff();
-        }
-
         handleMediaUpdate(data);
     },
 
