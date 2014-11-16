@@ -1657,15 +1657,16 @@ function handleVideoResize() {
     var intv, ticks = 0;
     var resize = function () {
         if (++ticks > 10) clearInterval(intv);
-        if ($("#ytapiplayer").height() === 0) return;
+        if ($("#ytapiplayer").parent().height() === 0) return;
         clearInterval(intv);
 
-        var height = $("#ytapiplayer").height() - $("#chatline").outerHeight() - 2;
+        var responsiveFrame = $("#ytapiplayer").parent();
+        var height = responsiveFrame.outerHeight() - $("#chatline").outerHeight() - 2;
         $("#messagebuffer").height(height);
         $("#userlist").height(height);
 
-        $("#ytapiplayer").attr("height", VHEIGHT = $("#ytapiplayer").height());
-        $("#ytapiplayer").attr("width", VWIDTH = $("#ytapiplayer").width());
+        $("#ytapiplayer").attr("height", VHEIGHT = responsiveFrame.outerHeight());
+        $("#ytapiplayer").attr("width", VWIDTH = responsiveFrame.outerWidth());
     };
 
     if ($("#ytapiplayer").height() > 0) resize();
