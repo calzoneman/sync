@@ -768,11 +768,11 @@ function showPollMenu() {
         .attr("type", "text")
         .appendTo(menu);
 
-    var lbl = $("<label/>").addClass("checkbox")
-        .text("Hide poll results")
-        .appendTo(menu);
+    var checkboxOuter = $("<div/>").addClass("checkbox").appendTo(menu);
+    var lbl = $("<label/>").text("Hide poll results")
+        .appendTo(checkboxOuter);
     var hidden = $("<input/>").attr("type", "checkbox")
-        .appendTo(lbl);
+        .prependTo(lbl);
 
     $("<strong/>").text("Options").appendTo(menu);
 
