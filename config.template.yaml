@@ -56,8 +56,13 @@ http:
     - '127.0.0.1'
   # Use express-minify to minify CSS and Javascript
   minify: false
-  # Static content cache (in seconds)
-  cache-ttl: 0
+  # Max-Age for caching.  Value should be an integer in milliseconds or a string accepted by
+  # the `ms` module.  Set to 0 to disable caching.
+  max-age: '7d'
+  # Set to false to disable gzip compression
+  gzip: true
+  # Customize the threshold byte size for applying gzip
+  gzip-threshold: 1024
 
 # HTTPS server details
 https:
