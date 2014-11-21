@@ -6350,11 +6350,6 @@ table,
 .table {
   color: #fff;
 }
-table a:not(.btn),
-.table a:not(.btn) {
-  color: #fff;
-  text-decoration: underline;
-}
 table .dropdown-menu a,
 .table .dropdown-menu a {
   text-decoration: none;
