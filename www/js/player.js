@@ -706,6 +706,7 @@ var JWPlayer = function (data) {
 
         jwplayer().onReady(function() {
             $("#ytapiplayer").addClass("embed-responsive-item");
+            $("#ytapiplayer").parent().css("position", "absolute");
             handleVideoResize();
         });
 
