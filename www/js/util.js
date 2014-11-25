@@ -1433,20 +1433,14 @@ function addChatMessage(data) {
     var div = formatChatMessage(data, LASTCHAT);
     // Incoming: a bunch of crap for the feature where if you hover over
     // a message, it highlights messages from that user
-    div.data("sender", data.username);
+    var safeUsername = data.username.replace(/[^\w-]/g, '$');
+    div.addClass("chat-msg-" + safeUsername);
     div.appendTo($("#messagebuffer"));
     div.mouseover(function() {
-        $("#messagebuffer").children().each(function() {
-            var name = $(this).data("sender");
-            if(name == data.username) {
-                $(this).addClass("nick-hover");
-            }
-        });
+        $(".chat-msg-" + safeUsername).addClass("nick-hover");
     });
     div.mouseleave(function() {
-        $("#messagebuffer").children().each(function() {
-            $(this).removeClass("nick-hover");
-        });
+        $(".nick-hover").removeClass("nick-hover");
     });
     // Cap chatbox at most recent 100 messages
     if($("#messagebuffer").children().length > 100) {
