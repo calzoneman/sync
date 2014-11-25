@@ -583,12 +583,12 @@ var TwitchTVPlayer = function (data) {
     self.videoId = data.id;
     self.videoLength = data.seconds;
     self.init = function () {
-        var url = "http://www.twitch.tv/widgets/live_embed_player.swf?channel="+self.videoId;
+        var url = "https://www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf?channel="+self.videoId;
         var params = {
             allowFullScreen: "true",
             allowScriptAccess: "always",
             allowNetworking: "all",
-            movie: "http://www.twitch.tv/widgets/live_embed_player.swf",
+            movie: "https://www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf",
             id: "live_embed_player_flash",
             flashvars: "hostname=www.twitch.tv&channel="+self.videoId+"&auto_play=true&start_volume=" + VOLUME
         };

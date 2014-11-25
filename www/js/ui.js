@@ -520,19 +520,6 @@ if(m) {
     }
 }
 
-if (location.protocol === "https:") {
-    var title = "Warning";
-    var text = "You connected to this page via HTTPS.  Due to browser "+
-               "security policy, certain media players may throw warnings,"+
-               " while others may not work at all due to only being "+
-               "available over plain HTTP.<br>To encrypt your websocket "+
-               "traffic and API calls (logins, account management, etc) "+
-               "while loading this page over plain HTTP, enable the SSL "+
-               "option from the Options menu.";
-    makeAlert(title, text, "alert-warning")
-        .appendTo($("#announcements"));
-}
-
 /* channel ranks stuff */
 function chanrankSubmit(rank) {
     var name = $("#cs-chanranks-name").val();
