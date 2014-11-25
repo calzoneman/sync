@@ -511,6 +511,7 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     bottom: 0;
     z-index: 10000;
     min-width: 100%;
+    pointer-events: none;
 }
 
 body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
@@ -524,6 +525,7 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     margin-bottom: 20px;
     float: left;
     width: 250px;
+    pointer-events: auto;
 }
 
 .pm-panel {
