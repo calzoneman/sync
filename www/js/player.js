@@ -706,11 +706,19 @@ var JWPlayer = function (data) {
 
         jwplayer().onReady(function() {
             $("#ytapiplayer").addClass("embed-responsive-item");
-            $("#ytapiplayer").parent().css("position", "absolute");
+            if ($("#ytapiplayer")[0].tagName === "OBJECT") {
+                $("#ytapiplayer").parent().css("position", "absolute");
+            }
             handleVideoResize();
         });
 
         jwplayer().onPlay(function() {
+            /* Somehow JWPlayer manages to have THE SAME PROBLEM AS SOUNDCLOUD.
+             * It seems to be impossible to set the volume before the video has
+             * started playing.  How this is so damn difficult to get right I will
+             * never understand.
+             */
+            self.setVolume(VOLUME);
             self.paused = false;
             if(CLIENT.leader)
                 sendVideoUpdate();
@@ -723,8 +731,6 @@ var JWPlayer = function (data) {
         jwplayer().onComplete(function() {
             socket.emit("playNext");
         });
-
-        self.setVolume(VOLUME);
     };
 
     self.load = function (data) {
@@ -898,15 +904,18 @@ function FilePlayer(data) {
             video = $("<video/>")
         }
         video
+            .addClass("embed-responsive-item")
             .attr("src", self.videoURL)
             .attr("controls", "controls")
             .attr("id", "#ytapiplayer")
             .attr("width", VWIDTH)
             .attr("height", VHEIGHT)
+            .attr("autoplay", true)
             .html("Your browser does not support HTML5 <code>&lt;video&gt;</code> tags :(");
         video.error(function (err) {
             setTimeout(function () {
                 console.log("<video> tag failed, falling back to Flash");
+                console.log(err);
                 PLAYER = new JWPlayer(data);
                 PLAYER.type = "jw";
             }, 100);

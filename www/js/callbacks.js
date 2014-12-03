@@ -418,9 +418,6 @@ Callbacks = {
     /* REGION Rank Stuff */
 
     rank: function(r) {
-        if (r >= 1) {
-            socket.emit("listPlaylists");
-        }
         if(r >= 255)
             SUPERADMIN = true;
         CLIENT.rank = r;
@@ -840,7 +837,7 @@ Callbacks = {
         }
 
         /* Failsafe */
-        if (isNaN(VOLUME)) {
+        if (isNaN(VOLUME) || VOLUME > 1 || VOLUME < 0) {
             VOLUME = 1;
         }
 
@@ -849,8 +846,14 @@ Callbacks = {
         if (PLAYER && typeof PLAYER.getVolume === "function") {
             PLAYER.getVolume(function (v) {
                 if (typeof v === "number") {
-                    VOLUME = v;
-                    setOpt("volume", VOLUME);
+                    if (v < 0 || v > 1) {
+                        alert("Something went wrong with retrieving the volume.  " +
+                            "Please tell calzoneman the following: " +
+                            JSON.stringify({ v: v, t: PLAYER.type, i: PLAYER.videoId }));
+                    } else {
+                        VOLUME = v;
+                        setOpt("volume", VOLUME);
+                    }
                 }
             });
         }

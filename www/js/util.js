@@ -2569,6 +2569,9 @@ function fallbackRaw(data) {
     $("video").each(function () {
         killVideoUntilItIsDead($(this));
     });
+    $("audio").each(function () {
+        killVideoUntilItIsDead($(this));
+    });
     data.type = "fl";
     data.url = data.direct.sd.url;
     PLAYER.player = undefined;
