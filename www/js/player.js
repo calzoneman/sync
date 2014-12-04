@@ -415,7 +415,14 @@ var DailymotionPlayer = function (data) {
 
     self.getVolume = function (cb) {
         if (self.player) {
-            cb(self.player.volume);
+            var volume = self.player.muted ? 0 : self.player.volume;
+            /*
+             * If the volume was changed by the UI slider, it will be in the range
+             * [0, 100], otherwise if it was only set by the API, it will be in [0, 1].
+             */
+            if (volume > 1) volume /= 100.0;
+
+            cb(volume);
         }
     };
 
