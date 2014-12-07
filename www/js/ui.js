@@ -738,6 +738,18 @@ $(".add-temp").change(function () {
     $(".add-temp").prop("checked", $(this).prop("checked"));
 });
 
+/*
+ * Fixes #417 which is caused by changes in Bootstrap 3.3.0
+ * (see twbs/bootstrap#15136)
+ *
+ * Whenever the active tab in channel options is changed,
+ * the modal must be updated so that the backdrop is resized
+ * appropriately.
+ */
+$("#channeloptions li > a[data-toggle='tab']").on("shown.bs.tab", function () {
+    $("#channeloptions").data("bs.modal").handleUpdate();
+});
+
 applyOpts();
 
 (function () {
