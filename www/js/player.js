@@ -863,6 +863,29 @@ var CustomPlayer = function (data) {
         removeOld();
         var div = $("#ytapiplayer");
         div.attr("id", "");
+
+        /*
+         * 2014-12-10
+         *
+         * If a user is connected via HTTPS and the custom link is
+         * HTTP, then the embed fails due to mixed active content
+         * policy.  Display a message indicating this.
+         */
+        if (location.protocol.match(/^https/) &&
+            self.videoId.match(/http:/)) {
+
+            div.html("You are currently connected via HTTPS but " +
+                "the custom embed link uses non-secure HTTP.  " +
+                "Your browser may therefore block it from loading.  " +
+                "To fix this, either add the custom embed as a secure " +
+                "URL (https://...) if the source supports it, or " +
+                "visit this page over plain HTTP (your websocket will still " +
+                "use secure HTTPS for communication, just the page " +
+                "will load over plain HTTP).");
+
+            // Try to salvage the link
+            self.videoId = self.videoId.replace(/http:/g, "https:");
+        }
         div.append(self.videoId);
 
         self.player = div.find("iframe");
