@@ -683,7 +683,7 @@ function storeOpts() {
 
 function applyOpts() {
     if ($("#usertheme").attr("href") !== USEROPTS.theme) {
-        $("#usertheme").remove();
+        var old = $("#usertheme").attr("id", "usertheme_old");
         var theme = USEROPTS.theme;
         if (theme === "default") {
             theme = "/css/themes/slate.css";
@@ -692,6 +692,7 @@ function applyOpts() {
             .attr("type", "text/css")
             .attr("id", "usertheme")
             .attr("href", theme)
+            .attr("onload", "$('#usertheme_old').remove()")
             .appendTo($("head"));
         fixWeirdButtonAlignmentIssue();
     }
