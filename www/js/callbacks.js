@@ -1072,6 +1072,28 @@ Callbacks = {
             row.hide("fade", row.remove.bind(row));
             CHANNEL.emotes.splice(i, 1);
         }
+    },
+
+    warnLargeChandump: function (data) {
+        function toHumanReadable(size) {
+            if (size > 1048576) {
+                return Math.floor((size / 1048576) * 100) / 100 + "MiB";
+            } else if (size > 1024) {
+                return Math.floor((size / 1024) * 100) / 100 + "KiB";
+            } else {
+                return size + "B";
+            }
+        }
+
+        if ($("#chandumptoobig").length > 0) {
+            $("#chandumptoobig").remove();
+        }
+
+        errDialog("This channel currently exceeds the maximum size of " +
+            toHumanReadable(data.limit) + " (channel size is " +
+            toHumanReadable(data.actual) + ").  Please reduce the size by removing " +
+            "unneeded playlist items, filters, and/or emotes or else the channel will " +
+            "be unable to load the next time it is reloaded").attr("id", "chandumptoobig");
     }
 }
 
