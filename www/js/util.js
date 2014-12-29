@@ -2307,7 +2307,6 @@ function formatCSChatFilterList() {
 
                 socket.emit("updateFilter", f);
                 socket.once("updateFilterSuccess", function () {
-                    console.log("updateFilterSuccess");
                     reset();
                 });
             });

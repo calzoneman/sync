@@ -630,7 +630,6 @@ $("#cs-chatfilters-newsubmit").click(function () {
     });
 
     socket.once("addFilterSuccess", function () {
-        console.log("addFilterSuccess");
         $("#cs-chatfilters-newname").val("");
         $("#cs-chatfilters-newregex").val("");
         $("#cs-chatfilters-newflags").val("");
