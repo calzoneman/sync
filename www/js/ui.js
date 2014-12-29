@@ -621,14 +621,7 @@ $("#cs-chatfilters-newsubmit").click(function () {
               "match.");
     }
 
-    try {
-        new RegExp(regex, flags);
-    } catch (e) {
-        alert("Regex error: " + e);
-        return;
-    }
-
-    socket.emit("updateFilter", {
+    socket.emit("addFilter", {
         name: name,
         source: regex,
         flags: flags,
@@ -636,10 +629,12 @@ $("#cs-chatfilters-newsubmit").click(function () {
         active: true
     });
 
-    $("#cs-chatfilters-newname").val("");
-    $("#cs-chatfilters-newregex").val("");
-    $("#cs-chatfilters-newflags").val("");
-    $("#cs-chatfilters-newreplace").val("");
+    socket.once("addFilterSuccess", function () {
+        $("#cs-chatfilters-newname").val("");
+        $("#cs-chatfilters-newregex").val("");
+        $("#cs-chatfilters-newflags").val("");
+        $("#cs-chatfilters-newreplace").val("");
+    });
 });
 
 $("#cs-emotes-newsubmit").click(function () {

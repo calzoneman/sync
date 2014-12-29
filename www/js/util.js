@@ -2304,14 +2304,11 @@ function formatCSChatFilterList() {
                 f.flags = flags.val();
                 f.replace = replace.val();
                 f.filterlinks = filterlinks.prop("checked");
-                try {
-                    new RegExp(f.source, f.flags);
-                } catch (e) {
-                    alert("Invalid regex: " + e);
-                }
 
                 socket.emit("updateFilter", f);
-                reset();
+                socket.once("updateFilterSuccess", function () {
+                    reset();
+                });
             });
 
             control.data("editor", tr2);
