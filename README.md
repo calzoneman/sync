@@ -89,5 +89,4 @@ Please open a GitHub Issue.
 License
 -------
 
-Licensed under MIT
-See LICENSE for the full license text
+Licensed under MIT.  See LICENSE for the full license text.
