@@ -37,3 +37,20 @@ footer {
 .chat-shadow {
     color: #aaaaaa;
 }
+
+.drink {
+    border: 2px solid #0000cc;
+}
+
+#drinkcount {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+#plmeta {
+    border: 1px solid #aaaaaa;
+}
+
+#userlist, #messagebuffer {
+    border: 1px solid #aaaaaa;
+}

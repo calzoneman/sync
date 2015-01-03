@@ -21,11 +21,6 @@
     margin-top: 10px;
 }
 
-#userlist {
-    list-style: none outside none;
-    padding: 0;
-}
-
 #messagebuffer {
     width: auto;
 }
@@ -35,6 +30,8 @@
     float: left;
     border-right: 0;
     font-size: 9pt;
+    list-style: none outside none;
+    padding: 0;
 }
 
 #messagebuffer, #userlist {
@@ -43,6 +40,7 @@
     overflow-y: scroll;
     margin-bottom: 0;
 }
+
 
 #chatheader, #currenttitle {
     border: 1px solid #cccccc;
@@ -89,12 +87,10 @@
 .drink {
     margin: 10px 10px;
     padding: 10px 0px;
-    border: 2px solid #0000cc;
 }
 
 #drinkcount {
-    background-color: #000000;
-    color: #ffffff;
+
     text-align: center;
     font-weight: bold;
 }
@@ -105,13 +101,6 @@
 
 .pointer {
     cursor: pointer;
-}
-
-#userlist, #messagebuffer {
-    height: 347px;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    border: 1px solid #aaaaaa;
 }
 
 #chatwrap, #videowrap {
@@ -173,9 +162,7 @@
     overflow-y: scroll;
 }
 
-#plmeta {
-    border: 1px solid #aaaaaa;
-}
+
 
 #pllength {
     float: right;
