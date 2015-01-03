@@ -60,3 +60,19 @@ footer {
 #userlist, #messagebuffer {
     border: 1px solid #aaaaaa;
 }
+
+#chatheader, #currenttitle {
+    border: 1px solid #cccccc;
+    border-bottom-width: 0;
+    border-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.queue_entry {
+    line-height: 22px;
+    padding: 2px;
+    font-size: 8pt;
+    border: 1px solid #aaaaaa;
+    border-top-width: 0;
+}
