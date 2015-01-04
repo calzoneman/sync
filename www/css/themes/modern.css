@@ -73,19 +73,33 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 #plmeta {
-  border: 1px solid #aaaaaa;
+    border: 1px solid #000000;
+    border-radius: 0 !important;
+    background-color: #1c1e22;
+    height: 25px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 #userlist, #messagebuffer {
-  border: 1px solid #aaaaaa;
+  border: 1px solid #242424;
+}
+
+#userlist {
+    background-color: #333538;
+    overflow: hidden;
+}
+
+#messagebuffer {
+    background-color: #3a3e42;
 }
 
 #chatheader, #currenttitle {
-    border: 1px solid #cccccc;
-    border-bottom-width: 0;
-    border-radius: 5px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    border: 1px solid #000000;
+    height: 30px;
+    background-color: #1c1e22;
+    text-align: center;
+    padding-top: 4px;
 }
 
 .queue_entry {
@@ -94,4 +108,16 @@ input.form-control[type="email"], textarea.form-control {
     font-size: 8pt;
     border: 1px solid #aaaaaa;
     border-top-width: 0;
+}
+
+#rightcontrols {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 0px;
+    padding-right: 0px;
+    border: 1px solid #000000;
+    background-color: #1c1e22;
+}
+#chatwrap, #videowrap {
+    margin-bottom: 0px !important;
 }
