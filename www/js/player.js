@@ -18,6 +18,7 @@ var YouTubePlayer = function (data) {
             self.videoId = data.id;
             self.videoLength = data.seconds;
             self.theYouTubeDevsNeedToFixThisShit = false;
+            self.whyDoesSetPlaybackQualityHaveARaceCondition = true;
             var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
             self.player = new YT.Player("ytapiplayer", {
                 videoId: data.id,
@@ -34,6 +35,13 @@ var YouTubePlayer = function (data) {
                         PLAYER.setVolume(VOLUME);
                     },
                     onStateChange: function (ev) {
+                        if (self.whyDoesSetPlaybackQualityHaveARaceCondition) {
+                            self.whyDoesSetPlaybackQualityHaveARaceCondition = false;
+
+                            if (USEROPTS.default_quality) {
+                                self.player.setPlaybackQuality(USEROPTS.default_quality);
+                            }
+                        }
 
                         /**
                          * Race conditions suck.
@@ -73,6 +81,12 @@ var YouTubePlayer = function (data) {
     self.load = function (data) {
         if(self.player && self.player.loadVideoById) {
             self.player.loadVideoById(data.id, data.currentTime);
+            self.whyDoesSetPlaybackQualityHaveARaceCondition = true;
+            if (USEROPTS.default_quality) {
+                // Try to set it ahead of time, if that works
+                // If not, the onStateChange callback will try again anyways
+                self.player.setPlaybackQuality(USEROPTS.default_quality);
+            }
             self.videoId = data.id;
             self.videoLength = data.seconds;
         }
