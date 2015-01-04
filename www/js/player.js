@@ -42,6 +42,10 @@ var YouTubePlayer = function (data) {
                          */
                         if (ev.data === YT.PlayerState.PLAYING &&
                             self.theYouTubeDevsNeedToFixThisShit) {
+
+                            if (USEROPTS.default_quality) {
+                                self.player.setPlaybackQuality(USEROPTS.default_quality);
+                            }
                             PLAYER.seek(0.000001);
                             PLAYER.pause();
                             self.theYouTubeDevsNeedToFixThisShit = false;
@@ -69,11 +73,6 @@ var YouTubePlayer = function (data) {
     self.load = function (data) {
         if(self.player && self.player.loadVideoById) {
             self.player.loadVideoById(data.id, data.currentTime);
-            if (USEROPTS.default_quality) {
-                self.player.setPlaybackQuality(USEROPTS.default_quality);
-                // What's that?  Another stupid hack for the HTML5 player?
-                self.player.setPlaybackQuality(USEROPTS.default_quality);
-            }
             self.videoId = data.id;
             self.videoLength = data.seconds;
         }
