@@ -86,6 +86,24 @@ function formatUserlistItem(div) {
     name.addClass(getNameColor(data.rank));
     div.find(".profile-box").remove();
 
+    if (data.afk) {
+        div.addClass("userlist_afk");
+    } else {
+        div.removeClass("userlist_afk");
+    }
+
+    if (div.data("meta") && div.data("meta").muted) {
+        div.addClass("userlist_muted");
+    } else {
+        div.removeClass("userlist_muted");
+    }
+
+    if (div.data("meta") && div.data("meta").smuted) {
+        div.addClass("userlist_smuted");
+    } else {
+        div.removeClass("userlist_smuted");
+    }
+
     var profile = null;
     name.mouseenter(function(ev) {
         if (profile)
