@@ -19,7 +19,6 @@ var CHANNEL = {
     css: "",
     js: "",
     motd: "",
-    motd_text: "",
     name: false,
     usercount: 0,
     emotes: []
