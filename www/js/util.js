@@ -900,7 +900,7 @@ function handleModPermissions() {
     })();
     $("#cs-csstext").val(CHANNEL.css);
     $("#cs-jstext").val(CHANNEL.js);
-    $("#cs-motdtext").val(CHANNEL.motd_text);
+    $("#cs-motdtext").val(CHANNEL.motd);
     setParentVisible("a[href='#cs-motdeditor']", hasPermission("motdedit"));
     setParentVisible("a[href='#cs-permedit']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-banlist']", hasPermission("ban"));
