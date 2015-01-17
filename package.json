@@ -22,7 +22,7 @@
     "nodemailer": "^1.2.0",
     "oauth": "^0.9.12",
     "q": "^1.0.1",
-    "sanitize-html": "^1.5.0",
+    "sanitize-html": "git://github.com/calzoneman/sanitize-html",
     "serve-static": "^1.5.3",
     "socket.io": "^1.2.1",
     "yamljs": "^0.1.5"
