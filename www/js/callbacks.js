@@ -179,7 +179,7 @@ Callbacks = {
         CHANNEL.motd = motd;
         $("#motd").html(motd);
         $("#cs-motdtext").val(motd);
-        if (data.motd != "") {
+        if (motd != "") {
             $("#motdwrap").show();
             $("#motd").show();
             $("#togglemotd").find(".glyphicon-plus")
