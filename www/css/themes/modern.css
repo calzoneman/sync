@@ -25,7 +25,7 @@ footer {
 
 input.form-control[type="text"], input.form-control[type="password"],
 input.form-control[type="email"], textarea.form-control {
-    background-color: #161a20 !important;
+    background-color: #1c1e22 !important;
     color: #c8c8c8;
 }
 
@@ -52,7 +52,7 @@ input.form-control[type="email"], textarea.form-control {
 
 .profile-box, .user-dropdown {
     color: #c8c8c8;
-    background-color: #161a20;
+    background-color: #1c1e22;
 }
 
 .poll-notify {
@@ -87,11 +87,17 @@ input.form-control[type="email"], textarea.form-control {
 
 #userlist {
     background-color: #333538;
-    overflow: hidden;
+    overflow: auto;
+}
+
+.userlist_item {
+    margin-left: 5px;
+    margin-top: 1px;
 }
 
 #messagebuffer {
     background-color: #3a3e42;
+    overflow: auto;
 }
 
 #chatheader, #currenttitle {
@@ -106,18 +112,24 @@ input.form-control[type="email"], textarea.form-control {
     line-height: 22px;
     padding: 2px;
     font-size: 8pt;
-    border: 1px solid #aaaaaa;
+    border: 1px solid #000000;
     border-top-width: 0;
+    background-color: #3c3f43;
 }
 
 #rightcontrols {
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 0px;
-    padding-right: 0px;
-    border: 1px solid #000000;
-    background-color: #1c1e22;
+    /* TODO: fix 15px padding breaking css */
 }
+
 #chatwrap, #videowrap {
     margin-bottom: 0px !important;
+}
+
+.form-control { !important;
+    color: #888888;
+    background-color: #ffffff;
+    background-image: none;
+    border: 1px solid #000000;
+    border-radius: 0px;
+    margin-bottom: 5px;
 }
