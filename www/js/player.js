@@ -54,7 +54,6 @@ var YouTubePlayer = function (data) {
                             if (USEROPTS.default_quality) {
                                 self.player.setPlaybackQuality(USEROPTS.default_quality);
                             }
-                            PLAYER.seek(0.000001);
                             PLAYER.pause();
                             self.theYouTubeDevsNeedToFixThisShit = false;
                         }
