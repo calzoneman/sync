@@ -47,6 +47,8 @@ function formatURL(data) {
             return "https://docs.google.com/file/d/" + data.id;
         case "fi":
             return data.id;
+        case "hb":
+            return "http://hitbox.tv/" + data.id;
         default:
             return "#";
     }
@@ -1303,6 +1305,13 @@ function parseMediaLink(url) {
         return {
             id: m[1] + "_" + m[2] + "_" + m[3],
             type: "gp"
+        };
+    }
+
+    if ((m = url.match(/hitbox\.tv\/([^\?&#]+)/))) {
+        return {
+            id: m[1],
+            type: "hb"
         };
     }
 
