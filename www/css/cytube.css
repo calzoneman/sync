@@ -23,6 +23,7 @@
 
 #messagebuffer {
     width: auto;
+    padding-left: 5px;
 }
 
 #userlist {
@@ -236,15 +237,17 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 
 .server-msg-disconnect {
     border: 1px solid #ff0000;
-    margin: 5px;
-    padding: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 5px;
     color: #ff0000;
 }
 
 .server-msg-reconnect {
     border: 1px solid #009900;
-    margin: 5px;
-    padding: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 5px;
     color: #009900;
 }
 

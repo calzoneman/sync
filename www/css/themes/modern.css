@@ -98,6 +98,7 @@ input.form-control[type="email"], textarea.form-control {
 #messagebuffer {
     background-color: #3a3e42;
     overflow: auto;
+
 }
 
 #chatheader, #currenttitle {
