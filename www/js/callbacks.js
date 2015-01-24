@@ -175,12 +175,11 @@ Callbacks = {
         }
     },
 
-    setMotd: function(data) {
-        CHANNEL.motd = data.html;
-        CHANNEL.motd_text = data.motd;
-        $("#motd").html(CHANNEL.motd);
-        $("#cs-motdtext").val(CHANNEL.motd_text);
-        if (data.motd != "") {
+    setMotd: function(motd) {
+        CHANNEL.motd = motd;
+        $("#motd").html(motd);
+        $("#cs-motdtext").val(motd);
+        if (motd != "") {
             $("#motdwrap").show();
             $("#motd").show();
             $("#togglemotd").find(".glyphicon-plus")

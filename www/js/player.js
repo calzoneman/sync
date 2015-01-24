@@ -18,6 +18,7 @@ var YouTubePlayer = function (data) {
             self.videoId = data.id;
             self.videoLength = data.seconds;
             self.theYouTubeDevsNeedToFixThisShit = false;
+            self.whyDoesSetPlaybackQualityHaveARaceCondition = true;
             var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
             self.player = new YT.Player("ytapiplayer", {
                 videoId: data.id,
@@ -34,6 +35,13 @@ var YouTubePlayer = function (data) {
                         PLAYER.setVolume(VOLUME);
                     },
                     onStateChange: function (ev) {
+                        if (self.whyDoesSetPlaybackQualityHaveARaceCondition) {
+                            self.whyDoesSetPlaybackQualityHaveARaceCondition = false;
+
+                            if (USEROPTS.default_quality) {
+                                self.player.setPlaybackQuality(USEROPTS.default_quality);
+                            }
+                        }
 
                         /**
                          * Race conditions suck.
@@ -42,7 +50,10 @@ var YouTubePlayer = function (data) {
                          */
                         if (ev.data === YT.PlayerState.PLAYING &&
                             self.theYouTubeDevsNeedToFixThisShit) {
-                            PLAYER.seek(0.000001);
+
+                            if (USEROPTS.default_quality) {
+                                self.player.setPlaybackQuality(USEROPTS.default_quality);
+                            }
                             PLAYER.pause();
                             self.theYouTubeDevsNeedToFixThisShit = false;
                         }
@@ -69,9 +80,10 @@ var YouTubePlayer = function (data) {
     self.load = function (data) {
         if(self.player && self.player.loadVideoById) {
             self.player.loadVideoById(data.id, data.currentTime);
+            self.whyDoesSetPlaybackQualityHaveARaceCondition = true;
             if (USEROPTS.default_quality) {
-                self.player.setPlaybackQuality(USEROPTS.default_quality);
-                // What's that?  Another stupid hack for the HTML5 player?
+                // Try to set it ahead of time, if that works
+                // If not, the onStateChange callback will try again anyways
                 self.player.setPlaybackQuality(USEROPTS.default_quality);
             }
             self.videoId = data.id;
@@ -428,6 +440,7 @@ var SoundcloudPlayer = function (data) {
     // Go figure
     self.soundcloudIsSeriouslyFuckingBroken = VOLUME;
     self.videoId = data.id;
+    self.scuri = data.meta.scuri || self.videoId;
     self.videoLength = data.seconds;
     waitUntilDefined(window, "SC", function () {
         unfixSoundcloudShit();
@@ -436,7 +449,7 @@ var SoundcloudPlayer = function (data) {
         iframe.appendTo($("#ytapiplayer"));
 
         iframe.attr("id", "scplayer");
-        iframe.attr("src", "https://w.soundcloud.com/player/?url="+self.videoId);
+        iframe.attr("src", "https://w.soundcloud.com/player/?url="+self.scuri);
         iframe.css("height", "166px");
         iframe.css("border", "none");
 
@@ -456,7 +469,7 @@ var SoundcloudPlayer = function (data) {
         self.player = SC.Widget("scplayer");
 
         self.player.bind(SC.Widget.Events.READY, function () {
-            self.player.load(self.videoId, { auto_play: true });
+            self.player.load(self.scuri, { auto_play: true });
 
             self.player.bind(SC.Widget.Events.PAUSE, function () {
                 PLAYER.paused = true;
@@ -487,9 +500,10 @@ var SoundcloudPlayer = function (data) {
 
     self.load = function (data) {
         self.videoId = data.id;
+        self.scuri = data.meta.scuri || self.videoId;
         self.videoLength = data.seconds;
         if(self.player && self.player.load) {
-            self.player.load(data.id, { auto_play: true });
+            self.player.load(self.scuri, { auto_play: true });
             var soundcloudNeedsToFuckingFixTheirPlayer = function () {
                 self.setVolume(VOLUME);
                 self.player.unbind(SC.Widget.Events.PLAY_PROGRESS);
