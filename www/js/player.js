@@ -1043,6 +1043,59 @@ function FilePlayer(data) {
     }
 };
 
+var HitboxPlayer = function (data) {
+    var self = this;
+    self.videoId = data.id;
+    self.videoLength = data.seconds;
+    self.init = function () {
+        if (location.protocol.match(/^https/)) {
+            var div = makeAlert("Security Policy",
+                "You are currently connected via HTTPS but " +
+                "Hitbox only supports plain HTTP.  Due to browser " +
+                "security policy, the embed player cannot be loaded.  " +
+                "In order to watch the video, you must visit this page " +
+                "from its plain HTTP URL (your websocket will still be " +
+                "secured with HTTPS).  Please complain to Hitbox about this.",
+                "alert-danger");
+            div.addClass("embed-responsive-item");
+            removeOld(div);
+            return;
+        }
+
+        var iframe = $("<iframe/>")
+            .attr("src", "http://hitbox.tv/embed/" + self.videoId)
+            .attr("webkitAllowFullScreen", "")
+            .attr("mozallowfullscreen", "")
+            .attr("allowFullScreen", "");
+
+        if (USEROPTS.wmode_transparent)
+            iframe.attr("wmode", "transparent");
+
+        removeOld(iframe);
+        self.player = iframe;
+    };
+
+    self.load = function (data) {
+        self.videoId = data.id;
+        self.videoLength = data.seconds;
+        self.init();
+    };
+
+    self.pause = function () { };
+
+    self.play = function () { };
+
+    self.getTime = function () { };
+
+    self.seek = function () { };
+
+    self.getVolume = function () { };
+
+    self.setVolume = function () { };
+
+    self.init();
+};
+
 function handleMediaUpdate(data) {
     // Don't update if the position is past the video length, but
     // make an exception when the video length is 0 seconds
@@ -1141,7 +1194,8 @@ var constructors = {
     "cu": CustomPlayer,
     "rt": RTMPPlayer,
     "rv": FilePlayer,
-    "fi": FilePlayer
+    "fi": FilePlayer,
+    "hb": HitboxPlayer
 };
 
 function loadMediaPlayer(data) {
