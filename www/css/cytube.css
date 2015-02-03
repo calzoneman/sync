@@ -580,3 +580,7 @@ table td {
 #cs-chatfilters table .form-group > input {
     max-width: 100%;
 }
+
+#userlisttoggle {
+    padding-top: 2px;
+}

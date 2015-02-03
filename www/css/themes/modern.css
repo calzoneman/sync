@@ -97,6 +97,11 @@ input.form-control[type="email"], textarea.form-control {
     border-right: none !important;
 }
 
+#userlisttoggle {
+    padding-top: 1px !important;
+}
+
+
 .userlist_item {
     margin-left: 5px;
     margin-top: 1px;
