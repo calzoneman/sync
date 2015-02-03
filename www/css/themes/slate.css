@@ -69,7 +69,7 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 .drink {
-  border: 2px solid #0000cc;
+    border-color: #ff9900;
 }
 
 #drinkcount {
