@@ -34,10 +34,6 @@ input.form-control[type="email"], textarea.form-control {
   color: #c8c8c8;
 }
 
-.queue_entry {
-  background-color: #272b30;
-}
-
 .queue_active {
   background-image: -webkit-linear-gradient(#8a9196, #7a8288 60%, #70787d);
   background-image: linear-gradient(#8a9196, #7a8288, #70787d);
@@ -94,9 +90,6 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 .queue_entry {
-  line-height: 22px;
-  padding: 2px;
-  font-size: 8pt;
   border: 1px solid #aaaaaa;
-  border-top-width: 0;
+  background-color: #272b30;
 }

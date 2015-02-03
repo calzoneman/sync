@@ -34,10 +34,6 @@ input.form-control[type="email"], textarea.form-control {
     color: #a9a9a9 !important;
 }
 
-.queue_entry {
-    background-color: #272b30 !important;
-}
-
 .queue_active {
     background-color: #44474c !important;
 }
@@ -133,12 +129,9 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 .queue_entry {
-    line-height: 22px;
-    padding: 2px;
-    font-size: 8pt;
     border: 1px solid #000000;
     border-top-width: 0;
-    background-color: #3c3f43;
+    background-color: #272b30;
 }
 
 #rightcontrols {

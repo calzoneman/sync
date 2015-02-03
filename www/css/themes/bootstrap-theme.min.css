@@ -28,10 +28,6 @@ footer {
     background-color: #eeeeee !important;
 }
 
-.queue_entry {
-    background-color: #ffffff;
-}
-
 .queue_active {
     background-color: #d9edf7;
 }
@@ -70,9 +66,6 @@ footer {
 }
 
 .queue_entry {
-    line-height: 22px;
-    padding: 2px;
-    font-size: 8pt;
     border: 1px solid #aaaaaa;
-    border-top-width: 0;
+    background-color: #ffffff;
 }

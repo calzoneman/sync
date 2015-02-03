@@ -584,3 +584,10 @@ table td {
 #userlisttoggle {
     padding-top: 2px;
 }
+
+.queue_entry {
+    line-height: 22px;
+    padding: 2px;
+    font-size: 8pt;
+    border-top-width: 0;
+}
