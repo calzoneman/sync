@@ -41,14 +41,6 @@ input.form-control[type="email"], textarea.form-control {
 .queue_active {
     background-color: #44474c !important;
 }
-.queue_temp {
-    background-image: none !important;
-}
-
-.queue_active.queue_temp {
-    background-color: #70787d !important;
-    background-image: none !important;
-}
 
 .profile-box, .user-dropdown {
     color: #c8c8c8;
