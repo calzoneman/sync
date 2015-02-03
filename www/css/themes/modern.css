@@ -30,6 +30,10 @@ input.form-control[type="email"], textarea.form-control {
     color: #c8c8c8;
 }
 
+.form-control {
+    color: #a9a9a9 !important;
+}
+
 .queue_entry {
     background-color: #272b30 !important;
 }
