@@ -244,7 +244,7 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     margin-right: 5px;
     color: #ff0000;
     text-align: center;
-    background-color: #352727;
+    background-color: rgba(129, 20, 21, 0.1);
 }
 
 .server-msg-reconnect {
@@ -255,7 +255,7 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     margin-right: 5px;
     color: #009900;
     text-align: center;
-    background-color: #273529;
+    background-color: rgba(18, 100, 18, 0.1);
 }
 
 .queue_sortable li {
