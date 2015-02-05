@@ -1510,7 +1510,7 @@ function compactLayout() {
         if($("#userlisttoggle").hasClass("glyphicon-chevron-left")){
             $("#userlisttoggle").removeClass("glyphicon-chevron-left").addClass("glyphicon-chevron-right")
         }
-        $("#userlisttoggle").removeClass("pull-left").addClass("pull-right")
+        $("#userlisttoggle").removeClass("pull-right").addClass("pull-left")
     }
 
     /* Undo fluid layout */
@@ -1568,7 +1568,7 @@ function synchtubeLayout() {
     if($("#userlisttoggle").hasClass("glyphicon-chevron-right")){
         $("#userlisttoggle").removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-left")
     }
-    $("#userlisttoggle").removeClass("pull-right").addClass("pull-left")
+    $("#userlisttoggle").removeClass("pull-left").addClass("pull-right")
     $("#videowrap").detach().insertBefore($("#chatwrap"));
     $("#rightcontrols").detach().insertBefore($("#leftcontrols"));
     $("#rightpane").detach().insertBefore($("#leftpane"));
