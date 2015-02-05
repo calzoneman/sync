@@ -22,10 +22,6 @@ footer {
     background-color: #eeeeee !important;
 }
 
-.queue_entry {
-    background-color: #ffffff;
-}
-
 .queue_active {
     background-color: #d9edf7;
 }
@@ -36,4 +32,34 @@ footer {
 
 .chat-shadow {
     color: #aaaaaa;
+}
+
+.drink {
+    border: 2px solid #0000cc;
+}
+
+#drinkcount {
+    background-color: #000000;
+    color: #ffffff;
+}
+
+#plmeta {
+    border: 1px solid #aaaaaa;
+}
+
+#userlist, #messagebuffer {
+    border: 1px solid #aaaaaa;
+}
+
+#chatheader, #currenttitle {
+    border: 1px solid #cccccc;
+    border-bottom-width: 0;
+    border-radius: 5px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.queue_entry {
+    border: 1px solid #aaaaaa;
+    background-color: #ffffff;
 }

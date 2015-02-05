@@ -1,3 +1,4 @@
+
 .container-fluid {
     padding-left: 15px;
     padding-right: 15px;
@@ -21,13 +22,9 @@
     margin-top: 10px;
 }
 
-#userlist {
-    list-style: none outside none;
-    padding: 0;
-}
-
 #messagebuffer {
     width: auto;
+    padding-left: 5px;
 }
 
 #userlist {
@@ -35,6 +32,8 @@
     float: left;
     border-right: 0;
     font-size: 9pt;
+    list-style: none outside none;
+    padding: 0;
 }
 
 #messagebuffer, #userlist {
@@ -42,14 +41,6 @@
     overflow-x: hidden;
     overflow-y: scroll;
     margin-bottom: 0;
-}
-
-#chatheader, #currenttitle {
-    border: 1px solid #cccccc;
-    border-bottom-width: 0;
-    border-radius: 5px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
 }
 
 #chatline, #guestlogin > input, #guestlogin > .input-group-addon {
@@ -89,12 +80,10 @@
 .drink {
     margin: 10px 10px;
     padding: 10px 0px;
-    border: 2px solid #0000cc;
 }
 
 #drinkcount {
-    background-color: #000000;
-    color: #ffffff;
+
     text-align: center;
     font-weight: bold;
 }
@@ -105,13 +94,6 @@
 
 .pointer {
     cursor: pointer;
-}
-
-#userlist, #messagebuffer {
-    height: 347px;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    border: 1px solid #aaaaaa;
 }
 
 #chatwrap, #videowrap {
@@ -173,20 +155,10 @@
     overflow-y: scroll;
 }
 
-#plmeta {
-    border: 1px solid #aaaaaa;
-}
+
 
 #pllength {
     float: right;
-}
-
-.queue_entry {
-    line-height: 22px;
-    padding: 2px;
-    font-size: 8pt;
-    border: 1px solid #aaaaaa;
-    border-top-width: 0;
 }
 
 .queue_temp {
@@ -266,16 +238,24 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 
 .server-msg-disconnect {
     border: 1px solid #ff0000;
-    margin: 5px;
-    padding: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 5px;
+    margin-right: 5px;
     color: #ff0000;
+    text-align: center;
+    background-color: rgba(129, 20, 21, 0.1);
 }
 
 .server-msg-reconnect {
     border: 1px solid #009900;
-    margin: 5px;
-    padding: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    margin-top: 5px;
+    margin-right: 5px;
     color: #009900;
+    text-align: center;
+    background-color: rgba(18, 100, 18, 0.1);
 }
 
 .queue_sortable li {
@@ -599,4 +579,15 @@ table td {
 
 #cs-chatfilters table .form-group > input {
     max-width: 100%;
+}
+
+#userlisttoggle {
+    padding-top: 2px;
+}
+
+.queue_entry {
+    line-height: 22px;
+    padding: 2px;
+    font-size: 8pt;
+    border-top-width: 0;
 }
