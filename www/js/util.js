@@ -1450,7 +1450,7 @@ function addChatMessage(data) {
     var div = formatChatMessage(data, LASTCHAT);
     // Incoming: a bunch of crap for the feature where if you hover over
     // a message, it highlights messages from that user
-    var safeUsername = data.username.replace(/[^\w-]/g, '$');
+    var safeUsername = data.username.replace(/[^\w-]/g, '\$');
     div.addClass("chat-msg-" + safeUsername);
     div.appendTo($("#messagebuffer"));
     div.mouseover(function() {
