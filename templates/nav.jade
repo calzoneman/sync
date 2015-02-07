@@ -52,6 +52,11 @@ mixin navloginform(redirect)
         input#username.form-control(type="text", name="name", placeholder="Username")
       .form-group
         input#password.form-control(type="password", name="password", placeholder="Password")
+      .form-group
+        .checkbox
+          label
+            input(type="checkbox", name="remember")
+            | Remember me
       button#login.btn.btn-default(type="submit") Login
 
 mixin navlogoutform(redirect)

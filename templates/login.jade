@@ -35,6 +35,11 @@ html(lang="en")
                 label(for="password") Password
                 input#password.form-control(type="password", name="password")
                 a(href="/account/passwordreset") Forgot password?
+              .form-group
+                .checkbox
+                  label
+                    input(type="checkbox", name="remember")
+                    | Remember me
               button.btn.btn-success.btn-block(type="submit") Login
         else
           .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
