@@ -589,5 +589,6 @@ table td {
     line-height: 22px;
     padding: 2px;
     font-size: 8pt;
+    border: 1px solid;
     border-top-width: 0;
 }

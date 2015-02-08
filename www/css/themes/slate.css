@@ -90,6 +90,6 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 .queue_entry {
-  border: 1px solid #aaaaaa;
+  border-color: #aaaaaa;
   background-color: #272b30;
 }

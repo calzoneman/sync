@@ -129,8 +129,7 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 .queue_entry {
-    border: 1px solid #000000;
-    border-top-width: 0;
+    border-color: #000000;
     background-color: #272b30;
 }
 

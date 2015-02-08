@@ -39,10 +39,6 @@ input.form-control[type="email"], textarea.form-control {
     color: #c8c8c8;
 }
 
-.queue_active {
-    background-color: #333333;
-}
-
 .profile-box, .user-dropdown {
     color: #c8c8c8;
     background-color: #2d2d2d;
@@ -78,6 +74,10 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 .queue_entry {
-    border: 1px solid #aaaaaa;
+    border-color: #aaaaaa;
     background-color: #060606;
+}
+
+.queue_entry.queue_active {
+    background-color: #333333;
 }
