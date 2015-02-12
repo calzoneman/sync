@@ -28,10 +28,6 @@ footer {
     background-color: #eeeeee !important;
 }
 
-.queue_active {
-    background-color: #d9edf7;
-}
-
 .profile-box, .user-dropdown {
     background-color: #ffffff;
 }
@@ -66,6 +62,10 @@ footer {
 }
 
 .queue_entry {
-    border: 1px solid #aaaaaa;
+    border-color: #aaaaaa;
     background-color: #ffffff;
+}
+
+.queue_entry.queue_active {
+    background-color: #d9edf7;
 }
