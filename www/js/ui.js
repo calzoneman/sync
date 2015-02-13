@@ -383,7 +383,7 @@ $("#queue_end").click(queue.bind(this, "end", "url"));
 $("#ce_queue_next").click(queue.bind(this, "next", "customembed"));
 $("#ce_queue_end").click(queue.bind(this, "end", "customembed"));
 
-$("#mediaurl").keyup(function(ev) {
+$("#mediaurl").keydown(function(ev) {
     if (ev.keyCode === 13) {
         queue("end", "url");
     } else {
@@ -416,7 +416,7 @@ $("#mediaurl").keyup(function(ev) {
                 $("<input/>").addClass("form-control")
                     .attr("type", "text")
                     .attr("id", "addfromurl-title-val")
-                    .keyup(function (ev) {
+                    .keydown(function (ev) {
                         if (ev.keyCode === 13) {
                             queue("end", "url");
                         }
@@ -546,7 +546,7 @@ $(".cs-checkbox").change(function () {
     socket.emit("setOptions", data);
 });
 
-$(".cs-textbox").keyup(function () {
+$(".cs-textbox").keydown(function () {
     var box = $(this);
     var key = box.attr("id").replace("cs-", "");
     var value = box.val();

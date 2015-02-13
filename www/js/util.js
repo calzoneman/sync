@@ -2399,7 +2399,7 @@ function formatCSEmoteList() {
             };
 
             edit.blur(finish);
-            edit.keyup(function (ev) {
+            edit.keydown(function (ev) {
                 if (ev.keyCode === 13) {
                     finish();
                 }
@@ -2550,7 +2550,7 @@ function initPm(user) {
     var input = $("<input/>").addClass("form-control pm-input").attr("type", "text")
         .appendTo(body);
 
-    input.keyup(function (ev) {
+    input.keydown(function (ev) {
         if (ev.keyCode === 13) {
             var meta = {};
             var msg = input.val();
