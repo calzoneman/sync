@@ -43,9 +43,9 @@ mixin navloginlogout(redirect)
     mixin navloginform(redirect)
 
 mixin navloginform(redirect)
-  .visible-md.visible-lg
-    if loginDomain == null
-      - loginDomain = ""
+  if loginDomain == null
+    - loginDomain = ""
+  .visible-lg
     form#loginform.navbar-form.navbar-right(action="#{loginDomain}/login", method="post")
       input(type="hidden", name="redirect", value=redirect)
       .form-group
@@ -58,6 +58,12 @@ mixin navloginform(redirect)
             input(type="checkbox", name="remember")
             | Remember me
       button#login.btn.btn-default(type="submit") Login
+  .visible-md
+    p#loginform.navbar-text.pull-right
+      a#login.navbar-link(href="#{loginDomain}/login?redirect=#{redirect}") Log in
+      span &nbsp;&middot;&nbsp;
+      a#register.navbar-link(href="/register") Register
+
 
 mixin navlogoutform(redirect)
   if loginDomain == null
