@@ -240,8 +240,7 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     border: 1px solid #ff0000;
     padding-top: 5px;
     padding-bottom: 5px;
-    margin-top: 5px;
-    margin-right: 5px;
+    margin: 5px;
     color: #ff0000;
     text-align: center;
     background-color: rgba(129, 20, 21, 0.1);
@@ -251,8 +250,7 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     border: 1px solid #009900;
     padding-top: 5px;
     padding-bottom: 5px;
-    margin-top: 5px;
-    margin-right: 5px;
+    margin: 5px;
     color: #009900;
     text-align: center;
     background-color: rgba(18, 100, 18, 0.1);
