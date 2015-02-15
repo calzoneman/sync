@@ -1,61 +1,47 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    mixin head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        mixin navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            mixin navdefaultlinks("/account/channels")
-          mixin navloginlogout("/account/channels")
-      section#mainpage
-        .container
-          if !loggedIn
-            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-              .alert.alert-danger.messagebox.center
-                strong Authorization Required
-                p You must be <a href="/login">logged in</a> to view this page.
-          else
-            .col-lg-6.col-md-6
-              h3 My Channels
-              if deleteChannelError
-                .alert.alert-danger.center.messagebox
-                  strong Channel Deletion Failed
-                  p= deleteChannelError
-              if channels.length == 0
-                .center
-                  strong You haven't registered any channels
-              else
-                table.table.table-bordered
-                  thead
-                    tr
-                      th Channel
-                  tbody
-                    for c in channels
-                      tr
-                        th
-                          form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete #{c.name}?  This cannot be undone');")
-                            input(type="hidden", name="action", value="delete_channel")
-                            input(type="hidden", name="name", value="#{c.name}")
-                            button.btn.btn-xs.btn-danger(type="submit") Delete
-                              span.glyphicon.glyphicon-trash
-                          a(href="/r/#{c.name}", style="margin-left: 5px")= c.name
-            .col-lg-6.col-md-6
-              h3 Register a new channel
-              if newChannelError
-                .alert.alert-danger.messagebox.center
-                  strong Channel Registration Failed
-                  p= newChannelError
-              form(action="/account/channels", method="post")
-                input(type="hidden", name="action", value="new_channel")
-                .form-group
-                  label.control-label(for="channelname") Channel Name
-                  input#channelname.form-control(type="text", name="name")
-                button.btn.btn-primary.btn-block(type="submit") Register
+extends layout
 
-    include footer
-    mixin footer()
+block content
+  section#mainpage
+    .container
+      if !loggedIn
+        .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+          .alert.alert-danger.messagebox.center
+            strong Authorization Required
+            p You must be <a href="/login">logged in</a> to view this page.
+      else
+        .col-lg-6.col-md-6
+          h3 My Channels
+          if deleteChannelError
+            .alert.alert-danger.center.messagebox
+              strong Channel Deletion Failed
+              p= deleteChannelError
+          if channels.length == 0
+            .center
+              strong You haven't registered any channels
+          else
+            table.table.table-bordered
+              thead
+                tr
+                  th Channel
+              tbody
+                for c in channels
+                  tr
+                    th
+                      form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete #{c.name}?  This cannot be undone');")
+                        input(type="hidden", name="action", value="delete_channel")
+                        input(type="hidden", name="name", value="#{c.name}")
+                        button.btn.btn-xs.btn-danger(type="submit") Delete
+                          span.glyphicon.glyphicon-trash
+                      a(href="/r/#{c.name}", style="margin-left: 5px")= c.name
+        .col-lg-6.col-md-6
+          h3 Register a new channel
+          if newChannelError
+            .alert.alert-danger.messagebox.center
+              strong Channel Registration Failed
+              p= newChannelError
+          form(action="/account/channels", method="post")
+            input(type="hidden", name="action", value="new_channel")
+            .form-group
+              label.control-label(for="channelname") Channel Name
+              input#channelname.form-control(type="text", name="name")
+            button.btn.btn-primary.btn-block(type="submit") Register

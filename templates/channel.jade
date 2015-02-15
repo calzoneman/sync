@@ -1,230 +1,222 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    mixin head()
-    link(href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css", rel="stylesheet")
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        mixin navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          - var cname = "/r/" + channelName
-          ul.nav.navbar-nav
-            mixin navdefaultlinks(cname)
-            li: a(href="javascript:void(0)", onclick="javascript:showUserOptions()") Options
-            li: a#showchansettings(href="javascript:void(0)", onclick="javascript:$('#channeloptions').modal()") Channel Settings
-            li.dropdown
-              a.dropdown-toggle(href="#", data-toggle="dropdown") Layout
-                b.caret
-              ul.dropdown-menu
-                li: a(href="#" onclick="javascript:chatOnly()") Chat Only
-                li: a(href="#" onclick="javascript:removeVideo()") Remove Video
-          mixin navloginlogout(cname)
-      section#mainpage
-        .container
-          #motdrow.row
-            .col-lg-12.col-md-12
-              #motdwrap.well
-                button#togglemotd.close.pull-right(type="button")
-                  span.glyphicon.glyphicon-minus
-                #motd
-                .clear
-          #announcements.row
-          #drinkbarwrap.row
-            #drinkbar.col-lg-12.col-md-12
-              h1#drinkcount
-          #main.row
-            #chatwrap.col-lg-5.col-md-5
-              #chatheader
-                i#userlisttoggle.glyphicon.glyphicon-chevron-down.pull-left.pointer(title="Show/Hide Userlist")
-                span#usercount.pointer Not Connected
-                span#modflair.label.label-default.pull-right.pointer M
-                span#adminflair.label.label-default.pull-right.pointer A
-              #userlist
-              #messagebuffer.linewrap
-              input#chatline.form-control(type="text", maxlength="240", style="display: none")
-              #guestlogin.input-group
-                span.input-group-addon Guest login
-                input#guestname.form-control(type="text", placeholder="Name")
-            #videowrap.col-lg-7.col-md-7
-              p#currenttitle Nothing Playing
-              .embed-responsive.embed-responsive-16by9
-                #ytapiplayer.embed-responsive-item
-          #controlsrow.row
-            #leftcontrols.col-lg-5.col-md-5
-              button#newpollbtn.btn.btn-sm.btn-default New Poll
-            #rightcontrols.col-lg-7.col-md-7
-              #plcontrol.btn-group.pull-left
-                button#showsearch.btn.btn-sm.btn-default(title="Search for a video", data-toggle="collapse", data-target="#searchcontrol")
-                  span.glyphicon.glyphicon-search
-                button#showmediaurl.btn.btn-sm.btn-default(title="Add video from URL", data-toggle="collapse", data-target="#addfromurl")
-                  span.glyphicon.glyphicon-plus
-                button#showcustomembed.btn.btn-sm.btn-default(title="Embed a custom frame", data-toggle="collapse", data-target="#customembed")
-                  span.glyphicon.glyphicon-th-large
-                button#showplaylistmanager.btn.btn-sm.btn-default(title="Manage playlists", data-toggle="collapse", data-target="#playlistmanager")
-                  span.glyphicon.glyphicon-list
-                button#clearplaylist.btn.btn-sm.btn-default(title="Clear the playlist")
-                  span.glyphicon.glyphicon-trash
-                button#shuffleplaylist.btn.btn-sm.btn-default(title="Shuffle the playlist")
-                  span.glyphicon.glyphicon-sort
-                button#qlockbtn.btn.btn-sm.btn-danger(title="Playlist locked")
-                  span.glyphicon.glyphicon-lock
-              #videocontrols.btn-group.pull-right
-                button#mediarefresh.btn.btn-sm.btn-default(title="Reload the video player")
-                  span.glyphicon.glyphicon-retweet
-                button#getplaylist.btn.btn-sm.btn-default(title="Retrieve playlist links")
-                  span.glyphicon.glyphicon-link
-                button#voteskip.btn.btn-sm.btn-default(title="Voteskip")
-                  span.glyphicon.glyphicon-step-forward
+extends layout
 
-          #playlistrow.row
-            #leftpane.col-lg-5.col-md-5
-              #leftpane-inner.row
-                #pollwrap.col-lg-12.col-md-12
-                #playlistmanagerwrap.col-lg-12.col-md-12
-            #rightpane.col-lg-7.col-md-7
-              #rightpane-inner.row
-                #searchcontrol.collapse.plcontrol-collapse.col-lg-12.col-md-12
-                  .vertical-spacer
-                  .input-group
-                    input#library_query.form-control(type="text", placeholder="Search query")
-                    span.input-group-btn
-                      button#library_search.btn.btn-default Library
-                    span.input-group-btn
-                      button#youtube_search.btn.btn-default YouTube
-                  .checkbox
-                    label
-                      input.add-temp(type="checkbox")
-                      | Add as temporary
-                  ul#library.videolist.col-lg-12.col-md-12
-                #addfromurl.collapse.plcontrol-collapse.col-lg-12.col-md-12
-                  .vertical-spacer
-                  .input-group
-                    input#mediaurl.form-control(type="text", placeholder="Media URL")
-                    span.input-group-btn
-                      button#queue_next.btn.btn-default Next
-                    span.input-group-btn
-                      button#queue_end.btn.btn-default At End
-                  .checkbox
-                    label
-                      input.add-temp(type="checkbox")
-                      | Add as temporary
-                #customembed.collapse.plcontrol-collapse.col-lg-12.col-md-12
-                  .vertical-spacer
-                  .input-group
-                    input#customembed-title.form-control(type="text", placeholder="Title (optional)")
-                    span.input-group-btn
-                      button#ce_queue_next.btn.btn-default Next
-                    span.input-group-btn
-                      button#ce_queue_end.btn.btn-default At End
-                  .checkbox
-                    label
-                      input.add-temp(type="checkbox")
-                      | Add as temporary
-                  | Paste the embed code below and click Next or At End.
-                  | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags.
-                  textarea#customembed-content.input-block-level.form-control(rows="3")
-                #playlistmanager.collapse.plcontrol-collapse.col-lg-12.col-md-12
-                  .vertical-spacer
-                  .input-group
-                    input#userpl_name.form-control(type="text", placeholder="Playlist Name")
-                    span.input-group-btn
-                      button#userpl_save.btn.btn-default Save
-                  .checkbox
-                    label
-                      input.add-temp(type="checkbox")
-                      | Add as temporary
-                  ul#userpl_list.videolist
-                #queuefail.col-lg-12.col-md-12
-                  .vertical-spacer
-                .col-lg-12.col-md-12
-                  ul#queue.videolist
-                  #plmeta
-                    span#plcount 0 items
-                    span#pllength 00:00:00
-          #resizewrap.row
-            .col-lg-5.col-md-5
-            #videowidth.col-lg-7.col-md-7
-          #sitefooter
-            include pagefooter
-    #useroptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
-      .modal-dialog
-        .modal-content
-          .modal-header
-            button.close(data-dismiss="modal", aria-hidden="true") &times;
-            h4 User Preferences
-            ul.nav.nav-tabs
-              li: a(href="#us-general", data-toggle="tab") General
-              li: a(href="#us-playback", data-toggle="tab") Playback
-              li: a(href="#us-chat", data-toggle="tab") Chat
-              li: a(href="#us-scriptcontrol", data-toggle="tab") Script Access
-              li: a(href="#us-mod", data-toggle="tab", style="") Moderator
-          .modal-body
-            .tab-content
-              include useroptions
-              mixin us-general()
-              mixin us-playback()
-              mixin us-chat()
-              mixin us-scripts()
-              mixin us-mod()
-          .modal-footer
-            button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
-            button.btn.btn-default(type="button", data-dismiss="modal") Close
-    #channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
-      .modal-dialog
-        .modal-content
-          .modal-header
-            button.close(data-dismiss="modal", aria-hidden="true") &times;
-            h4 Channel Settings
-            ul.nav.nav-tabs
-              li.active: a(href="#cs-miscoptions", data-toggle="tab") General Settings
-              li: a(href="#cs-adminoptions", data-toggle="tab") Admin Settings
-              li.dropdown
-                a#cs-edit-dd-toggle(href="#", data-toggle="dropdown") Edit
-                  span.caret
-                ul.dropdown-menu
-                  li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
-                  li: a(href="#cs-emotes", data-toggle="tab") Emotes
-                  li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") MOTD
-                  li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") CSS
-                  li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Javascript
-                  li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Permissions
-                  li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Moderators
-              li: a(href="#cs-banlist", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestBanlist')") Ban list
-              li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Log
-          .modal-body
-            .tab-content
-              include channeloptions
-              mixin miscoptions()
-              mixin adminoptions()
-              mixin motdeditor()
-              mixin csseditor()
-              mixin jseditor()
-              mixin banlist()
-              mixin recentjoins()
-              mixin chanranks()
-              mixin chatfilters()
-              mixin emotes()
-              mixin chanlog()
-              mixin permeditor()
-          .modal-footer
-            button.btn.btn-default(type="button", data-dismiss="modal") Close
-    #pmbar
-    include footer
-    mixin footer()
-    script(src=sioSource)
-    script(src="/js/data.js")
-    script(src="/sioconfig")
-    script(src="/js/util.js")
-    script(src="/js/player.js")
-    script(src="/js/paginator.js")
-    script(src="/js/ui.js")
-    script(src="/js/callbacks.js")
-    script(defer, src="https://www.youtube.com/iframe_api")
-    script(defer, src="//api.dmcdn.net/all.js")
-    script(defer, src="//jwpsrv.com/library/QouFCLBMEeKC+CIACpYGxA.js")
-    script(defer, src="/js/sc.js")
-    script(defer, src="/js/froogaloop.min.js")
-    script(defer, src="/js/swf.js")
+append head
+    link(href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css", rel="stylesheet")
+
+append navbar-left-links
+  li: a(href="javascript:void(0)", onclick="javascript:showUserOptions()") Options
+  li: a#showchansettings(href="javascript:void(0)", onclick="javascript:$('#channeloptions').modal()") Channel Settings
+  li.dropdown
+    a.dropdown-toggle(href="#", data-toggle="dropdown") Layout
+      b.caret
+    ul.dropdown-menu
+      li: a(href="#" onclick="javascript:chatOnly()") Chat Only
+      li: a(href="#" onclick="javascript:removeVideo()") Remove Video
+
+block content
+  section#mainpage
+    .container
+      #motdrow.row
+        .col-lg-12.col-md-12
+          #motdwrap.well
+            button#togglemotd.close.pull-right(type="button")
+              span.glyphicon.glyphicon-minus
+            #motd
+            .clear
+      #announcements.row
+      #drinkbarwrap.row
+        #drinkbar.col-lg-12.col-md-12
+          h1#drinkcount
+      #main.row
+        #chatwrap.col-lg-5.col-md-5
+          #chatheader
+            i#userlisttoggle.glyphicon.glyphicon-chevron-down.pull-left.pointer(title="Show/Hide Userlist")
+            span#usercount.pointer Not Connected
+            span#modflair.label.label-default.pull-right.pointer M
+            span#adminflair.label.label-default.pull-right.pointer A
+          #userlist
+          #messagebuffer.linewrap
+          input#chatline.form-control(type="text", maxlength="240", style="display: none")
+          #guestlogin.input-group
+            span.input-group-addon Guest login
+            input#guestname.form-control(type="text", placeholder="Name")
+        #videowrap.col-lg-7.col-md-7
+          p#currenttitle Nothing Playing
+          .embed-responsive.embed-responsive-16by9
+            #ytapiplayer.embed-responsive-item
+      #controlsrow.row
+        #leftcontrols.col-lg-5.col-md-5
+          button#newpollbtn.btn.btn-sm.btn-default New Poll
+        #rightcontrols.col-lg-7.col-md-7
+          #plcontrol.btn-group.pull-left
+            button#showsearch.btn.btn-sm.btn-default(title="Search for a video", data-toggle="collapse", data-target="#searchcontrol")
+              span.glyphicon.glyphicon-search
+            button#showmediaurl.btn.btn-sm.btn-default(title="Add video from URL", data-toggle="collapse", data-target="#addfromurl")
+              span.glyphicon.glyphicon-plus
+            button#showcustomembed.btn.btn-sm.btn-default(title="Embed a custom frame", data-toggle="collapse", data-target="#customembed")
+              span.glyphicon.glyphicon-th-large
+            button#showplaylistmanager.btn.btn-sm.btn-default(title="Manage playlists", data-toggle="collapse", data-target="#playlistmanager")
+              span.glyphicon.glyphicon-list
+            button#clearplaylist.btn.btn-sm.btn-default(title="Clear the playlist")
+              span.glyphicon.glyphicon-trash
+            button#shuffleplaylist.btn.btn-sm.btn-default(title="Shuffle the playlist")
+              span.glyphicon.glyphicon-sort
+            button#qlockbtn.btn.btn-sm.btn-danger(title="Playlist locked")
+              span.glyphicon.glyphicon-lock
+          #videocontrols.btn-group.pull-right
+            button#mediarefresh.btn.btn-sm.btn-default(title="Reload the video player")
+              span.glyphicon.glyphicon-retweet
+            button#getplaylist.btn.btn-sm.btn-default(title="Retrieve playlist links")
+              span.glyphicon.glyphicon-link
+            button#voteskip.btn.btn-sm.btn-default(title="Voteskip")
+              span.glyphicon.glyphicon-step-forward
+
+      #playlistrow.row
+        #leftpane.col-lg-5.col-md-5
+          #leftpane-inner.row
+            #pollwrap.col-lg-12.col-md-12
+            #playlistmanagerwrap.col-lg-12.col-md-12
+        #rightpane.col-lg-7.col-md-7
+          #rightpane-inner.row
+            #searchcontrol.collapse.plcontrol-collapse.col-lg-12.col-md-12
+              .vertical-spacer
+              .input-group
+                input#library_query.form-control(type="text", placeholder="Search query")
+                span.input-group-btn
+                  button#library_search.btn.btn-default Library
+                span.input-group-btn
+                  button#youtube_search.btn.btn-default YouTube
+              .checkbox
+                label
+                  input.add-temp(type="checkbox")
+                  | Add as temporary
+              ul#library.videolist.col-lg-12.col-md-12
+            #addfromurl.collapse.plcontrol-collapse.col-lg-12.col-md-12
+              .vertical-spacer
+              .input-group
+                input#mediaurl.form-control(type="text", placeholder="Media URL")
+                span.input-group-btn
+                  button#queue_next.btn.btn-default Next
+                span.input-group-btn
+                  button#queue_end.btn.btn-default At End
+              .checkbox
+                label
+                  input.add-temp(type="checkbox")
+                  | Add as temporary
+            #customembed.collapse.plcontrol-collapse.col-lg-12.col-md-12
+              .vertical-spacer
+              .input-group
+                input#customembed-title.form-control(type="text", placeholder="Title (optional)")
+                span.input-group-btn
+                  button#ce_queue_next.btn.btn-default Next
+                span.input-group-btn
+                  button#ce_queue_end.btn.btn-default At End
+              .checkbox
+                label
+                  input.add-temp(type="checkbox")
+                  | Add as temporary
+              | Paste the embed code below and click Next or At End.
+              | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags.
+              textarea#customembed-content.input-block-level.form-control(rows="3")
+            #playlistmanager.collapse.plcontrol-collapse.col-lg-12.col-md-12
+              .vertical-spacer
+              .input-group
+                input#userpl_name.form-control(type="text", placeholder="Playlist Name")
+                span.input-group-btn
+                  button#userpl_save.btn.btn-default Save
+              .checkbox
+                label
+                  input.add-temp(type="checkbox")
+                  | Add as temporary
+              ul#userpl_list.videolist
+            #queuefail.col-lg-12.col-md-12
+              .vertical-spacer
+            .col-lg-12.col-md-12
+              ul#queue.videolist
+              #plmeta
+                span#plcount 0 items
+                span#pllength 00:00:00
+      #resizewrap.row
+        .col-lg-5.col-md-5
+        #videowidth.col-lg-7.col-md-7
+      #sitefooter
+        include pagefooter
+#useroptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(data-dismiss="modal", aria-hidden="true") &times;
+        h4 User Preferences
+        ul.nav.nav-tabs
+          li: a(href="#us-general", data-toggle="tab") General
+          li: a(href="#us-playback", data-toggle="tab") Playback
+          li: a(href="#us-chat", data-toggle="tab") Chat
+          li: a(href="#us-scriptcontrol", data-toggle="tab") Script Access
+          li: a(href="#us-mod", data-toggle="tab", style="") Moderator
+      .modal-body
+        .tab-content
+          include useroptions
+          mixin us-general()
+          mixin us-playback()
+          mixin us-chat()
+          mixin us-scripts()
+          mixin us-mod()
+      .modal-footer
+        button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
+        button.btn.btn-default(type="button", data-dismiss="modal") Close
+#channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(data-dismiss="modal", aria-hidden="true") &times;
+        h4 Channel Settings
+        ul.nav.nav-tabs
+          li.active: a(href="#cs-miscoptions", data-toggle="tab") General Settings
+          li: a(href="#cs-adminoptions", data-toggle="tab") Admin Settings
+          li.dropdown
+            a#cs-edit-dd-toggle(href="#", data-toggle="dropdown") Edit
+              span.caret
+            ul.dropdown-menu
+              li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
+              li: a(href="#cs-emotes", data-toggle="tab") Emotes
+              li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") MOTD
+              li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") CSS
+              li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Javascript
+              li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Permissions
+              li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Moderators
+          li: a(href="#cs-banlist", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestBanlist')") Ban list
+          li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Log
+      .modal-body
+        .tab-content
+          include channeloptions
+          mixin miscoptions()
+          mixin adminoptions()
+          mixin motdeditor()
+          mixin csseditor()
+          mixin jseditor()
+          mixin banlist()
+          mixin recentjoins()
+          mixin chanranks()
+          mixin chatfilters()
+          mixin emotes()
+          mixin chanlog()
+          mixin permeditor()
+      .modal-footer
+        button.btn.btn-default(type="button", data-dismiss="modal") Close
+#pmbar
+
+append footer
+  script(src=sioSource)
+  script(src="/js/data.js")
+  script(src="/sioconfig")
+  script(src="/js/util.js")
+  script(src="/js/player.js")
+  script(src="/js/paginator.js")
+  script(src="/js/ui.js")
+  script(src="/js/callbacks.js")
+  script(defer, src="https://www.youtube.com/iframe_api")
+  script(defer, src="//api.dmcdn.net/all.js")
+  script(defer, src="//jwpsrv.com/library/QouFCLBMEeKC+CIACpYGxA.js")
+  script(defer, src="/js/sc.js")
+  script(defer, src="/js/froogaloop.min.js")
+  script(defer, src="/js/swf.js")

@@ -8,14 +8,6 @@ mixin navlink(page, title, active)
     li
       a(href=page)= title
 
-mixin navheader()
-  .navbar-header
-    button.navbar-toggle(type="button", data-toggle="collapse", data-target="#nav-collapsible")
-      span.icon-bar
-      span.icon-bar
-      span.icon-bar
-    a.navbar-brand(href="/")= siteTitle
-
 mixin navdefaultlinks(page)
   each t, p in links
     if p == page

@@ -1,136 +1,128 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    mixin head()
-    link(rel="stylesheet", type="text/css", href="/css/acp.css")
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        mixin navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            mixin navdefaultlinks("/acp")
-            li#nav-acp-section.dropdown
-              a#nav-acp-dd-toggle.dropdown-toggle(data-toggle="dropdown", href="javascript:void(0)") Menu
-                span.caret
-              ul.dropdown-menu
-          mixin navloginlogout("/acp")
-      section#mainpage
-        .container
-          .row
-            #acp-logview.acp-panel.col-md-12(style="display: none")
-              h3 Log Viewer
-              .input-group
-                div.input-group-btn
-                  button#acp-syslog-btn.btn.btn-default Syslog
-                  button#acp-errlog-btn.btn.btn-default Error log
-                  button#acp-httplog-btn.btn.btn-default HTTP log
-                input#acp-chanlog-name.form-control(type="text", placeholder="Channel name")
-              pre#acp-log
-            #acp-announcements.acp-panel.col-md-6.col-md-offset-3(style="display: none")
-              h3 Announcements
-              h3 New Announcement
-              div
-                form.form-horizontal(action="javascript:void(0)", role="form")
-                  .form-group
-                    label.control-label.col-sm-2(for="acp-announce-title") Title
-                    .col-sm-10
-                      input#acp-announce-title.form-control(type="text")
-                  .form-group
-                    label.control-label.col-sm-2(for="acp-announce-content") Text
-                    .col-sm-10
-                      textarea#acp-announce-content.form-control(type="text", rows="10")
-                  .form-group
-                    .col-sm-10.col-sm-offset-2
-                      button#acp-announce-submit.btn.btn-primary Announce
-            #acp-global-bans.acp-panel.col-md-12(style="display: none")
-              h3 Global Bans
-              table.table.table-striped.table-bordered
-                thead
-                  tr
-                    th
-                    th IP Address
-                    th Note
-              h3 New Global Ban
-              div(style="max-width: 50%")
-                form.form-horizontal(action="javascript:void(0)", role="form")
-                  .form-group
-                    label.control-label.col-sm-3(for="acp-gban-ip") IP Address
-                    .col-sm-9
-                      input#acp-gban-ip.form-control(type="text")
-                  .form-group
-                    label.control-label.col-sm-3(for="acp-gban-note") Note
-                    .col-sm-9
-                      input#acp-gban-note.form-control(type="text")
-                  .form-group
-                    .col-sm-9.col-sm-offset-3
-                      button#acp-gban-submit.btn.btn-danger Add ban
-            #acp-user-lookup.acp-panel.col-md-12(style="display: none")
-              h3 Users
-              .input-group(style="max-width: 25%")
-                input#acp-ulookup-name.form-control(type="text")
-                span.input-group-btn
-                  button#acp-ulookup-btn.btn.btn-default Search
-              table.table.table-bordered.table-striped(style="margin-top: 20px")
-                thead
-                  tr
-                    th.sort(data-key="id") ID
-                    th.sort(data-key="name") Name
-                    th.sort(data-key="global_rank") Rank
-                    th.sort(data-key="email") Email
-                    th Actions
-            #acp-channel-lookup.acp-panel.col-md-12(style="display: none")
-              h3 Channels
-              form.form-inline(action="javascript:void(0)", role="form")
-                .form-group
-                  input#acp-clookup-value.form-control(type="text", placeholder="Name")
-                .form-group
-                  select#acp-clookup-field.form-control
-                    option(value="name") Channel Name
-                    option(value="owner") Channel Owner
-                button#acp-clookup-submit.btn.btn-default Search
-              table.table.table-bordered.table-striped(style="margin-top: 20px")
-                thead
-                  tr
-                    th.sort(data-key="id") ID
-                    th.sort(data-key="name") Name
-                    th.sort(data-key="owner") Owner
-                    th Control
-            #acp-loaded-channels.acp-panel.col-md-12(style="display: none")
-              h3 Loaded Channels
-              button#acp-lchannels-refresh.btn.btn-default Refresh
-              table.table.table-bordered.table-striped(style="margin-top: 20px")
-                thead
-                  tr
-                    th Title
-                    th Usercount
-                    th Now Playing
-                    th Registered
-                    th Public
-                    th Control
-            #acp-eventlog.acp-panel.col-md-12(style="display: none")
-              h3 Event Log
-              strong Filter event types
-              select#acp-eventlog-filter.form-control(multiple="multiple", style="max-width: 25%")
-              button#acp-eventlog-refresh.btn.btn-default Refresh
-              pre#acp-eventlog-text
-            #acp-stats.acp-panel.col-md-12(style="display: none")
-              h3 User Count
-              canvas#stat_users(width="1140", height="400")
-              h3 Channel Count
-              canvas#stat_channels(width="1140", height="400")
-              h3 Memory Usage
-              canvas#stat_mem(width="1140", height="400")
+extends layout
 
-    include footer
-    mixin footer()
-    script(type="text/javascript").
-      var USEROPTS = { secure_connection: true };
-    script(src=sioSource)
-    script(src="/sioconfig")
-    script(src="/js/util.js")
-    script(src="/js/paginator.js")
-    script(src="/js/chart.js")
-    script(src="/js/acp.js")
+append head
+  link(rel="stylesheet", type="text/css", href="/css/acp.css")
+
+append nav-left-links
+  li#nav-acp-section.dropdown
+    a#nav-acp-dd-toggle.dropdown-toggle(data-toggle="dropdown", href="javascript:void(0)") Menu
+      span.caret
+    ul.dropdown-menu
+
+block content
+  section#mainpage
+    .container
+      .row
+        #acp-logview.acp-panel.col-md-12(style="display: none")
+          h3 Log Viewer
+          .input-group
+            div.input-group-btn
+              button#acp-syslog-btn.btn.btn-default Syslog
+              button#acp-errlog-btn.btn.btn-default Error log
+              button#acp-httplog-btn.btn.btn-default HTTP log
+            input#acp-chanlog-name.form-control(type="text", placeholder="Channel name")
+          pre#acp-log
+        #acp-announcements.acp-panel.col-md-6.col-md-offset-3(style="display: none")
+          h3 Announcements
+          h3 New Announcement
+          div
+            form.form-horizontal(action="javascript:void(0)", role="form")
+              .form-group
+                label.control-label.col-sm-2(for="acp-announce-title") Title
+                .col-sm-10
+                  input#acp-announce-title.form-control(type="text")
+              .form-group
+                label.control-label.col-sm-2(for="acp-announce-content") Text
+                .col-sm-10
+                  textarea#acp-announce-content.form-control(type="text", rows="10")
+              .form-group
+                .col-sm-10.col-sm-offset-2
+                  button#acp-announce-submit.btn.btn-primary Announce
+        #acp-global-bans.acp-panel.col-md-12(style="display: none")
+          h3 Global Bans
+          table.table.table-striped.table-bordered
+            thead
+              tr
+                th
+                th IP Address
+                th Note
+          h3 New Global Ban
+          div(style="max-width: 50%")
+            form.form-horizontal(action="javascript:void(0)", role="form")
+              .form-group
+                label.control-label.col-sm-3(for="acp-gban-ip") IP Address
+                .col-sm-9
+                  input#acp-gban-ip.form-control(type="text")
+              .form-group
+                label.control-label.col-sm-3(for="acp-gban-note") Note
+                .col-sm-9
+                  input#acp-gban-note.form-control(type="text")
+              .form-group
+                .col-sm-9.col-sm-offset-3
+                  button#acp-gban-submit.btn.btn-danger Add ban
+        #acp-user-lookup.acp-panel.col-md-12(style="display: none")
+          h3 Users
+          .input-group(style="max-width: 25%")
+            input#acp-ulookup-name.form-control(type="text")
+            span.input-group-btn
+              button#acp-ulookup-btn.btn.btn-default Search
+          table.table.table-bordered.table-striped(style="margin-top: 20px")
+            thead
+              tr
+                th.sort(data-key="id") ID
+                th.sort(data-key="name") Name
+                th.sort(data-key="global_rank") Rank
+                th.sort(data-key="email") Email
+                th Actions
+        #acp-channel-lookup.acp-panel.col-md-12(style="display: none")
+          h3 Channels
+          form.form-inline(action="javascript:void(0)", role="form")
+            .form-group
+              input#acp-clookup-value.form-control(type="text", placeholder="Name")
+            .form-group
+              select#acp-clookup-field.form-control
+                option(value="name") Channel Name
+                option(value="owner") Channel Owner
+            button#acp-clookup-submit.btn.btn-default Search
+          table.table.table-bordered.table-striped(style="margin-top: 20px")
+            thead
+              tr
+                th.sort(data-key="id") ID
+                th.sort(data-key="name") Name
+                th.sort(data-key="owner") Owner
+                th Control
+        #acp-loaded-channels.acp-panel.col-md-12(style="display: none")
+          h3 Loaded Channels
+          button#acp-lchannels-refresh.btn.btn-default Refresh
+          table.table.table-bordered.table-striped(style="margin-top: 20px")
+            thead
+              tr
+                th Title
+                th Usercount
+                th Now Playing
+                th Registered
+                th Public
+                th Control
+        #acp-eventlog.acp-panel.col-md-12(style="display: none")
+          h3 Event Log
+          strong Filter event types
+          select#acp-eventlog-filter.form-control(multiple="multiple", style="max-width: 25%")
+          button#acp-eventlog-refresh.btn.btn-default Refresh
+          pre#acp-eventlog-text
+        #acp-stats.acp-panel.col-md-12(style="display: none")
+          h3 User Count
+          canvas#stat_users(width="1140", height="400")
+          h3 Channel Count
+          canvas#stat_channels(width="1140", height="400")
+          h3 Memory Usage
+          canvas#stat_mem(width="1140", height="400")
+
+append footer
+  script(type="text/javascript").
+    var USEROPTS = { secure_connection: true };
+  script(src=sioSource)
+  script(src="/sioconfig")
+  script(src="/js/util.js")
+  script(src="/js/paginator.js")
+  script(src="/js/chart.js")
+  script(src="/js/acp.js")
