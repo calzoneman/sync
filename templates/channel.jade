@@ -2,8 +2,8 @@ extends layout
 
 append head
     link(href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css", rel="stylesheet")
-
-append navbar-left-links
+    
+append nav-left-links
   li: a(href="javascript:void(0)", onclick="javascript:showUserOptions()") Options
   li: a#showchansettings(href="javascript:void(0)", onclick="javascript:$('#channeloptions').modal()") Channel Settings
   li.dropdown
@@ -141,69 +141,71 @@ block content
         #videowidth.col-lg-7.col-md-7
       #sitefooter
         include pagefooter
-#useroptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
-  .modal-dialog
-    .modal-content
-      .modal-header
-        button.close(data-dismiss="modal", aria-hidden="true") &times;
-        h4 User Preferences
-        ul.nav.nav-tabs
-          li: a(href="#us-general", data-toggle="tab") General
-          li: a(href="#us-playback", data-toggle="tab") Playback
-          li: a(href="#us-chat", data-toggle="tab") Chat
-          li: a(href="#us-scriptcontrol", data-toggle="tab") Script Access
-          li: a(href="#us-mod", data-toggle="tab", style="") Moderator
-      .modal-body
-        .tab-content
-          include useroptions
-          mixin us-general()
-          mixin us-playback()
-          mixin us-chat()
-          mixin us-scripts()
-          mixin us-mod()
-      .modal-footer
-        button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
-        button.btn.btn-default(type="button", data-dismiss="modal") Close
-#channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
-  .modal-dialog
-    .modal-content
-      .modal-header
-        button.close(data-dismiss="modal", aria-hidden="true") &times;
-        h4 Channel Settings
-        ul.nav.nav-tabs
-          li.active: a(href="#cs-miscoptions", data-toggle="tab") General Settings
-          li: a(href="#cs-adminoptions", data-toggle="tab") Admin Settings
-          li.dropdown
-            a#cs-edit-dd-toggle(href="#", data-toggle="dropdown") Edit
-              span.caret
-            ul.dropdown-menu
-              li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
-              li: a(href="#cs-emotes", data-toggle="tab") Emotes
-              li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") MOTD
-              li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") CSS
-              li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Javascript
-              li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Permissions
-              li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Moderators
-          li: a(href="#cs-banlist", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestBanlist')") Ban list
-          li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Log
-      .modal-body
-        .tab-content
-          include channeloptions
-          mixin miscoptions()
-          mixin adminoptions()
-          mixin motdeditor()
-          mixin csseditor()
-          mixin jseditor()
-          mixin banlist()
-          mixin recentjoins()
-          mixin chanranks()
-          mixin chatfilters()
-          mixin emotes()
-          mixin chanlog()
-          mixin permeditor()
-      .modal-footer
-        button.btn.btn-default(type="button", data-dismiss="modal") Close
-#pmbar
+
+prepend footer
+  #useroptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(data-dismiss="modal", aria-hidden="true") &times;
+          h4 User Preferences
+          ul.nav.nav-tabs
+            li: a(href="#us-general", data-toggle="tab") General
+            li: a(href="#us-playback", data-toggle="tab") Playback
+            li: a(href="#us-chat", data-toggle="tab") Chat
+            li: a(href="#us-scriptcontrol", data-toggle="tab") Script Access
+            li: a(href="#us-mod", data-toggle="tab", style="") Moderator
+        .modal-body
+          .tab-content
+            include useroptions
+            mixin us-general()
+            mixin us-playback()
+            mixin us-chat()
+            mixin us-scripts()
+            mixin us-mod()
+        .modal-footer
+          button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+  #channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header
+          button.close(data-dismiss="modal", aria-hidden="true") &times;
+          h4 Channel Settings
+          ul.nav.nav-tabs
+            li.active: a(href="#cs-miscoptions", data-toggle="tab") General Settings
+            li: a(href="#cs-adminoptions", data-toggle="tab") Admin Settings
+            li.dropdown
+              a#cs-edit-dd-toggle(href="#", data-toggle="dropdown") Edit
+                span.caret
+              ul.dropdown-menu
+                li: a(href="#cs-chatfilters", data-toggle="tab", onclick="javascript:socket.emit('requestChatFilters')") Chat Filters
+                li: a(href="#cs-emotes", data-toggle="tab") Emotes
+                li: a(href="#cs-motdeditor", data-toggle="tab", tabindex="-1") MOTD
+                li: a(href="#cs-csseditor", data-toggle="tab", tabindex="-1") CSS
+                li: a(href="#cs-jseditor", data-toggle="tab", tabindex="-1") Javascript
+                li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Permissions
+                li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Moderators
+            li: a(href="#cs-banlist", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestBanlist')") Ban list
+            li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Log
+        .modal-body
+          .tab-content
+            include channeloptions
+            mixin miscoptions()
+            mixin adminoptions()
+            mixin motdeditor()
+            mixin csseditor()
+            mixin jseditor()
+            mixin banlist()
+            mixin recentjoins()
+            mixin chanranks()
+            mixin chatfilters()
+            mixin emotes()
+            mixin chanlog()
+            mixin permeditor()
+        .modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Close
+  #pmbar
 
 append footer
   script(src=sioSource)
