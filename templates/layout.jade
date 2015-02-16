@@ -1,0 +1,31 @@
+doctype html
+html(lang="en")
+  head
+    block head
+      include head
+      mixin head()
+  body
+    #wrap
+      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+        .navbar-header
+          button.navbar-toggle(type="button", data-toggle="collapse", data-target="#nav-collapsible")
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand(href="/")= siteTitle
+        #nav-collapsible.collapse.navbar-collapse
+          include nav
+
+          block nav-left
+            ul.nav.navbar-nav
+              block nav-left-links
+                mixin navdefaultlinks(currentUrl)
+
+          block nav-right
+            mixin navloginlogout(currentUrl)
+
+      block content
+
+    block footer
+      include footer
+      mixin footer()

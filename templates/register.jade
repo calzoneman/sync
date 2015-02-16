@@ -1,110 +1,102 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    mixin head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        mixin navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            mixin navdefaultlinks("/register")
-          if loggedIn
-            mixin navlogoutform("/register")
-      section#mainpage.container
-        if loggedIn
-          .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-            .alert.alert-danger.messagebox.center
-              strong Already logged in
-              p.
-                You are already logged in.  If you intend to register a new account, please <a href="/logout?redirect=/register">Logout</a> first.
-              // TODO Link to My Account page
-        else if !registered
-          .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-            if registerError
-              .alert.alert-danger.messagebox.center
-                strong Registration Failed
-                p= registerError
-            h2 Register
-            form(role="form", action="/register", method="post", onsubmit="return verify()")
-              .form-group
-                label.control-label(for="username") Username
-                input#username.form-control(type="text", name="name")
-              .form-group
-                label.control-label(for="password") Password
-                input#password.form-control(type="password", name="password", onkeyup="checkPasswords()")
-              .form-group
-                label.control-label(for="password_confirm") Confirm Password
-                input#password_confirm.form-control(type="password", onkeyup="checkPasswords()")
-              .form-group
-                label.control-label(for="email") Email (optional)
-                input#email.form-control(type="email", name="email")
-                p Providing an email address is optional and will allow you to recover your account via email if you forget your password.  Your address will not be shared with anyone.
-              button#registerbtn.btn.btn-success.btn-block(type="submit") Register
-        else
-          .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-            .alert.alert-success.messagebox.center
-              strong Registration Successful
-              p Thanks for registering, #{registerName}!  Now you can <a href="/login">Login</a> to use your account.
-    include footer
-    mixin footer() 
-    script(src="/js/jquery.js")
-    script(type="text/javascript").
-      function verify() {
-        var valid = checkUsername();
-        valid = checkPasswords() && valid;
-        return valid;
+extends layout
+
+block nav-right
+  if loggedIn
+    mixin navlogoutform()
+
+block content
+  section#mainpage.container
+    if loggedIn
+      .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+        .alert.alert-danger.messagebox.center
+          strong Already logged in
+          p.
+            You are already logged in.  If you intend to register a new account, please <a href="/logout?redirect=/register">Logout</a> first.
+          // TODO Link to My Account page
+    else if !registered
+      .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+        if registerError
+          .alert.alert-danger.messagebox.center
+            strong Registration Failed
+            p= registerError
+        h2 Register
+        form(role="form", action="/register", method="post", onsubmit="return verify()")
+          .form-group
+            label.control-label(for="username") Username
+            input#username.form-control(type="text", name="name")
+          .form-group
+            label.control-label(for="password") Password
+            input#password.form-control(type="password", name="password", onkeyup="checkPasswords()")
+          .form-group
+            label.control-label(for="password_confirm") Confirm Password
+            input#password_confirm.form-control(type="password", onkeyup="checkPasswords()")
+          .form-group
+            label.control-label(for="email") Email (optional)
+            input#email.form-control(type="email", name="email")
+            p Providing an email address is optional and will allow you to recover your account via email if you forget your password.  Your address will not be shared with anyone.
+          button#registerbtn.btn.btn-success.btn-block(type="submit") Register
+    else
+      .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+        .alert.alert-success.messagebox.center
+          strong Registration Successful
+          p Thanks for registering, #{registerName}!  Now you can <a href="/login">Login</a> to use your account.
+
+append footer
+  script(src="/js/jquery.js")
+  script(type="text/javascript").
+    function verify() {
+      var valid = checkUsername();
+      valid = checkPasswords() && valid;
+      return valid;
+    }
+    function checkUsername() {
+      var name = $("#username").val();
+      $("#usernameerror").remove();
+      if (name === "") {
+        $("#username").parent().addClass("has-error");
+        $("<p/>").addClass("text-danger")
+          .attr("id", "usernameerror")
+          .text("Username must not be empty")
+          .insertAfter($("#username"));
+        return false;
+      } else if (!(/^[-\w\u00c0-\u00ff]{1,20}$/).test(name)) {
+        $("#username").parent().addClass("has-error");
+        $("<p/>").addClass("text-danger")
+          .attr("id", "usernameerror")
+          .text("Username must consist of 1-20 characters a-Z, A-Z, 0-9 " +
+                ", -, or _.")
+          .insertAfter($("#username"));
+        return false;
+      } else {
+        $("#username").parent().removeClass("has-error")
+          .addClass("has-success");
       }
-      function checkUsername() {
-        var name = $("#username").val();
-        $("#usernameerror").remove();
-        if (name === "") {
-          $("#username").parent().addClass("has-error");
+    }
+    function checkPasswords() {
+      var pw = $("#password").val();
+      var pwc = $("#password_confirm").val();
+      $("#passwordempty").remove();
+      $("#passwordmismatch").remove();
+      if (pw === "") {
+        $("#password").parent().addClass("has-error");
+        $("<p/>").addClass("text-danger")
+          .attr("id", "passwordempty")
+          .text("Password must not be empty")
+          .insertAfter($("#password"));
+        return false;
+      } else {
+        $("#password").parent().removeClass("has-error")
+          .addClass("has-success");
+        if (pw !== pwc) {
+          $("#password_confirm").parent().addClass("has-error");
           $("<p/>").addClass("text-danger")
-            .attr("id", "usernameerror")
-            .text("Username must not be empty")
-            .insertAfter($("#username"));
-          return false;
-        } else if (!(/^[-\w\u00c0-\u00ff]{1,20}$/).test(name)) {
-          $("#username").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "usernameerror")
-            .text("Username must consist of 1-20 characters a-Z, A-Z, 0-9 " +
-                  ", -, or _.")
-            .insertAfter($("#username"));
+            .attr("id", "passwordmismatch")
+            .text("Passwords do not match")
+            .insertAfter($("#password_confirm"));
           return false;
         } else {
-          $("#username").parent().removeClass("has-error")
+          $("#password_confirm").parent().removeClass("has-error")
             .addClass("has-success");
         }
       }
-      function checkPasswords() {
-        var pw = $("#password").val();
-        var pwc = $("#password_confirm").val();
-        $("#passwordempty").remove();
-        $("#passwordmismatch").remove();
-        if (pw === "") {
-          $("#password").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "passwordempty")
-            .text("Password must not be empty")
-            .insertAfter($("#password"));
-          return false;
-        } else {
-          $("#password").parent().removeClass("has-error")
-            .addClass("has-success");
-          if (pw !== pwc) {
-            $("#password_confirm").parent().addClass("has-error");
-            $("<p/>").addClass("text-danger")
-              .attr("id", "passwordmismatch")
-              .text("Passwords do not match")
-              .insertAfter($("#password_confirm"));
-            return false;
-          } else {
-            $("#password_confirm").parent().removeClass("has-error")
-              .addClass("has-success");
-          }
-        }
-      }
+    }

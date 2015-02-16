@@ -1,23 +1,10 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    mixin head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        mixin navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            mixin navdefaultlinks("/logout")
-          mixin navloginform()
-      section#mainpage.container
-        .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-          .alert.alert-info.center.messagebox
-            strong Logged out
-            p
-              if redirect
-                a(href=redirect) Return to previous page
-    include footer
-    mixin footer()
+extends layout
+
+section content
+  section#mainpage.container
+    .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+      .alert.alert-info.center.messagebox
+        strong Logged out
+        p
+          if redirect
+            a(href=redirect) Return to previous page

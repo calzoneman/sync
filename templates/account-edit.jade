@@ -1,64 +1,53 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    mixin head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        mixin navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            mixin navdefaultlinks("/account/edit")
-          mixin navloginlogout("/account/edit")
-      section#mainpage
-        .container
-          if !loggedIn
-            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-              .alert.alert-danger.messagebox.center
-                strong Authorization Required
-                p You must be <a href="/login">logged in</a> to view this page.
-          else
-            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-              if successMessage
-                .alert.alert-success.center
-                  p= successMessage
-              else if errorMessage
-                .alert.alert-danger.center
-                  p= errorMessage
-              h3 Change Password
-              form(action="/account/edit", method="post", onsubmit="return validatePasswordChange()")
-                input(type="hidden", name="action", value="change_password")
-                .form-group
-                  label.control-label(for="username") Username
-                  input#username.form-control(type="text", name="name", value=loginName, disabled=true)
-                .form-group
-                  label.control-label(for="oldpassword") Current Password
-                  input#oldpassword.form-control(type="password", name="oldpassword")
-                .form-group
-                  label.control-label(for="newpassword") New Password
-                  input#newpassword.form-control(type="password", name="newpassword")
-                .form-group
-                  label.control-label(for="newpassword_confirm") Confirm New Password
-                  input#newpassword_confirm.form-control(type="password", name="newpassword_confirm")
-                button#changepassbtn.btn.btn-danger.btn-block(type="submit") Change Password
-              hr
-              h3 Change Email
-              form(action="/account/edit", method="post", onsubmit="return submitEmail()")
-                input(type="hidden", name="action", value="change_email")
-                .form-group
-                  label.control-label(for="username2") Username
-                  input#username2.form-control(type="text", name="name", value=loginName, disabled=true)
-                .form-group
-                  label.control-label(for="password2") Password
-                  input#password2.form-control(type="password", name="password")
-                .form-group
-                  label.control-label(for="email") New Email
-                  input#email.form-control(type="email", name="email")
-                button#changeemailbtn.btn.btn-danger.btn-block(type="submit") Change Email
-    include footer
-    mixin footer()
+extends layout
+
+block content
+  section#mainpage
+    .container
+      if !loggedIn
+        .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+          .alert.alert-danger.messagebox.center
+            strong Authorization Required
+            p You must be <a href="/login">logged in</a> to view this page.
+      else
+        .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+          if successMessage
+            .alert.alert-success.center
+              p= successMessage
+          else if errorMessage
+            .alert.alert-danger.center
+              p= errorMessage
+          h3 Change Password
+          form(action="/account/edit", method="post", onsubmit="return validatePasswordChange()")
+            input(type="hidden", name="action", value="change_password")
+            .form-group
+              label.control-label(for="username") Username
+              input#username.form-control(type="text", name="name", value=loginName, disabled=true)
+            .form-group
+              label.control-label(for="oldpassword") Current Password
+              input#oldpassword.form-control(type="password", name="oldpassword")
+            .form-group
+              label.control-label(for="newpassword") New Password
+              input#newpassword.form-control(type="password", name="newpassword")
+            .form-group
+              label.control-label(for="newpassword_confirm") Confirm New Password
+              input#newpassword_confirm.form-control(type="password", name="newpassword_confirm")
+            button#changepassbtn.btn.btn-danger.btn-block(type="submit") Change Password
+          hr
+          h3 Change Email
+          form(action="/account/edit", method="post", onsubmit="return submitEmail()")
+            input(type="hidden", name="action", value="change_email")
+            .form-group
+              label.control-label(for="username2") Username
+              input#username2.form-control(type="text", name="name", value=loginName, disabled=true)
+            .form-group
+              label.control-label(for="password2") Password
+              input#password2.form-control(type="password", name="password")
+            .form-group
+              label.control-label(for="email") New Email
+              input#email.form-control(type="email", name="email")
+            button#changeemailbtn.btn.btn-danger.btn-block(type="submit") Change Email
+
+append footer
     script(type="text/javascript").
       function validatePasswordChange() {
         var pw = $("#newpassword").val();
