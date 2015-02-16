@@ -64,6 +64,8 @@ http:
   gzip: true
   # Customize the threshold byte size for applying gzip
   gzip-threshold: 1024
+  # Secret used for signed cookies.  Can be anything, but make it unique and hard to guess
+  cookie-secret: 'change-me'
 
 # HTTPS server details
 https:
