@@ -1316,38 +1316,25 @@ function parseMediaLink(url) {
     }
 
     /*  Shorthand URIs  */
+    // To catch Google Plus by ID alone
     if ((m = url.match(/(?:gp:)?(\d{21}_\d{19}_\d{19})/))) {
         return {
             id: m[1],
             type: "gp"
         };
     }
-
-    if ((m = url.match(/gd:([^\/]{28})/))) {
-        return {
-            id: m[1],
-            type: "gd"
-        };
-    }
-
-    if((m = url.match(/yt:([^\?&#]+)/))) {
-        return {
-            id: m[1],
-            type: "yt"
-        };
-    }
-
+    // So we still trim DailyMotion URLs
     if((m = url.match(/dm:([^\?&#_]+)/))) {
         return {
             id: m[1],
             type: "dm"
         };
     }
-
-    if((m = url.match(/vi:([^\?&#]+)/))) {
+    // Generic for the rest.
+    if ((m = url.match(/([a-z]{2}):([^\?&#]+)/)) {
         return {
-            id: m[1],
-            type: "vi"
+            id: m[2],
+            type: m[1]
         };
     }
 
