@@ -1266,6 +1266,13 @@ function parseMediaLink(url) {
         };
     }
 
+    if ((m = url.match(/hitbox\.tv\/([^\?&#]+)/))) {
+        return {
+            id: m[1],
+            type: "hb"
+        };
+    }
+
     if((m = url.match(/vimeo\.com\/([^\?&#]+)/))) {
         return {
             id: m[1],
@@ -1273,7 +1280,7 @@ function parseMediaLink(url) {
         };
     }
 
-    if((m = url.match(/dailymotion\.com\/video\/([^\?&#]+)/))) {
+    if((m = url.match(/dailymotion\.com\/video\/([^\?&#_]+)/))) {
         return {
             id: m[1],
             type: "dm"
@@ -1308,10 +1315,26 @@ function parseMediaLink(url) {
         };
     }
 
-    if ((m = url.match(/hitbox\.tv\/([^\?&#]+)/))) {
+    /*  Shorthand URIs  */
+    // To catch Google Plus by ID alone
+    if ((m = url.match(/(?:gp:)?(\d{21}_\d{19}_\d{19})/))) {
         return {
             id: m[1],
-            type: "hb"
+            type: "gp"
+        };
+    }
+    // So we still trim DailyMotion URLs
+    if((m = url.match(/dm:([^\?&#_]+)/))) {
+        return {
+            id: m[1],
+            type: "dm"
+        };
+    }
+    // Generic for the rest.
+    if ((m = url.match(/([a-z]{2}):([^\?&#]+)/)) {
+        return {
+            id: m[2],
+            type: m[1]
         };
     }
 
