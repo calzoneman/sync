@@ -1331,7 +1331,7 @@ function parseMediaLink(url) {
         };
     }
     // Generic for the rest.
-    if ((m = url.match(/([a-z]{2}):([^\?&#]+)/)) {
+    if ((m = url.match(/([a-z]{2}):([^\?&#]+)/))) {
         return {
             id: m[2],
             type: m[1]
