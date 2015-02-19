@@ -109,6 +109,7 @@ mail:
       user: 'some.user@gmail.com'
       pass: 'supersecretpassword'
   from-address: 'some.user@gmail.com'
+  from-name: 'CyTube Services'
 
 # GData API v2 developer key (for non-anonymous youtube requests)
 youtube-v2-key: ''
