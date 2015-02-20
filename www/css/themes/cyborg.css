@@ -81,3 +81,7 @@ input.form-control[type="email"], textarea.form-control {
 .queue_entry.queue_active {
     background-color: #333333;
 }
+
+.navbar-inverse .navbar-text-nofloat {
+    color: #888;
+}

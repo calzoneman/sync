@@ -169,3 +169,7 @@ input.form-control[type="email"], textarea.form-control {
 #newpollbtn {
     margin-top: 10px;
 }
+
+.navbar-inverse .navbar-text-nofloat {
+    color: #c8c8c8;
+}
