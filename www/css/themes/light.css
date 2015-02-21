@@ -63,3 +63,11 @@ footer {
 .queue_entry.queue_active {
     background-color: #d9edf7;
 }
+
+.navbar-inverse .navbar-text-nofloat {
+    color: #9d9d9d;
+}
+
+.queue_entry.queue_active {
+    background-color: #d9edf7;
+}

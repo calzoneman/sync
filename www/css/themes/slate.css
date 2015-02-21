@@ -93,3 +93,7 @@ input.form-control[type="email"], textarea.form-control {
   border-color: #aaaaaa;
   background-color: #272b30;
 }
+
+.navbar-inverse .navbar-text-nofloat {
+    color: #ccc;
+}

@@ -78,6 +78,10 @@ input.form-control[type="email"], textarea.form-control {
     background-color: #060606;
 }
 
+.navbar-inverse .navbar-text-nofloat {
+    color: #888;
+}
+
 .queue_entry.queue_active {
     background-color: #333333;
 }
