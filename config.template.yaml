@@ -192,3 +192,9 @@ ffmpeg:
   enabled: false
 
 link-domain-blacklist: []
+
+# Drop root if started as root!!
+setuid:
+  enabled: false
+  group: 'users'
+  user: 'user'
