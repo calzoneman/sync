@@ -251,6 +251,9 @@ function addUserDropdown(entry) {
             .text("Kick")
             .click(function () {
                 var reason = prompt("Enter kick reason (optional)");
+                if (reason === null) {
+                    return;
+                }
                 socket.emit("chatMsg", {
                     msg: "/kick " + name + " " + reason,
                     meta: {}
@@ -302,6 +305,9 @@ function addUserDropdown(entry) {
             .text("Name Ban")
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
+                if (reason === null) {
+                    return;
+                }
                 socket.emit("chatMsg", {
                     msg: "/ban " + name + " " + reason,
                     meta: {}
@@ -312,6 +318,9 @@ function addUserDropdown(entry) {
             .text("IP Ban")
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
+                if (reason === null) {
+                    return;
+                }
                 socket.emit("chatMsg", {
                     msg: "/ipban " + name + " " + reason,
                     meta: {}
