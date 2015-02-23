@@ -198,3 +198,5 @@ setuid:
   enabled: false
   group: 'users'
   user: 'user'
+# how long to wait in ms before changing uid/gid
+  timeout: 15
