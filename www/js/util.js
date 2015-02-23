@@ -251,6 +251,9 @@ function addUserDropdown(entry) {
             .text("Kick")
             .click(function () {
                 var reason = prompt("Enter kick reason (optional)");
+                if (reason === null) {
+                    return;
+                }
                 socket.emit("chatMsg", {
                     msg: "/kick " + name + " " + reason,
                     meta: {}
@@ -302,6 +305,9 @@ function addUserDropdown(entry) {
             .text("Name Ban")
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
+                if (reason === null) {
+                    return;
+                }
                 socket.emit("chatMsg", {
                     msg: "/ban " + name + " " + reason,
                     meta: {}
@@ -312,6 +318,9 @@ function addUserDropdown(entry) {
             .text("IP Ban")
             .click(function () {
                 var reason = prompt("Enter ban reason (optional)");
+                if (reason === null) {
+                    return;
+                }
                 socket.emit("chatMsg", {
                     msg: "/ipban " + name + " " + reason,
                     meta: {}
@@ -1317,21 +1326,21 @@ function parseMediaLink(url) {
 
     /*  Shorthand URIs  */
     // To catch Google Plus by ID alone
-    if ((m = url.match(/(?:gp:)?(\d{21}_\d{19}_\d{19})/))) {
+    if ((m = url.match(/^(?:gp:)?(\d{21}_\d{19}_\d{19})/))) {
         return {
             id: m[1],
             type: "gp"
         };
     }
     // So we still trim DailyMotion URLs
-    if((m = url.match(/dm:([^\?&#_]+)/))) {
+    if((m = url.match(/^dm:([^\?&#_]+)/))) {
         return {
             id: m[1],
             type: "dm"
         };
     }
     // Generic for the rest.
-    if ((m = url.match(/([a-z]{2}):([^\?&#]+)/))) {
+    if ((m = url.match(/^([a-z]{2}):([^\?&#]+)/))) {
         return {
             id: m[2],
             type: m[1]
