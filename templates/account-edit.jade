@@ -29,6 +29,7 @@ html(lang="en")
                   p= errorMessage
               h3 Change Password
               form(action="/account/edit", method="post", onsubmit="return validatePasswordChange()")
+                input(type="hidden", name="_csrf", value=csrfToken)
                 input(type="hidden", name="action", value="change_password")
                 .form-group
                   label.control-label(for="username") Username
@@ -46,6 +47,7 @@ html(lang="en")
               hr
               h3 Change Email
               form(action="/account/edit", method="post", onsubmit="return submitEmail()")
+                input(type="hidden", name="_csrf", value=csrfToken)
                 input(type="hidden", name="action", value="change_email")
                 .form-group
                   label.control-label(for="username2") Username

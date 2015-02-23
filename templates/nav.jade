@@ -47,7 +47,8 @@ mixin navloginform(redirect)
     - loginDomain = ""
   .visible-lg
     form#loginform.navbar-form.navbar-right(action="#{loginDomain}/login", method="post")
-      input(type="hidden", name="dest", value=redirect)
+      input(type="hidden", name="_csrf", value=csrfToken)
+      input(type="hidden", name="dest", value=encodeURIComponent(redirect))
       .form-group
         input#username.form-control(type="text", name="name", placeholder="Username")
       .form-group
@@ -60,7 +61,7 @@ mixin navloginform(redirect)
       button#login.btn.btn-default(type="submit") Login
   .visible-md
     p#loginform.navbar-text.pull-right
-      a#login.navbar-link(href="#{loginDomain}/login?dest=#{redirect}") Log in
+      a#login.navbar-link(href="#{loginDomain}/login?dest=#{encodeURIComponent(redirect)}") Log in
       span &nbsp;&middot;&nbsp;
       a#register.navbar-link(href="/register") Register
 
@@ -69,4 +70,4 @@ mixin navlogoutform(redirect)
   p#logoutform.navbar-text.pull-right
     span#welcome Welcome, #{loginName}
     span &nbsp;&middot;&nbsp;
-    a#logout.navbar-link(href="/logout?dest=#{redirect}") Logout
+    a#logout.navbar-link(href="/logout?dest=#{encodeURIComponent(redirect)}&_csrf=#{csrfToken}") Logout
