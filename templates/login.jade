@@ -26,6 +26,7 @@ html(lang="en")
                 p= loginError
             h2 Login
             form(role="form", action="/login", method="post")
+              input(type="hidden", name="_csrf", value=csrfToken)
               if redirect
                 input(type="hidden", name="dest", value=redirect)
               .form-group

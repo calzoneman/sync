@@ -29,6 +29,7 @@ html(lang="en")
                 p= registerError
             h2 Register
             form(role="form", action="/register", method="post", onsubmit="return verify()")
+              input(type="hidden", name="_csrf", value=csrfToken)
               .form-group
                 label.control-label(for="username") Username
                 input#username.form-control(type="text", name="name")
