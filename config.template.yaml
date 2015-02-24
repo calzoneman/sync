@@ -194,3 +194,11 @@ ffmpeg:
   enabled: false
 
 link-domain-blacklist: []
+
+# Drop root if started as root!!
+setuid:
+  enabled: false
+  group: 'users'
+  user: 'user'
+# how long to wait in ms before changing uid/gid
+  timeout: 15
