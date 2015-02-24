@@ -48,7 +48,7 @@ mixin navloginform(redirect)
   .visible-lg
     form#loginform.navbar-form.navbar-right(action="#{loginDomain}/login", method="post")
       input(type="hidden", name="_csrf", value=csrfToken)
-      input(type="hidden", name="dest", value=encodeURIComponent(redirect))
+      input(type="hidden", name="dest", value=redirect)
       .form-group
         input#username.form-control(type="text", name="name", placeholder="Username")
       .form-group
