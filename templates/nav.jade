@@ -27,13 +27,13 @@ mixin navdefaultlinks(page)
       b.caret
     ul.dropdown-menu
       if loggedIn
-        li: a(href="/logout?dest=#{page}") Logout
+        li: a(href="/logout?dest=#{encodeURIComponent(baseUrl + page)}") Logout
         li.divider
         li: a(href="/account/channels") Channels
         li: a(href="/account/profile") Profile
         li: a(href="/account/edit") Change Password/Email
       else
-        li: a(href="/login?dest=#{page}") Login
+        li: a(href="/login?dest=#{encodeURIComponent(baseUrl + page)}") Login
         li: a(href="/register") Register
 
 mixin navloginlogout(redirect)
@@ -48,7 +48,7 @@ mixin navloginform(redirect)
   .visible-lg
     form#loginform.navbar-form.navbar-right(action="#{loginDomain}/login", method="post")
       input(type="hidden", name="_csrf", value=csrfToken)
-      input(type="hidden", name="dest", value=redirect)
+      input(type="hidden", name="dest", value=baseUrl + redirect)
       .form-group
         input#username.form-control(type="text", name="name", placeholder="Username")
       .form-group
@@ -61,7 +61,7 @@ mixin navloginform(redirect)
       button#login.btn.btn-default(type="submit") Login
   .visible-md
     p#loginform.navbar-text.pull-right
-      a#login.navbar-link(href="#{loginDomain}/login?dest=#{encodeURIComponent(redirect)}") Log in
+      a#login.navbar-link(href="#{loginDomain}/login?dest=#{encodeURIComponent(baseUrl + redirect)}") Log in
       span &nbsp;&middot;&nbsp;
       a#register.navbar-link(href="/register") Register
 
@@ -70,4 +70,4 @@ mixin navlogoutform(redirect)
   p#logoutform.navbar-text.pull-right
     span#welcome Welcome, #{loginName}
     span &nbsp;&middot;&nbsp;
-    a#logout.navbar-link(href="/logout?dest=#{encodeURIComponent(redirect)}&_csrf=#{csrfToken}") Logout
+    a#logout.navbar-link(href="/logout?dest=#{encodeURIComponent(baseUrl + redirect)}&_csrf=#{csrfToken}") Logout
