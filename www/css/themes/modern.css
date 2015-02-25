@@ -148,10 +148,6 @@ input.form-control[type="email"], textarea.form-control {
 
 }
 
-#pollwrap > div {
-    background-color: #3a3e42 !important;
-}
-
 .navbar-form .form-control {
     background-color: #282a2d !important;
 }
