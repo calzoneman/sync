@@ -546,7 +546,7 @@ $(".cs-checkbox").change(function () {
     socket.emit("setOptions", data);
 });
 
-$(".cs-textbox").keydown(function () {
+$(".cs-textbox").keyup(function () {
     var box = $(this);
     var key = box.attr("id").replace("cs-", "");
     var value = box.val();
