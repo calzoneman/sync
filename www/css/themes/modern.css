@@ -135,10 +135,6 @@ input.form-control[type="email"], textarea.form-control {
     background-color: rgba(39,43,48,0.7);
 }
 
-#rightcontrols {
-    margin-top: 4px;
-}
-
 #chatwrap, #videowrap {
     margin-bottom: 0px !important;
 }
@@ -164,8 +160,8 @@ input.form-control[type="email"], textarea.form-control {
     border-right: none;
 }
 
-#newpollbtn {
-    margin-top: 1px;
+#controlsrow {
+    margin-top: 10px;
 }
 
 .navbar-inverse .navbar-text-nofloat {
