@@ -27,14 +27,14 @@ mixin navdefaultlinks(page)
       b.caret
     ul.dropdown-menu
       if loggedIn
-        li: a(href="/logout?dest=#{encodeURIComponent(baseUrl + page)}") Logout
+        li: a(href="/logout?dest=#{encodeURIComponent(baseUrl + page)}&_csrf=#{csrfToken}") Logout
         li.divider
         li: a(href="/account/channels") Channels
         li: a(href="/account/profile") Profile
-        li: a(href="/account/edit") Change Password/Email
+        li: a(href="#{loginDomain}/account/edit") Change Password/Email
       else
-        li: a(href="/login?dest=#{encodeURIComponent(baseUrl + page)}") Login
-        li: a(href="/register") Register
+        li: a(href="#{loginDomain}/login?dest=#{encodeURIComponent(baseUrl + page)}") Login
+        li: a(href="#{loginDomain}/register") Register
 
 mixin navloginlogout(redirect)
   if loggedIn
@@ -71,3 +71,4 @@ mixin navlogoutform(redirect)
     span#welcome Welcome, #{loginName}
     span &nbsp;&middot;&nbsp;
     a#logout.navbar-link(href="/logout?dest=#{encodeURIComponent(baseUrl + redirect)}&_csrf=#{csrfToken}") Logout
+    
