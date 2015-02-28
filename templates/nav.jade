@@ -27,10 +27,10 @@ mixin navdefaultlinks(page)
       b.caret
     ul.dropdown-menu
       if loggedIn
-        li: a(href="#{loginDomain}/logout?dest=#{encodeURIComponent(baseUrl + page)}") Logout
+        li: a(href="/logout?dest=#{encodeURIComponent(baseUrl + page)}&_csrf=#{csrfToken}") Logout
         li.divider
-        li: a(href="#{loginDomain}/account/channels") Channels
-        li: a(href="#{loginDomain}/account/profile") Profile
+        li: a(href="/account/channels") Channels
+        li: a(href="/account/profile") Profile
         li: a(href="#{loginDomain}/account/edit") Change Password/Email
       else
         li: a(href="#{loginDomain}/login?dest=#{encodeURIComponent(baseUrl + page)}") Login
