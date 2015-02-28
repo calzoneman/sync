@@ -84,8 +84,9 @@ input.form-control[type="email"], textarea.form-control {
 }
 
 #userlist, #messagebuffer {
-  border-left: 1px solid #151515;
-  border-right: 1px solid #151515;
+    border-left: 1px solid #151515;
+    border-right: 1px solid #151515;
+    padding-bottom: 2px;
 }
 
 #userlist {
