@@ -41,7 +41,7 @@ input.form-control[type="email"], textarea.form-control {
 
 .profile-box, .user-dropdown {
     color: #c8c8c8;
-    background-color: rgba(28, 30, 34, 0.8);
+    background-color: rgba(28, 30, 34, 0.95);
     border: 1px solid #000000 !important;
     border-radius: 0px !important;
 }
