@@ -2811,6 +2811,9 @@ function googlePlusSimulator2014(data) {
 
     /* Convert youtube-style quality key to vimeo workaround quality */
     var q = USEROPTS.default_quality || "auto";
+    if (q === "highres") {
+        q = "hd1080";
+    }
 
     var fallbacks = ["hd1080", "hd720", "large", "medium", "small"];
     var i = fallbacks.indexOf(q);
