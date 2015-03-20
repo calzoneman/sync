@@ -1310,7 +1310,8 @@ function parseMediaLink(url) {
         };
     }
 
-    if ((m = url.match(/(?:docs|drive)\.google\.com\/file\/d\/([^\/]*)/))) {
+    if ((m = url.match(/(?:docs|drive)\.google\.com\/file\/d\/([^\/]*)/)) ||
+        (m = url.match(/drive\.google\.com\/open\?id=([^&]*)/))) {
         return {
             id: m[1],
             type: "gd"
