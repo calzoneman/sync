@@ -114,8 +114,11 @@ mail:
   from-address: 'some.user@gmail.com'
   from-name: 'CyTube Services'
 
-# GData API v2 developer key (for non-anonymous youtube requests)
-youtube-v2-key: ''
+# YouTube v3 API key
+# See https://developers.google.com/youtube/registering_an_application
+# Google is closing the v2 API (which allowed anonymous requests) on
+# April 20, 2015 so you must register a v3 API key now.
+youtube-v3-key: ''
 # Minutes between saving channel state to disk
 channel-save-interval: 5
 # Limit for the number of channels a user can register
