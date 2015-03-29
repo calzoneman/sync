@@ -80,6 +80,10 @@ https:
   certfile: 'localhost.cert'
   cafile: ''
   ciphers: 'HIGH:!DSS:!aNULL@STRENGTH'
+  # Allow certain account pages to redirect to HTTPS if HTTPS is enabled.
+  # You may want to set this to false if you are reverse proxying HTTPS to a
+  # non-HTTPS address.
+  redirect: true
 
 # Page template values
 # title goes in the upper left corner, description goes in a <meta> tag
