@@ -2019,7 +2019,7 @@ function queueMessage(data, type) {
                 data.link + "</a>";
     }
     makeAlert(title, text, type)
-        .addClass("qfalert qf-" + type)
+        .addClass("linewrap qfalert qf-" + type)
         .appendTo($("#queuefail"));
 }
 
