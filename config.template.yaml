@@ -122,6 +122,8 @@ mail:
 # See https://developers.google.com/youtube/registering_an_application
 # Google is closing the v2 API (which allowed anonymous requests) on
 # April 20, 2015 so you must register a v3 API key now.
+# NOTE: You must generate a Server key under Public API access, NOT a
+# browser key.
 youtube-v3-key: ''
 # Minutes between saving channel state to disk
 channel-save-interval: 5
