@@ -2514,6 +2514,11 @@ function formatUserPlaylistList() {
             .attr("title", "Delete playlist")
             .appendTo(btns)
             .click(function () {
+                var really = confirm("Are you sure you want to delete" +
+                    " this playlist? This cannot be undone.");
+                if (!really) {
+                    return;
+                }
                 socket.emit("deletePlaylist", {
                     name: pl.name
                 });
