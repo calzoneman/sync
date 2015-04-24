@@ -1,11 +1,15 @@
 class Player
     constructor: (data) ->
-        @load(data)
+        @setMediaProperties(data)
         @paused = false
 
     load: (data) ->
+        @setMediaProperties(data)
+
+    setMediaProperties: (data) ->
         @mediaId = data.id
         @mediaType = data.type
+        @mediaLength = data.seconds
 
     play: ->
         @paused = false
