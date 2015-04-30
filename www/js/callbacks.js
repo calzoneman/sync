@@ -1097,7 +1097,7 @@ setupCallbacks = function() {
                     Callbacks[key](data);
                 } catch (e) {
                     if (SOCKET_DEBUG) {
-                        console.log("EXCEPTION: " + e.stack);
+                        console.log("EXCEPTION: " + e + "\n" + e.stack);
                     }
                 }
             });

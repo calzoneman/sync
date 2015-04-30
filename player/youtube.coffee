@@ -2,7 +2,7 @@ class YouTubePlayer extends Player
     constructor: (data) ->
         @setMediaProperties(data)
         @qualityRaceCondition = true
-        @pauseSeekRaceCondition = true
+        @pauseSeekRaceCondition = false
 
         waitUntilDefined(window, 'YT', =>
             removeOld()
@@ -39,7 +39,8 @@ class YouTubePlayer extends Player
         # until the first event has fired.
         if @qualityRaceCondition
             @qualityRaceCondition = false
-            @yt.setPlaybackQuality(USEROPTS.default_quality)
+            if USEROPTS.default_quality
+                @yt.setPlaybackQuality(USEROPTS.default_quality)
 
         # Similar to above, if you pause the video before the first PLAYING
         # event is emitted, weird things happen.
@@ -57,12 +58,12 @@ class YouTubePlayer extends Player
             socket.emit('playNext')
 
     play: ->
-        super()
+        @paused = false
         if @yt
             @yt.playVideo()
 
     pause: ->
-        super()
+        @paused = true
         if @yt
             @yt.pauseVideo()
 
@@ -81,10 +82,16 @@ class YouTubePlayer extends Player
     getTime: (cb) ->
         if @yt
             cb(@yt.getCurrentTime())
+        else
+            cb(0)
 
     getVolume: (cb) ->
         if @yt
             if @yt.isMuted()
-                return 0
+                cb(0)
             else
-                return @yt.getVolume() / 100.0
+                cb(@yt.getVolume() / 100)
+        else
+            cb(VOLUME)
+
+window.YouTubePlayer = YouTubePlayer
