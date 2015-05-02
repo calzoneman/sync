@@ -4,12 +4,10 @@ TYPE_MAP =
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP
-        console.log data
         try
             window.PLAYER = TYPE_MAP[data.type](data)
         catch e
             console.error e
-        console.log(window.PLAYER)
 
 window.handleMediaUpdate = (data) ->
     PLAYER = window.PLAYER
@@ -33,6 +31,7 @@ window.handleMediaUpdate = (data) ->
         PLAYER.play()
 
     if waiting
+        PLAYER.seekTo(0)
         # YouTube player has a race condition that crashes the player if
         # play(), seek(0), and pause() are called quickly without waiting
         # for events to fire.  Setting a flag variable that is checked in the
@@ -40,8 +39,8 @@ window.handleMediaUpdate = (data) ->
         if PLAYER instanceof YouTubePlayer
             PLAYER.pauseSeekRaceCondition = true
         else
-            PLAYER.seekTo(0)
             PLAYER.pause()
+        return
     else if PLAYER instanceof YouTubePlayer
         PLAYER.pauseSeekRaceCondition = false
 

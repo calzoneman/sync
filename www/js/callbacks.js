@@ -829,11 +829,17 @@ Callbacks = {
             VOLUME = 1;
         }
 
+        function loadNext() {
+            if (data.type !== PLAYER.mediaType) {
+                loadMediaPlayer(data);
+            }
+
+            handleMediaUpdate(data);
+        }
+
         // Persist the user's volume preference from the the player, if possible
         if (PLAYER && typeof PLAYER.getVolume === "function") {
-            var name = PLAYER.__proto__.constructor.name;
             PLAYER.getVolume(function (v) {
-                console.log(name, v)
                 if (typeof v === "number") {
                     if (v < 0 || v > 1) {
                         // Dailymotion's API was wrong once and caused a huge
@@ -850,7 +856,11 @@ Callbacks = {
                         setOpt("volume", VOLUME);
                     }
                 }
+
+                loadNext();
             });
+        } else {
+            loadNext();
         }
 
         // Reset voteskip since the video changed
@@ -859,15 +869,6 @@ Callbacks = {
         }
 
         $("#currenttitle").text("Currently Playing: " + data.title);
-
-        // TODO: fix this
-        setTimeout(function () {
-            if (data.type !== PLAYER.mediaType) {
-                loadMediaPlayer(data);
-            }
-
-            handleMediaUpdate(data);
-        }, 100);
     },
 
     mediaUpdate: function(data) {

@@ -186,16 +186,19 @@
 
     YouTubePlayer.prototype.load = function(data) {
       this.setMediaProperties(data);
-      if (this.yt) {
+      if (this.yt && this.yt.ready) {
         this.yt.loadVideoById(data.id, data.currentTime);
         this.qualityRaceCondition = true;
         if (USEROPTS.default_quality) {
           return this.yt.setPlaybackQuality(USEROPTS.default_quality);
         }
+      } else {
+        return console.error('WTF?  YouTubePlayer::load() called but yt is not ready');
       }
     };
 
     YouTubePlayer.prototype.onReady = function() {
+      this.yt.ready = true;
       return this.setVolume(VOLUME);
     };
 
@@ -223,26 +226,26 @@
 
     YouTubePlayer.prototype.play = function() {
       this.paused = false;
-      if (this.yt) {
+      if (this.yt && this.yt.ready) {
         return this.yt.playVideo();
       }
     };
 
     YouTubePlayer.prototype.pause = function() {
       this.paused = true;
-      if (this.yt) {
+      if (this.yt && this.yt.ready) {
         return this.yt.pauseVideo();
       }
     };
 
     YouTubePlayer.prototype.seekTo = function(time) {
-      if (this.yt) {
+      if (this.yt && this.yt.ready) {
         return this.yt.seekTo(time, true);
       }
     };
 
     YouTubePlayer.prototype.setVolume = function(volume) {
-      if (this.yt) {
+      if (this.yt && this.yt.ready) {
         if (volume > 0) {
           this.yt.unMute();
         }
@@ -251,7 +254,7 @@
     };
 
     YouTubePlayer.prototype.getTime = function(cb) {
-      if (this.yt) {
+      if (this.yt && this.yt.ready) {
         return cb(this.yt.getCurrentTime());
       } else {
         return cb(0);
@@ -259,7 +262,7 @@
     };
 
     YouTubePlayer.prototype.getVolume = function(cb) {
-      if (this.yt) {
+      if (this.yt && this.yt.ready) {
         if (this.yt.isMuted()) {
           return cb(0);
         } else {
@@ -282,14 +285,12 @@
   window.loadMediaPlayer = function(data) {
     var e;
     if (data.type in TYPE_MAP) {
-      console.log(data);
       try {
-        window.PLAYER = TYPE_MAP[data.type](data);
+        return window.PLAYER = TYPE_MAP[data.type](data);
       } catch (_error) {
         e = _error;
-        console.error(e);
+        return console.error(e);
       }
-      return console.log(window.PLAYER);
     }
   };
 
@@ -308,12 +309,13 @@
       PLAYER.play();
     }
     if (waiting) {
+      PLAYER.seekTo(0);
       if (PLAYER instanceof YouTubePlayer) {
         PLAYER.pauseSeekRaceCondition = true;
       } else {
-        PLAYER.seekTo(0);
         PLAYER.pause();
       }
+      return;
     } else if (PLAYER instanceof YouTubePlayer) {
       PLAYER.pauseSeekRaceCondition = false;
     }

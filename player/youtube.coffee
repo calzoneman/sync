@@ -28,13 +28,16 @@ window.YouTubePlayer = class YouTubePlayer extends Player
 
     load: (data) ->
         @setMediaProperties(data)
-        if @yt
+        if @yt and @yt.ready
             @yt.loadVideoById(data.id, data.currentTime)
             @qualityRaceCondition = true
             if USEROPTS.default_quality
                 @yt.setPlaybackQuality(USEROPTS.default_quality)
+        else
+            console.error('WTF?  YouTubePlayer::load() called but yt is not ready')
 
     onReady: ->
+        @yt.ready = true
         @setVolume(VOLUME)
 
     onStateChange: (ev) ->
@@ -62,20 +65,20 @@ window.YouTubePlayer = class YouTubePlayer extends Player
 
     play: ->
         @paused = false
-        if @yt
+        if @yt and @yt.ready
             @yt.playVideo()
 
     pause: ->
         @paused = true
-        if @yt
+        if @yt and @yt.ready
             @yt.pauseVideo()
 
     seekTo: (time) ->
-        if @yt
+        if @yt and @yt.ready
             @yt.seekTo(time, true)
 
     setVolume: (volume) ->
-        if @yt
+        if @yt and @yt.ready
             if volume > 0
                 # If the player is muted, even if the volume is set,
                 # the player remains muted
@@ -83,13 +86,13 @@ window.YouTubePlayer = class YouTubePlayer extends Player
             @yt.setVolume(volume * 100)
 
     getTime: (cb) ->
-        if @yt
+        if @yt and @yt.ready
             cb(@yt.getCurrentTime())
         else
             cb(0)
 
     getVolume: (cb) ->
-        if @yt
+        if @yt and @yt.ready
             if @yt.isMuted()
                 cb(0)
             else
