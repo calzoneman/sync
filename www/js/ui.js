@@ -296,8 +296,8 @@ $("#userpl_save").click(function() {
 /* video controls */
 
 $("#mediarefresh").click(function() {
-    PLAYER.type = "";
-    PLAYER.id = "";
+    PLAYER.mediaType = "";
+    PLAYER.mediaId = "";
     // playerReady triggers the server to send a changeMedia.
     // the changeMedia handler then reloads the player
     socket.emit("playerReady");

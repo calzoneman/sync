@@ -8,21 +8,25 @@ window.YouTubePlayer = class YouTubePlayer extends Player
         @pauseSeekRaceCondition = false
 
         waitUntilDefined(window, 'YT', =>
-            removeOld()
+            # Even after window.YT is defined, YT.Player may not be, which causes a
+            # "YT.Player is not a constructor" error occasionally
+            waitUntilDefined(YT, 'Player', =>
+                removeOld()
 
-            wmode = if USEROPTS.wmode_transparent then 'transparent' else 'opaque'
-            @yt = new YT.Player('ytapiplayer',
-                videoId: data.id
-                playerVars:
-                    autohide: 1
-                    autoplay: 1
-                    controls: 1
-                    iv_load_policy: 3 # iv_load_policy 3 indicates no annotations
-                    rel: 0
-                    wmode: wmode
-                events:
-                    onReady: @onReady.bind(this)
-                    onStateChange: @onStateChange.bind(this)
+                wmode = if USEROPTS.wmode_transparent then 'transparent' else 'opaque'
+                @yt = new YT.Player('ytapiplayer',
+                    videoId: data.id
+                    playerVars:
+                        autohide: 1
+                        autoplay: 1
+                        controls: 1
+                        iv_load_policy: 3 # iv_load_policy 3 indicates no annotations
+                        rel: 0
+                        wmode: wmode
+                    events:
+                        onReady: @onReady.bind(this)
+                        onStateChange: @onStateChange.bind(this)
+                )
             )
         )
 
@@ -32,7 +36,7 @@ window.YouTubePlayer = class YouTubePlayer extends Player
             @yt.loadVideoById(data.id, data.currentTime)
             @qualityRaceCondition = true
             if USEROPTS.default_quality
-                @yt.setPlaybackQuality(USEROPTS.default_quality)
+                @setQuality(USEROPTS.default_quality)
         else
             console.error('WTF?  YouTubePlayer::load() called but yt is not ready')
 
@@ -46,7 +50,7 @@ window.YouTubePlayer = class YouTubePlayer extends Player
         if @qualityRaceCondition
             @qualityRaceCondition = false
             if USEROPTS.default_quality
-                @yt.setPlaybackQuality(USEROPTS.default_quality)
+                @setQuality(USEROPTS.default_quality)
 
         # Similar to above, if you pause the video before the first PLAYING
         # event is emitted, weird things happen.
@@ -84,6 +88,22 @@ window.YouTubePlayer = class YouTubePlayer extends Player
                 # the player remains muted
                 @yt.unMute()
             @yt.setVolume(volume * 100)
+
+    setQuality: (quality) ->
+        if not @yt or not @yt.ready
+            return
+
+        ytQuality = switch String(quality)
+            when "240" then "small"
+            when "360" then "medium"
+            when "480" then "large"
+            when "720" then "hd720"
+            when "1080" then "hd1080"
+            when "best" then "highres"
+            else "auto"
+
+        if ytQuality != "auto"
+            @yt.setPlaybackQuality(ytQuality)
 
     getTime: (cb) ->
         if @yt and @yt.ready

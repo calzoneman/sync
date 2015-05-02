@@ -162,23 +162,25 @@
       this.pauseSeekRaceCondition = false;
       waitUntilDefined(window, 'YT', (function(_this) {
         return function() {
-          var wmode;
-          removeOld();
-          wmode = USEROPTS.wmode_transparent ? 'transparent' : 'opaque';
-          return _this.yt = new YT.Player('ytapiplayer', {
-            videoId: data.id,
-            playerVars: {
-              autohide: 1,
-              autoplay: 1,
-              controls: 1,
-              iv_load_policy: 3,
-              rel: 0,
-              wmode: wmode
-            },
-            events: {
-              onReady: _this.onReady.bind(_this),
-              onStateChange: _this.onStateChange.bind(_this)
-            }
+          return waitUntilDefined(YT, 'Player', function() {
+            var wmode;
+            removeOld();
+            wmode = USEROPTS.wmode_transparent ? 'transparent' : 'opaque';
+            return _this.yt = new YT.Player('ytapiplayer', {
+              videoId: data.id,
+              playerVars: {
+                autohide: 1,
+                autoplay: 1,
+                controls: 1,
+                iv_load_policy: 3,
+                rel: 0,
+                wmode: wmode
+              },
+              events: {
+                onReady: _this.onReady.bind(_this),
+                onStateChange: _this.onStateChange.bind(_this)
+              }
+            });
           });
         };
       })(this));
@@ -190,7 +192,7 @@
         this.yt.loadVideoById(data.id, data.currentTime);
         this.qualityRaceCondition = true;
         if (USEROPTS.default_quality) {
-          return this.yt.setPlaybackQuality(USEROPTS.default_quality);
+          return this.setQuality(USEROPTS.default_quality);
         }
       } else {
         return console.error('WTF?  YouTubePlayer::load() called but yt is not ready');
@@ -206,7 +208,7 @@
       if (this.qualityRaceCondition) {
         this.qualityRaceCondition = false;
         if (USEROPTS.default_quality) {
-          this.yt.setPlaybackQuality(USEROPTS.default_quality);
+          this.setQuality(USEROPTS.default_quality);
         }
       }
       if (ev.data === YT.PlayerState.PLAYING && this.pauseSeekRaceCondition) {
@@ -250,6 +252,34 @@
           this.yt.unMute();
         }
         return this.yt.setVolume(volume * 100);
+      }
+    };
+
+    YouTubePlayer.prototype.setQuality = function(quality) {
+      var ytQuality;
+      if (!this.yt || !this.yt.ready) {
+        return;
+      }
+      ytQuality = (function() {
+        switch (String(quality)) {
+          case "240":
+            return "small";
+          case "360":
+            return "medium";
+          case "480":
+            return "large";
+          case "720":
+            return "hd720";
+          case "1080":
+            return "hd1080";
+          case "best":
+            return "highres";
+          default:
+            return "auto";
+        }
+      })();
+      if (ytQuality !== "auto") {
+        return this.yt.setPlaybackQuality(ytQuality);
       }
     };
 
