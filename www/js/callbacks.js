@@ -824,20 +824,27 @@ Callbacks = {
             return;
         }
 
-        /* Failsafe */
+        // Failsafe
         if (isNaN(VOLUME) || VOLUME > 1 || VOLUME < 0) {
             VOLUME = 1;
         }
 
-        var shouldResize = $("#ytapiplayer").html() === "";
-
+        // Persist the user's volume preference from the the player, if possible
         if (PLAYER && typeof PLAYER.getVolume === "function") {
+            var name = PLAYER.__proto__.constructor.name;
             PLAYER.getVolume(function (v) {
+                console.log(name, v)
                 if (typeof v === "number") {
                     if (v < 0 || v > 1) {
+                        // Dailymotion's API was wrong once and caused a huge
+                        // headache.  This alert is here to make debugging easier.
                         alert("Something went wrong with retrieving the volume.  " +
                             "Please tell calzoneman the following: " +
-                            JSON.stringify({ v: v, t: PLAYER.type, i: PLAYER.videoId }));
+                            JSON.stringify({
+                                v: v,
+                                t: PLAYER.mediaType,
+                                i: PLAYER.mediaId
+                            }));
                     } else {
                         VOLUME = v;
                         setOpt("volume", VOLUME);
@@ -846,42 +853,21 @@ Callbacks = {
             });
         }
 
-        if (CHANNEL.opts.allow_voteskip)
+        // Reset voteskip since the video changed
+        if (CHANNEL.opts.allow_voteskip) {
             $("#voteskip").attr("disabled", false);
+        }
 
         $("#currenttitle").text("Currently Playing: " + data.title);
 
-        if (data.type != "sc" && PLAYER.type == "sc")
-            // [](/goddamnitmango)
-            fixSoundcloudShit();
+        // TODO: fix this
+        setTimeout(function () {
+            if (data.type !== PLAYER.mediaType) {
+                loadMediaPlayer(data);
+            }
 
-        if (data.type != "jw" && PLAYER.type == "jw") {
-            // Is it so hard to not mess up my DOM?
-            $("<div/>").attr("id", "ytapiplayer")
-                .insertBefore($("#ytapiplayer_wrapper"));
-            $("#ytapiplayer_wrapper").remove();
-        }
-
-        if (data.type === "fi") {
-            data.url = data.id;
-        }
-
-        if (NO_VIMEO && data.type === "vi" && data.meta.direct) {
-            data = vimeoSimulator2014(data);
-        }
-
-        /*
-         * Google Docs now uses the same simulator as Google+
-         */
-        if (data.type === "gp" || data.type === "gd") {
-            data = googlePlusSimulator2014(data);
-        }
-
-        if (data.type != PLAYER.type) {
-            loadMediaPlayer(data);
-        }
-
-        handleMediaUpdate(data);
+            handleMediaUpdate(data);
+        }, 100);
     },
 
     mediaUpdate: function(data) {

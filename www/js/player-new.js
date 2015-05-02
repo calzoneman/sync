@@ -1,10 +1,13 @@
 (function() {
-  var Player, TYPE_MAP, VideoJSPlayer, YouTubePlayer,
+  var Player, TYPE_MAP, VimeoPlayer, YouTubePlayer,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
-  Player = (function() {
+  window.Player = Player = (function() {
     function Player(data) {
+      if (!(this instanceof Player)) {
+        return new Player(data);
+      }
       this.setMediaProperties(data);
       this.paused = false;
     }
@@ -47,104 +50,113 @@
 
   })();
 
-  window.Player = Player;
+  window.VimeoPlayer = VimeoPlayer = (function(superClass) {
+    extend(VimeoPlayer, superClass);
 
-  window.removeOld = function(replace) {
-    var old;
-    $('#sc_volume').remove();
-    if (replace == null) {
-      replace = $('<div/>').addClass('embed-responsive-item');
-    }
-    old = $('#ytapiplayer');
-    replace.insertBefore(old);
-    old.remove();
-    replace.attr('id', 'ytapiplayer');
-    return replace;
-  };
-
-  TYPE_MAP = {
-    yt: 'YouTubePlayer'
-  };
-
-  window.loadMediaPlayer = function(data) {
-    var ctor;
-    if (data.type in TYPE_MAP) {
-      ctor = window[TYPE_MAP[data.type]];
-      return window.PLAYER = new ctor(data);
-    }
-  };
-
-  window.handleMediaUpdate = function(data) {
-    var PLAYER, waiting;
-    PLAYER = window.PLAYER;
-    if (typeof PLAYER.mediaLength === 'number' && PLAYER.mediaLength > 0 && data.currentTime > PLAYER.mediaLength) {
-      return;
-    }
-    waiting = data.currentTime < 0;
-    if (data.id && data.id !== PLAYER.mediaId) {
-      if (data.currentTime < 0) {
-        data.currentTime = 0;
+    function VimeoPlayer(data) {
+      if (!(this instanceof VimeoPlayer)) {
+        return new VimeoPlayer(data);
       }
-      PLAYER.load(data);
-      PLAYER.play();
+      this.load(data);
     }
-    if (waiting) {
-      console.log('waiting');
-      if (PLAYER.type === 'yt') {
-        PLAYER.pauseSeekRaceCondition = true;
-      } else {
-        PLAYER.seekTo(0);
-        PLAYER.pause();
-      }
-    } else if (PLAYER.type === 'yt') {
-      PLAYER.pauseSeekRaceCondition = false;
-    }
-    if (CLIENT.leader || !USEROPTS.synch) {
-      return;
-    }
-    if (data.paused && !PLAYER.paused) {
-      PLAYER.seekTo(data.currentTime);
-      PLAYER.pause();
-    } else if (PLAYER.paused) {
-      PLAYER.play();
-    }
-    return PLAYER.getTime(function(seconds) {
-      var accuracy, diff, time;
-      time = data.currentTime;
-      diff = (time - seconds) || time;
-      accuracy = USEROPTS.sync_accuracy;
-      if (PLAYER.type === 'dm') {
-        accuracy = Math.max(accuracy, 5);
-      }
-      if (diff > accuracy) {
-        return PLAYER.seekTo(time);
-      } else if (diff < -accuracy) {
-        if (PLAYER.type !== 'dm') {
-          time += 1;
-        }
-        return PLAYER.seekTo(time);
-      }
-    });
-  };
 
-  VideoJSPlayer = (function(superClass) {
-    extend(VideoJSPlayer, superClass);
-
-    function VideoJSPlayer(data) {}
-
-    VideoJSPlayer.prototype.load = function(data) {
-      var video;
-      return video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item');
+    VimeoPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      return waitUntilDefined(window, '$f', (function(_this) {
+        return function() {
+          var video;
+          video = $('<iframe/>');
+          removeOld(video);
+          video.attr({
+            src: "https://player.vimeo.com/video/" + data.id + "?api=1&player_id=ytapiplayer",
+            webkitallowfullscreen: true,
+            mozallowfullscreen: true,
+            allowfullscreen: true
+          });
+          if (USEROPTS.wmode_transparent) {
+            video.attr('wmode', 'transparent');
+          }
+          return $f(video[0]).addEvent('ready', function() {
+            _this.vimeo = $f(video[0]);
+            _this.play();
+            _this.vimeo.addEvent('finish', function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+            _this.vimeo.addEvent('pause', function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            _this.vimeo.addEvent('play', function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            return _this.setVolume(VOLUME);
+          });
+        };
+      })(this));
     };
 
-    return VideoJSPlayer;
+    VimeoPlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.vimeo) {
+        return this.vimeo.api('play');
+      }
+    };
+
+    VimeoPlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.vimeo) {
+        return this.vimeo.api('pause');
+      }
+    };
+
+    VimeoPlayer.prototype.seekTo = function(time) {
+      if (this.vimeo) {
+        return this.vimeo.api('seekTo', time);
+      }
+    };
+
+    VimeoPlayer.prototype.setVolume = function(volume) {
+      if (this.vimeo) {
+        return this.vimeo.api('setVolume', volume);
+      }
+    };
+
+    VimeoPlayer.prototype.getTime = function(cb) {
+      if (this.vimeo) {
+        return this.vimeo.api('getCurrentTime', function(time) {
+          return cb(parseFloat(time));
+        });
+      } else {
+        return cb(0);
+      }
+    };
+
+    VimeoPlayer.prototype.getVolume = function(cb) {
+      if (this.vimeo) {
+        return this.vimeo.api('getVolume', cb);
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    return VimeoPlayer;
 
   })(Player);
 
-  YouTubePlayer = (function(superClass) {
+  window.YouTubePlayer = YouTubePlayer = (function(superClass) {
     extend(YouTubePlayer, superClass);
 
     function YouTubePlayer(data) {
+      if (!(this instanceof YouTubePlayer)) {
+        return new YouTubePlayer(data);
+      }
       this.setMediaProperties(data);
       this.qualityRaceCondition = true;
       this.pauseSeekRaceCondition = false;
@@ -155,7 +167,6 @@
           wmode = USEROPTS.wmode_transparent ? 'transparent' : 'opaque';
           return _this.yt = new YT.Player('ytapiplayer', {
             videoId: data.id,
-            startSeconds: data.currentTime,
             playerVars: {
               autohide: 1,
               autoplay: 1,
@@ -174,7 +185,7 @@
     }
 
     YouTubePlayer.prototype.load = function(data) {
-      YouTubePlayer.__super__.load.call(this, data);
+      this.setMediaProperties(data);
       if (this.yt) {
         this.yt.loadVideoById(data.id, data.currentTime);
         this.qualityRaceCondition = true;
@@ -185,7 +196,7 @@
     };
 
     YouTubePlayer.prototype.onReady = function() {
-      return this.yt.setVolume(VOLUME);
+      return this.setVolume(VOLUME);
     };
 
     YouTubePlayer.prototype.onStateChange = function(ev) {
@@ -263,6 +274,88 @@
 
   })(Player);
 
-  window.YouTubePlayer = YouTubePlayer;
+  TYPE_MAP = {
+    yt: YouTubePlayer,
+    vi: VimeoPlayer
+  };
+
+  window.loadMediaPlayer = function(data) {
+    var e;
+    if (data.type in TYPE_MAP) {
+      console.log(data);
+      try {
+        window.PLAYER = TYPE_MAP[data.type](data);
+      } catch (_error) {
+        e = _error;
+        console.error(e);
+      }
+      return console.log(window.PLAYER);
+    }
+  };
+
+  window.handleMediaUpdate = function(data) {
+    var PLAYER, waiting;
+    PLAYER = window.PLAYER;
+    if (typeof PLAYER.mediaLength === 'number' && PLAYER.mediaLength > 0 && data.currentTime > PLAYER.mediaLength) {
+      return;
+    }
+    waiting = data.currentTime < 0;
+    if (data.id && data.id !== PLAYER.mediaId) {
+      if (data.currentTime < 0) {
+        data.currentTime = 0;
+      }
+      PLAYER.load(data);
+      PLAYER.play();
+    }
+    if (waiting) {
+      if (PLAYER instanceof YouTubePlayer) {
+        PLAYER.pauseSeekRaceCondition = true;
+      } else {
+        PLAYER.seekTo(0);
+        PLAYER.pause();
+      }
+    } else if (PLAYER instanceof YouTubePlayer) {
+      PLAYER.pauseSeekRaceCondition = false;
+    }
+    if (CLIENT.leader || !USEROPTS.synch) {
+      return;
+    }
+    if (data.paused && !PLAYER.paused) {
+      PLAYER.seekTo(data.currentTime);
+      PLAYER.pause();
+    } else if (PLAYER.paused) {
+      PLAYER.play();
+    }
+    return PLAYER.getTime(function(seconds) {
+      var accuracy, diff, time;
+      time = data.currentTime;
+      diff = (time - seconds) || time;
+      accuracy = USEROPTS.sync_accuracy;
+      if (PLAYER.mediaType === 'dm') {
+        accuracy = Math.max(accuracy, 5);
+      }
+      if (diff > accuracy) {
+        return PLAYER.seekTo(time);
+      } else if (diff < -accuracy) {
+        if (PLAYER.mediaType !== 'dm') {
+          time += 1;
+        }
+        return PLAYER.seekTo(time);
+      }
+    });
+  };
+
+  window.removeOld = function(replace) {
+    var old;
+    $('#sc_volume').remove();
+    if (replace == null) {
+      replace = $('<div/>').addClass('embed-responsive-item');
+    }
+    old = $('#ytapiplayer');
+    replace.insertBefore(old);
+    old.remove();
+    replace.attr('id', 'ytapiplayer');
+    return replace;
+  };
 
 }).call(this);

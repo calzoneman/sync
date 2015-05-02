@@ -1,5 +1,8 @@
-class YouTubePlayer extends Player
+window.YouTubePlayer = class YouTubePlayer extends Player
     constructor: (data) ->
+        if not (this instanceof YouTubePlayer)
+            return new YouTubePlayer(data)
+
         @setMediaProperties(data)
         @qualityRaceCondition = true
         @pauseSeekRaceCondition = false
@@ -24,7 +27,7 @@ class YouTubePlayer extends Player
         )
 
     load: (data) ->
-        super(data)
+        @setMediaProperties(data)
         if @yt
             @yt.loadVideoById(data.id, data.currentTime)
             @qualityRaceCondition = true
@@ -32,7 +35,7 @@ class YouTubePlayer extends Player
                 @yt.setPlaybackQuality(USEROPTS.default_quality)
 
     onReady: ->
-        @yt.setVolume(VOLUME)
+        @setVolume(VOLUME)
 
     onStateChange: (ev) ->
         # For some reason setting the quality doesn't work
@@ -93,5 +96,3 @@ class YouTubePlayer extends Player
                 cb(@yt.getVolume() / 100)
         else
             cb(VOLUME)
-
-window.YouTubePlayer = YouTubePlayer
