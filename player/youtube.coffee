@@ -9,7 +9,7 @@ window.YouTubePlayer = class YouTubePlayer extends Player
 
         waitUntilDefined(window, 'YT', =>
             # Even after window.YT is defined, YT.Player may not be, which causes a
-            # "YT.Player is not a constructor" error occasionally
+            # 'YT.Player is not a constructor' error occasionally
             waitUntilDefined(YT, 'Player', =>
                 removeOld()
 
@@ -94,15 +94,15 @@ window.YouTubePlayer = class YouTubePlayer extends Player
             return
 
         ytQuality = switch String(quality)
-            when "240" then "small"
-            when "360" then "medium"
-            when "480" then "large"
-            when "720" then "hd720"
-            when "1080" then "hd1080"
-            when "best" then "highres"
-            else "auto"
+            when '240' then 'small'
+            when '360' then 'medium'
+            when '480' then 'large'
+            when '720' then 'hd720'
+            when '1080' then 'hd1080'
+            when 'best' then 'highres'
+            else 'auto'
 
-        if ytQuality != "auto"
+        if ytQuality != 'auto'
             @yt.setPlaybackQuality(ytQuality)
 
     getTime: (cb) ->

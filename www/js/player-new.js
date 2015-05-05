@@ -1,5 +1,5 @@
 (function() {
-  var Player, TYPE_MAP, VimeoPlayer, YouTubePlayer,
+  var DailymotionPlayer, Player, TYPE_MAP, VimeoPlayer, YouTubePlayer,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -262,23 +262,23 @@
       }
       ytQuality = (function() {
         switch (String(quality)) {
-          case "240":
-            return "small";
-          case "360":
-            return "medium";
-          case "480":
-            return "large";
-          case "720":
-            return "hd720";
-          case "1080":
-            return "hd1080";
-          case "best":
-            return "highres";
+          case '240':
+            return 'small';
+          case '360':
+            return 'medium';
+          case '480':
+            return 'large';
+          case '720':
+            return 'hd720';
+          case '1080':
+            return 'hd1080';
+          case 'best':
+            return 'highres';
           default:
-            return "auto";
+            return 'auto';
         }
       })();
-      if (ytQuality !== "auto") {
+      if (ytQuality !== 'auto') {
         return this.yt.setPlaybackQuality(ytQuality);
       }
     };
@@ -307,9 +307,147 @@
 
   })(Player);
 
+  window.DailymotionPlayer = DailymotionPlayer = (function(superClass) {
+    extend(DailymotionPlayer, superClass);
+
+    function DailymotionPlayer(data) {
+      if (!(this instanceof DailymotionPlayer)) {
+        return new DailymotionPlayer(data);
+      }
+      this.setMediaProperties(data);
+      this.initialVolumeSet = false;
+      waitUntilDefined(window, 'DM', (function(_this) {
+        return function() {
+          var params, quality;
+          removeOld();
+          params = {
+            autoplay: 1,
+            wmode: USEROPTS.wmode_transparent ? 'transparent' : 'opaque',
+            logo: 0
+          };
+          quality = _this.mapQuality(USEROPTS.default_quality);
+          if (quality !== 'auto') {
+            params.quality = quality;
+          }
+          _this.dm = DM.player('ytapiplayer', {
+            video: data.id,
+            width: parseInt(VWIDTH, 10),
+            height: parseInt(VHEIGHT, 10),
+            params: params
+          });
+          return _this.dm.addEventListener('apiready', function() {
+            _this.dm.ready = true;
+            _this.dm.addEventListener('ended', function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+            _this.dm.addEventListener('pause', function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            return _this.dm.addEventListener('playing', function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                sendVideoUpdate();
+              }
+              if (!_this.initialVolumeSet) {
+                _this.setVolume(VOLUME);
+                return _this.initialVolumeSet = true;
+              }
+            });
+          });
+        };
+      })(this));
+    }
+
+    DailymotionPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      if (this.dm && this.dm.ready) {
+        this.dm.load(data.id);
+        return this.dm.seek(data.currentTime);
+      } else {
+        return console.error('WTF?  DailymotionPlayer::load() called but dm is not ready');
+      }
+    };
+
+    DailymotionPlayer.prototype.pause = function() {
+      if (this.dm && this.dm.ready) {
+        this.paused = true;
+        return this.dm.pause();
+      }
+    };
+
+    DailymotionPlayer.prototype.play = function() {
+      if (this.dm && this.dm.ready) {
+        this.paused = false;
+        return this.dm.play();
+      }
+    };
+
+    DailymotionPlayer.prototype.seekTo = function(time) {
+      if (this.dm && this.dm.ready) {
+        return this.dm.seek(time);
+      }
+    };
+
+    DailymotionPlayer.prototype.setVolume = function(volume) {
+      if (this.dm && this.dm.ready) {
+        return this.dm.setVolume(volume);
+      }
+    };
+
+    DailymotionPlayer.prototype.getTime = function(cb) {
+      if (this.dm && this.dm.ready) {
+        return cb(this.dm.currentTime);
+      } else {
+        return cb(0);
+      }
+    };
+
+    DailymotionPlayer.prototype.getVolume = function(cb) {
+      var volume;
+      if (this.dm && this.dm.ready) {
+        if (this.dm.muted) {
+          return cb(0);
+        } else {
+          volume = this.dm.volume;
+          if (volume > 1) {
+            volume /= 100;
+          }
+          return cb(volume);
+        }
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    DailymotionPlayer.prototype.mapQuality = function(quality) {
+      switch (String(quality)) {
+        case '240':
+        case '480':
+        case '720':
+        case '1080':
+          return String(quality);
+        case '360':
+          return '380';
+        case 'best':
+          return '1080';
+        default:
+          return 'auto';
+      }
+    };
+
+    return DailymotionPlayer;
+
+  })(Player);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
-    vi: VimeoPlayer
+    vi: VimeoPlayer,
+    dm: DailymotionPlayer
   };
 
   window.loadMediaPlayer = function(data) {
