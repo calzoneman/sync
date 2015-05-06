@@ -20,7 +20,7 @@ html(lang="en")
                 b.caret
               ul.dropdown-menu
                 li: a(href="#" onclick="javascript:chatOnly()") Chat Only
-                li: a(href="#" onclick="javascript:removeVideo()") Remove Video
+                li: a(href="#" onclick="javascript:removeVideo(event)") Remove Video
           mixin navloginlogout(cname)
       section#mainpage
         .container
