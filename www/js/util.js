@@ -1730,7 +1730,7 @@ function handleVideoResize() {
 $(window).resize(handleWindowResize);
 handleWindowResize();
 
-function removeVideo() {
+function removeVideo(event) {
     try {
         PLAYER.setVolume(0);
         if (PLAYER.type === "rv") {
@@ -1741,6 +1741,7 @@ function removeVideo() {
 
     $("#videowrap").remove();
     $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-md-12");
+    if (event) event.preventDefault();
 }
 
 /* channel administration stuff */
