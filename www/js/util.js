@@ -2915,9 +2915,12 @@ EmoteList.prototype.loadPage = function (page) {
             img.title = emote.name;
             img.onclick = function () {
                 var val = chatline.value;
-                if (!val || val.charAt(val.length - 1).match(/\s/)) {
+                if (!val) {
                     chatline.value = emote.name;
                 } else {
+                    if (!val.charAt(val.length - 1).match(/\s/)) {
+                        chatline.value += " ";
+                    }
                     chatline.value += " " + emote.name;
                 }
 
