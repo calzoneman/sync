@@ -22,8 +22,12 @@ footer {
     background-color: #eeeeee !important;
 }
 
-.profile-box, .user-dropdown {
+.profile-box, .user-dropdown, #emotelist td {
     background-color: #ffffff;
+}
+
+#emotelist td {
+    border: 1px solid #cccccc;
 }
 
 .chat-shadow {

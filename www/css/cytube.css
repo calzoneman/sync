@@ -557,14 +557,14 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
 }
 
 @media screen and (min-width: 768px) {
-    .modal {
-        padding: 30px;
-    }
-
     .modal-dialog {
         min-width: 600px!important;
         max-width: 1200px!important;
         width: auto!important;
+    }
+
+    .modal-dialog-nonfluid.modal-dialog {
+        max-width: 600px!important;
     }
 }
 
@@ -591,4 +591,33 @@ table td {
     font-size: 8pt;
     border: 1px solid;
     border-top-width: 0;
+}
+
+#emotelist table {
+    margin: auto;
+}
+
+.emote-preview-container {
+    width: 100px;
+    height: 100px;
+    float: left;
+    text-align: center;
+    white-space: nowrap;
+    margin: 5px;
+}
+
+.emote-preview-hax {
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
+}
+
+.emote-preview {
+    max-width: 100px;
+    max-height: 100px;
+    cursor: pointer;
+}
+
+#emotelist-paginator-container {
+    text-align: center;
 }

@@ -51,7 +51,7 @@ input.form-control[type="email"], textarea.form-control {
   background-image: linear-gradient(#484e55, #3a3f44 60%, #313539) !important;
 }
 
-.profile-box, .user-dropdown {
+.profile-box, .user-dropdown, #emotelist td {
   color: #c8c8c8;
   background-color: #161a20;
 }

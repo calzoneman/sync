@@ -55,6 +55,7 @@ html(lang="en")
           #controlsrow.row
             #leftcontrols.col-lg-5.col-md-5
               button#newpollbtn.btn.btn-sm.btn-default New Poll
+              button#emotelistbtn.btn.btn-sm.btn-default Emote List
             #rightcontrols.col-lg-7.col-md-7
               #plcontrol.btn-group.pull-left
                 button#showsearch.btn.btn-sm.btn-default(title="Search for a video", data-toggle="collapse", data-target="#searchcontrol")
@@ -172,6 +173,17 @@ html(lang="en")
           .modal-footer
             button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
             button.btn.btn-default(type="button", data-dismiss="modal") Close
+    #emotelist.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+      .modal-dialog.modal-dialog-nonfluid
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal", aria-hidden="true") &times;
+            h4 Emote List
+          .modal-body
+            #emotelist-paginator-container
+            table
+              tbody
+          .modal-footer
     #channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
       .modal-dialog
         .modal-content

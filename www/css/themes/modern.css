@@ -39,7 +39,7 @@ input.form-control[type="email"], textarea.form-control {
     background-color: rgba(65, 69, 74, 0.7) !important;
 }
 
-.profile-box, .user-dropdown {
+.profile-box, .user-dropdown, #emotelist td {
     color: #c8c8c8;
     background-color: rgba(28, 30, 34, 0.95);
     border: 1px solid #000000 !important;

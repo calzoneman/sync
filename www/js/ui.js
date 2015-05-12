@@ -762,3 +762,7 @@ applyOpts();
         });
     }
 })();
+
+$("#emotelistbtn").click(function () {
+    EMOTELIST.show();
+});
