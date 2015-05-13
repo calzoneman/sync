@@ -2933,7 +2933,7 @@ EmoteList.prototype.loadPage = function (page) {
                     if (!val.charAt(val.length - 1).match(/\s/)) {
                         chatline.value += " ";
                     }
-                    chatline.value += " " + emote.name;
+                    chatline.value += emote.name;
                 }
 
                 _this.modal.modal("hide");
