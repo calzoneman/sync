@@ -766,3 +766,24 @@ applyOpts();
 $("#emotelistbtn").click(function () {
     EMOTELIST.show();
 });
+
+$("#emotelist-search").keyup(function () {
+    var value = this.value.toLowerCase();
+    if (value) {
+        EMOTELIST.filter = function (emote) {
+            return emote.name.toLowerCase().indexOf(value) >= 0;
+        };
+    } else {
+        EMOTELIST.filter = null;
+    }
+    EMOTELIST.handleChange();
+    EMOTELIST.loadPage(0);
+});
+
+$("#emotelist-alphabetical").prop("checked", USEROPTS.emotelist_sort);
+$("#emotelist-alphabetical").change(function () {
+    USEROPTS.emotelist_sort = this.checked;
+    setOpt("emotelist_sort", USEROPTS.emotelist_sort);
+    EMOTELIST.handleChange();
+    EMOTELIST.loadPage(0);
+});

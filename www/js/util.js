@@ -2858,9 +2858,10 @@ function EmoteList() {
     this.page = 0;
 }
 
-EmoteList.prototype.show = function () {
-    if (this.emoteListChanged) {
-        this.emotes = CHANNEL.emotes.slice().sort(function (a, b) {
+EmoteList.prototype.handleChange = function () {
+    this.emotes = CHANNEL.emotes.slice();
+    if (USEROPTS.emotelist_sort) {
+        this.emotes.sort(function (a, b) {
             var x = a.name.toLowerCase();
             var y = b.name.toLowerCase();
 
@@ -2872,13 +2873,24 @@ EmoteList.prototype.show = function () {
                 return 0;
             }
         });
-        this.paginator = new NewPaginator(this.emotes.length, this.itemsPerPage,
-                this.loadPage.bind(this));
-        var container = document.getElementById("emotelist-paginator-container");
-        container.innerHTML = "";
-        container.appendChild(this.paginator.elem);
-        this.paginator.loadPage(this.page);
-        this.emoteListChanged = false;
+    }
+
+    if (this.filter) {
+        this.emotes = this.emotes.filter(this.filter);
+    }
+
+    this.paginator = new NewPaginator(this.emotes.length, this.itemsPerPage,
+            this.loadPage.bind(this));
+    var container = document.getElementById("emotelist-paginator-container");
+    container.innerHTML = "";
+    container.appendChild(this.paginator.elem);
+    this.paginator.loadPage(this.page);
+    this.emoteListChanged = false;
+};
+
+EmoteList.prototype.show = function () {
+    if (this.emoteListChanged) {
+        this.handleChange();
     }
 
     this.modal.modal();
@@ -2891,7 +2903,7 @@ EmoteList.prototype.loadPage = function (page) {
     var row;
     var start = page * this.itemsPerPage;
     if (start >= this.emotes.length) return;
-    var end = Math.min(start + this.itemsPerPage, this.emotes.length - 1);
+    var end = Math.min(start + this.itemsPerPage, this.emotes.length);
     var _this = this;
 
     for (var i = start; i < end; i++) {

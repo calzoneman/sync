@@ -161,6 +161,7 @@ NewPaginator.prototype.loadButtons = function (page) {
     }
 
     var numPages = Math.ceil(this.numItems / this.itemsPerPage);
+    numPages = Math.max(numPages, 1);
     var numBtns = Math.min(this.btnBefore + this.btnAfter + 1, numPages);
     var start;
     if (page < this.btnBefore) {

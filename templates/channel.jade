@@ -180,6 +180,13 @@ html(lang="en")
             button.close(data-dismiss="modal", aria-hidden="true") &times;
             h4 Emote List
           .modal-body
+            form.form-inline(action="javascript:void(0)")
+              .form-group
+                input#emotelist-search.form-control(type="text", placeholder="Search")
+              .checkbox
+                label
+                  input#emotelist-alphabetical(type="checkbox")
+                  | Sort alphabetically
             #emotelist-paginator-container
             table
               tbody
