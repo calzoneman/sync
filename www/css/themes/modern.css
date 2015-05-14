@@ -46,6 +46,15 @@ input.form-control[type="email"], textarea.form-control {
     border-radius: 0px !important;
 }
 
+#emotelist table {
+    background-color: #2a2d30;
+}
+
+#emotelist td {
+    background-color: rgba(28, 30, 34, 0.95);
+    border: none;
+}
+
 .profile-image {
     border-radius: 0px;
     border: solid 1px #000000 !important;

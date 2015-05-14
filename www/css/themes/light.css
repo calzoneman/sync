@@ -26,6 +26,10 @@ footer {
     background-color: #ffffff;
 }
 
+#emotelist td {
+    background-color: #f0f0f0;
+}
+
 .chat-shadow {
     color: #aaaaaa;
 }
