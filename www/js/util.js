@@ -1688,7 +1688,14 @@ function chatOnly() {
         .click(function () {
             $("#channeloptions").modal();
         });
+    $("<span/>").addClass("label label-default pull-right pointer")
+        .text("Emote List")
+        .appendTo($("#chatheader"))
+        .click(function () {
+            EMOTELIST.show();
+        });
     setVisible("#showchansettings", CLIENT.rank >= 2);
+
     $("body").addClass("chatOnly");
     handleWindowResize();
 }
