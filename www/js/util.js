@@ -733,9 +733,7 @@ function applyOpts() {
     }
 
     if(USEROPTS.hidevid) {
-        $("#qualitywrap").html("");
         removeVideo();
-        $("#chatwrap").removeClass("col-lg-5 col-md-5").addClass("col-lg-12 col-md-12");
     }
 
     $("#chatbtn").remove();
@@ -1718,7 +1716,7 @@ function handleVideoResize() {
     var intv, ticks = 0;
     var resize = function () {
         if (++ticks > 10) clearInterval(intv);
-        if ($("#ytapiplayer").parent().height() === 0) return;
+        if ($("#ytapiplayer").parent().outerHeight() <= 0) return;
         clearInterval(intv);
 
         var responsiveFrame = $("#ytapiplayer").parent();
