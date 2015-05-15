@@ -2,6 +2,7 @@ TYPE_MAP =
     yt: YouTubePlayer
     vi: VimeoPlayer
     dm: DailymotionPlayer
+    gd: VideoJSPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP

@@ -1,5 +1,5 @@
 (function() {
-  var DailymotionPlayer, Player, TYPE_MAP, VimeoPlayer, YouTubePlayer,
+  var DailymotionPlayer, Player, TYPE_MAP, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -444,10 +444,160 @@
 
   })(Player);
 
+  sortSources = function(sources) {
+    var flv, flvOrder, i, idx, len, nonflv, pref, qualities, quality, qualityOrder, sourceOrder;
+    if (!sources) {
+      console.error('sortSources() called with null source list');
+      return [];
+    }
+    qualities = ['1080', '720', '480', '360', '240'];
+    pref = String(USEROPTS.default_quality);
+    idx = qualities.indexOf(pref);
+    if (idx < 0) {
+      pref = '480';
+    }
+    qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx));
+    sourceOrder = [];
+    flvOrder = [];
+    for (i = 0, len = qualityOrder.length; i < len; i++) {
+      quality = qualityOrder[i];
+      if (quality in sources) {
+        flv = [];
+        nonflv = [];
+        sources[quality].forEach(function(source) {
+          if (source.contentType === 'flv') {
+            return flv.push(source);
+          } else {
+            return nonflv.push(source);
+          }
+        });
+        sourceOrder = sourceOrder.concat(nonflv);
+        flvOrder = flvOrder.concat(flv);
+      }
+    }
+    return sourceOrder.concat(flvOrder).map(function(source) {
+      return {
+        type: "video/" + source.contentType,
+        src: source.link
+      };
+    });
+  };
+
+  window.VideoJSPlayer = VideoJSPlayer = (function(superClass) {
+    extend(VideoJSPlayer, superClass);
+
+    function VideoJSPlayer(data) {
+      if (!(this instanceof VideoJSPlayer)) {
+        return new VideoJSPlayer(data);
+      }
+      this.setMediaProperties(data);
+      waitUntilDefined(window, 'videojs', (function(_this) {
+        return function() {
+          var sources, video;
+          video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item').attr({
+            width: '100%',
+            height: '100%'
+          });
+          removeOld(video);
+          sources = sortSources(data.meta.direct);
+          if (sources.length === 0) {
+            _this.mediaType = null;
+            return;
+          }
+          sources.forEach(function(source) {
+            return $('<source/>').attr('src', source.src).attr('type', source.type).appendTo(video);
+          });
+          _this.player = videojs(video[0], {
+            autoplay: true,
+            controls: true
+          });
+          return _this.player.ready(function() {
+            _this.player.on('ended', function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+            _this.player.on('pause', function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            return _this.player.on('play', function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+          });
+        };
+      })(this));
+    }
+
+    VideoJSPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      if (this.player) {
+        return this.player.src(sortSources(data.meta.direct));
+      } else {
+        return console.log('VideoJSPlayer::load() called but @player is undefined');
+      }
+    };
+
+    VideoJSPlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.play();
+      }
+    };
+
+    VideoJSPlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.pause();
+      }
+    };
+
+    VideoJSPlayer.prototype.seekTo = function(time) {
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.currentTime(time);
+      }
+    };
+
+    VideoJSPlayer.prototype.setVolume = function(volume) {
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.volume(volume);
+      }
+    };
+
+    VideoJSPlayer.prototype.getTime = function(cb) {
+      if (this.player && this.player.readyState() > 0) {
+        return cb(this.player.currentTime());
+      } else {
+        return cb(0);
+      }
+    };
+
+    VideoJSPlayer.prototype.getVolume = function(cb) {
+      if (this.player && this.player.readyState() > 0) {
+        if (this.player.muted()) {
+          return cb(0);
+        } else {
+          return cb(this.player.volume());
+        }
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    return VideoJSPlayer;
+
+  })(Player);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
-    dm: DailymotionPlayer
+    dm: DailymotionPlayer,
+    gd: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {
