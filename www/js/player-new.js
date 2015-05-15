@@ -597,7 +597,8 @@
     yt: YouTubePlayer,
     vi: VimeoPlayer,
     dm: DailymotionPlayer,
-    gd: VideoJSPlayer
+    gd: VideoJSPlayer,
+    gp: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {
@@ -651,13 +652,13 @@
       time = data.currentTime;
       diff = (time - seconds) || time;
       accuracy = USEROPTS.sync_accuracy;
-      if (PLAYER.mediaType === 'dm') {
+      if (PLAYER instanceof DailymotionPlayer) {
         accuracy = Math.max(accuracy, 5);
       }
       if (diff > accuracy) {
         return PLAYER.seekTo(time);
       } else if (diff < -accuracy) {
-        if (PLAYER.mediaType !== 'dm') {
+        if (!(PLAYER instanceof DailymotionPlayer)) {
           time += 1;
         }
         return PLAYER.seekTo(time);

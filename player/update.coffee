@@ -3,6 +3,7 @@ TYPE_MAP =
     vi: VimeoPlayer
     dm: DailymotionPlayer
     gd: VideoJSPlayer
+    gp: VideoJSPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP
@@ -63,9 +64,8 @@ window.handleMediaUpdate = (data) ->
         # Dailymotion can't seek very accurately in Flash due to keyframe
         # placement.  Accuracy should not be set lower than 5 or the video
         # may be very choppy.
-        if PLAYER.mediaType is 'dm' # TODO: instanceof DailymotionPlayer
+        if PLAYER instanceof DailymotionPlayer
             accuracy = Math.max(accuracy, 5)
-
 
         if diff > accuracy
             # The player is behind the correct time
@@ -75,7 +75,7 @@ window.handleMediaUpdate = (data) ->
             # Don't seek all the way back, to account for possible buffering.
             # However, do seek all the way back for Dailymotion due to the
             # keyframe issue mentioned above.
-            if PLAYER.mediaType isnt 'dm' # TODO: instanceof DailymotionPlayer
+            if not (PLAYER instanceof DailymotionPlayer)
                 time += 1
             PLAYER.seekTo(time)
     )
