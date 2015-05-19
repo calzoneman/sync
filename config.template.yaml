@@ -202,6 +202,9 @@ channel-blacklist: []
 #   * ffmpeg must be installed on the server
 ffmpeg:
   enabled: false
+# Executable name for ffprobe if it is not "ffprobe".  On Debian and Ubuntu (on which
+# libav is used rather than ffmpeg proper), this is "avprobe"
+  ffprobe-exec: 'ffprobe'
 
 link-domain-blacklist: []
 
