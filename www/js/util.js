@@ -2854,7 +2854,7 @@ function googlePlusSimulator2014(data) {
 
 function EmoteList() {
     this.modal = $("#emotelist");
-    this.modal.on("hiddn.bs.modal", unhidePlayer);
+    this.modal.on("hidden.bs.modal", unhidePlayer);
     this.table = document.querySelector("#emotelist table");
     this.cols = 5;
     this.itemsPerPage = 25;
