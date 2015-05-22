@@ -621,3 +621,7 @@ table td {
 #emotelist-paginator-container {
     text-align: center;
 }
+
+#leftcontrols .btn {
+    margin-right: 5px;
+}
