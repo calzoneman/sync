@@ -43,6 +43,7 @@ var IGNORED = [];
 var CHATHIST = [];
 var CHATHISTIDX = 0;
 var CHATTHROTTLE = false;
+var CHATMAXSIZE = 100;
 var SCROLLCHAT = true;
 var LASTCHAT = {
     name: ""

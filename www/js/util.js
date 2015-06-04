@@ -1490,10 +1490,7 @@ function addChatMessage(data) {
     div.mouseleave(function() {
         $(".nick-hover").removeClass("nick-hover");
     });
-    // Cap chatbox at most recent 100 messages
-    if($("#messagebuffer").children().length > 100) {
-        $($("#messagebuffer").children()[0]).remove();
-    }
+    trimChatBuffer();
     if(SCROLLCHAT)
         scrollChat();
 
@@ -1507,6 +1504,18 @@ function addChatMessage(data) {
 
     pingMessage(isHighlight);
 
+}
+
+function trimChatBuffer() {
+    var maxSize = window.CHATMAXSIZE;
+    if (!maxSize || typeof maxSize !== "number")
+        maxSize = parseInt(maxSize || 100, 10) || 100;
+    var buffer = document.getElementById("messagebuffer");
+    var count = buffer.childNodes.length - maxSize;
+
+    for (var i = 0; i < count; i++) {
+        buffer.firstChild.remove();
+    }
 }
 
 function pingMessage(isHighlight) {
