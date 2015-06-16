@@ -4,6 +4,7 @@ TYPE_MAP =
     dm: DailymotionPlayer
     gd: VideoJSPlayer
     gp: VideoJSPlayer
+    sc: SoundCloudPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP

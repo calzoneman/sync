@@ -1,5 +1,5 @@
 (function() {
-  var DailymotionPlayer, Player, TYPE_MAP, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
+  var DailymotionPlayer, Player, SoundCloudPlayer, TYPE_MAP, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -593,12 +593,134 @@
 
   })(Player);
 
+  window.SoundCloudPlayer = SoundCloudPlayer = (function(superClass) {
+    extend(SoundCloudPlayer, superClass);
+
+    function SoundCloudPlayer(data) {
+      if (!(this instanceof SoundCloudPlayer)) {
+        return new SoundCloudPlayer(data);
+      }
+      this.setMediaProperties(data);
+      waitUntilDefined(window, 'SC', (function(_this) {
+        return function() {
+          var soundUrl, volumeSlider, widget;
+          removeOld();
+          if (data.meta.scuri) {
+            soundUrl = data.meta.scuri;
+          } else {
+            soundUrl = data.id;
+          }
+          widget = $('<iframe/>').appendTo($('#ytapiplayer'));
+          widget.attr({
+            id: 'scplayer',
+            src: "https://w.soundcloud.com/player/?url=" + soundUrl
+          });
+          volumeSlider = $('<div/>').attr('id', 'widget-volume').css('top', '170px').insertAfter(widget).slider({
+            range: 'min',
+            value: VOLUME * 100,
+            stop: function(event, ui) {
+              return _this.setVolume(ui.value / 100);
+            }
+          });
+          _this.soundcloud = SC.Widget(widget[0]);
+          return _this.soundcloud.bind(SC.Widget.Events.READY, function() {
+            _this.soundcloud.ready = true;
+            _this.setVolume(VOLUME);
+            _this.play();
+            _this.soundcloud.bind(SC.Widget.Events.PAUSE, function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            _this.soundcloud.bind(SC.Widget.Events.PLAY, function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            return _this.soundcloud.bind(SC.Widget.Events.FINISH, function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+          });
+        };
+      })(this));
+    }
+
+    SoundCloudPlayer.prototype.load = function(data) {
+      var soundUrl;
+      this.setMediaProperties(data);
+      if (this.soundcloud && this.soundcloud.ready) {
+        if (data.meta.scuri) {
+          soundUrl = data.meta.scuri;
+        } else {
+          soundUrl = data.id;
+        }
+        return this.soundcloud.load(soundUrl, {
+          auto_play: true
+        });
+      } else {
+        return console.error('SoundCloudPlayer::load() called but soundcloud is not ready');
+      }
+    };
+
+    SoundCloudPlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.play();
+      }
+    };
+
+    SoundCloudPlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.pause();
+      }
+    };
+
+    SoundCloudPlayer.prototype.seekTo = function(time) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.seekTo(time * 1000);
+      }
+    };
+
+    SoundCloudPlayer.prototype.setVolume = function(volume) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.setVolume(volume);
+      }
+    };
+
+    SoundCloudPlayer.prototype.getTime = function(cb) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.getPosition(function(time) {
+          return cb(time / 1000);
+        });
+      } else {
+        return cb(0);
+      }
+    };
+
+    SoundCloudPlayer.prototype.getVolume = function(cb) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.getVolume(cb);
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    return SoundCloudPlayer;
+
+  })(Player);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
     dm: DailymotionPlayer,
     gd: VideoJSPlayer,
-    gp: VideoJSPlayer
+    gp: VideoJSPlayer,
+    sc: SoundCloudPlayer
   };
 
   window.loadMediaPlayer = function(data) {
