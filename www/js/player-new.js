@@ -1,5 +1,5 @@
 (function() {
-  var DailymotionPlayer, LivestreamPlayer, Player, SoundCloudPlayer, TYPE_MAP, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
+  var DailymotionPlayer, LivestreamPlayer, Player, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -737,6 +737,55 @@
 
   })(Player);
 
+  window.twitchEventCallback = function(events) {
+    if (!(PLAYER instanceof TwitchPlayer)) {
+      return false;
+    }
+    return events.forEach(function(event) {
+      if (event.event === 'playerInit') {
+        PLAYER.twitch.unmute();
+        return PLAYER.twitch.ready = true;
+      }
+    });
+  };
+
+  window.TwitchPlayer = TwitchPlayer = (function(superClass) {
+    extend(TwitchPlayer, superClass);
+
+    function TwitchPlayer(data) {
+      if (!(this instanceof TwitchPlayer)) {
+        return new TwitchPlayer(data);
+      }
+      this.load(data);
+    }
+
+    TwitchPlayer.prototype.load = function(data) {
+      var object;
+      this.setMediaProperties(data);
+      object = $('<object/>').attr({
+        data: '//www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf',
+        type: 'application/x-shockwave-flash'
+      });
+      $('<param/>').attr({
+        name: 'allowScriptAccess',
+        value: 'always'
+      }).appendTo(object);
+      $('<param/>').attr({
+        name: 'allowFullScreen',
+        value: 'true'
+      }).appendTo(object);
+      $('<param/>').attr({
+        name: 'flashvars',
+        value: "embed=1&hostname=localhost&channel=" + data.id + "& eventsCallback=twitchEventCallback&auto_play=true&start_volume=" + (Math.floor(VOLUME * 100))
+      }).appendTo(object);
+      removeOld(object);
+      return this.twitch = object[0];
+    };
+
+    return TwitchPlayer;
+
+  })(Player);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
@@ -744,7 +793,8 @@
     gd: VideoJSPlayer,
     gp: VideoJSPlayer,
     sc: SoundCloudPlayer,
-    li: LivestreamPlayer
+    li: LivestreamPlayer,
+    tw: TwitchPlayer
   };
 
   window.loadMediaPlayer = function(data) {

@@ -6,6 +6,7 @@ TYPE_MAP =
     gp: VideoJSPlayer
     sc: SoundCloudPlayer
     li: LivestreamPlayer
+    tw: TwitchPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP
