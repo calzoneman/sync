@@ -1,5 +1,5 @@
 (function() {
-  var DailymotionPlayer, Player, SoundCloudPlayer, TYPE_MAP, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
+  var DailymotionPlayer, LivestreamPlayer, Player, SoundCloudPlayer, TYPE_MAP, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -714,13 +714,37 @@
 
   })(Player);
 
+  window.LivestreamPlayer = LivestreamPlayer = (function(superClass) {
+    extend(LivestreamPlayer, superClass);
+
+    function LivestreamPlayer(data) {
+      if (!(this instanceof LivestreamPlayer)) {
+        return new LivestreamPlayer(data);
+      }
+      this.load(data);
+    }
+
+    LivestreamPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      this.player = $('<iframe/>').attr({
+        src: "https://cdn.livestream.com/embed/" + data.id + "?layout=4&color=0x000000&iconColorOver=0xe7e7e7&iconColor=0xcccccc",
+        frameborder: '0'
+      });
+      return removeOld(this.player);
+    };
+
+    return LivestreamPlayer;
+
+  })(Player);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
     dm: DailymotionPlayer,
     gd: VideoJSPlayer,
     gp: VideoJSPlayer,
-    sc: SoundCloudPlayer
+    sc: SoundCloudPlayer,
+    li: LivestreamPlayer
   };
 
   window.loadMediaPlayer = function(data) {
