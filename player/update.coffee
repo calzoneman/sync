@@ -7,6 +7,7 @@ TYPE_MAP =
     sc: SoundCloudPlayer
     li: LivestreamPlayer
     tw: TwitchPlayer
+    cu: CustomEmbedPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP

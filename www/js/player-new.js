@@ -1,5 +1,5 @@
 (function() {
-  var DailymotionPlayer, LivestreamPlayer, Player, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, sortSources,
+  var CustomEmbedPlayer, DailymotionPlayer, LivestreamPlayer, Player, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -786,6 +786,67 @@
 
   })(Player);
 
+  genParam = function(name, value) {
+    return $('<param/>').attr({
+      name: name,
+      value: value
+    });
+  };
+
+  window.CustomEmbedPlayer = CustomEmbedPlayer = (function(superClass) {
+    extend(CustomEmbedPlayer, superClass);
+
+    function CustomEmbedPlayer(data) {
+      if (!(this instanceof CustomEmbedPlayer)) {
+        return new CustomEmbedPlayer(data);
+      }
+      this.load(data);
+    }
+
+    CustomEmbedPlayer.prototype.load = function(data) {
+      var embed;
+      embed = data.meta.embed;
+      if (embed == null) {
+        console.error('CustomEmbedPlayer::load(): missing meta.embed');
+        return;
+      }
+      if (embed.tag === 'object') {
+        this.player = this.loadObject(embed);
+      } else {
+        this.player = this.loadIframe(embed);
+      }
+      return removeOld(this.player);
+    };
+
+    CustomEmbedPlayer.prototype.loadObject = function(embed) {
+      var key, object, ref, value;
+      object = $('<object/>').attr({
+        type: 'application/x-shockwave-flash',
+        data: embed.src
+      });
+      genParam('allowfullscreen', 'true').appendTo(object);
+      genParam('allowscriptaccess', 'always').appendTo(object);
+      ref = embed.params;
+      for (key in ref) {
+        value = ref[key];
+        genParam(key, value).appendTo(object);
+      }
+      return object;
+    };
+
+    CustomEmbedPlayer.prototype.loadIframe = function(embed) {
+      var iframe;
+      iframe = $('<iframe/>').attr({
+        src: embed.src,
+        frameborder: '0'
+      });
+      return iframe;
+    };
+
+    return CustomEmbedPlayer;
+
+  })(Player);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
@@ -794,7 +855,8 @@
     gp: VideoJSPlayer,
     sc: SoundCloudPlayer,
     li: LivestreamPlayer,
-    tw: TwitchPlayer
+    tw: TwitchPlayer,
+    cu: CustomEmbedPlayer
   };
 
   window.loadMediaPlayer = function(data) {
