@@ -42,6 +42,7 @@
     overflow-x: hidden;
     overflow-y: scroll;
     margin-bottom: 0;
+    font-family: Consolas;
 }
 
 #chatline, #guestlogin > input, #guestlogin > .input-group-addon {
