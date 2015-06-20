@@ -8,6 +8,7 @@ TYPE_MAP =
     li: LivestreamPlayer
     tw: TwitchPlayer
     cu: CustomEmbedPlayer
+    rt: RTMPPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP

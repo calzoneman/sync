@@ -1,5 +1,5 @@
 (function() {
-  var CustomEmbedPlayer, DailymotionPlayer, LivestreamPlayer, Player, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
+  var CustomEmbedPlayer, DailymotionPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -847,6 +847,42 @@
 
   })(Player);
 
+  window.rtmpEventHandler = function(id, event, data) {
+    if (event === 'volumechange') {
+      return PLAYER.volume = data.muted ? 0 : data.volume;
+    }
+  };
+
+  window.RTMPPlayer = RTMPPlayer = (function(superClass) {
+    extend(RTMPPlayer, superClass);
+
+    function RTMPPlayer(data) {
+      if (!(this instanceof RTMPPlayer)) {
+        return new RTMPPlayer(data);
+      }
+      this.volume = VOLUME;
+      this.load(data);
+    }
+
+    RTMPPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        tag: 'object',
+        src: 'https://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf',
+        params: {
+          flashvars: "src=" + data.id + "&streamType=live&javascriptCallbackFunction=rtmpEventHandler&autoPlay=true&volume=" + VOLUME
+        }
+      };
+      return RTMPPlayer.__super__.load.call(this, data);
+    };
+
+    RTMPPlayer.prototype.getVolume = function(cb) {
+      return cb(this.volume);
+    };
+
+    return RTMPPlayer;
+
+  })(CustomEmbedPlayer);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
@@ -856,7 +892,8 @@
     sc: SoundCloudPlayer,
     li: LivestreamPlayer,
     tw: TwitchPlayer,
-    cu: CustomEmbedPlayer
+    cu: CustomEmbedPlayer,
+    rt: RTMPPlayer
   };
 
   window.loadMediaPlayer = function(data) {
