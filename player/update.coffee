@@ -9,6 +9,7 @@ TYPE_MAP =
     tw: TwitchPlayer
     cu: CustomEmbedPlayer
     rt: RTMPPlayer
+    hb: HitboxPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP

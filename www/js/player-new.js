@@ -1,5 +1,5 @@
 (function() {
-  var CustomEmbedPlayer, DailymotionPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
+  var CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, HITBOX_ERROR, HitboxPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -786,6 +786,8 @@
 
   })(Player);
 
+  DEFAULT_ERROR = 'You are currently connected via HTTPS but the embedded content uses non-secure plain HTTP.  Your browser therefore blocks it from loading due to mixed content policy.  To fix this, embed the video using a secure link if available (https://...), or load this page over plain HTTP by replacing "https://" with "http://" in the address bar (your websocket will still be secured using HTTPS, but this will permit non-secure content to load).';
+
   genParam = function(name, value) {
     return $('<param/>').attr({
       name: name,
@@ -835,12 +837,23 @@
     };
 
     CustomEmbedPlayer.prototype.loadIframe = function(embed) {
-      var iframe;
-      iframe = $('<iframe/>').attr({
-        src: embed.src,
-        frameborder: '0'
-      });
-      return iframe;
+      var alert, error, iframe;
+      if (embed.src.indexOf('http:') === 0 && location.protocol === 'https:') {
+        if (embed.mixedContentError != null) {
+          error = embed.mixedContentError;
+        } else {
+          error = DEFAULT_ERROR;
+        }
+        alert = makeAlert('Mixed Content Error', error, 'alert-danger').removeClass('col-md-12');
+        alert.find('.close').remove();
+        return alert;
+      } else {
+        iframe = $('<iframe/>').attr({
+          src: embed.src,
+          frameborder: '0'
+        });
+        return iframe;
+      }
     };
 
     return CustomEmbedPlayer;
@@ -883,6 +896,31 @@
 
   })(CustomEmbedPlayer);
 
+  HITBOX_ERROR = 'Hitbox.tv only serves its content over plain HTTP, but you are viewing this page over secure HTTPS.  Your browser therefore blocks the hitbox embed due to mixed content policy.  In order to view hitbox, you must view this page over plain HTTP (change "https://" to "http://" in the address bar)-- your websocket will still be connected using secure HTTPS.  This is something I have asked Hitbox to fix but they have not done so yet.';
+
+  window.HitboxPlayer = HitboxPlayer = (function(superClass) {
+    extend(HitboxPlayer, superClass);
+
+    function HitboxPlayer(data) {
+      if (!(this instanceof HitboxPlayer)) {
+        return new HitboxPlayer(data);
+      }
+      this.load(data);
+    }
+
+    HitboxPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        src: "http://hitbox.tv/embed/" + data.id,
+        tag: 'iframe',
+        mixedContentError: HITBOX_ERROR
+      };
+      return HitboxPlayer.__super__.load.call(this, data);
+    };
+
+    return HitboxPlayer;
+
+  })(CustomEmbedPlayer);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
@@ -893,7 +931,8 @@
     li: LivestreamPlayer,
     tw: TwitchPlayer,
     cu: CustomEmbedPlayer,
-    rt: RTMPPlayer
+    rt: RTMPPlayer,
+    hb: HitboxPlayer
   };
 
   window.loadMediaPlayer = function(data) {
