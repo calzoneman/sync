@@ -1,5 +1,5 @@
 (function() {
-  var CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, HITBOX_ERROR, HitboxPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
+  var CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -921,6 +921,50 @@
 
   })(CustomEmbedPlayer);
 
+  window.UstreamPlayer = UstreamPlayer = (function(superClass) {
+    extend(UstreamPlayer, superClass);
+
+    function UstreamPlayer(data) {
+      if (!(this instanceof UstreamPlayer)) {
+        return new UstreamPlayer(data);
+      }
+      this.load(data);
+    }
+
+    UstreamPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        tag: 'iframe',
+        src: "https://www.ustream.tv/embed/" + data.id + "?v=3&wmode=direct&autoplay=1"
+      };
+      return UstreamPlayer.__super__.load.call(this, data);
+    };
+
+    return UstreamPlayer;
+
+  })(CustomEmbedPlayer);
+
+  window.ImgurPlayer = ImgurPlayer = (function(superClass) {
+    extend(ImgurPlayer, superClass);
+
+    function ImgurPlayer(data) {
+      if (!(this instanceof ImgurPlayer)) {
+        return new ImgurPlayer(data);
+      }
+      this.load(data);
+    }
+
+    ImgurPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        tag: 'iframe',
+        src: "https://imgur.com/a/" + data.id + "/embed"
+      };
+      return ImgurPlayer.__super__.load.call(this, data);
+    };
+
+    return ImgurPlayer;
+
+  })(CustomEmbedPlayer);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
@@ -932,7 +976,9 @@
     tw: TwitchPlayer,
     cu: CustomEmbedPlayer,
     rt: RTMPPlayer,
-    hb: HitboxPlayer
+    hb: HitboxPlayer,
+    us: UstreamPlayer,
+    im: ImgurPlayer
   };
 
   window.loadMediaPlayer = function(data) {

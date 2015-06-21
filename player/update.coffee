@@ -10,6 +10,8 @@ TYPE_MAP =
     cu: CustomEmbedPlayer
     rt: RTMPPlayer
     hb: HitboxPlayer
+    us: UstreamPlayer
+    im: ImgurPlayer
 
 window.loadMediaPlayer = (data) ->
     if data.type of TYPE_MAP
