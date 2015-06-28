@@ -17,6 +17,7 @@ sortSources = (sources) ->
             flv = []
             nonflv = []
             sources[quality].forEach((source) ->
+                source.quality = quality
                 if source.contentType == 'flv'
                     flv.push(source)
                 else
@@ -28,6 +29,7 @@ sortSources = (sources) ->
     return sourceOrder.concat(flvOrder).map((source) ->
         type: "video/#{source.contentType}"
         src: source.link
+        quality: source.quality
     )
 
 window.VideoJSPlayer = class VideoJSPlayer extends Player
@@ -45,18 +47,17 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
 
             sources = sortSources(data.meta.direct)
             if sources.length == 0
-                # Temporary fix for race condition caused by channel playlist
-                # sending a changeMedia in onPostUserJoin before mediarefresher
-                # has refreshed it.
-                # TODO: Actually fix this on the server side rather than this
-                # hack.
+                console.error('VideoJSPlayer::constructor(): data.meta.direct
+                               has no sources!')
                 @mediaType = null
                 return
 
             sources.forEach((source) ->
-                $('<source/>').attr('src', source.src)
-                    .attr('type', source.type)
-                    .appendTo(video)
+                $('<source/>').attr(
+                    src: source.src
+                    type: source.type
+                    'data-quality': source.quality
+                ).appendTo(video)
             )
 
             @player = videojs(video[0], autoplay: true, controls: true)

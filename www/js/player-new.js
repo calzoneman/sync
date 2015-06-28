@@ -465,6 +465,7 @@
         flv = [];
         nonflv = [];
         sources[quality].forEach(function(source) {
+          source.quality = quality;
           if (source.contentType === 'flv') {
             return flv.push(source);
           } else {
@@ -478,7 +479,8 @@
     return sourceOrder.concat(flvOrder).map(function(source) {
       return {
         type: "video/" + source.contentType,
-        src: source.link
+        src: source.link,
+        quality: source.quality
       };
     });
   };
@@ -501,11 +503,16 @@
           removeOld(video);
           sources = sortSources(data.meta.direct);
           if (sources.length === 0) {
+            console.error('VideoJSPlayer::constructor(): data.meta.direct has no sources!');
             _this.mediaType = null;
             return;
           }
           sources.forEach(function(source) {
-            return $('<source/>').attr('src', source.src).attr('type', source.type).appendTo(video);
+            return $('<source/>').attr({
+              src: source.src,
+              type: source.type,
+              'data-quality': source.quality
+            }).appendTo(video);
           });
           _this.player = videojs(video[0], {
             autoplay: true,
@@ -983,7 +990,9 @@
 
   window.loadMediaPlayer = function(data) {
     var e;
-    if (data.type in TYPE_MAP) {
+    if (data.meta.direct) {
+      return window.PLAYER = new VideoJSPlayer(data);
+    } else if (data.type in TYPE_MAP) {
       try {
         return window.PLAYER = TYPE_MAP[data.type](data);
       } catch (_error) {

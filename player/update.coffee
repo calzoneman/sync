@@ -14,7 +14,9 @@ TYPE_MAP =
     im: ImgurPlayer
 
 window.loadMediaPlayer = (data) ->
-    if data.type of TYPE_MAP
+    if data.meta.direct
+        window.PLAYER = new VideoJSPlayer(data)
+    else if data.type of TYPE_MAP
         try
             window.PLAYER = TYPE_MAP[data.type](data)
         catch e
