@@ -1,5 +1,5 @@
 (function() {
-  var CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -802,21 +802,22 @@
     });
   };
 
-  window.CustomEmbedPlayer = CustomEmbedPlayer = (function(superClass) {
-    extend(CustomEmbedPlayer, superClass);
+  window.EmbedPlayer = EmbedPlayer = (function(superClass) {
+    extend(EmbedPlayer, superClass);
 
-    function CustomEmbedPlayer(data) {
-      if (!(this instanceof CustomEmbedPlayer)) {
-        return new CustomEmbedPlayer(data);
+    function EmbedPlayer(data) {
+      if (!(this instanceof EmbedPlayer)) {
+        return new EmbedPlayer(data);
       }
       this.load(data);
     }
 
-    CustomEmbedPlayer.prototype.load = function(data) {
+    EmbedPlayer.prototype.load = function(data) {
       var embed;
+      this.setMediaProperties(data);
       embed = data.meta.embed;
       if (embed == null) {
-        console.error('CustomEmbedPlayer::load(): missing meta.embed');
+        console.error('EmbedPlayer::load(): missing meta.embed');
         return;
       }
       if (embed.tag === 'object') {
@@ -827,7 +828,7 @@
       return removeOld(this.player);
     };
 
-    CustomEmbedPlayer.prototype.loadObject = function(embed) {
+    EmbedPlayer.prototype.loadObject = function(embed) {
       var key, object, ref, value;
       object = $('<object/>').attr({
         type: 'application/x-shockwave-flash',
@@ -843,11 +844,11 @@
       return object;
     };
 
-    CustomEmbedPlayer.prototype.loadIframe = function(embed) {
+    EmbedPlayer.prototype.loadIframe = function(embed) {
       var alert, error, iframe;
       if (embed.src.indexOf('http:') === 0 && location.protocol === 'https:') {
-        if (embed.mixedContentError != null) {
-          error = embed.mixedContentError;
+        if (this.__proto__.mixedContentError != null) {
+          error = this.__proto__.mixedContentError;
         } else {
           error = DEFAULT_ERROR;
         }
@@ -863,9 +864,42 @@
       }
     };
 
-    return CustomEmbedPlayer;
+    return EmbedPlayer;
 
   })(Player);
+
+  CUSTOM_EMBED_WARNING = 'This channel is embedding custom content from %link%. Since this content is not trusted, you must click "Embed" below to allow the content to be embedded.<hr>';
+
+  window.CustomEmbedPlayer = CustomEmbedPlayer = (function(superClass) {
+    extend(CustomEmbedPlayer, superClass);
+
+    function CustomEmbedPlayer(data) {
+      if (!(this instanceof CustomEmbedPlayer)) {
+        return new CustomEmbedPlayer(data);
+      }
+      this.load(data);
+    }
+
+    CustomEmbedPlayer.prototype.load = function(data) {
+      var alert, embedSrc, link;
+      if (data.meta.embed == null) {
+        console.error('CustomEmbedPlayer::load(): missing meta.embed');
+        return;
+      }
+      embedSrc = data.meta.embed.src;
+      link = "<a href=\"" + embedSrc + "\" target=\"_blank\"><strong>" + embedSrc + "</strong></a>";
+      alert = makeAlert('Untrusted Content', CUSTOM_EMBED_WARNING.replace('%link%', link), 'alert-warning').removeClass('col-md-12');
+      $('<button/>').addClass('btn btn-default').text('Embed').click((function(_this) {
+        return function() {
+          return CustomEmbedPlayer.__super__.load.call(_this, data);
+        };
+      })(this)).appendTo(alert.find('.alert'));
+      return removeOld(alert);
+    };
+
+    return CustomEmbedPlayer;
+
+  })(EmbedPlayer);
 
   window.rtmpEventHandler = function(id, event, data) {
     if (event === 'volumechange') {
@@ -901,7 +935,7 @@
 
     return RTMPPlayer;
 
-  })(CustomEmbedPlayer);
+  })(EmbedPlayer);
 
   HITBOX_ERROR = 'Hitbox.tv only serves its content over plain HTTP, but you are viewing this page over secure HTTPS.  Your browser therefore blocks the hitbox embed due to mixed content policy.  In order to view hitbox, you must view this page over plain HTTP (change "https://" to "http://" in the address bar)-- your websocket will still be connected using secure HTTPS.  This is something I have asked Hitbox to fix but they have not done so yet.';
 
@@ -918,15 +952,16 @@
     HitboxPlayer.prototype.load = function(data) {
       data.meta.embed = {
         src: "http://hitbox.tv/embed/" + data.id,
-        tag: 'iframe',
-        mixedContentError: HITBOX_ERROR
+        tag: 'iframe'
       };
       return HitboxPlayer.__super__.load.call(this, data);
     };
 
+    HitboxPlayer.prototype.mixedContentError = HITBOX_ERROR;
+
     return HitboxPlayer;
 
-  })(CustomEmbedPlayer);
+  })(EmbedPlayer);
 
   window.UstreamPlayer = UstreamPlayer = (function(superClass) {
     extend(UstreamPlayer, superClass);
@@ -948,7 +983,7 @@
 
     return UstreamPlayer;
 
-  })(CustomEmbedPlayer);
+  })(EmbedPlayer);
 
   window.ImgurPlayer = ImgurPlayer = (function(superClass) {
     extend(ImgurPlayer, superClass);
@@ -970,7 +1005,7 @@
 
     return ImgurPlayer;
 
-  })(CustomEmbedPlayer);
+  })(EmbedPlayer);
 
   TYPE_MAP = {
     yt: YouTubePlayer,

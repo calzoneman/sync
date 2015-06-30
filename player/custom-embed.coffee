@@ -1,17 +1,8 @@
-DEFAULT_ERROR = 'You are currently connected via HTTPS but the embedded content
-    uses non-secure plain HTTP.  Your browser therefore blocks it from
-    loading due to mixed content policy.  To fix this, embed the video using a
-    secure link if available (https://...), or load this page over plain HTTP by
-    replacing "https://" with "http://" in the address bar (your websocket will
-    still be secured using HTTPS, but this will permit non-secure content to load).'
+CUSTOM_EMBED_WARNING = 'This channel is embedding custom content from %link%.
+    Since this content is not trusted, you must click "Embed" below to allow
+    the content to be embedded.<hr>'
 
-genParam = (name, value) ->
-    $('<param/>').attr(
-        name: name
-        value: value
-    )
-
-window.CustomEmbedPlayer = class CustomEmbedPlayer extends Player
+window.CustomEmbedPlayer = class CustomEmbedPlayer extends EmbedPlayer
     constructor: (data) ->
         if not (this instanceof CustomEmbedPlayer)
             return new CustomEmbedPlayer(data)
@@ -19,45 +10,19 @@ window.CustomEmbedPlayer = class CustomEmbedPlayer extends Player
         @load(data)
 
     load: (data) ->
-        embed = data.meta.embed
-        if not embed?
+        if not data.meta.embed?
             console.error('CustomEmbedPlayer::load(): missing meta.embed')
             return
 
-        if embed.tag == 'object'
-            @player = @loadObject(embed)
-        else
-            @player = @loadIframe(embed)
-
-        removeOld(@player)
-
-    loadObject: (embed) ->
-        object = $('<object/>').attr(
-            type: 'application/x-shockwave-flash'
-            data: embed.src
-        )
-        genParam('allowfullscreen', 'true').appendTo(object)
-        genParam('allowscriptaccess', 'always').appendTo(object)
-
-        for key, value of embed.params
-            genParam(key, value).appendTo(object)
-
-        return object
-
-    loadIframe: (embed) ->
-        if embed.src.indexOf('http:') == 0 and location.protocol == 'https:'
-            if embed.mixedContentError?
-                error = embed.mixedContentError
-            else
-                error = DEFAULT_ERROR
-            alert = makeAlert('Mixed Content Error', error, 'alert-danger')
-                .removeClass('col-md-12')
-            alert.find('.close').remove()
-            return alert
-        else
-            iframe = $('<iframe/>').attr(
-                src: embed.src
-                frameborder: '0'
+        embedSrc = data.meta.embed.src
+        link = "<a href=\"#{embedSrc}\" target=\"_blank\"><strong>#{embedSrc}</strong></a>"
+        alert = makeAlert('Untrusted Content', CUSTOM_EMBED_WARNING.replace('%link%', link),
+            'alert-warning')
+            .removeClass('col-md-12')
+        $('<button/>').addClass('btn btn-default')
+            .text('Embed')
+            .click(=>
+                super(data)
             )
-
-            return iframe
+            .appendTo(alert.find('.alert'))
+        removeOld(alert)

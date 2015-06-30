@@ -1,4 +1,4 @@
-window.UstreamPlayer = class UstreamPlayer extends CustomEmbedPlayer
+window.UstreamPlayer = class UstreamPlayer extends EmbedPlayer
     constructor: (data) ->
         if not (this instanceof UstreamPlayer)
             return new UstreamPlayer(data)

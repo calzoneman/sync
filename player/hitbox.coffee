@@ -5,7 +5,7 @@ HITBOX_ERROR = 'Hitbox.tv only serves its content over plain HTTP, but you are
     bar)-- your websocket will still be connected using secure HTTPS.  This is
     something I have asked Hitbox to fix but they have not done so yet.'
 
-window.HitboxPlayer = class HitboxPlayer extends CustomEmbedPlayer
+window.HitboxPlayer = class HitboxPlayer extends EmbedPlayer
     constructor: (data) ->
         if not (this instanceof HitboxPlayer)
             return new HitboxPlayer(data)
@@ -16,5 +16,6 @@ window.HitboxPlayer = class HitboxPlayer extends CustomEmbedPlayer
         data.meta.embed =
             src: "http://hitbox.tv/embed/#{data.id}"
             tag: 'iframe'
-            mixedContentError: HITBOX_ERROR
         super(data)
+
+    mixedContentError: HITBOX_ERROR

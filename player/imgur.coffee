@@ -1,4 +1,4 @@
-window.ImgurPlayer = class ImgurPlayer extends CustomEmbedPlayer
+window.ImgurPlayer = class ImgurPlayer extends EmbedPlayer
     constructor: (data) ->
         if not (this instanceof ImgurPlayer)
             return new ImgurPlayer(data)
