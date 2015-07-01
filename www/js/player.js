@@ -1,1206 +1,1158 @@
-var VIMEO_FLASH = false;
+(function() {
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, guessMimeTypeBecauseBrowsersAreDumb, sortSources,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-function removeOld(replace) {
-    $("#sc_volume").remove();
-    replace = replace || $("<div/>").addClass("embed-responsive-item");
-    var old = $("#ytapiplayer");
-    replace.insertBefore(old);
-    old.remove();
-    replace.attr("id", "ytapiplayer");
-}
+  window.Player = Player = (function() {
+    function Player(data) {
+      if (!(this instanceof Player)) {
+        return new Player(data);
+      }
+      this.setMediaProperties(data);
+      this.paused = false;
+    }
 
-var YouTubePlayer = function (data) {
-    var self = this;
-    waitUntilDefined(window, "YT", function () {
-        waitUntilDefined(YT, "Player", function () {
+    Player.prototype.load = function(data) {
+      return this.setMediaProperties(data);
+    };
+
+    Player.prototype.setMediaProperties = function(data) {
+      this.mediaId = data.id;
+      this.mediaType = data.type;
+      return this.mediaLength = data.seconds;
+    };
+
+    Player.prototype.play = function() {
+      return this.paused = false;
+    };
+
+    Player.prototype.pause = function() {
+      return this.paused = true;
+    };
+
+    Player.prototype.seekTo = function(time) {};
+
+    Player.prototype.setVolume = function(volume) {};
+
+    Player.prototype.getTime = function(cb) {
+      return cb(0);
+    };
+
+    Player.prototype.isPaused = function(cb) {
+      return cb(this.paused);
+    };
+
+    Player.prototype.getVolume = function(cb) {
+      return cb(VOLUME);
+    };
+
+    return Player;
+
+  })();
+
+  window.VimeoPlayer = VimeoPlayer = (function(superClass) {
+    extend(VimeoPlayer, superClass);
+
+    function VimeoPlayer(data) {
+      if (!(this instanceof VimeoPlayer)) {
+        return new VimeoPlayer(data);
+      }
+      this.load(data);
+    }
+
+    VimeoPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      return waitUntilDefined(window, '$f', (function(_this) {
+        return function() {
+          var video;
+          video = $('<iframe/>');
+          removeOld(video);
+          video.attr({
+            src: "https://player.vimeo.com/video/" + data.id + "?api=1&player_id=ytapiplayer",
+            webkitallowfullscreen: true,
+            mozallowfullscreen: true,
+            allowfullscreen: true
+          });
+          if (USEROPTS.wmode_transparent) {
+            video.attr('wmode', 'transparent');
+          }
+          return $f(video[0]).addEvent('ready', function() {
+            _this.vimeo = $f(video[0]);
+            _this.play();
+            _this.vimeo.addEvent('finish', function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+            _this.vimeo.addEvent('pause', function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            _this.vimeo.addEvent('play', function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            return _this.setVolume(VOLUME);
+          });
+        };
+      })(this));
+    };
+
+    VimeoPlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.vimeo) {
+        return this.vimeo.api('play');
+      }
+    };
+
+    VimeoPlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.vimeo) {
+        return this.vimeo.api('pause');
+      }
+    };
+
+    VimeoPlayer.prototype.seekTo = function(time) {
+      if (this.vimeo) {
+        return this.vimeo.api('seekTo', time);
+      }
+    };
+
+    VimeoPlayer.prototype.setVolume = function(volume) {
+      if (this.vimeo) {
+        return this.vimeo.api('setVolume', volume);
+      }
+    };
+
+    VimeoPlayer.prototype.getTime = function(cb) {
+      if (this.vimeo) {
+        return this.vimeo.api('getCurrentTime', function(time) {
+          return cb(parseFloat(time));
+        });
+      } else {
+        return cb(0);
+      }
+    };
+
+    VimeoPlayer.prototype.getVolume = function(cb) {
+      if (this.vimeo) {
+        return this.vimeo.api('getVolume', cb);
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    return VimeoPlayer;
+
+  })(Player);
+
+  window.YouTubePlayer = YouTubePlayer = (function(superClass) {
+    extend(YouTubePlayer, superClass);
+
+    function YouTubePlayer(data) {
+      if (!(this instanceof YouTubePlayer)) {
+        return new YouTubePlayer(data);
+      }
+      this.setMediaProperties(data);
+      this.qualityRaceCondition = true;
+      this.pauseSeekRaceCondition = false;
+      waitUntilDefined(window, 'YT', (function(_this) {
+        return function() {
+          return waitUntilDefined(YT, 'Player', function() {
+            var wmode;
             removeOld();
-            self.paused = false;
-            self.videoId = data.id;
-            self.videoLength = data.seconds;
-            self.theYouTubeDevsNeedToFixThisShit = false;
-            self.whyDoesSetPlaybackQualityHaveARaceCondition = true;
-            var wmode = USEROPTS.wmode_transparent ? "transparent" : "opaque";
-            self.player = new YT.Player("ytapiplayer", {
-                videoId: data.id,
-                playerVars: {
-                    autohide: 1,        // Autohide controls
-                    autoplay: 1,        // Autoplay video
-                    controls: 1,        // Show controls
-                    iv_load_policy: 3,  // No annotations
-                    rel: 0,             // No related videos
-                    wmode: wmode
-                },
-                events: {
-                    onReady: function () {
-                        PLAYER.setVolume(VOLUME);
-                    },
-                    onStateChange: function (ev) {
-                        if (self.whyDoesSetPlaybackQualityHaveARaceCondition) {
-                            self.whyDoesSetPlaybackQualityHaveARaceCondition = false;
-
-                            if (USEROPTS.default_quality) {
-                                self.player.setPlaybackQuality(USEROPTS.default_quality);
-                            }
-                        }
-
-                        /**
-                         * Race conditions suck.
-                         * Race conditions in other peoples' code that you can't fix
-                         * but are forced to work around suck more.
-                         */
-                        if (ev.data === YT.PlayerState.PLAYING &&
-                            self.theYouTubeDevsNeedToFixThisShit) {
-
-                            if (USEROPTS.default_quality) {
-                                self.player.setPlaybackQuality(USEROPTS.default_quality);
-                            }
-                            PLAYER.pause();
-                            self.theYouTubeDevsNeedToFixThisShit = false;
-                        }
-
-                        if(PLAYER.paused && ev.data != YT.PlayerState.PAUSED ||
-                           !PLAYER.paused && ev.data == YT.PlayerState.PAUSED) {
-                            self.paused = (ev.data == YT.PlayerState.PAUSED);
-                            if(CLIENT.leader)
-                                sendVideoUpdate();
-                        }
-                        else {
-                            self.paused = (ev.data == YT.PlayerState.PAUSED);
-                        }
-                        if(CLIENT.leader && ev.data == YT.PlayerState.ENDED) {
-                            socket.emit("playNext");
-                        }
-                    }
-                }
+            wmode = USEROPTS.wmode_transparent ? 'transparent' : 'opaque';
+            return _this.yt = new YT.Player('ytapiplayer', {
+              videoId: data.id,
+              playerVars: {
+                autohide: 1,
+                autoplay: 1,
+                controls: 1,
+                iv_load_policy: 3,
+                rel: 0,
+                wmode: wmode
+              },
+              events: {
+                onReady: _this.onReady.bind(_this),
+                onStateChange: _this.onStateChange.bind(_this)
+              }
             });
-            $("#ytapiplayer").css("border", "none");
-        });
-    });
-
-    self.load = function (data) {
-        if(self.player && self.player.loadVideoById) {
-            self.player.loadVideoById(data.id, data.currentTime);
-            self.whyDoesSetPlaybackQualityHaveARaceCondition = true;
-            if (USEROPTS.default_quality) {
-                // Try to set it ahead of time, if that works
-                // If not, the onStateChange callback will try again anyways
-                self.player.setPlaybackQuality(USEROPTS.default_quality);
-            }
-            self.videoId = data.id;
-            self.videoLength = data.seconds;
-        }
-    };
-
-    self.pause = function () {
-        if(self.player && self.player.pauseVideo)
-            self.player.pauseVideo();
-    };
-
-    self.play = function () {
-        if(self.player && self.player.playVideo)
-            self.player.playVideo();
-    };
-
-    self.getTime = function (callback) {
-        if(self.player && self.player.getCurrentTime)
-            callback(self.player.getCurrentTime());
-    };
-
-    self.seek = function (time) {
-        if(self.player && self.player.seekTo)
-            self.player.seekTo(time, true);
-    };
-
-    self.getVolume = function (cb) {
-        if (!self.player || !self.player.getVolume || !self.player.isMuted) {
-            return;
-        }
-
-        // YouTube's API is strange in the sense that getVolume() returns
-        // the regular (unmuted) volume even if it is muted...
-        // YouTube's volume is 0..100, normalize it to 0..1
-        var vol = self.player.isMuted() ? 0 : (self.player.getVolume() / 100);
-        cb(vol);
-    };
-
-    self.setVolume = function (vol) {
-        if (self.player && self.player.setVolume) {
-            if (vol > 0) {
-                self.player.unMute();
-            }
-            self.player.setVolume(vol * 100);
-        }
-    };
-};
-
-var VimeoPlayer = function (data) {
-    var self = this;
-    waitUntilDefined(window, "$f", function () {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init = function () {
-            var iframe = $("<iframe/>");
-            removeOld(iframe);
-            var prto = location.protocol;
-            iframe.attr("src", prto+"//player.vimeo.com/video/"+self.videoId+"?api=1&player_id=ytapiplayer");
-            iframe.attr("webkitAllowFullScreen", "");
-            iframe.attr("mozallowfullscreen", "");
-            iframe.attr("allowFullScreen", "");
-            if(USEROPTS.wmode_transparent)
-                iframe.attr("wmode", "transparent");
-            iframe.css("border", "none");
-
-            $f(iframe[0]).addEvent("ready", function () {
-                self.player = $f(iframe[0]);
-                self.player.api("play");
-
-                self.player.addEvent("finish", function () {
-                    if(CLIENT.leader) {
-                        socket.emit("playNext");
-                    }
-                });
-
-                self.player.addEvent("pause", function () {
-                    self.paused = true;
-                    if(CLIENT.leader)
-                        sendVideoUpdate();
-                });
-
-                self.player.addEvent("play", function () {
-                    self.paused = false;
-                    if(CLIENT.leader)
-                        sendVideoUpdate();
-                });
-
-                self.setVolume(VOLUME);
-            }.bind(self));
+          });
         };
+      })(this));
+    }
 
-        self.load = function (data) {
-            self.videoId = data.id;
-            self.videoLength = data.seconds;
-            self.init();
-        };
-
-        self.pause = function () {
-            if(self.player && self.player.api)
-                self.player.api("pause");
-        };
-
-        self.play = function () {
-            if(self.player && self.player.api)
-                self.player.api("play");
-        };
-
-        self.getTime = function (callback) {
-            if(self.player && self.player.api) {
-                // Vimeo api returns time as a string because fuck logic
-                self.player.api("getCurrentTime", function (time) {
-                    callback(parseFloat(time));
-                });
-            }
-        };
-
-        self.seek = function(time) {
-            if(self.player && self.player.api)
-                self.player.api("seekTo", time);
-        };
-
-        self.getVolume = function (cb) {
-            if (self.player && self.player.api) {
-                self.player.api("getVolume", cb);
-            }
-        };
-
-        self.setVolume = function (vol) {
-            self.player.api("setVolume", vol);
-        };
-
-        self.init();
-    });
-};
-
-var VimeoFlashPlayer = function (data) {
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        removeOld();
-        var prto = location.protocol;
-        var url = prto+"//vimeo.com/moogaloop.swf?clip_id="+self.videoId;
-        url += "&" + [
-            "server=vimeo.com",
-            "api=2",
-            "show_title=0",
-            "show_byline=0",
-            "show_portrait=0",
-            "fullscreen=1",
-            "loop=0"
-        ].join("&");
-        var flashvars = {
-            api: 2,
-            player_id: "ytapiplayer"
-        };
-        var params = {
-            allowfullscreen: true,
-            allowScriptAccess: "always",
-            wmode: USEROPTS.wmode_transparent ? "transparent" : undefined
-        };
-        swfobject.embedSWF(url,
-                           "ytapiplayer",
-                           VWIDTH,
-                           VHEIGHT,
-                           "9.0.0",
-                           "expressInstall.swf",
-                           flashvars,
-                           params);
-
-        self.player = $("#ytapiplayer")[0];
-        waitUntilDefined(self.player, "api_addEventListener", function () {
-            self.player.api_addEventListener("ready", function () {
-                self.player.api_play();
-
-                self.player.api_addEvent("finish", function () {
-                    if(CLIENT.leader)
-                        socket.emit("playNext");
-                });
-
-                self.player.api_addEvent("pause", function () {
-                    PLAYER.paused = true;
-                    if(CLIENT.leader)
-                        sendVideoUpdate();
-                });
-
-                self.player.api_addEvent("play", function () {
-                    PLAYER.paused = false;
-                    if(CLIENT.leader)
-                        sendVideoUpdate();
-                });
-
-                self.setVolume(VOLUME);
-            });
-        });
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () {
-        if(self.player && self.player.api_pause)
-            self.player.api_pause();
-    };
-
-    self.play = function () {
-        if(self.player && self.player.api_play)
-            self.player.api_play();
-    };
-
-    self.getTime = function (callback) {
-        if(self.player && self.player.api_getCurrentTime) {
-            var t = parseFloat(self.player.api_getCurrentTime());
-            callback(t);
-        }
-    };
-
-    self.seek = function (time) {
-        if(self.player.api_seekTo);
-            self.player.api_seekTo(time);
-    };
-
-    self.getVolume = function (cb) {
-        if (self.player && self.player.api_getVolume) {
-            cb(self.player.api_getVolume());
-        }
-    };
-
-    self.setVolume = function (vol) {
-        self.player.api_setVolume(vol);
-    };
-
-    self.init();
-};
-
-var DailymotionPlayer = function (data) {
-    var self = this;
-    waitUntilDefined(window, "DM", function () {
-        removeOld();
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-
-        var q = undefined;
+    YouTubePlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      if (this.yt && this.yt.ready) {
+        this.yt.loadVideoById(data.id, data.currentTime);
+        this.qualityRaceCondition = true;
         if (USEROPTS.default_quality) {
-            /* Map youtube-style quality names to dailymotion values */
-            q = {
-                small: 240,
-                medium: 380,
-                large: 480,
-                hd720: 720,
-                hd1080: 1080,
-                highres: 1080
-            }[USEROPTS.default_quality];
+          return this.setQuality(USEROPTS.default_quality);
         }
+      } else {
+        return console.error('WTF?  YouTubePlayer::load() called but yt is not ready');
+      }
+    };
 
-        var params = {
+    YouTubePlayer.prototype.onReady = function() {
+      this.yt.ready = true;
+      return this.setVolume(VOLUME);
+    };
+
+    YouTubePlayer.prototype.onStateChange = function(ev) {
+      if (this.qualityRaceCondition) {
+        this.qualityRaceCondition = false;
+        if (USEROPTS.default_quality) {
+          this.setQuality(USEROPTS.default_quality);
+        }
+      }
+      if (ev.data === YT.PlayerState.PLAYING && this.pauseSeekRaceCondition) {
+        this.pause();
+        this.pauseSeekRaceCondition = false;
+      }
+      if ((ev.data === YT.PlayerState.PAUSED && !this.paused) || (ev.data === YT.PlayerState.PLAYING && this.paused)) {
+        this.paused = ev.data === YT.PlayerState.PAUSED;
+        if (CLIENT.leader) {
+          sendVideoUpdate();
+        }
+      }
+      if (ev.data === YT.PlayerState.ENDED && CLIENT.leader) {
+        return socket.emit('playNext');
+      }
+    };
+
+    YouTubePlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.yt && this.yt.ready) {
+        return this.yt.playVideo();
+      }
+    };
+
+    YouTubePlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.yt && this.yt.ready) {
+        return this.yt.pauseVideo();
+      }
+    };
+
+    YouTubePlayer.prototype.seekTo = function(time) {
+      if (this.yt && this.yt.ready) {
+        return this.yt.seekTo(time, true);
+      }
+    };
+
+    YouTubePlayer.prototype.setVolume = function(volume) {
+      if (this.yt && this.yt.ready) {
+        if (volume > 0) {
+          this.yt.unMute();
+        }
+        return this.yt.setVolume(volume * 100);
+      }
+    };
+
+    YouTubePlayer.prototype.setQuality = function(quality) {
+      var ytQuality;
+      if (!this.yt || !this.yt.ready) {
+        return;
+      }
+      ytQuality = (function() {
+        switch (String(quality)) {
+          case '240':
+            return 'small';
+          case '360':
+            return 'medium';
+          case '480':
+            return 'large';
+          case '720':
+            return 'hd720';
+          case '1080':
+            return 'hd1080';
+          case 'best':
+            return 'highres';
+          default:
+            return 'auto';
+        }
+      })();
+      if (ytQuality !== 'auto') {
+        return this.yt.setPlaybackQuality(ytQuality);
+      }
+    };
+
+    YouTubePlayer.prototype.getTime = function(cb) {
+      if (this.yt && this.yt.ready) {
+        return cb(this.yt.getCurrentTime());
+      } else {
+        return cb(0);
+      }
+    };
+
+    YouTubePlayer.prototype.getVolume = function(cb) {
+      if (this.yt && this.yt.ready) {
+        if (this.yt.isMuted()) {
+          return cb(0);
+        } else {
+          return cb(this.yt.getVolume() / 100);
+        }
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    return YouTubePlayer;
+
+  })(Player);
+
+  window.DailymotionPlayer = DailymotionPlayer = (function(superClass) {
+    extend(DailymotionPlayer, superClass);
+
+    function DailymotionPlayer(data) {
+      if (!(this instanceof DailymotionPlayer)) {
+        return new DailymotionPlayer(data);
+      }
+      this.setMediaProperties(data);
+      this.initialVolumeSet = false;
+      waitUntilDefined(window, 'DM', (function(_this) {
+        return function() {
+          var params, quality;
+          removeOld();
+          params = {
             autoplay: 1,
-            wmode: USEROPTS.wmode_transparent ? "transparent" : "opaque",
-            quality: q,
+            wmode: USEROPTS.wmode_transparent ? 'transparent' : 'opaque',
             logo: 0
-        };
-
-        self.player = DM.player("ytapiplayer", {
+          };
+          quality = _this.mapQuality(USEROPTS.default_quality);
+          if (quality !== 'auto') {
+            params.quality = quality;
+          }
+          _this.dm = DM.player('ytapiplayer', {
             video: data.id,
             width: parseInt(VWIDTH, 10),
             height: parseInt(VHEIGHT, 10),
             params: params
+          });
+          return _this.dm.addEventListener('apiready', function() {
+            _this.dm.ready = true;
+            _this.dm.addEventListener('ended', function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+            _this.dm.addEventListener('pause', function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            return _this.dm.addEventListener('playing', function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                sendVideoUpdate();
+              }
+              if (!_this.initialVolumeSet) {
+                _this.setVolume(VOLUME);
+                return _this.initialVolumeSet = true;
+              }
+            });
+          });
+        };
+      })(this));
+    }
+
+    DailymotionPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      if (this.dm && this.dm.ready) {
+        this.dm.load(data.id);
+        return this.dm.seek(data.currentTime);
+      } else {
+        return console.error('WTF?  DailymotionPlayer::load() called but dm is not ready');
+      }
+    };
+
+    DailymotionPlayer.prototype.pause = function() {
+      if (this.dm && this.dm.ready) {
+        this.paused = true;
+        return this.dm.pause();
+      }
+    };
+
+    DailymotionPlayer.prototype.play = function() {
+      if (this.dm && this.dm.ready) {
+        this.paused = false;
+        return this.dm.play();
+      }
+    };
+
+    DailymotionPlayer.prototype.seekTo = function(time) {
+      if (this.dm && this.dm.ready) {
+        return this.dm.seek(time);
+      }
+    };
+
+    DailymotionPlayer.prototype.setVolume = function(volume) {
+      if (this.dm && this.dm.ready) {
+        return this.dm.setVolume(volume);
+      }
+    };
+
+    DailymotionPlayer.prototype.getTime = function(cb) {
+      if (this.dm && this.dm.ready) {
+        return cb(this.dm.currentTime);
+      } else {
+        return cb(0);
+      }
+    };
+
+    DailymotionPlayer.prototype.getVolume = function(cb) {
+      var volume;
+      if (this.dm && this.dm.ready) {
+        if (this.dm.muted) {
+          return cb(0);
+        } else {
+          volume = this.dm.volume;
+          if (volume > 1) {
+            volume /= 100;
+          }
+          return cb(volume);
+        }
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    DailymotionPlayer.prototype.mapQuality = function(quality) {
+      switch (String(quality)) {
+        case '240':
+        case '480':
+        case '720':
+        case '1080':
+          return String(quality);
+        case '360':
+          return '380';
+        case 'best':
+          return '1080';
+        default:
+          return 'auto';
+      }
+    };
+
+    return DailymotionPlayer;
+
+  })(Player);
+
+  sortSources = function(sources) {
+    var flv, flvOrder, i, idx, len, nonflv, pref, qualities, quality, qualityOrder, sourceOrder;
+    if (!sources) {
+      console.error('sortSources() called with null source list');
+      return [];
+    }
+    qualities = ['1080', '720', '480', '360', '240'];
+    pref = String(USEROPTS.default_quality);
+    idx = qualities.indexOf(pref);
+    if (idx < 0) {
+      pref = '480';
+    }
+    qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx));
+    sourceOrder = [];
+    flvOrder = [];
+    for (i = 0, len = qualityOrder.length; i < len; i++) {
+      quality = qualityOrder[i];
+      if (quality in sources) {
+        flv = [];
+        nonflv = [];
+        sources[quality].forEach(function(source) {
+          source.quality = quality;
+          if (source.contentType === 'flv') {
+            return flv.push(source);
+          } else {
+            return nonflv.push(source);
+          }
         });
-
-        self.player.addEventListener("apiready", function (e) {
-            self.player.addEventListener("ended", function (e) {
-                if(CLIENT.leader) {
-                    socket.emit("playNext");
-                }
-            });
-
-            self.player.addEventListener("pause", function (e) {
-                PLAYER.paused = true;
-                if(CLIENT.leader)
-                    sendVideoUpdate();
-            });
-
-            self.player.addEventListener("playing", function (e) {
-                PLAYER.paused = false;
-                if(CLIENT.leader)
-                    sendVideoUpdate();
-                if (!self.volumeIsSet) {
-                    try {
-                        self.setVolume(VOLUME);
-                        self.volumeIsSet = true;
-                    } catch (err) {
-
-                    }
-                }
-            });
-        });
+        sourceOrder = sourceOrder.concat(nonflv);
+        flvOrder = flvOrder.concat(flv);
+      }
+    }
+    return sourceOrder.concat(flvOrder).map(function(source) {
+      return {
+        type: "video/" + source.contentType,
+        src: source.link,
+        quality: source.quality
+      };
     });
+  };
 
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        if (self.player && self.player.api) {
-            self.player.api("load", data.id);
+  waitUntilDefined(window, 'videojs', (function(_this) {
+    return function() {
+      return videojs.options.flash.swf = '/video-js.swf';
+    };
+  })(this));
+
+  window.VideoJSPlayer = VideoJSPlayer = (function(superClass) {
+    extend(VideoJSPlayer, superClass);
+
+    function VideoJSPlayer(data) {
+      if (!(this instanceof VideoJSPlayer)) {
+        return new VideoJSPlayer(data);
+      }
+      this.setMediaProperties(data);
+      waitUntilDefined(window, 'videojs', (function(_this) {
+        return function() {
+          var sources, video;
+          video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item').attr({
+            width: '100%',
+            height: '100%'
+          });
+          removeOld(video);
+          sources = sortSources(data.meta.direct);
+          if (sources.length === 0) {
+            console.error('VideoJSPlayer::constructor(): data.meta.direct has no sources!');
+            _this.mediaType = null;
+            return;
+          }
+          sources.forEach(function(source) {
+            return $('<source/>').attr({
+              src: source.src,
+              type: source.type,
+              'data-quality': source.quality
+            }).appendTo(video);
+          });
+          _this.player = videojs(video[0], {
+            autoplay: true,
+            controls: true
+          });
+          return _this.player.ready(function() {
+            _this.player.on('ended', function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+            _this.player.on('pause', function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            return _this.player.on('play', function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+          });
+        };
+      })(this));
+    }
+
+    VideoJSPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      if (this.player) {
+        return this.player.src(sortSources(data.meta.direct));
+      } else {
+        return console.log('VideoJSPlayer::load() called but @player is undefined');
+      }
+    };
+
+    VideoJSPlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.play();
+      }
+    };
+
+    VideoJSPlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.pause();
+      }
+    };
+
+    VideoJSPlayer.prototype.seekTo = function(time) {
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.currentTime(time);
+      }
+    };
+
+    VideoJSPlayer.prototype.setVolume = function(volume) {
+      if (this.player && this.player.readyState() > 0) {
+        return this.player.volume(volume);
+      }
+    };
+
+    VideoJSPlayer.prototype.getTime = function(cb) {
+      if (this.player && this.player.readyState() > 0) {
+        return cb(this.player.currentTime());
+      } else {
+        return cb(0);
+      }
+    };
+
+    VideoJSPlayer.prototype.getVolume = function(cb) {
+      if (this.player && this.player.readyState() > 0) {
+        if (this.player.muted()) {
+          return cb(0);
+        } else {
+          return cb(this.player.volume());
         }
+      } else {
+        return cb(VOLUME);
+      }
     };
 
-    self.pause = function () {
-        if(self.player && self.player.api)
-            self.player.api("pause");
+    return VideoJSPlayer;
+
+  })(Player);
+
+  guessMimeTypeBecauseBrowsersAreDumb = function(link) {
+    var m;
+    m = /.*\.([a-zA-Z0-9]+)[^.]*$/.exec(link);
+    if (m) {
+      return m[1];
+    } else {
+      return 'flv';
+    }
+  };
+
+  window.FilePlayer = FilePlayer = (function(superClass) {
+    extend(FilePlayer, superClass);
+
+    function FilePlayer(data) {
+      if (!(this instanceof FilePlayer)) {
+        return new FilePlayer(data);
+      }
+      data.meta.direct = {
+        480: [
+          {
+            contentType: guessMimeTypeBecauseBrowsersAreDumb(data.id),
+            link: data.id
+          }
+        ]
+      };
+      FilePlayer.__super__.constructor.call(this, data);
+    }
+
+    FilePlayer.prototype.load = function(data) {
+      data.meta.direct = {
+        480: [
+          {
+            contentType: guessMimeTypeBecauseBrowsersAreDumb(data.id),
+            link: data.id
+          }
+        ]
+      };
+      return FilePlayer.__super__.load.call(this, data);
     };
 
-    self.play = function () {
-        if(self.player && self.player.api)
-            self.player.api("play");
-    };
+    return FilePlayer;
 
-    self.getTime = function (callback) {
-        if(self.player)
-            callback(self.player.currentTime);
-    };
+  })(VideoJSPlayer);
 
-    self.seek = function (seconds) {
-        if(self.player && self.player.api)
-            self.player.api("seek", seconds);
-    };
+  window.SoundCloudPlayer = SoundCloudPlayer = (function(superClass) {
+    extend(SoundCloudPlayer, superClass);
 
-    self.getVolume = function (cb) {
-        if (self.player) {
-            var volume = self.player.muted ? 0 : self.player.volume;
-            /*
-             * If the volume was changed by the UI slider, it will be in the range
-             * [0, 100], otherwise if it was only set by the API, it will be in [0, 1].
-             */
-            if (volume > 1) volume /= 100.0;
-
-            cb(volume);
-        }
-    };
-
-    self.setVolume = function (vol) {
-        if (self.player && self.player.api) {
-            self.player.api("volume", vol);
-        }
-    };
-};
-
-var SoundcloudPlayer = function (data) {
-    var self = this;
-    // The getVolume function on their widget throws TypeErrors
-    // Go figure
-    self.soundcloudIsSeriouslyFuckingBroken = VOLUME;
-    self.videoId = data.id;
-    self.scuri = data.meta.scuri || self.videoId;
-    self.videoLength = data.seconds;
-    waitUntilDefined(window, "SC", function () {
-        unfixSoundcloudShit();
-        var iframe = $("<iframe/>");
-        removeOld();
-        iframe.appendTo($("#ytapiplayer"));
-
-        iframe.attr("id", "scplayer");
-        iframe.attr("src", "https://w.soundcloud.com/player/?url="+self.scuri);
-        iframe.css("height", "166px");
-        iframe.css("border", "none");
-
-        var volslider = $("<div/>").attr("id", "sc_volume")
-            .css("top", "170px")
-            .insertAfter(iframe);
-
-        volslider.slider({
-            range: "min",
+    function SoundCloudPlayer(data) {
+      if (!(this instanceof SoundCloudPlayer)) {
+        return new SoundCloudPlayer(data);
+      }
+      this.setMediaProperties(data);
+      waitUntilDefined(window, 'SC', (function(_this) {
+        return function() {
+          var soundUrl, volumeSlider, widget;
+          removeOld();
+          if (data.meta.scuri) {
+            soundUrl = data.meta.scuri;
+          } else {
+            soundUrl = data.id;
+          }
+          widget = $('<iframe/>').appendTo($('#ytapiplayer'));
+          widget.attr({
+            id: 'scplayer',
+            src: "https://w.soundcloud.com/player/?url=" + soundUrl
+          });
+          volumeSlider = $('<div/>').attr('id', 'widget-volume').css('top', '170px').insertAfter(widget).slider({
+            range: 'min',
             value: VOLUME * 100,
-            stop: function (event, ui) {
-                self.player.setVolume(ui.value / 100);
-                self.soundcloudIsSeriouslyFuckingBroken = ui.value / 100;
+            stop: function(event, ui) {
+              return _this.setVolume(ui.value / 100);
             }
-        });
-
-        self.player = SC.Widget("scplayer");
-
-        self.player.bind(SC.Widget.Events.READY, function () {
-            self.player.load(self.scuri, { auto_play: true });
-
-            self.player.bind(SC.Widget.Events.PAUSE, function () {
-                PLAYER.paused = true;
-                if(CLIENT.leader)
-                    sendVideoUpdate();
+          });
+          _this.soundcloud = SC.Widget(widget[0]);
+          return _this.soundcloud.bind(SC.Widget.Events.READY, function() {
+            _this.soundcloud.ready = true;
+            _this.setVolume(VOLUME);
+            _this.play();
+            _this.soundcloud.bind(SC.Widget.Events.PAUSE, function() {
+              _this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
             });
-
-            self.player.bind(SC.Widget.Events.FINISH, function () {
-                if(CLIENT.leader) {
-                    socket.emit("playNext");
-                }
+            _this.soundcloud.bind(SC.Widget.Events.PLAY, function() {
+              _this.paused = false;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
             });
-
-            self.player.bind(SC.Widget.Events.PLAY, function () {
-                PLAYER.paused = false;
-                if(CLIENT.leader)
-                    sendVideoUpdate();
+            return _this.soundcloud.bind(SC.Widget.Events.FINISH, function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
             });
-
-            // THAT'S RIGHT, YOU CAN'T SET THE VOLUME BEFORE IT STARTS PLAYING
-            var soundcloudNeedsToFuckingFixTheirPlayer = function () {
-                self.setVolume(VOLUME);
-                self.player.unbind(SC.Widget.Events.PLAY_PROGRESS);
-            };
-            self.player.bind(SC.Widget.Events.PLAY_PROGRESS, soundcloudNeedsToFuckingFixTheirPlayer);
-        }.bind(self));
-    });
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.scuri = data.meta.scuri || self.videoId;
-        self.videoLength = data.seconds;
-        if(self.player && self.player.load) {
-            self.player.load(self.scuri, { auto_play: true });
-            var soundcloudNeedsToFuckingFixTheirPlayer = function () {
-                self.setVolume(VOLUME);
-                self.player.unbind(SC.Widget.Events.PLAY_PROGRESS);
-            };
-            self.player.bind(SC.Widget.Events.PLAY_PROGRESS, soundcloudNeedsToFuckingFixTheirPlayer);
-        }
-    };
-
-    self.pause = function () {
-        if(self.player && self.player.pause)
-            self.player.pause();
-    };
-
-    self.play = function () {
-        if(self.player && self.player.play)
-            self.player.play();
-    };
-
-    self.getTime = function (callback) {
-        if(self.player && self.player.getPosition) {
-            self.player.getPosition(function (pos) {
-                callback(pos / 1000);
-            });
-        }
-    };
-
-    self.seek = function (seconds) {
-        if(self.player && self.player.seekTo)
-            self.player.seekTo(seconds * 1000);
-    };
-
-    self.getVolume = function (cb) {
-        cb(self.soundcloudIsSeriouslyFuckingBroken);
-    };
-
-    self.setVolume = function (vol) {
-        self.player.setVolume(vol);
-    };
-};
-
-var LivestreamPlayer = function (data) {
-    removeOld();
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        var flashvars = { channel: self.videoId };
-        var params = { AllowScriptAccess: "always" };
-        var prto = location.protocol;
-        swfobject.embedSWF(
-            prto+"//cdn.livestream.com/chromelessPlayer/v20/playerapi.swf",
-            "ytapiplayer",
-            VWIDTH, VHEIGHT,
-            "9.0.0",
-            "expressInstall.swf",
-            flashvars,
-            params
-        );
-    };
-
-    self.load = function(data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function () { };
-
-    self.setVolume = function () { };
-
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-};
-
-var TwitchTVPlayer = function (data) {
-    removeOld();
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        var url = "https://www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf?channel="+self.videoId;
-        var params = {
-            allowFullScreen: "true",
-            allowScriptAccess: "always",
-            allowNetworking: "all",
-            movie: "https://www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf",
-            id: "live_embed_player_flash",
-            flashvars: "hostname=www.twitch.tv&channel="+self.videoId+"&auto_play=true&start_volume=" + VOLUME
+          });
         };
-        swfobject.embedSWF(url,
-            "ytapiplayer",
-            VWIDTH, VHEIGHT,
-            "8",
-            null, null,
-            params,
-            {}
-        );
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function () { };
-
-    self.setVolume = function () { };
-
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-};
-
-function rtmpEventHandler(id, ev, data) {
-    if (ev === "volumechange") {
-        PLAYER.volume = (data.muted ? 0 : data.volume);
+      })(this));
     }
-}
 
-var RTMPPlayer = function (data) {
-    removeOld();
-    var self =this;
-    self.volume = VOLUME;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        var prto = location.protocol;
-        var url = prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf";
-        var src = encodeURIComponent(self.videoId);
-        var params = {
-            allowFullScreen: "true",
-            allowScriptAccess: "always",
-            allowNetworking: "all",
-            wMode: "direct",
-            movie: prto+"//fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf",
-            flashvars: "src="+src+"&streamType=live&javascriptCallbackFunction=rtmpEventHandler&autoPlay=true&volume=" + VOLUME
-        };
-        swfobject.embedSWF(url,
-            "ytapiplayer",
-            VWIDTH, VHEIGHT,
-            "8",
-            null, null,
-            params,
-            {}
-        );
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function (cb) {
-        cb(self.volume);
-    };
-
-    self.setVolume = function () { };
-
-    waitUntilDefined(window, "swfobject", function () {
-        self.init();
-    });
-};
-
-var JWPlayer = function (data) {
-    var self = this;
-    self.videoId = data.id;
-    if (data.url) {
-        self.videoURL = data.url;
-    } else {
-        self.videoURL = data.id;
-    }
-    self.videoLength = data.seconds;
-    self.init = function () {
-        removeOld();
-
-        jwplayer("ytapiplayer").setup({
-            file: self.videoURL,
-            width: "100%",
-            height: "100%",
-            autostart: true,
-            type: data.contentType
-        });
-
-        jwplayer().onReady(function() {
-            $("#ytapiplayer").addClass("embed-responsive-item");
-            if ($("#ytapiplayer")[0].tagName === "OBJECT") {
-                $("#ytapiplayer").parent().css("position", "absolute");
-            }
-            handleVideoResize();
-        });
-
-        jwplayer().onPlay(function() {
-            /* Somehow JWPlayer manages to have THE SAME PROBLEM AS SOUNDCLOUD.
-             * It seems to be impossible to set the volume before the video has
-             * started playing.  How this is so damn difficult to get right I will
-             * never understand.
-             */
-            self.setVolume(VOLUME);
-            self.paused = false;
-            if(CLIENT.leader)
-                sendVideoUpdate();
-        });
-        jwplayer().onPause(function() {
-            self.paused = true;
-            if(CLIENT.leader)
-                sendVideoUpdate();
-        });
-        jwplayer().onComplete(function() {
-            socket.emit("playNext");
-        });
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        if (data.url) {
-            self.videoURL = data.url;
+    SoundCloudPlayer.prototype.load = function(data) {
+      var soundUrl;
+      this.setMediaProperties(data);
+      if (this.soundcloud && this.soundcloud.ready) {
+        if (data.meta.scuri) {
+          soundUrl = data.meta.scuri;
         } else {
-            self.videoURL = data.id;
+          soundUrl = data.id;
         }
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () {
-        if(jwplayer)
-            jwplayer().pause(true);
-    };
-
-    self.play = function () {
-        if(jwplayer)
-            jwplayer().play(true);
-    };
-
-    self.getTime = function (callback) {
-        // Only return time for non-live media
-        if(jwplayer && jwplayer().getDuration() != -1) {
-            callback(jwplayer().getPosition());
-        }
-    };
-
-    self.seek = function (time) {
-        if(jwplayer)
-            jwplayer().seek(time);
-    };
-
-    self.getVolume = function (cb) {
-        cb(jwplayer().getVolume() / 100);
-    };
-
-    self.setVolume = function (vol) {
-        jwplayer().setVolume(vol * 100);
-    };
-
-    waitUntilDefined(window, "jwplayer", function () { self.init(); });
-};
-
-var UstreamPlayer = function (data) {
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        var iframe = $("<iframe/>");
-        removeOld(iframe);
-        iframe.attr("width", VWIDTH);
-        iframe.attr("height", VHEIGHT);
-        iframe.attr("src", "//www.ustream.tv/embed/"+self.videoId+"?v=3&wmode=direct&autoplay=1");
-        iframe.attr("frameborder", "0");
-        iframe.attr("scrolling", "no");
-        iframe.css("border", "none");
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function () { };
-
-    self.setVolume = function () { };
-
-    self.init();
-};
-
-var ImgurPlayer = function (data) {
-    var self = this;
-    self.init = function () {
-        var iframe = $("<iframe/>");
-        removeOld(iframe);
-        iframe.attr("width", VWIDTH);
-        iframe.attr("height", VHEIGHT);
-        var prto = location.protocol;
-        iframe.attr("src", prto+"//imgur.com/a/"+self.videoId+"/embed");
-        iframe.attr("frameborder", "0");
-        iframe.attr("scrolling", "no");
-        iframe.css("border", "none");
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function () { };
-
-    self.setVolume = function () { };
-
-    self.init();
-};
-
-var CustomPlayer = function (data) {
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        removeOld();
-        var div = $("#ytapiplayer");
-        div.attr("id", "");
-
-        /*
-         * 2014-12-10
-         *
-         * If a user is connected via HTTPS and the custom link is
-         * HTTP, then the embed fails due to mixed active content
-         * policy.  Display a message indicating this.
-         */
-        if (location.protocol.match(/^https/) &&
-            self.videoId.match(/http:/)) {
-
-            div.html("You are currently connected via HTTPS but " +
-                "the custom embed link uses non-secure HTTP.  " +
-                "Your browser may therefore block it from loading.  " +
-                "To fix this, either add the custom embed as a secure " +
-                "URL (https://...) if the source supports it, or " +
-                "visit this page over plain HTTP (your websocket will still " +
-                "use secure HTTPS for communication, just the page " +
-                "will load over plain HTTP).");
-
-            // Try to salvage the link
-            self.videoId = self.videoId.replace(/http:/g, "https:");
-        }
-        div.append(self.videoId);
-
-        self.player = div.find("iframe");
-        if(self.player.length === 0) self.player = div.find("object");
-        if(self.player.length === 0) self.player = div;
-        self.player.attr("id", "ytapiplayer");
-        self.player.attr("width", VWIDTH);
-        self.player.attr("height", VHEIGHT);
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function () { };
-
-    self.setVolume = function () { };
-
-    self.init();
-};
-
-function FilePlayer(data) {
-    var self = this;
-
-    self.init = function (data) {
-        if (!data.url) {
-            return;
-        }
-        self.videoId = data.id;
-        self.videoURL = data.url;
-        var isAudio = data.meta.codec && data.meta.codec.match(/^mp3$|^vorbis$/);
-        var video;
-        if (isAudio) {
-            video = $("<audio/>");
-        } else {
-            video = $("<video/>")
-        }
-        video
-            .addClass("embed-responsive-item")
-            .attr("src", self.videoURL)
-            .attr("controls", "controls")
-            .attr("id", "#ytapiplayer")
-            .attr("width", VWIDTH)
-            .attr("height", VHEIGHT)
-            .attr("autoplay", true)
-            .html("Your browser does not support HTML5 <code>&lt;video&gt;</code> tags :(");
-        video.error(function (err) {
-            setTimeout(function () {
-                console.log("<video> tag failed, falling back to Flash");
-                console.log(err);
-                PLAYER = new JWPlayer(data);
-                PLAYER.type = "jw";
-            }, 100);
+        return this.soundcloud.load(soundUrl, {
+          auto_play: true
         });
-        removeOld(video);
-        self.player = video[0];
-        if (!Object.hasOwnProperty.call(self, "paused")) {
-            Object.defineProperty(self, "paused", {
-                get: function () {
-                    return self.player.paused;
-                }
-            });
-        }
-        self.player.onpause = function () {
-            self.paused = true;
-            if (CLIENT.leader) {
-                sendVideoUpdate();
-            }
-        };
-        self.player.onplay = function () {
-            self.paused = false;
-            if (CLIENT.leader) {
-                sendVideoUpdate();
-            }
-        };
-        self.player.onended = function () {
-            if (CLIENT.leader) {
-                socket.emit("playNext");
-            }
-        };
-        self.setVolume(VOLUME);
+      } else {
+        return console.error('SoundCloudPlayer::load() called but soundcloud is not ready');
+      }
     };
 
-    self.load = function (data) {
-        if (data.forceFlash) {
-            self.initFlash(data);
-        } else {
-            self.init(data);
-        }
+    SoundCloudPlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.play();
+      }
     };
 
-    self.pause = function () {
-        if (self.player) {
-            self.player.pause();
-        }
+    SoundCloudPlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.pause();
+      }
     };
 
-    self.play = function () {
-        if (self.player) {
-            self.player.play();
-        }
+    SoundCloudPlayer.prototype.seekTo = function(time) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.seekTo(time * 1000);
+      }
     };
 
-    self.getTime = function (callback) {
-        if (self.player) {
-            callback(self.player.currentTime);
-        }
+    SoundCloudPlayer.prototype.setVolume = function(volume) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.setVolume(volume);
+      }
     };
 
-    self.seek = function (time) {
-        if (self.player) {
-            try {
-                self.player.currentTime = time;
-            } catch (e) {
-            }
-        }
+    SoundCloudPlayer.prototype.getTime = function(cb) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.getPosition(function(time) {
+          return cb(time / 1000);
+        });
+      } else {
+        return cb(0);
+      }
     };
 
-    self.getVolume = function (cb) {
-        if (self.player) {
-            if (self.player.muted) {
-                cb(0);
-            } else {
-                cb(self.player.volume);
-            }
-        }
+    SoundCloudPlayer.prototype.getVolume = function(cb) {
+      if (this.soundcloud && this.soundcloud.ready) {
+        return this.soundcloud.getVolume(cb);
+      } else {
+        return cb(VOLUME);
+      }
     };
 
-    self.setVolume = function (vol) {
-        if (self.player) {
-            self.player.volume = vol;
-        }
-    };
+    return SoundCloudPlayer;
 
-    if (data.forceFlash) {
-        setTimeout(function () {
-            PLAYER = new JWPlayer(data);
-            PLAYER.type = "jw";
-        }, 1);
-    } else {
-        self.init(data);
-    }
-};
+  })(Player);
 
-var HitboxPlayer = function (data) {
-    var self = this;
-    self.videoId = data.id;
-    self.videoLength = data.seconds;
-    self.init = function () {
-        if (location.protocol.match(/^https/)) {
-            var div = makeAlert("Security Policy",
-                "You are currently connected via HTTPS but " +
-                "Hitbox only supports plain HTTP.  Due to browser " +
-                "security policy, the embed player cannot be loaded.  " +
-                "In order to watch the video, you must visit this page " +
-                "from its plain HTTP URL (your websocket will still be " +
-                "secured with HTTPS).  Please complain to Hitbox about this.",
-                "alert-danger");
-            div.addClass("embed-responsive-item");
-            removeOld(div);
-            return;
-        }
+  window.LivestreamPlayer = LivestreamPlayer = (function(superClass) {
+    extend(LivestreamPlayer, superClass);
 
-        var iframe = $("<iframe/>")
-            .attr("src", "http://hitbox.tv/embed/" + self.videoId)
-            .attr("webkitAllowFullScreen", "")
-            .attr("mozallowfullscreen", "")
-            .attr("allowFullScreen", "");
-
-        if (USEROPTS.wmode_transparent)
-            iframe.attr("wmode", "transparent");
-
-        removeOld(iframe);
-        self.player = iframe;
-    };
-
-    self.load = function (data) {
-        self.videoId = data.id;
-        self.videoLength = data.seconds;
-        self.init();
-    };
-
-    self.pause = function () { };
-
-    self.play = function () { };
-
-    self.getTime = function () { };
-
-    self.seek = function () { };
-
-    self.getVolume = function () { };
-
-    self.setVolume = function () { };
-
-    self.init();
-};
-
-function handleMediaUpdate(data) {
-    // Don't update if the position is past the video length, but
-    // make an exception when the video length is 0 seconds
-    if (typeof PLAYER.videoLength === "number") {
-        if (PLAYER.videoLength > 0 &&
-            data.currentTime > PLAYER.videoLength) {
-            return;
-        }
-    }
-    var wait = data.currentTime < 0;
-    // Media change
-    if(data.id && data.id !== PLAYER.videoId) {
-        if(data.currentTime < 0)
-            data.currentTime = 0;
-        PLAYER.load(data);
-        PLAYER.play();
+    function LivestreamPlayer(data) {
+      if (!(this instanceof LivestreamPlayer)) {
+        return new LivestreamPlayer(data);
+      }
+      this.load(data);
     }
 
-    if (wait) {
-        /* Stupid hack -- In this thrilling episode of
-           "the YouTube API developers should eat a boat", the
-           HTML5 player apparently breaks if I play()-seek(0)-pause()
-           quickly (as a "start buffering but don't play yet"
-           mechanism)
+    LivestreamPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      this.player = $('<iframe/>').attr({
+        src: "https://cdn.livestream.com/embed/" + data.id + "?layout=4&color=0x000000&iconColorOver=0xe7e7e7&iconColor=0xcccccc",
+        frameborder: '0'
+      });
+      return removeOld(this.player);
+    };
 
-           Addendum 2014-05-09
-           Made this slightly less hacky by waiting for a PLAYING event
-           to fire instead of just waiting 500ms and assuming that's
-           long enough
-        */
-        if (PLAYER.type === "yt") {
-            PLAYER.theYouTubeDevsNeedToFixThisShit = true;
-        } else {
-            PLAYER.seek(0);
-            PLAYER.pause();
-        }
+    return LivestreamPlayer;
+
+  })(Player);
+
+  window.twitchEventCallback = function(events) {
+    if (!(PLAYER instanceof TwitchPlayer)) {
+      return false;
+    }
+    return events.forEach(function(event) {
+      if (event.event === 'playerInit') {
+        PLAYER.twitch.unmute();
+        return PLAYER.twitch.ready = true;
+      }
+    });
+  };
+
+  window.TwitchPlayer = TwitchPlayer = (function(superClass) {
+    extend(TwitchPlayer, superClass);
+
+    function TwitchPlayer(data) {
+      if (!(this instanceof TwitchPlayer)) {
+        return new TwitchPlayer(data);
+      }
+      this.load(data);
+    }
+
+    TwitchPlayer.prototype.load = function(data) {
+      var object;
+      this.setMediaProperties(data);
+      object = $('<object/>').attr({
+        data: '//www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf',
+        type: 'application/x-shockwave-flash'
+      });
+      $('<param/>').attr({
+        name: 'allowScriptAccess',
+        value: 'always'
+      }).appendTo(object);
+      $('<param/>').attr({
+        name: 'allowFullScreen',
+        value: 'true'
+      }).appendTo(object);
+      $('<param/>').attr({
+        name: 'flashvars',
+        value: "embed=1&hostname=localhost&channel=" + data.id + "& eventsCallback=twitchEventCallback&auto_play=true&start_volume=" + (Math.floor(VOLUME * 100))
+      }).appendTo(object);
+      removeOld(object);
+      return this.twitch = object[0];
+    };
+
+    return TwitchPlayer;
+
+  })(Player);
+
+  DEFAULT_ERROR = 'You are currently connected via HTTPS but the embedded content uses non-secure plain HTTP.  Your browser therefore blocks it from loading due to mixed content policy.  To fix this, embed the video using a secure link if available (https://...), or load this page over plain HTTP by replacing "https://" with "http://" in the address bar (your websocket will still be secured using HTTPS, but this will permit non-secure content to load).';
+
+  genParam = function(name, value) {
+    return $('<param/>').attr({
+      name: name,
+      value: value
+    });
+  };
+
+  window.EmbedPlayer = EmbedPlayer = (function(superClass) {
+    extend(EmbedPlayer, superClass);
+
+    function EmbedPlayer(data) {
+      if (!(this instanceof EmbedPlayer)) {
+        return new EmbedPlayer(data);
+      }
+      this.load(data);
+    }
+
+    EmbedPlayer.prototype.load = function(data) {
+      var embed;
+      this.setMediaProperties(data);
+      embed = data.meta.embed;
+      if (embed == null) {
+        console.error('EmbedPlayer::load(): missing meta.embed');
         return;
-    } else if (PLAYER.type === "yt") {
-        PLAYER.theYouTubeDevsNeedToFixThisShit = false;
+      }
+      if (embed.tag === 'object') {
+        this.player = this.loadObject(embed);
+      } else {
+        this.player = this.loadIframe(embed);
+      }
+      return removeOld(this.player);
+    };
+
+    EmbedPlayer.prototype.loadObject = function(embed) {
+      var key, object, ref, value;
+      object = $('<object/>').attr({
+        type: 'application/x-shockwave-flash',
+        data: embed.src
+      });
+      genParam('allowfullscreen', 'true').appendTo(object);
+      genParam('allowscriptaccess', 'always').appendTo(object);
+      ref = embed.params;
+      for (key in ref) {
+        value = ref[key];
+        genParam(key, value).appendTo(object);
+      }
+      return object;
+    };
+
+    EmbedPlayer.prototype.loadIframe = function(embed) {
+      var alert, error, iframe;
+      if (embed.src.indexOf('http:') === 0 && location.protocol === 'https:') {
+        if (this.__proto__.mixedContentError != null) {
+          error = this.__proto__.mixedContentError;
+        } else {
+          error = DEFAULT_ERROR;
+        }
+        alert = makeAlert('Mixed Content Error', error, 'alert-danger').removeClass('col-md-12');
+        alert.find('.close').remove();
+        return alert;
+      } else {
+        iframe = $('<iframe/>').attr({
+          src: embed.src,
+          frameborder: '0'
+        });
+        return iframe;
+      }
+    };
+
+    return EmbedPlayer;
+
+  })(Player);
+
+  CUSTOM_EMBED_WARNING = 'This channel is embedding custom content from %link%. Since this content is not trusted, you must click "Embed" below to allow the content to be embedded.<hr>';
+
+  window.CustomEmbedPlayer = CustomEmbedPlayer = (function(superClass) {
+    extend(CustomEmbedPlayer, superClass);
+
+    function CustomEmbedPlayer(data) {
+      if (!(this instanceof CustomEmbedPlayer)) {
+        return new CustomEmbedPlayer(data);
+      }
+      this.load(data);
     }
 
-    // Don't synch if leader or synch disabled
-    if(CLIENT.leader || !USEROPTS.synch)
+    CustomEmbedPlayer.prototype.load = function(data) {
+      var alert, embedSrc, link;
+      if (data.meta.embed == null) {
+        console.error('CustomEmbedPlayer::load(): missing meta.embed');
         return;
+      }
+      embedSrc = data.meta.embed.src;
+      link = "<a href=\"" + embedSrc + "\" target=\"_blank\"><strong>" + embedSrc + "</strong></a>";
+      alert = makeAlert('Untrusted Content', CUSTOM_EMBED_WARNING.replace('%link%', link), 'alert-warning').removeClass('col-md-12');
+      $('<button/>').addClass('btn btn-default').text('Embed').click((function(_this) {
+        return function() {
+          return CustomEmbedPlayer.__super__.load.call(_this, data);
+        };
+      })(this)).appendTo(alert.find('.alert'));
+      return removeOld(alert);
+    };
 
-    // Handle pause/unpause
-    if(data.paused) {
-        if (!PLAYER.paused) {
-            PLAYER.seek(data.currentTime);
-            PLAYER.pause();
-        }
-    } else {
-        if (PLAYER.paused) {
-            PLAYER.play();
-        }
+    return CustomEmbedPlayer;
+
+  })(EmbedPlayer);
+
+  window.rtmpEventHandler = function(id, event, data) {
+    if (event === 'volumechange') {
+      return PLAYER.volume = data.muted ? 0 : data.volume;
+    }
+  };
+
+  window.RTMPPlayer = RTMPPlayer = (function(superClass) {
+    extend(RTMPPlayer, superClass);
+
+    function RTMPPlayer(data) {
+      if (!(this instanceof RTMPPlayer)) {
+        return new RTMPPlayer(data);
+      }
+      this.volume = VOLUME;
+      this.load(data);
     }
 
-    // Handle time change
-    PLAYER.getTime(function (seconds) {
-        var time = data.currentTime;
-        var diff = time - seconds || time;
-        var acc = USEROPTS.sync_accuracy;
-        // Dailymotion can't seek more accurately than to the nearest
-        // 2 seconds.  It gets stuck looping portions of the video
-        // at the default synch accuracy of 2.
-        // I've found 5 works decently.
-        if (PLAYER.type === "dm")
-            acc = Math.max(acc, 5.0);
-
-        if(diff > acc) {
-            PLAYER.seek(time);
-        } else if(diff < -acc) {
-            // Don't synch all the way back, causes buffering problems
-            // because for some dumb reason YouTube erases the buffer
-            // when you seek backwards
-            //
-            // ADDENDUM 2013-10-24 Except for dailymotion because
-            // their player is inaccurate
-            if (PLAYER.type !== "dm")
-                time += 1;
-            PLAYER.seek(time);
+    RTMPPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        tag: 'object',
+        src: 'https://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf',
+        params: {
+          flashvars: "src=" + data.id + "&streamType=live&javascriptCallbackFunction=rtmpEventHandler&autoPlay=true&volume=" + VOLUME
         }
+      };
+      return RTMPPlayer.__super__.load.call(this, data);
+    };
+
+    RTMPPlayer.prototype.getVolume = function(cb) {
+      return cb(this.volume);
+    };
+
+    return RTMPPlayer;
+
+  })(EmbedPlayer);
+
+  HITBOX_ERROR = 'Hitbox.tv only serves its content over plain HTTP, but you are viewing this page over secure HTTPS.  Your browser therefore blocks the hitbox embed due to mixed content policy.  In order to view hitbox, you must view this page over plain HTTP (change "https://" to "http://" in the address bar)-- your websocket will still be connected using secure HTTPS.  This is something I have asked Hitbox to fix but they have not done so yet.';
+
+  window.HitboxPlayer = HitboxPlayer = (function(superClass) {
+    extend(HitboxPlayer, superClass);
+
+    function HitboxPlayer(data) {
+      if (!(this instanceof HitboxPlayer)) {
+        return new HitboxPlayer(data);
+      }
+      this.load(data);
+    }
+
+    HitboxPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        src: "http://hitbox.tv/embed/" + data.id,
+        tag: 'iframe'
+      };
+      return HitboxPlayer.__super__.load.call(this, data);
+    };
+
+    HitboxPlayer.prototype.mixedContentError = HITBOX_ERROR;
+
+    return HitboxPlayer;
+
+  })(EmbedPlayer);
+
+  window.UstreamPlayer = UstreamPlayer = (function(superClass) {
+    extend(UstreamPlayer, superClass);
+
+    function UstreamPlayer(data) {
+      if (!(this instanceof UstreamPlayer)) {
+        return new UstreamPlayer(data);
+      }
+      this.load(data);
+    }
+
+    UstreamPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        tag: 'iframe',
+        src: "https://www.ustream.tv/embed/" + data.id + "?v=3&wmode=direct&autoplay=1"
+      };
+      return UstreamPlayer.__super__.load.call(this, data);
+    };
+
+    return UstreamPlayer;
+
+  })(EmbedPlayer);
+
+  window.ImgurPlayer = ImgurPlayer = (function(superClass) {
+    extend(ImgurPlayer, superClass);
+
+    function ImgurPlayer(data) {
+      if (!(this instanceof ImgurPlayer)) {
+        return new ImgurPlayer(data);
+      }
+      this.load(data);
+    }
+
+    ImgurPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        tag: 'iframe',
+        src: "https://imgur.com/a/" + data.id + "/embed"
+      };
+      return ImgurPlayer.__super__.load.call(this, data);
+    };
+
+    return ImgurPlayer;
+
+  })(EmbedPlayer);
+
+  TYPE_MAP = {
+    yt: YouTubePlayer,
+    vi: VimeoPlayer,
+    dm: DailymotionPlayer,
+    gd: VideoJSPlayer,
+    gp: VideoJSPlayer,
+    fi: FilePlayer,
+    jw: FilePlayer,
+    sc: SoundCloudPlayer,
+    li: LivestreamPlayer,
+    tw: TwitchPlayer,
+    cu: CustomEmbedPlayer,
+    rt: RTMPPlayer,
+    hb: HitboxPlayer,
+    us: UstreamPlayer,
+    im: ImgurPlayer
+  };
+
+  window.loadMediaPlayer = function(data) {
+    var e;
+    if (data.meta.direct) {
+      return window.PLAYER = new VideoJSPlayer(data);
+    } else if (data.type in TYPE_MAP) {
+      try {
+        return window.PLAYER = TYPE_MAP[data.type](data);
+      } catch (_error) {
+        e = _error;
+        return console.error(e);
+      }
+    }
+  };
+
+  window.handleMediaUpdate = function(data) {
+    var PLAYER, waiting;
+    PLAYER = window.PLAYER;
+    if (typeof PLAYER.mediaLength === 'number' && PLAYER.mediaLength > 0 && data.currentTime > PLAYER.mediaLength) {
+      return;
+    }
+    waiting = data.currentTime < 0;
+    if (data.id && data.id !== PLAYER.mediaId) {
+      if (data.currentTime < 0) {
+        data.currentTime = 0;
+      }
+      PLAYER.load(data);
+      PLAYER.play();
+    }
+    if (waiting) {
+      PLAYER.seekTo(0);
+      if (PLAYER instanceof YouTubePlayer) {
+        PLAYER.pauseSeekRaceCondition = true;
+      } else {
+        PLAYER.pause();
+      }
+      return;
+    } else if (PLAYER instanceof YouTubePlayer) {
+      PLAYER.pauseSeekRaceCondition = false;
+    }
+    if (CLIENT.leader || !USEROPTS.synch) {
+      return;
+    }
+    if (data.paused && !PLAYER.paused) {
+      PLAYER.seekTo(data.currentTime);
+      PLAYER.pause();
+    } else if (PLAYER.paused) {
+      PLAYER.play();
+    }
+    return PLAYER.getTime(function(seconds) {
+      var accuracy, diff, time;
+      time = data.currentTime;
+      diff = (time - seconds) || time;
+      accuracy = USEROPTS.sync_accuracy;
+      if (PLAYER instanceof DailymotionPlayer) {
+        accuracy = Math.max(accuracy, 5);
+      }
+      if (diff > accuracy) {
+        return PLAYER.seekTo(time);
+      } else if (diff < -accuracy) {
+        if (!(PLAYER instanceof DailymotionPlayer)) {
+          time += 1;
+        }
+        return PLAYER.seekTo(time);
+      }
     });
-}
+  };
 
-var constructors = {
-    "yt": YouTubePlayer,
-    "vi": VIMEO_FLASH ? VimeoFlashPlayer : VimeoPlayer,
-    "dm": DailymotionPlayer,
-    "sc": SoundcloudPlayer,
-    "li": LivestreamPlayer,
-    "tw": TwitchTVPlayer,
-    "us": UstreamPlayer,
-    "jw": JWPlayer,
-    "im": ImgurPlayer,
-    "cu": CustomPlayer,
-    "rt": RTMPPlayer,
-    "rv": FilePlayer,
-    "fi": FilePlayer,
-    "hb": HitboxPlayer
-};
-
-function loadMediaPlayer(data) {
-    if(data.type in constructors) {
-        PLAYER = new constructors[data.type](data);
-        PLAYER.type = data.type;
+  window.removeOld = function(replace) {
+    var old;
+    $('#sc_volume').remove();
+    if (replace == null) {
+      replace = $('<div/>').addClass('embed-responsive-item');
     }
-}
+    old = $('#ytapiplayer');
+    replace.insertBefore(old);
+    old.remove();
+    replace.attr('id', 'ytapiplayer');
+    return replace;
+  };
+
+}).call(this);

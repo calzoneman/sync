@@ -830,7 +830,7 @@ Callbacks = {
         }
 
         function loadNext() {
-            if (data.type !== PLAYER.mediaType) {
+            if (!PLAYER || data.type !== PLAYER.mediaType) {
                 loadMediaPlayer(data);
             }
 
@@ -876,7 +876,9 @@ Callbacks = {
             return;
         }
 
-        handleMediaUpdate(data);
+        if (PLAYER) {
+            handleMediaUpdate(data);
+        }
     },
 
     setPlaylistLocked: function (locked) {

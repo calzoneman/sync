@@ -32,6 +32,10 @@ sortSources = (sources) ->
         quality: source.quality
     )
 
+waitUntilDefined(window, 'videojs', =>
+    videojs.options.flash.swf = '/video-js.swf'
+)
+
 window.VideoJSPlayer = class VideoJSPlayer extends Player
     constructor: (data) ->
         if not (this instanceof VideoJSPlayer)

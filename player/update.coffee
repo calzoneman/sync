@@ -4,6 +4,8 @@ TYPE_MAP =
     dm: DailymotionPlayer
     gd: VideoJSPlayer
     gp: VideoJSPlayer
+    fi: FilePlayer
+    jw: FilePlayer
     sc: SoundCloudPlayer
     li: LivestreamPlayer
     tw: TwitchPlayer
