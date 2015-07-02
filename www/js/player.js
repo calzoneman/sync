@@ -536,11 +536,14 @@
                 return sendVideoUpdate();
               }
             });
-            return _this.player.on('play', function() {
+            _this.player.on('play', function() {
               _this.paused = false;
               if (CLIENT.leader) {
                 return sendVideoUpdate();
               }
+            });
+            return _this.player.on('seeked', function() {
+              return $('.vjs-waiting').removeClass('vjs-waiting');
             });
           });
         };

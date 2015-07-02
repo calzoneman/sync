@@ -82,6 +82,12 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                     if CLIENT.leader
                         sendVideoUpdate()
                 )
+
+                # Workaround for IE-- even after seeking completes, the loading
+                # spinner remains.
+                @player.on('seeked', =>
+                    $('.vjs-waiting').removeClass('vjs-waiting')
+                )
             )
         )
 
