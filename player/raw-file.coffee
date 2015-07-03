@@ -1,10 +1,12 @@
-guessMimeTypeBecauseBrowsersAreDumb = (link) ->
-    m = /.*\.([a-zA-Z0-9]+)[^.]*$/.exec(link)
-    if m
-        return m[1]
-    else
-        # Couldn't guess mime type; give up and hope flash can play it
-        return 'flv'
+codecToMimeType = (codec) ->
+    switch codec
+        when 'mov/h264' then 'video/mp4'
+        when 'flv/h264' then 'video/flv'
+        when 'matroska/vp8', 'matroska/vp9' then 'video/webm'
+        when 'ogg/theora' then 'video/ogg'
+        when 'mp3' then 'audio/mp3'
+        when 'vorbis' then 'audio/vorbis'
+        else 'video/flv'
 
 window.FilePlayer = class FilePlayer extends VideoJSPlayer
     constructor: (data) ->
@@ -13,7 +15,7 @@ window.FilePlayer = class FilePlayer extends VideoJSPlayer
 
         data.meta.direct =
             480: [{
-                contentType: guessMimeTypeBecauseBrowsersAreDumb(data.id)
+                contentType: codecToMimeType(data.meta.codec)
                 link: data.id
             }]
         super(data)
@@ -21,7 +23,7 @@ window.FilePlayer = class FilePlayer extends VideoJSPlayer
     load: (data) ->
         data.meta.direct =
             480: [{
-                contentType: guessMimeTypeBecauseBrowsersAreDumb(data.id)
+                contentType: codecToMimeType(data.meta.codec)
                 link: data.id
             }]
         super(data)

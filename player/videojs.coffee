@@ -1,3 +1,11 @@
+fixContentType = (contentType) ->
+    # TODO: In mediaquery, fix Google Drive/Google+ to return video/mp4,
+    # video/webm so this is unnecessary
+    if /^(video|audio)\//.test(contentType)
+        return contentType
+    else
+        return "video/#{contentType}"
+
 sortSources = (sources) ->
     if not sources
         console.error('sortSources() called with null source list')
@@ -17,8 +25,9 @@ sortSources = (sources) ->
             flv = []
             nonflv = []
             sources[quality].forEach((source) ->
+                source.contentType = fixContentType(source.contentType)
                 source.quality = quality
-                if source.contentType == 'flv'
+                if source.contentType == 'video/flv'
                     flv.push(source)
                 else
                     nonflv.push(source)
@@ -27,7 +36,7 @@ sortSources = (sources) ->
             flvOrder = flvOrder.concat(flv)
 
     return sourceOrder.concat(flvOrder).map((source) ->
-        type: "video/#{source.contentType}"
+        type: source.contentType
         src: source.link
         quality: source.quality
     )
@@ -42,7 +51,9 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
             return new VideoJSPlayer(data)
 
         @setMediaProperties(data)
+        @loadPlayer(data)
 
+    loadPlayer: (data) ->
         waitUntilDefined(window, 'videojs', =>
             video = $('<video/>')
                 .addClass('video-js vjs-default-skin embed-responsive-item')
@@ -93,10 +104,11 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
 
     load: (data) ->
         @setMediaProperties(data)
-        if @player
-            @player.src(sortSources(data.meta.direct))
-        else
-            console.log('VideoJSPlayer::load() called but @player is undefined')
+        # Note: VideoJS does have facilities for loading new videos into the
+        # existing player object, however it appears to be pretty glitchy when
+        # a video can't be played (either previous or next video).  It's safer
+        # to just reset the entire thing.
+        @loadPlayer(data)
 
     play: ->
         @paused = false

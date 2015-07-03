@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, genParam, guessMimeTypeBecauseBrowsersAreDumb, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, fixContentType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -444,6 +444,14 @@
 
   })(Player);
 
+  fixContentType = function(contentType) {
+    if (/^(video|audio)\//.test(contentType)) {
+      return contentType;
+    } else {
+      return "video/" + contentType;
+    }
+  };
+
   sortSources = function(sources) {
     var flv, flvOrder, i, idx, len, nonflv, pref, qualities, quality, qualityOrder, sourceOrder;
     if (!sources) {
@@ -465,8 +473,9 @@
         flv = [];
         nonflv = [];
         sources[quality].forEach(function(source) {
+          source.contentType = fixContentType(source.contentType);
           source.quality = quality;
-          if (source.contentType === 'flv') {
+          if (source.contentType === 'video/flv') {
             return flv.push(source);
           } else {
             return nonflv.push(source);
@@ -478,7 +487,7 @@
     }
     return sourceOrder.concat(flvOrder).map(function(source) {
       return {
-        type: "video/" + source.contentType,
+        type: source.contentType,
         src: source.link,
         quality: source.quality
       };
@@ -499,7 +508,11 @@
         return new VideoJSPlayer(data);
       }
       this.setMediaProperties(data);
-      waitUntilDefined(window, 'videojs', (function(_this) {
+      this.loadPlayer(data);
+    }
+
+    VideoJSPlayer.prototype.loadPlayer = function(data) {
+      return waitUntilDefined(window, 'videojs', (function(_this) {
         return function() {
           var sources, video;
           video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item').attr({
@@ -548,15 +561,11 @@
           });
         };
       })(this));
-    }
+    };
 
     VideoJSPlayer.prototype.load = function(data) {
       this.setMediaProperties(data);
-      if (this.player) {
-        return this.player.src(sortSources(data.meta.direct));
-      } else {
-        return console.log('VideoJSPlayer::load() called but @player is undefined');
-      }
+      return this.loadPlayer(data);
     };
 
     VideoJSPlayer.prototype.play = function() {
@@ -609,13 +618,23 @@
 
   })(Player);
 
-  guessMimeTypeBecauseBrowsersAreDumb = function(link) {
-    var m;
-    m = /.*\.([a-zA-Z0-9]+)[^.]*$/.exec(link);
-    if (m) {
-      return m[1];
-    } else {
-      return 'flv';
+  codecToMimeType = function(codec) {
+    switch (codec) {
+      case 'mov/h264':
+        return 'video/mp4';
+      case 'flv/h264':
+        return 'video/flv';
+      case 'matroska/vp8':
+      case 'matroska/vp9':
+        return 'video/webm';
+      case 'ogg/theora':
+        return 'video/ogg';
+      case 'mp3':
+        return 'audio/mp3';
+      case 'vorbis':
+        return 'audio/vorbis';
+      default:
+        return 'video/flv';
     }
   };
 
@@ -629,7 +648,7 @@
       data.meta.direct = {
         480: [
           {
-            contentType: guessMimeTypeBecauseBrowsersAreDumb(data.id),
+            contentType: codecToMimeType(data.meta.codec),
             link: data.id
           }
         ]
@@ -641,7 +660,7 @@
       data.meta.direct = {
         480: [
           {
-            contentType: guessMimeTypeBecauseBrowsersAreDumb(data.id),
+            contentType: codecToMimeType(data.meta.codec),
             link: data.id
           }
         ]
