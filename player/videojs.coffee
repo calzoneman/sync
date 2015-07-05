@@ -77,6 +77,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
 
             @player = videojs(video[0], autoplay: true, controls: true)
             @player.ready(=>
+                @setVolume(VOLUME)
                 @player.on('ended', ->
                     if CLIENT.leader
                         socket.emit('playNext')
@@ -125,7 +126,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
             @player.currentTime(time)
 
     setVolume: (volume) ->
-        if @player and @player.readyState() > 0
+        if @player
             @player.volume(volume)
 
     getTime: (cb) ->

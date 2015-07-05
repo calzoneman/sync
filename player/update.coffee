@@ -17,7 +17,10 @@ TYPE_MAP =
 
 window.loadMediaPlayer = (data) ->
     if data.meta.direct
-        window.PLAYER = new VideoJSPlayer(data)
+        try
+            window.PLAYER = new VideoJSPlayer(data)
+        catch e
+            console.error e
     else if data.type of TYPE_MAP
         try
             window.PLAYER = TYPE_MAP[data.type](data)

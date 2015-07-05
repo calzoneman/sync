@@ -538,6 +538,7 @@
             controls: true
           });
           return _this.player.ready(function() {
+            _this.setVolume(VOLUME);
             _this.player.on('ended', function() {
               if (CLIENT.leader) {
                 return socket.emit('playNext');
@@ -589,7 +590,7 @@
     };
 
     VideoJSPlayer.prototype.setVolume = function(volume) {
-      if (this.player && this.player.readyState() > 0) {
+      if (this.player) {
         return this.player.volume(volume);
       }
     };
@@ -1100,7 +1101,12 @@
   window.loadMediaPlayer = function(data) {
     var e;
     if (data.meta.direct) {
-      return window.PLAYER = new VideoJSPlayer(data);
+      try {
+        return window.PLAYER = new VideoJSPlayer(data);
+      } catch (_error) {
+        e = _error;
+        return console.error(e);
+      }
     } else if (data.type in TYPE_MAP) {
       try {
         return window.PLAYER = TYPE_MAP[data.type](data);
