@@ -25,6 +25,7 @@ var CHANNEL = {
 };
 
 var PLAYER = false;
+var LIVESTREAM_CHROMELESS = false;
 var FLUIDLAYOUT = false;
 var VWIDTH;
 var VHEIGHT;

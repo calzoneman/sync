@@ -794,29 +794,6 @@
 
   })(Player);
 
-  window.LivestreamPlayer = LivestreamPlayer = (function(superClass) {
-    extend(LivestreamPlayer, superClass);
-
-    function LivestreamPlayer(data) {
-      if (!(this instanceof LivestreamPlayer)) {
-        return new LivestreamPlayer(data);
-      }
-      this.load(data);
-    }
-
-    LivestreamPlayer.prototype.load = function(data) {
-      this.setMediaProperties(data);
-      this.player = $('<iframe/>').attr({
-        src: "https://cdn.livestream.com/embed/" + data.id + "?layout=4&color=0x000000&iconColorOver=0xe7e7e7&iconColor=0xcccccc",
-        frameborder: '0'
-      });
-      return removeOld(this.player);
-    };
-
-    return LivestreamPlayer;
-
-  })(Player);
-
   window.twitchEventCallback = function(events) {
     if (!(PLAYER instanceof TwitchPlayer)) {
       return false;
@@ -940,6 +917,38 @@
     return EmbedPlayer;
 
   })(Player);
+
+  window.LivestreamPlayer = LivestreamPlayer = (function(superClass) {
+    extend(LivestreamPlayer, superClass);
+
+    function LivestreamPlayer(data) {
+      if (!(this instanceof LivestreamPlayer)) {
+        return new LivestreamPlayer(data);
+      }
+      this.load(data);
+    }
+
+    LivestreamPlayer.prototype.load = function(data) {
+      if (LIVESTREAM_CHROMELESS) {
+        data.meta.embed = {
+          src: 'https://cdn.livestream.com/chromelessPlayer/v20/playerapi.swf',
+          tag: 'object',
+          params: {
+            flashvars: "channel=" + data.id
+          }
+        };
+      } else {
+        data.meta.embed = {
+          src: "https://cdn.livestream.com/embed/" + data.id + "?layout=4&color=0x000000&iconColorOver=0xe7e7e7&iconColor=0xcccccc",
+          tag: 'iframe'
+        };
+      }
+      return LivestreamPlayer.__super__.load.call(this, data);
+    };
+
+    return LivestreamPlayer;
+
+  })(EmbedPlayer);
 
   CUSTOM_EMBED_WARNING = 'This channel is embedding custom content from %link%. Since this content is not trusted, you must click "Embed" below to allow the content to be embedded.<hr>';
 
