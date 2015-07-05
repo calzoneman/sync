@@ -794,55 +794,6 @@
 
   })(Player);
 
-  window.twitchEventCallback = function(events) {
-    if (!(PLAYER instanceof TwitchPlayer)) {
-      return false;
-    }
-    return events.forEach(function(event) {
-      if (event.event === 'playerInit') {
-        PLAYER.twitch.unmute();
-        return PLAYER.twitch.ready = true;
-      }
-    });
-  };
-
-  window.TwitchPlayer = TwitchPlayer = (function(superClass) {
-    extend(TwitchPlayer, superClass);
-
-    function TwitchPlayer(data) {
-      if (!(this instanceof TwitchPlayer)) {
-        return new TwitchPlayer(data);
-      }
-      this.load(data);
-    }
-
-    TwitchPlayer.prototype.load = function(data) {
-      var object;
-      this.setMediaProperties(data);
-      object = $('<object/>').attr({
-        data: '//www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf',
-        type: 'application/x-shockwave-flash'
-      });
-      $('<param/>').attr({
-        name: 'allowScriptAccess',
-        value: 'always'
-      }).appendTo(object);
-      $('<param/>').attr({
-        name: 'allowFullScreen',
-        value: 'true'
-      }).appendTo(object);
-      $('<param/>').attr({
-        name: 'flashvars',
-        value: "embed=1&hostname=localhost&channel=" + data.id + "& eventsCallback=twitchEventCallback&auto_play=true&start_volume=" + (Math.floor(VOLUME * 100))
-      }).appendTo(object);
-      removeOld(object);
-      return this.twitch = object[0];
-    };
-
-    return TwitchPlayer;
-
-  })(Player);
-
   DEFAULT_ERROR = 'You are currently connected via HTTPS but the embedded content uses non-secure plain HTTP.  Your browser therefore blocks it from loading due to mixed content policy.  To fix this, embed the video using a secure link if available (https://...), or load this page over plain HTTP by replacing "https://" with "http://" in the address bar (your websocket will still be secured using HTTPS, but this will permit non-secure content to load).';
 
   genParam = function(name, value) {
@@ -917,6 +868,43 @@
     return EmbedPlayer;
 
   })(Player);
+
+  window.twitchEventCallback = function(events) {
+    if (!(PLAYER instanceof TwitchPlayer)) {
+      return false;
+    }
+    return events.forEach(function(event) {
+      if (event.event === 'playerInit') {
+        PLAYER.twitch.unmute();
+        return PLAYER.twitch.ready = true;
+      }
+    });
+  };
+
+  window.TwitchPlayer = TwitchPlayer = (function(superClass) {
+    extend(TwitchPlayer, superClass);
+
+    function TwitchPlayer(data) {
+      if (!(this instanceof TwitchPlayer)) {
+        return new TwitchPlayer(data);
+      }
+      this.load(data);
+    }
+
+    TwitchPlayer.prototype.load = function(data) {
+      data.meta.embed = {
+        src: '//www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf',
+        tag: 'object',
+        params: {
+          flashvars: "embed=1&hostname=localhost&channel=" + data.id + "& eventsCallback=twitchEventCallback&auto_play=true&start_volume=" + (Math.floor(VOLUME * 100))
+        }
+      };
+      return TwitchPlayer.__super__.load.call(this, data);
+    };
+
+    return TwitchPlayer;
+
+  })(EmbedPlayer);
 
   window.LivestreamPlayer = LivestreamPlayer = (function(superClass) {
     extend(LivestreamPlayer, superClass);
