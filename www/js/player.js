@@ -1142,7 +1142,7 @@
     if (data.paused && !PLAYER.paused) {
       PLAYER.seekTo(data.currentTime);
       PLAYER.pause();
-    } else if (PLAYER.paused) {
+    } else if (PLAYER.paused && !data.paused) {
       PLAYER.play();
     }
     return PLAYER.getTime(function(seconds) {
