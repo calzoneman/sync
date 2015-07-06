@@ -740,6 +740,11 @@ $("#channeloptions li > a[data-toggle='tab']").on("shown.bs.tab", function () {
 applyOpts();
 
 (function () {
+    var embed = document.querySelector("#videowrap .embed-responsive");
+    if (!embed) {
+        return;
+    }
+
     if (typeof window.MutationObserver === "function") {
         var mr = new MutationObserver(function (records) {
             records.forEach(function (record) {
@@ -751,14 +756,39 @@ applyOpts();
             });
         });
 
-        mr.observe($("#videowrap").find(".embed-responsive")[0], { childList: true });
+        mr.observe(embed, { childList: true });
     } else {
         /*
          * DOMNodeInserted is deprecated.  This code is here only as a fallback
          * for browsers that do not support MutationObserver
          */
-        $("#videowrap").find(".embed-responsive")[0].addEventListener("DOMNodeInserted", function (ev) {
+        embed.addEventListener("DOMNodeInserted", function (ev) {
             if (ev.target.id === "ytapiplayer") handleVideoResize();
         });
     }
 })();
+
+$("#emotelistbtn").click(function () {
+    EMOTELIST.show();
+});
+
+$("#emotelist-search").keyup(function () {
+    var value = this.value.toLowerCase();
+    if (value) {
+        EMOTELIST.filter = function (emote) {
+            return emote.name.toLowerCase().indexOf(value) >= 0;
+        };
+    } else {
+        EMOTELIST.filter = null;
+    }
+    EMOTELIST.handleChange();
+    EMOTELIST.loadPage(0);
+});
+
+$("#emotelist-alphabetical").prop("checked", USEROPTS.emotelist_sort);
+$("#emotelist-alphabetical").change(function () {
+    USEROPTS.emotelist_sort = this.checked;
+    setOpt("emotelist_sort", USEROPTS.emotelist_sort);
+    EMOTELIST.handleChange();
+    EMOTELIST.loadPage(0);
+});

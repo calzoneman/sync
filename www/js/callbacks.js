@@ -124,6 +124,7 @@ Callbacks = {
     cooldown: function (time) {
         time = time + 200;
         $("#chatline").css("color", "#ff0000");
+        $(".pm-input").css("color", "#ff0000");
         if (CHATTHROTTLE && $("#chatline").data("throttle_timer")) {
             clearTimeout($("#chatline").data("throttle_timer"));
         }
@@ -131,6 +132,7 @@ Callbacks = {
         $("#chatline").data("throttle_timer", setTimeout(function () {
             CHATTHROTTLE = false;
             $("#chatline").css("color", "");
+            $(".pm-input").css("color", "");
         }, time));
     },
 
@@ -279,7 +281,7 @@ Callbacks = {
     channelCSSJS: function(data) {
         $("#chancss").remove();
         CHANNEL.css = data.css;
-        $("#csstext").val(data.css);
+        $("#cs-csstext").val(data.css);
         if(data.css && !USEROPTS.ignore_channelcss) {
             $("<style/>").attr("type", "text/css")
                 .attr("id", "chancss")
@@ -289,7 +291,7 @@ Callbacks = {
 
         $("#chanjs").remove();
         CHANNEL.js = data.js;
-        $("#jstext").val(data.js);
+        $("#cs-jstext").val(data.js);
 
         if(data.js && !USEROPTS.ignore_channeljs) {
             var src = data.js
@@ -1015,6 +1017,7 @@ Callbacks = {
         var tbl = $("#cs-emotes table");
         tbl.data("entries", data);
         formatCSEmoteList();
+        EMOTELIST.emoteListChanged = true;
     },
 
     updateEmote: function (data) {

@@ -21,7 +21,7 @@ html(lang="en")
                 b.caret
               ul.dropdown-menu
                 li: a(href="#" onclick="javascript:chatOnly()") Chat Only
-                li: a(href="#" onclick="javascript:removeVideo()") Remove Video
+                li: a(href="#" onclick="javascript:removeVideo(event)") Remove Video
           mixin navloginlogout(cname)
       section#mainpage
         .container
@@ -56,6 +56,7 @@ html(lang="en")
           #controlsrow.row
             #leftcontrols.col-lg-5.col-md-5
               button#newpollbtn.btn.btn-sm.btn-default New Poll
+              button#emotelistbtn.btn.btn-sm.btn-default Emote List
             #rightcontrols.col-lg-7.col-md-7
               #plcontrol.btn-group.pull-left
                 button#showsearch.btn.btn-sm.btn-default(title="Search for a video", data-toggle="collapse", data-target="#searchcontrol")
@@ -125,7 +126,7 @@ html(lang="en")
                       input.add-temp(type="checkbox")
                       | Add as temporary
                   | Paste the embed code below and click Next or At End.
-                  | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags.
+                  | Acceptable embed codes are <code>&lt;iframe&gt;</code> and <code>&lt;object&gt;</code> tags.  <strong>CUSTOM EMBEDS CANNOT BE SYNCHRONIZED.</strong>
                   textarea#customembed-content.input-block-level.form-control(rows="3")
                 #playlistmanager.collapse.plcontrol-collapse.col-lg-12.col-md-12
                   .vertical-spacer
@@ -173,6 +174,24 @@ html(lang="en")
           .modal-footer
             button.btn.btn-primary(type="button", data-dismiss="modal", onclick="javascript:saveUserOptions()") Save
             button.btn.btn-default(type="button", data-dismiss="modal") Close
+    #emotelist.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+      .modal-dialog.modal-dialog-nonfluid
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal", aria-hidden="true") &times;
+            h4 Emote List
+          .modal-body
+            .pull-left
+              input#emotelist-search.form-control(type="text", placeholder="Search")
+            .pull-right
+              .checkbox
+                label
+                  input#emotelist-alphabetical(type="checkbox")
+                  | Sort alphabetically
+            #emotelist-paginator-container
+            table
+              tbody
+          .modal-footer
     #channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
       .modal-dialog
         .modal-content

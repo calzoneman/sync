@@ -120,10 +120,14 @@ mail:
 
 # YouTube v3 API key
 # See https://developers.google.com/youtube/registering_an_application
-# Google is closing the v2 API (which allowed anonymous requests) on
-# April 20, 2015 so you must register a v3 API key now.
-# NOTE: You must generate a Server key under Public API access, NOT a
-# browser key.
+# YouTube links will not work without this!
+# Instructions:
+#     1. Go to https://console.developers.google.com/project
+#     2. Create a new API project
+#     3. On the left sidebar, click "Credentials" under "APIs & auth"
+#     4. Click "Create new Key" under "Public API access"
+#     5. Click "Server key"
+#     6. Under "APIs & auth" click "YouTube Data API" and then click "Enable API"
 youtube-v3-key: ''
 # Minutes between saving channel state to disk
 channel-save-interval: 5
@@ -202,6 +206,9 @@ channel-blacklist: []
 #   * ffmpeg must be installed on the server
 ffmpeg:
   enabled: false
+# Executable name for ffprobe if it is not "ffprobe".  On Debian and Ubuntu (on which
+# libav is used rather than ffmpeg proper), this is "avprobe"
+  ffprobe-exec: 'ffprobe'
 
 link-domain-blacklist: []
 

@@ -44,6 +44,7 @@ var IGNORED = [];
 var CHATHIST = [];
 var CHATHISTIDX = 0;
 var CHATTHROTTLE = false;
+var CHATMAXSIZE = 100;
 var SCROLLCHAT = true;
 var LASTCHAT = {
     name: ""
@@ -115,7 +116,9 @@ var USEROPTS = {
     default_quality      : getOrDefault("default_quality", "auto"),
     boop                 : getOrDefault("boop", "never"),
     secure_connection    : getOrDefault("secure_connection", false),
-    show_shadowchat      : getOrDefault("show_shadowchat", false)
+    show_shadowchat      : getOrDefault("show_shadowchat", false),
+    emotelist_sort       : getOrDefault("emotelist_sort", true),
+    no_emotes            : getOrDefault("no_emotes", false)
 };
 
 /* Backwards compatibility check */
