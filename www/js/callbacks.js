@@ -281,7 +281,7 @@ Callbacks = {
     channelCSSJS: function(data) {
         $("#chancss").remove();
         CHANNEL.css = data.css;
-        $("#csstext").val(data.css);
+        $("#cs-csstext").val(data.css);
         if(data.css && !USEROPTS.ignore_channelcss) {
             $("<style/>").attr("type", "text/css")
                 .attr("id", "chancss")
@@ -291,7 +291,7 @@ Callbacks = {
 
         $("#chanjs").remove();
         CHANNEL.js = data.js;
-        $("#jstext").val(data.js);
+        $("#cs-jstext").val(data.js);
 
         if(data.js && !USEROPTS.ignore_channeljs) {
             var src = data.js
