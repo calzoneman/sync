@@ -4,6 +4,7 @@ html(lang="en")
     include head
     mixin head()
     link(href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css", rel="stylesheet")
+    link(rel="stylesheet", href="/css/video-js.css")
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
@@ -242,8 +243,7 @@ html(lang="en")
     script(src="/js/ui.js")
     script(src="/js/callbacks.js")
     script(defer, src="https://www.youtube.com/iframe_api")
-    script(defer, src="//api.dmcdn.net/all.js")
-    script(defer, src="//jwpsrv.com/library/QouFCLBMEeKC+CIACpYGxA.js")
+    script(defer, src="https://api.dmcdn.net/all.js")
     script(defer, src="/js/sc.js")
     script(defer, src="/js/froogaloop.min.js")
-    script(defer, src="/js/swf.js")
+    script(defer, src="/js/video.js")

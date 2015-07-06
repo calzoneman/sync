@@ -826,64 +826,51 @@ Callbacks = {
             return;
         }
 
-        /* Failsafe */
+        // Failsafe
         if (isNaN(VOLUME) || VOLUME > 1 || VOLUME < 0) {
             VOLUME = 1;
         }
 
-        var shouldResize = $("#ytapiplayer").html() === "";
+        function loadNext() {
+            if (!PLAYER || data.type !== PLAYER.mediaType) {
+                loadMediaPlayer(data);
+            }
 
+            handleMediaUpdate(data);
+        }
+
+        // Persist the user's volume preference from the the player, if possible
         if (PLAYER && typeof PLAYER.getVolume === "function") {
             PLAYER.getVolume(function (v) {
                 if (typeof v === "number") {
                     if (v < 0 || v > 1) {
+                        // Dailymotion's API was wrong once and caused a huge
+                        // headache.  This alert is here to make debugging easier.
                         alert("Something went wrong with retrieving the volume.  " +
                             "Please tell calzoneman the following: " +
-                            JSON.stringify({ v: v, t: PLAYER.type, i: PLAYER.videoId }));
+                            JSON.stringify({
+                                v: v,
+                                t: PLAYER.mediaType,
+                                i: PLAYER.mediaId
+                            }));
                     } else {
                         VOLUME = v;
                         setOpt("volume", VOLUME);
                     }
                 }
+
+                loadNext();
             });
+        } else {
+            loadNext();
         }
 
-        if (CHANNEL.opts.allow_voteskip)
+        // Reset voteskip since the video changed
+        if (CHANNEL.opts.allow_voteskip) {
             $("#voteskip").attr("disabled", false);
+        }
 
         $("#currenttitle").text("Currently Playing: " + data.title);
-
-        if (data.type != "sc" && PLAYER.type == "sc")
-            // [](/goddamnitmango)
-            fixSoundcloudShit();
-
-        if (data.type != "jw" && PLAYER.type == "jw") {
-            // Is it so hard to not mess up my DOM?
-            $("<div/>").attr("id", "ytapiplayer")
-                .insertBefore($("#ytapiplayer_wrapper"));
-            $("#ytapiplayer_wrapper").remove();
-        }
-
-        if (data.type === "fi") {
-            data.url = data.id;
-        }
-
-        if (NO_VIMEO && data.type === "vi" && data.meta.direct) {
-            data = vimeoSimulator2014(data);
-        }
-
-        /*
-         * Google Docs now uses the same simulator as Google+
-         */
-        if (data.type === "gp" || data.type === "gd") {
-            data = googlePlusSimulator2014(data);
-        }
-
-        if (data.type != PLAYER.type) {
-            loadMediaPlayer(data);
-        }
-
-        handleMediaUpdate(data);
     },
 
     mediaUpdate: function(data) {
@@ -891,7 +878,9 @@ Callbacks = {
             return;
         }
 
-        handleMediaUpdate(data);
+        if (PLAYER) {
+            handleMediaUpdate(data);
+        }
     },
 
     setPlaylistLocked: function (locked) {
@@ -1100,7 +1089,7 @@ setupCallbacks = function() {
                     Callbacks[key](data);
                 } catch (e) {
                     if (SOCKET_DEBUG) {
-                        console.log("EXCEPTION: " + e.stack);
+                        console.log("EXCEPTION: " + e + "\n" + e.stack);
                     }
                 }
             });

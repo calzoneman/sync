@@ -1376,10 +1376,10 @@ function sendVideoUpdate() {
     }
     PLAYER.getTime(function (seconds) {
         socket.emit("mediaUpdate", {
-            id: PLAYER.videoId,
+            id: PLAYER.mediaId,
             currentTime: seconds,
             paused: PLAYER.paused,
-            type: PLAYER.type
+            type: PLAYER.mediaType
         });
     });
 }
