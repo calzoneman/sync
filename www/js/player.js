@@ -465,7 +465,6 @@
         flv = [];
         nonflv = [];
         sources[quality].forEach(function(source) {
-          source.contentType = source.contentType;
           source.quality = quality;
           if (source.contentType === 'video/flv') {
             return flv.push(source);

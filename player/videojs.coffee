@@ -17,7 +17,6 @@ sortSources = (sources) ->
             flv = []
             nonflv = []
             sources[quality].forEach((source) ->
-                source.contentType = source.contentType
                 source.quality = quality
                 if source.contentType == 'video/flv'
                     flv.push(source)
