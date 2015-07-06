@@ -1,11 +1,3 @@
-fixContentType = (contentType) ->
-    # TODO: In mediaquery, fix Google Drive/Google+ to return video/mp4,
-    # video/webm so this is unnecessary
-    if /^(video|audio)\//.test(contentType)
-        return contentType
-    else
-        return "video/#{contentType}"
-
 sortSources = (sources) ->
     if not sources
         console.error('sortSources() called with null source list')
@@ -25,7 +17,7 @@ sortSources = (sources) ->
             flv = []
             nonflv = []
             sources[quality].forEach((source) ->
-                source.contentType = fixContentType(source.contentType)
+                source.contentType = source.contentType
                 source.quality = quality
                 if source.contentType == 'video/flv'
                     flv.push(source)
