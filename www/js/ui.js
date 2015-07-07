@@ -792,3 +792,16 @@ $("#emotelist-alphabetical").change(function () {
     EMOTELIST.handleChange();
     EMOTELIST.loadPage(0);
 });
+
+$("#fullscreenbtn").click(function () {
+    var elem = document.querySelector("#videowrap .embed-responsive");
+    // this shit is why frontend web development sucks
+    var fn = elem.requestFullscreen ||
+        elem.mozRequestFullScreen || // Mozilla has to be different and use a capital 'S'
+        elem.webkitRequestFullscreen ||
+        elem.msRequestFullscreen;
+
+    if (fn) {
+        fn.call(elem);
+    }
+});
