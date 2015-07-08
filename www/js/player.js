@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -1024,6 +1024,8 @@
 
   })(EmbedPlayer);
 
+  USTREAM_ERROR = 'Ustream.tv\'s embed player only works over plain HTTP, but you are viewing this page over secure HTTPS.  Your browser therefore blocks the ustream embed due to mixed content policy.  In order to view ustream, you must view this page over plain HTTP (change "https://" to "http://" in the address bar)-- your websocket will still be connecting using secure HTTPS.  This is something that ustream needs to fix.';
+
   window.UstreamPlayer = UstreamPlayer = (function(superClass) {
     extend(UstreamPlayer, superClass);
 
@@ -1037,10 +1039,12 @@
     UstreamPlayer.prototype.load = function(data) {
       data.meta.embed = {
         tag: 'iframe',
-        src: "https://www.ustream.tv/embed/" + data.id + "?v=3&wmode=direct&autoplay=1"
+        src: "http://www.ustream.tv/embed/" + data.id + "?v=3&wmode=direct&autoplay=1"
       };
       return UstreamPlayer.__super__.load.call(this, data);
     };
+
+    UstreamPlayer.prototype.mixedContentError = USTREAM_ERROR;
 
     return UstreamPlayer;
 
