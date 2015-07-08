@@ -1,3 +1,13 @@
+2015-07-07
+==========
+
+  * CyTube and CyTube/mediaquery have both been updated to use
+    calzoneman/status-message-polyfill to polyfill res.statusMessage on older
+    versions of node (e.g., v0.10).  After pulling, run `npm install` to update
+    this dependency.  This fixes an issue where HTTP status messages from
+    mediaquery were reported as `undefined`, and removes the need for manually
+    looking up status messages in `lib/ffmpeg.js`.
+
 2015-07-06
 ==========
 
