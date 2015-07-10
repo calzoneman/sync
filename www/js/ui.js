@@ -383,7 +383,7 @@ $("#queue_end").click(queue.bind(this, "end", "url"));
 $("#ce_queue_next").click(queue.bind(this, "next", "customembed"));
 $("#ce_queue_end").click(queue.bind(this, "end", "customembed"));
 
-$("#mediaurl").keydown(function(ev) {
+$("#mediaurl").keyup(function(ev) {
     if (ev.keyCode === 13) {
         queue("end", "url");
     } else {
