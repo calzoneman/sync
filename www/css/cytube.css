@@ -625,3 +625,9 @@ table td {
 #leftcontrols .btn {
     margin-right: 5px;
 }
+
+#videowrap .embed-responsive:-webkit-full-screen { width: 100%; }
+#videowrap .embed-responsive:-moz-full-screen { width: 100%; }
+#videowrap .embed-responsive:-ms-full-screen { width: 100%; }
+#videowrap .embed-responsive:-o-full-screen { width: 100%; }
+#videowrap .embed-responsive:full-screen { width: 100%; }
