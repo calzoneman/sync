@@ -6,6 +6,7 @@
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
+  "license":"MIT",
   "dependencies": {
     "bcrypt": "^0.8.1",
     "body-parser": "^1.10.2",
