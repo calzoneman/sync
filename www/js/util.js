@@ -1910,30 +1910,13 @@ function waitUntilDefined(obj, key, fn) {
 }
 
 function hidePlayer() {
-    if(!PLAYER)
-        return;
+    if (!PLAYER) return;
 
-    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
-        return;
-
-    PLAYER.size = {
-        width: $("#ytapiplayer").width(),
-        height: $("#ytapiplayer").height()
-    };
-
-    $("#ytapiplayer").attr("width", 1)
-        .attr("height", 1);
+    $("#ytapiplayer").hide();
 }
 
 function unhidePlayer() {
-    if(!PLAYER)
-        return;
-
-    if(!/(chrome|MSIE)/ig.test(navigator.userAgent))
-        return;
-
-    $("#ytapiplayer").width(PLAYER.size.width)
-        .height(PLAYER.size.height);
+    $("#ytapiplayer").show();
 }
 
 function chatDialog(div) {
@@ -2963,3 +2946,12 @@ EmoteList.prototype.loadPage = function (page) {
 };
 
 window.EMOTELIST = new EmoteList();
+
+function showChannelSettings() {
+    hidePlayer();
+    $("#channeloptions").on("hidden.bs.modal", function () {
+        unhidePlayer();
+    });
+
+    $("#channeloptions").modal();
+}
