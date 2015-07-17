@@ -344,37 +344,67 @@ function queue(pos, src) {
             temp: $(".add-temp").prop("checked")
         });
     } else {
-        var link = $("#mediaurl").val();
-        var data = parseMediaLink(link);
-        var duration = undefined;
-        var title = undefined;
-        if (link.indexOf("jw:") === 0) {
-            duration = parseInt($("#addfromurl-duration-val").val());
-            if (duration <= 0 || isNaN(duration)) {
-                duration = undefined;
-            }
-        }
-        if (data.type === "fi") {
-            title = $("#addfromurl-title-val").val();
+        var links = $("#mediaurl").val().split(",");
+        if (pos === "next") links = links.reverse();
+        if (pos === "next" && $("#queue li").length === 0) links.unshift(links.pop());
+        var emitQueue = [];
+        var addTemp = $(".add-temp").prop("checked");
+        var notification = document.getElementById("addfromurl-queue");
+        if (!notification) {
+            notification = document.createElement("div");
+            notification.id = "addfromurl-queue";
+            document.getElementById("addfromurl").appendChild(notification);
         }
 
-        if (data.id == null || data.type == null) {
-            makeAlert("Error", "Failed to parse link.  Please check that it is correct",
-                      "alert-danger")
-                .insertAfter($("#addfromurl"));
-        } else {
-            $("#mediaurl").val("");
-            $("#addfromurl-duration").remove();
-            $("#addfromurl-title").remove();
-            socket.emit("queue", {
-                id: data.id,
-                type: data.type,
-                pos: pos,
-                duration: duration,
-                title: title,
-                temp: $(".add-temp").prop("checked")
-            });
+        links.forEach(function (link) {
+            var data = parseMediaLink(link);
+            var duration = undefined;
+            var title = undefined;
+            if (data.type === "fi") {
+                title = $("#addfromurl-title-val").val();
+            }
+
+            if (data.id == null || data.type == null) {
+                makeAlert("Error", "Failed to parse link " + link +
+                          ".  Please check that it is correct",
+                          "alert-danger")
+                    .insertAfter($("#addfromurl"));
+            } else {
+                emitQueue.push({
+                    id: data.id,
+                    type: data.type,
+                    pos: pos,
+                    duration: duration,
+                    title: title,
+                    temp: addTemp,
+                    link: link
+                });
+            }
+        });
+
+        var nextQueueDelay = 1020;
+        function next() {
+            var data = emitQueue.shift();
+            if (!data) {
+                $("#mediaurl").val("");
+                $("#addfromurl-title").remove();
+                return;
+            }
+
+            var link = data.link;
+            delete data.link;
+
+            socket.emit("queue", data);
+            if (emitQueue.length > 0) {
+                notification.textContent = "Waiting to queue " + emitQueue[0].link;
+            } else {
+                notification.textContent = "";
+            }
+
+            setTimeout(next, nextQueueDelay);
         }
+
+        next();
     }
 }
 
@@ -387,23 +417,6 @@ $("#mediaurl").keyup(function(ev) {
     if (ev.keyCode === 13) {
         queue("end", "url");
     } else {
-        if ($("#mediaurl").val().indexOf("jw:") === 0) {
-            var duration = $("#addfromurl-duration");
-            if (duration.length === 0) {
-                duration = $("<div/>")
-                    .attr("id", "addfromurl-duration")
-                    .appendTo($("#addfromurl"));
-                $("<span/>").text("JWPlayer Duration (seconds) (optional)")
-                    .appendTo(duration);
-                $("<input/>").addClass("form-control")
-                    .attr("type", "text")
-                    .attr("id", "addfromurl-duration-val")
-                    .appendTo($("#addfromurl-duration"));
-            }
-        } else {
-            $("#addfromurl-duration").remove();
-        }
-
         var url = $("#mediaurl").val().split("?")[0];
         if (url.match(/^https?:\/\/(.*)?\.(flv|mp4|og[gv]|webm|mp3|mov)$/)) {
             var title = $("#addfromurl-title");
