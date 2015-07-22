@@ -1219,7 +1219,7 @@ function parseMediaLink(url) {
     if(url.indexOf("jw:") == 0) {
         return {
             id: url.substring(3),
-            type: "jw"
+            type: "fi"
         };
     }
 
