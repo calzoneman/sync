@@ -1,3 +1,11 @@
+2015-07-25
+==========
+
+  * CyTube now supports subtitles for Google Drive videos.  In order to take
+    advantage of this, you must upgrade mediaquery by running `npm install
+    cytube/mediaquery`.  Subtitles are cached in the google-drive-subtitles
+    folder.
+
 2015-07-07
 ==========
 

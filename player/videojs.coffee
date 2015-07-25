@@ -66,6 +66,17 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 ).appendTo(video)
             )
 
+            if data.meta.gdrive_subtitles
+                data.meta.gdrive_subtitles.available.forEach((subt) ->
+                    $('<track/>').attr(
+                        src: "/gdvtt/#{data.id}/#{subt.lang}/#{subt.name}.vtt?\
+                                vid=#{data.meta.gdrive_subtitles.vid}"
+                        kind: 'subtitles'
+                        srclang: subt.lang
+                        label: subt.name
+                    ).appendTo(video)
+                )
+
             @player = videojs(video[0], autoplay: true, controls: true)
             @player.ready(=>
                 @setVolume(VOLUME)
