@@ -73,7 +73,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                                 vid=#{data.meta.gdrive_subtitles.vid}"
                         kind: 'subtitles'
                         srclang: subt.lang
-                        label: subt.name
+                        label: subt.name or subt.lang_original
                     ).appendTo(video)
                 )
 

@@ -530,7 +530,7 @@
                 src: "/gdvtt/" + data.id + "/" + subt.lang + "/" + subt.name + ".vtt?vid=" + data.meta.gdrive_subtitles.vid,
                 kind: 'subtitles',
                 srclang: subt.lang,
-                label: subt.name
+                label: subt.name || subt.lang_original
               }).appendTo(video);
             });
           }
