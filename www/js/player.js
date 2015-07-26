@@ -565,16 +565,18 @@
             _this.player.on('seeked', function() {
               return $('.vjs-waiting').removeClass('vjs-waiting');
             });
-            return $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each(function(i, elem) {
-              if (elem.textContent === localStorage.lastSubtitle) {
-                elem.click();
-              }
-              return elem.onclick = function() {
-                if (this.attributes['aria-selected'].value === 'true') {
-                  return localStorage.lastSubtitle = this.textContent;
+            return setTimeout(function() {
+              return $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each(function(i, elem) {
+                if (elem.textContent === localStorage.lastSubtitle) {
+                  elem.click();
                 }
-              };
-            });
+                return elem.onclick = function() {
+                  if (elem.attributes['aria-selected'].value === 'true') {
+                    return localStorage.lastSubtitle = elem.textContent;
+                  }
+                };
+              });
+            }, 1);
           });
         };
       })(this));

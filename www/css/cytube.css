@@ -635,3 +635,7 @@ table td {
 li.vjs-menu-item.vjs-selected {
     background-color: #66a8cc !important;
 }
+
+.video-js video::-webkit-media-text-track-container {
+    bottom: 50px;
+}

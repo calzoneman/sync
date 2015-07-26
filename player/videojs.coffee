@@ -106,14 +106,20 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                     $('.vjs-waiting').removeClass('vjs-waiting')
                 )
 
-                $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each((i, elem) ->
-                    if elem.textContent == localStorage.lastSubtitle
-                        elem.click()
+                # Workaround for Chrome-- it seems that the click bindings for
+                # the subtitle menu aren't quite set up until after the ready
+                # event finishes, so set a timeout for 1ms to force this code
+                # not to run until the ready() function returns.
+                setTimeout(->
+                    $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each((i, elem) ->
+                        if elem.textContent == localStorage.lastSubtitle
+                            elem.click()
 
-                    elem.onclick = ->
-                        if this.attributes['aria-selected'].value == 'true'
-                            localStorage.lastSubtitle = this.textContent
-                )
+                        elem.onclick = ->
+                            if elem.attributes['aria-selected'].value == 'true'
+                                localStorage.lastSubtitle = elem.textContent
+                    )
+                , 1)
             )
         )
 
