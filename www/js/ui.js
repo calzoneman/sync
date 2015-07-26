@@ -487,7 +487,7 @@ $("#getplaylist").click(function() {
             .val(urls)
             .appendTo(body);
         $("<div/>").addClass("modal-footer").appendTo(modal);
-        outer.on("hidden", function() {
+        outer.on("hidden.bs.modal", function() {
             outer.remove();
             unhidePlayer();
         });
