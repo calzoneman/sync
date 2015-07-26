@@ -68,12 +68,15 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
 
             if data.meta.gdrive_subtitles
                 data.meta.gdrive_subtitles.available.forEach((subt) ->
+                    label = subt.lang_original
+                    if subt.name
+                        label += " (#{subt.name})"
                     $('<track/>').attr(
                         src: "/gdvtt/#{data.id}/#{subt.lang}/#{subt.name}.vtt?\
                                 vid=#{data.meta.gdrive_subtitles.vid}"
                         kind: 'subtitles'
                         srclang: subt.lang
-                        label: subt.name or subt.lang_original
+                        label: label
                     ).appendTo(video)
                 )
 
@@ -101,6 +104,15 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 # spinner remains.
                 @player.on('seeked', =>
                     $('.vjs-waiting').removeClass('vjs-waiting')
+                )
+
+                $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each((i, elem) ->
+                    if elem.textContent == localStorage.lastSubtitle
+                        elem.click()
+
+                    elem.onclick = ->
+                        if this.attributes['aria-selected'].value == 'true'
+                            localStorage.lastSubtitle = this.textContent
                 )
             )
         )
