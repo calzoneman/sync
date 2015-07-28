@@ -631,3 +631,11 @@ table td {
 #videowrap .embed-responsive:-ms-full-screen { width: 100%; }
 #videowrap .embed-responsive:-o-full-screen { width: 100%; }
 #videowrap .embed-responsive:full-screen { width: 100%; }
+
+li.vjs-menu-item.vjs-selected {
+    background-color: #66a8cc !important;
+}
+
+.video-js video::-webkit-media-text-track-container {
+    bottom: 50px;
+}

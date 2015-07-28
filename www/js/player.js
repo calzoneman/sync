@@ -445,7 +445,7 @@
   })(Player);
 
   sortSources = function(sources) {
-    var flv, flvOrder, i, idx, len, nonflv, pref, qualities, quality, qualityOrder, sourceOrder;
+    var flv, flvOrder, idx, j, len, nonflv, pref, qualities, quality, qualityOrder, sourceOrder;
     if (!sources) {
       console.error('sortSources() called with null source list');
       return [];
@@ -459,8 +459,8 @@
     qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx));
     sourceOrder = [];
     flvOrder = [];
-    for (i = 0, len = qualityOrder.length; i < len; i++) {
-      quality = qualityOrder[i];
+    for (j = 0, len = qualityOrder.length; j < len; j++) {
+      quality = qualityOrder[j];
       if (quality in sources) {
         flv = [];
         nonflv = [];
@@ -524,6 +524,21 @@
               'data-quality': source.quality
             }).appendTo(video);
           });
+          if (data.meta.gdrive_subtitles) {
+            data.meta.gdrive_subtitles.available.forEach(function(subt) {
+              var label;
+              label = subt.lang_original;
+              if (subt.name) {
+                label += " (" + subt.name + ")";
+              }
+              return $('<track/>').attr({
+                src: "/gdvtt/" + data.id + "/" + subt.lang + "/" + subt.name + ".vtt?vid=" + data.meta.gdrive_subtitles.vid,
+                kind: 'subtitles',
+                srclang: subt.lang,
+                label: label
+              }).appendTo(video);
+            });
+          }
           _this.player = videojs(video[0], {
             autoplay: true,
             controls: true
@@ -547,9 +562,21 @@
                 return sendVideoUpdate();
               }
             });
-            return _this.player.on('seeked', function() {
+            _this.player.on('seeked', function() {
               return $('.vjs-waiting').removeClass('vjs-waiting');
             });
+            return setTimeout(function() {
+              return $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each(function(i, elem) {
+                if (elem.textContent === localStorage.lastSubtitle) {
+                  elem.click();
+                }
+                return elem.onclick = function() {
+                  if (elem.attributes['aria-selected'].value === 'true') {
+                    return localStorage.lastSubtitle = elem.textContent;
+                  }
+                };
+              });
+            }, 1);
           });
         };
       })(this));

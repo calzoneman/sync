@@ -66,6 +66,20 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 ).appendTo(video)
             )
 
+            if data.meta.gdrive_subtitles
+                data.meta.gdrive_subtitles.available.forEach((subt) ->
+                    label = subt.lang_original
+                    if subt.name
+                        label += " (#{subt.name})"
+                    $('<track/>').attr(
+                        src: "/gdvtt/#{data.id}/#{subt.lang}/#{subt.name}.vtt?\
+                                vid=#{data.meta.gdrive_subtitles.vid}"
+                        kind: 'subtitles'
+                        srclang: subt.lang
+                        label: label
+                    ).appendTo(video)
+                )
+
             @player = videojs(video[0], autoplay: true, controls: true)
             @player.ready(=>
                 @setVolume(VOLUME)
@@ -91,6 +105,21 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 @player.on('seeked', =>
                     $('.vjs-waiting').removeClass('vjs-waiting')
                 )
+
+                # Workaround for Chrome-- it seems that the click bindings for
+                # the subtitle menu aren't quite set up until after the ready
+                # event finishes, so set a timeout for 1ms to force this code
+                # not to run until the ready() function returns.
+                setTimeout(->
+                    $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each((i, elem) ->
+                        if elem.textContent == localStorage.lastSubtitle
+                            elem.click()
+
+                        elem.onclick = ->
+                            if elem.attributes['aria-selected'].value == 'true'
+                                localStorage.lastSubtitle = elem.textContent
+                    )
+                , 1)
             )
         )
 
