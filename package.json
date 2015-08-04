@@ -15,7 +15,7 @@
     "cookie-parser": "^1.3.3",
     "csrf": "^2.0.6",
     "cytube-mediaquery": "git://github.com/CyTube/mediaquery",
-    "cytubefilters": "git://github.com/calzoneman/cytubefilters#65e685ad",
+    "cytubefilters": "git://github.com/calzoneman/cytubefilters#378bebfb",
     "express": "^4.11.1",
     "express-minify": "^0.1.3",
     "graceful-fs": "^3.0.5",
