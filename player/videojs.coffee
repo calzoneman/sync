@@ -7,9 +7,9 @@ sortSources = (sources) ->
     pref = String(USEROPTS.default_quality)
     idx = qualities.indexOf(pref)
     if idx < 0
-        pref = '480'
+        idx = 2
 
-    qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx))
+    qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx).reverse())
     sourceOrder = []
     flvOrder = []
     for quality in qualityOrder
