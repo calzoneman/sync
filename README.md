@@ -31,14 +31,13 @@ Features
   - Vimeo
   - Dailymotion
   - Soundcloud
-  - Raw video/audio files (via JWPlayer)
+  - Raw video/audio files (via video.js)
 - Embedding of the following sources:
   - livestream.com
   - twitch.tv
   - justin.tv
   - ustream.tv
   - RTMP streams
-  - Icecast (via JWPlayer)
   - Custom `<iframe>` and `<object>` embeds
 - Channel customization
   - HTML Message of the Day
