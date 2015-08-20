@@ -344,7 +344,15 @@ function queue(pos, src) {
             temp: $(".add-temp").prop("checked")
         });
     } else {
-        var links = $("#mediaurl").val().split(",");
+        var linkList = $("#mediaurl").val();
+        var links = linkList.split(",http").map(function (link, i) {
+            if (i > 0) {
+                return "http" + link;
+            } else {
+                return link;
+            }
+        });
+
         if (pos === "next") links = links.reverse();
         if (pos === "next" && $("#queue li").length === 0) links.unshift(links.pop());
         var emitQueue = [];
