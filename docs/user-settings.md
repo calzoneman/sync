@@ -1,3 +1,7 @@
+# User Preferences #
+
+From any CyTube channel, you can click the Options link at the top of the page to open a dialog where you can change your personal preferences.  This page explains each of the available options.
+
 ## General ##
 
 General interface preferences.
