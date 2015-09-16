@@ -18,6 +18,7 @@ var order = [
     'hitbox.coffee',
     'ustream.coffee',
     'imgur.coffee',
+    'gdrive-youtube.coffee',
     'update.coffee'
 ];
 
