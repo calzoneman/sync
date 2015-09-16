@@ -1114,7 +1114,7 @@
       var embed;
       embed = $('<embed />').attr({
         type: 'application/x-shockwave-flash',
-        src: "https://www.youtube.com/get_player?docid=" + data.id + "&ps=docs&partnerid=30&enablejsapi=1&cc_load_policy=1",
+        src: "https://www.youtube.com/get_player?docid=" + data.id + "&ps=docs&partnerid=30&enablejsapi=1&cc_load_policy=1&auth_timeout=86400000000",
         flashvars: 'autoplay=1&playerapiid=uniquePlayerId',
         wmode: 'opaque',
         allowscriptaccess: 'always'
