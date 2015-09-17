@@ -851,7 +851,8 @@
       var key, object, ref, value;
       object = $('<object/>').attr({
         type: 'application/x-shockwave-flash',
-        data: embed.src
+        data: embed.src,
+        wmode: 'opaque'
       });
       genParam('allowfullscreen', 'true').appendTo(object);
       genParam('allowscriptaccess', 'always').appendTo(object);

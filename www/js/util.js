@@ -1910,13 +1910,18 @@ function waitUntilDefined(obj, key, fn) {
 }
 
 function hidePlayer() {
+    /* 2015-09-16
+     * Originally used to hide the player while a modal was open because of
+     * certain flash videos that always rendered on top.  Seems to no longer
+     * be an issue.  Uncomment this if it is.
     if (!PLAYER) return;
 
     $("#ytapiplayer").hide();
+    */
 }
 
 function unhidePlayer() {
-    $("#ytapiplayer").show();
+    //$("#ytapiplayer").show();
 }
 
 function chatDialog(div) {
