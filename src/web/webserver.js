@@ -11,7 +11,7 @@ var Config = require("../config");
 var db = require("../database");
 var bodyParser = require("body-parser");
 var cookieParser = require("cookie-parser");
-var static = require("serve-static");
+var serveStatic = require("serve-static");
 var morgan = require("morgan");
 var session = require("../session");
 var csrf = require("./csrf");
@@ -244,7 +244,7 @@ module.exports = {
         require("./account").init(app);
         require("./acp").init(app);
         require("../google2vtt").attach(app);
-        app.use(static(path.join(__dirname, "..", "..", "www"), {
+        app.use(serveStatic(path.join(__dirname, "..", "..", "www"), {
             maxAge: Config.get("http.max-age") || Config.get("http.cache-ttl")
         }));
         app.use(function (err, req, res, next) {
