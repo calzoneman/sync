@@ -8,6 +8,8 @@ var fs = require("graceful-fs");
 var path = require("path");
 var sio = require("socket.io");
 var db = require("../database");
+var ChannelStore = require("../channel-storage/channelstore");
+var Promise = require("bluebird");
 
 const SIZE_LIMIT = 1048576;
 
@@ -150,17 +152,15 @@ Channel.prototype.getDiskSize = function (cb) {
 };
 
 Channel.prototype.loadState = function () {
-    var self = this;
-    var file = path.join(__dirname, "..", "..", "chandump", self.uniqueName);
-
     /* Don't load from disk if not registered */
-    if (!self.is(Flags.C_REGISTERED)) {
-        self.modules.permissions.loadUnregistered();
-        self.setFlag(Flags.C_READY);
+    if (!this.is(Flags.C_REGISTERED)) {
+        this.modules.permissions.loadUnregistered();
+        this.setFlag(Flags.C_READY);
         return;
     }
 
-    var errorLoad = function (msg) {
+    const self = this;
+    function errorLoad(msg) {
         if (self.modules.customization) {
             self.modules.customization.load({
                 motd: msg
@@ -168,99 +168,73 @@ Channel.prototype.loadState = function () {
         }
 
         self.setFlag(Flags.C_READY | Flags.C_ERROR);
-    };
+    }
 
-    fs.stat(file, function (err, stats) {
-        if (!err) {
-            var mb = stats.size / 1048576;
-            mb = Math.floor(mb * 100) / 100;
-            if (mb > SIZE_LIMIT / 1048576) {
-                Logger.errlog.log("Large chandump detected: " + self.uniqueName +
-                                  " (" + mb + " MiB)");
-                var msg = "This channel's state size has exceeded the memory limit " +
-                          "enforced by this server.  Please contact an administrator " +
-                          "for assistance.";
-                errorLoad(msg);
-                return;
-            }
-        }
-        continueLoad();
-    });
-
-    var continueLoad = function () {
-        fs.readFile(file, function (err, data) {
-            if (err) {
-                /* ENOENT means the file didn't exist.  This is normal for new channels */
-                if (err.code === "ENOENT") {
-                    self.setFlag(Flags.C_READY);
-                    Object.keys(self.modules).forEach(function (m) {
-                        self.modules[m].load({});
-                    });
-                } else {
-                    Logger.errlog.log("Failed to open channel dump " + self.uniqueName);
-                    Logger.errlog.log(err);
-                    errorLoad("Unknown error occurred when loading channel state.  " +
-                              "Contact an administrator for assistance.");
-                }
-                return;
-            }
-
-            self.logger.log("[init] Loading channel state from disk");
+    ChannelStore.load(this.uniqueName).then(data => {
+        Object.keys(this.modules).forEach(m => {
             try {
-                data = JSON.parse(data);
-                Object.keys(self.modules).forEach(function (m) {
-                    self.modules[m].load(data);
-                });
-                self.setFlag(Flags.C_READY);
+                this.modules[m].load(data);
             } catch (e) {
-                Logger.errlog.log("Channel dump for " + self.uniqueName + " is not " +
-                                  "valid");
-                Logger.errlog.log(e);
-                errorLoad("Unknown error occurred when loading channel state.  Contact " +
-                          "an administrator for assistance.");
+                Logger.errlog.log("Failed to load module " + m + " for channel " +
+                        this.uniqueName);
             }
         });
-    };
+        this.setFlag(Flags.C_READY);
+    }).catch(err => {
+        if (err.code === 'ENOENT') {
+            Object.keys(this.modules).forEach(m => {
+                this.modules[m].load({});
+            });
+            this.setFlag(Flags.C_READY);
+            return;
+        }
+
+        let message;
+        if (/Channel state file is too large/.test(err.message)) {
+            message = "This channel's state size has exceeded the memory limit " +
+                    "enforced by this server.  Please contact an administrator " +
+                    "for assistance.";
+        } else {
+            message = "An error occurred when loading this channel's data from " +
+                    "disk.  Please contact an administrator for assistance.  " +
+                    `The error was: ${err}`;
+        }
+
+        Logger.errlog.log(err.stack);
+        errorLoad(message);
+    });
 };
 
 Channel.prototype.saveState = function () {
-    var self = this;
-    var file = path.join(__dirname, "..", "..", "chandump", self.uniqueName);
-
-    /**
-     * Don't overwrite saved state data if the current state is dirty,
-     * or if this channel is unregistered
-     */
-    if (self.is(Flags.C_ERROR) || !self.is(Flags.C_REGISTERED)) {
-        return;
+    if (!this.is(Flags.C_REGISTERED)) {
+        return Promise.resolve();
     }
 
-    self.logger.log("[init] Saving channel state to disk");
-    var data = {};
-    Object.keys(this.modules).forEach(function (m) {
-        self.modules[m].save(data);
+    if (this.is(Flags.C_ERROR)) {
+        return Promise.reject(new Error(`Channel is in error state`));
+    }
+
+    this.logger.log("[init] Saving channel state to disk");
+    const data = {};
+    Object.keys(this.modules).forEach(m => {
+        this.modules[m].save(data);
     });
 
-    var json = JSON.stringify(data);
-    /**
-     * Synchronous on purpose.
-     * When the server is shutting down, saveState() is called on all channels and
-     * then the process terminates.  Async writeFile causes a race condition that wipes
-     * channels.
-     */
-    var err = fs.writeFileSync(file, json);
-
-    // Check for large chandump and warn moderators/admins
-    self.getDiskSize(function (err, size) {
-        if (!err && size > SIZE_LIMIT && self.users) {
-            self.users.forEach(function (u) {
+    return ChannelStore.save(this.uniqueName, data).catch(err => {
+        if (/Channel state size is too large/.test(err.message)) {
+            this.users.forEach(u => {
                 if (u.account.effectiveRank >= 2) {
                     u.socket.emit("warnLargeChandump", {
-                        limit: SIZE_LIMIT,
-                        actual: size
+                        limit: err.limit,
+                        actual: err.size
                     });
                 }
             });
+
+            Logger.errlog.log(`Not saving ${this.uniqueName} because it exceeds ` +
+                    "the size limit");
+        } else {
+            Logger.errlog.log(`Failed to save ${this.uniqueName}: ${err.stack}`);
         }
     });
 };

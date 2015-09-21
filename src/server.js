@@ -1,6 +1,7 @@
 const VERSION = require("../package.json").version;
 var singleton = null;
 var Config = require("./config");
+var Promise = require("bluebird");
 
 module.exports = {
     init: function () {
@@ -226,13 +227,15 @@ Server.prototype.announce = function (data) {
 
 Server.prototype.shutdown = function () {
     Logger.syslog.log("Unloading channels");
-    for (var i = 0; i < this.channels.length; i++) {
-        if (this.channels[i].is(Flags.C_REGISTERED)) {
-            Logger.syslog.log("Saving /r/" + this.channels[i].name);
-            this.channels[i].saveState();
-        }
-    }
-    Logger.syslog.log("Goodbye");
-    process.exit(0);
+    Promise.map(this.channels, channel => {
+        return channel.saveState().tap(() => {
+            Logger.syslog.log(`Saved /r/${channel.name}`);
+        }).catch(err => {
+            Logger.errlog.log(`Failed to save /r/${channel.name}: ${err.stack}`);
+        });
+    }).then(() => {
+        Logger.syslog.log("Goodbye");
+        process.exit(0);
+    });
 };
 
