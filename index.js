@@ -1,6 +1,7 @@
 var Server = require("./lib/server");
 var Config = require("./lib/config");
 var Logger = require("./lib/logger");
+require("source-map-support").install();
 
 Config.load("config.yaml");
 var sv = Server.init();

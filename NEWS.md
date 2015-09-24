@@ -1,3 +1,17 @@
+2015-09-21
+==========
+
+  * CyTube is now transpiled with [babel] to allow the use of ES6/ES2015
+    features.  All source files have been moved from `lib` to `src`.
+  * Running `npm install` or `npm run postinstall` will prompt you to
+    build from `src` to `lib`.
+  * Running `npm run build-server` will run the build script without any
+    prompts.
+  * After updating with `git pull`, you should run `npm install` or `npm run
+    build-server` in order to rebuild after the changes.
+
+[babel]: https://babeljs.io/
+
 2015-07-25
 ==========
 
