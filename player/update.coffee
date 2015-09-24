@@ -2,7 +2,7 @@ TYPE_MAP =
     yt: YouTubePlayer
     vi: VimeoPlayer
     dm: DailymotionPlayer
-    gd: VideoJSPlayer
+    gd: GoogleDriveYouTubePlayer
     gp: VideoJSPlayer
     fi: FilePlayer
     jw: FilePlayer
@@ -16,7 +16,7 @@ TYPE_MAP =
     im: ImgurPlayer
 
 window.loadMediaPlayer = (data) ->
-    if data.meta.direct
+    if data.meta.direct and data.type != 'gd'
         try
             window.PLAYER = new VideoJSPlayer(data)
         catch e
