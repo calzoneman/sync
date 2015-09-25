@@ -8,10 +8,9 @@ var fs = require("graceful-fs");
 var path = require("path");
 var sio = require("socket.io");
 var db = require("../database");
-var ChannelStore = require("../channel-storage/channelstore");
-var Promise = require("bluebird");
-
-const SIZE_LIMIT = 1048576;
+import * as ChannelStore from '../channel-storage/channelstore';
+import { ChannelStateSizeError } from '../errors';
+import * as Promise from 'bluebird';
 
 /**
  * Previously, async channel functions were riddled with race conditions due to
@@ -180,6 +179,13 @@ Channel.prototype.loadState = function () {
             }
         });
         this.setFlag(Flags.C_READY);
+    }).catch(ChannelStateSizeError, err => {
+        const message = "This channel's state size has exceeded the memory limit " +
+                "enforced by this server.  Please contact an administrator " +
+                "for assistance.";
+
+        Logger.errlog.log(err.stack);
+        errorLoad(message);
     }).catch(err => {
         if (err.code === 'ENOENT') {
             Object.keys(this.modules).forEach(m => {
@@ -187,21 +193,14 @@ Channel.prototype.loadState = function () {
             });
             this.setFlag(Flags.C_READY);
             return;
-        }
-
-        let message;
-        if (/Channel state file is too large/.test(err.message)) {
-            message = "This channel's state size has exceeded the memory limit " +
-                    "enforced by this server.  Please contact an administrator " +
-                    "for assistance.";
         } else {
-            message = "An error occurred when loading this channel's data from " +
+            const message = "An error occurred when loading this channel's data from " +
                     "disk.  Please contact an administrator for assistance.  " +
                     `The error was: ${err}`;
-        }
 
-        Logger.errlog.log(err.stack);
-        errorLoad(message);
+            Logger.errlog.log(err.stack);
+            errorLoad(message);
+        }
     });
 };
 
@@ -220,22 +219,17 @@ Channel.prototype.saveState = function () {
         this.modules[m].save(data);
     });
 
-    return ChannelStore.save(this.uniqueName, data).catch(err => {
-        if (/Channel state size is too large/.test(err.message)) {
-            this.users.forEach(u => {
-                if (u.account.effectiveRank >= 2) {
-                    u.socket.emit("warnLargeChandump", {
-                        limit: err.limit,
-                        actual: err.size
-                    });
-                }
-            });
+    return ChannelStore.save(this.uniqueName, data).catch(ChannelStateSizeError, err => {
+        this.users.forEach(u => {
+            if (u.account.effectiveRank >= 2) {
+                u.socket.emit("warnLargeChandump", {
+                    limit: err.limit,
+                    actual: err.actual
+                });
+            }
+        });
 
-            Logger.errlog.log(`Not saving ${this.uniqueName} because it exceeds ` +
-                    "the size limit");
-        } else {
-            Logger.errlog.log(`Failed to save ${this.uniqueName}: ${err.stack}`);
-        }
+        throw err;
     });
 };
 

@@ -64,7 +64,9 @@ function initChannelDumper(Server) {
         for (var i = 0; i < Server.channels.length; i++) {
             var chan = Server.channels[i];
             if (!chan.dead && chan.users && chan.users.length > 0) {
-                chan.saveState();
+                chan.saveState().catch(err => {
+                    Logger.errlog.log(`Failed to save /r/${chan.name}: ${err.stack}`);
+                });
             }
         }
     }, CHANNEL_SAVE_INTERVAL);

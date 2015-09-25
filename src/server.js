@@ -236,6 +236,9 @@ Server.prototype.shutdown = function () {
     }).then(() => {
         Logger.syslog.log("Goodbye");
         process.exit(0);
+    }).catch(err => {
+        Logger.errlog.log(`Caught error while saving channels: ${err.stack}`);
+        process.exit(1);
     });
 };
 

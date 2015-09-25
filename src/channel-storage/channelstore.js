@@ -1,6 +1,6 @@
 import { FileStore } from './filestore';
 
-var CHANNEL_STORE = new FileStore();
+const CHANNEL_STORE = new FileStore();
 
 export function load(channelName) {
     return CHANNEL_STORE.load(channelName);
