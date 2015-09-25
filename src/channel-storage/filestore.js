@@ -38,7 +38,7 @@ export class FileStore {
     save(channelName, data) {
         const filename = this.filenameForChannel(channelName);
         const fileContents = new Buffer(JSON.stringify(data), 'utf8');
-        if (fileContents.length > 0*SIZE_LIMIT) {
+        if (fileContents.length > SIZE_LIMIT) {
             return Promise.reject(new ChannelStateSizeError(
                     'Channel state size is too large', {
                         limit: SIZE_LIMIT,
