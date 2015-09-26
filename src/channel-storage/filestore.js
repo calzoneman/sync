@@ -6,6 +6,7 @@ import { ChannelStateSizeError } from '../errors';
 
 const readFileAsync = Promise.promisify(fs.readFile);
 const writeFileAsync = Promise.promisify(fs.writeFile);
+const readdirAsync = Promise.promisify(fs.readdir);
 const statAsync = Promise.promisify(stat);
 const SIZE_LIMIT = 1048576;
 const CHANDUMP_DIR = path.resolve(__dirname, '..', '..', 'chandump');
@@ -47,5 +48,9 @@ export class FileStore {
         }
 
         return writeFileAsync(filename, fileContents);
+    }
+
+    listChannels() {
+        return readdirAsync(CHANDUMP_DIR);
     }
 }

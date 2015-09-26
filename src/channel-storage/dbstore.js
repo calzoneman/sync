@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 import { ChannelStateSizeError,
-         ChannelDataNotFoundError } from '../errors';
+         ChannelNotFoundError } from '../errors';
 import db from '../database';
 import Logger from '../logger';
 
@@ -23,6 +23,16 @@ function queryAsync(query, substitutions) {
             }
         });
     });
+}
+
+function buildUpdateQuery(numEntries) {
+    const values = [];
+    for (let i = 0; i < numEntries; i++) {
+        values.push('(?, ?, ?)');
+    }
+
+    return `INSERT INTO channel_data VALUES ${values.join(', ')} ` +
+           'ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)';
 }
 
 export class DatabaseStore {
@@ -55,17 +65,16 @@ export class DatabaseStore {
             }
 
             let totalSize = 0;
+            let rowCount = 0;
             const id = rows[0].id;
             const substitutions = [];
             for (const key of Object.keys(data)) {
+                rowCount++;
                 const value = JSON.stringify(data[key]);
                 totalSize += value.length;
-                substitutions.push([
-                    id,
-                    key,
-                    value,
-                    value // Extra substitution var necessary for ON DUPLICATE KEY UPDATE
-                ]);
+                substitutions.push(id);
+                substitutions.push(key);
+                substitutions.push(value);
             }
 
             if (totalSize > SIZE_LIMIT) {
@@ -75,9 +84,7 @@ export class DatabaseStore {
                 });
             }
 
-            return Promise.map(substitutions, entry => {
-                return queryAsync(QUERY_UPDATE_CHANNEL_DATA, entry);
-            });
+            return queryAsync(buildUpdateQuery(rowCount), substitutions);
         });
     }
 }
