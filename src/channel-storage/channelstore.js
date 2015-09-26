@@ -1,4 +1,5 @@
 import { FileStore } from './filestore';
+import { DatabaseStore } from './dbstore';
 
 const CHANNEL_STORE = new FileStore();
 
