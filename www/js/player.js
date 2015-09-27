@@ -1260,19 +1260,19 @@
   };
 
   window.loadMediaPlayer = function(data) {
-    var e;
+    var e, error1, error2;
     if (data.meta.direct && data.type !== 'gd') {
       try {
         return window.PLAYER = new VideoJSPlayer(data);
-      } catch (_error) {
-        e = _error;
+      } catch (error1) {
+        e = error1;
         return console.error(e);
       }
     } else if (data.type in TYPE_MAP) {
       try {
         return window.PLAYER = TYPE_MAP[data.type](data);
-      } catch (_error) {
-        e = _error;
+      } catch (error2) {
+        e = error2;
         return console.error(e);
       }
     }
