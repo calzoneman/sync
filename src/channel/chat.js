@@ -584,6 +584,13 @@ ChatModule.prototype.handleCmdUnmute = function (user, msg, meta) {
     }
     name = name.toLowerCase();
 
+    if (name === user.getName().toLowerCase()) {
+        user.socket.emit("errorMsg", {
+            msg: "You are not allowed to unmute yourself"
+        });
+        return;
+    }
+
     if (!this.isMuted(name)) {
         user.socket.emit("errorMsg", {
             msg: name + " is not muted."
