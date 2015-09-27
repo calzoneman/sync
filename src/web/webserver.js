@@ -251,7 +251,7 @@ module.exports = {
             if (err) {
                 if (err.message && err.message.match(/failed to decode param/i)) {
                     return res.status(400).send("Malformed path: " + req.path);
-                } else if (err.message && err.message.match(/requested range not/i)) {
+                } else if (err.message && err.message.match(/range not satisfiable/i)) {
                     return res.status(416).end();
                 } else if (err.message && err.message.match(/request entity too large/i)) {
                     return res.status(413).end();
