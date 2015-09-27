@@ -10,6 +10,7 @@
   "dependencies": {
     "babel": "^5.8.23",
     "bcrypt": "^0.8.5",
+    "bluebird": "^2.10.1",
     "body-parser": "^1.14.0",
     "cheerio": "^0.19.0",
     "compression": "^1.5.2",

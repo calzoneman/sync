@@ -69,6 +69,9 @@ export class DatabaseStore {
             const id = rows[0].id;
             const substitutions = [];
             for (const key of Object.keys(data)) {
+                if (typeof data[key] === 'undefined') {
+                    continue;
+                }
                 rowCount++;
                 const value = JSON.stringify(data[key]);
                 totalSize += value.length;
