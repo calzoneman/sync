@@ -8,6 +8,7 @@ var Flags = require("../flags");
 var db = require("../database");
 var Logger = require("../logger");
 var CustomEmbedFilter = require("../customembed").filter;
+var XSS = require("../xss");
 
 const MAX_ITEMS = Config.get("playlist.max-items");
 
@@ -467,7 +468,7 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
         function handleLookup() {
             InfoGetter.getMedia(data.id, data.type, function (err, media) {
                 if (err) {
-                    error(err+"");
+                    error(XSS.sanitizeText(String(err)));
                     self.channel.activeLock.release();
                     return lock.release();
                 }
