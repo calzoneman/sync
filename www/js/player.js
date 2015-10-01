@@ -452,6 +452,9 @@
     }
     qualities = ['1080', '720', '480', '360', '240'];
     pref = String(USEROPTS.default_quality);
+    if (USEROPTS.default_quality === 'best') {
+      pref = '1080';
+    }
     idx = qualities.indexOf(pref);
     if (idx < 0) {
       idx = 2;
