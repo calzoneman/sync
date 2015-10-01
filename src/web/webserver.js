@@ -120,6 +120,11 @@ function handleIndex(req, res) {
  * Handles a request for the socket.io information
  */
 function handleSocketConfig(req, res) {
+    if (/\.json$/.test(req.path)) {
+        res.json(Config.get("sioconfigjson"));
+        return;
+    }
+
     res.type("application/javascript");
 
     var sioconfig = Config.get("sioconfig");
@@ -237,7 +242,7 @@ module.exports = {
 
         app.get("/r/:channel", handleChannel);
         app.get("/", handleIndex);
-        app.get("/sioconfig", handleSocketConfig);
+        app.get("/sioconfig(.json)?", handleSocketConfig);
         app.get("/useragreement", handleUserAgreement);
         app.get("/contact", handleContactPage);
         require("./auth").init(app);
