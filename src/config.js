@@ -110,6 +110,9 @@ var defaults = {
         "user": "nobody",
         "timeout": 15
     },
+    "channel-storage": {
+        type: "file"
+    }
 };
 
 /**

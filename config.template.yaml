@@ -219,3 +219,13 @@ setuid:
   user: 'user'
 # how long to wait in ms before changing uid/gid
   timeout: 15
+
+# Determines channel data storage mechanism.
+# Defaults to 'file', in which channel data is JSON stringified and saved to a file
+# in the `chandump/` folder.  This is the legacy behavior of CyTube.
+# The other possible option is 'database', in which case each key-value pair of
+# channel data is stored as a row in the `channel_data` database table.
+# To migrate legacy chandump files to the database, shut down CyTube (to prevent
+# concurrent updates), then run `node lib/channel-storage/migrate.js`.
+channel-storage:
+  type: 'file'
