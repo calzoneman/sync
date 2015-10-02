@@ -45,14 +45,14 @@ export class DatabaseStore {
             return queryAsync(QUERY_CHANNEL_DATA, [rows[0].id]);
         }).then(rows => {
             const data = {};
-            for (const row of rows) {
+            rows.forEach(row => {
                 try {
                     data[row.key] = JSON.parse(row.value);
                 } catch (e) {
                     Logger.errlog.log(`Channel data for channel "${channelName}", ` +
                             `key "${row.key}" is invalid: ${e}`);
                 }
-            }
+            });
 
             return data;
         });
@@ -68,7 +68,7 @@ export class DatabaseStore {
             let rowCount = 0;
             const id = rows[0].id;
             const substitutions = [];
-            for (const key of Object.keys(data)) {
+            for (const key in data) {
                 if (typeof data[key] === 'undefined') {
                     continue;
                 }

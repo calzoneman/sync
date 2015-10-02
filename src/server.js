@@ -2,6 +2,7 @@ const VERSION = require("../package.json").version;
 var singleton = null;
 var Config = require("./config");
 var Promise = require("bluebird");
+import * as ChannelStore from './channel-storage/channelstore';
 
 module.exports = {
     init: function () {
@@ -56,6 +57,7 @@ var Server = function () {
     var Database = require("./database");
     self.db = Database;
     self.db.init();
+    ChannelStore.init();
 
     // webserver init -----------------------------------------------------
     self.express = express();

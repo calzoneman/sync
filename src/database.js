@@ -556,7 +556,8 @@ module.exports.listStats = function (callback) {
 
 /* Misc */
 module.exports.loadAnnouncement = function () {
-    if (!Server.getServer()) {
+    // Temporary workaround
+    if (!Server.getServer || !Server.getServer()) {
         return;
     }
 

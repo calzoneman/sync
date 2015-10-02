@@ -39,9 +39,9 @@ function queryAsync(query, substitutions) {
 
 function fixOldChandump(data) {
     const converted = {};
-    for (const key of EXPECTED_KEYS) {
+    EXPECTED_KEYS.forEach(key => {
         converted[key] = data[key];
-    }
+    });
 
     if (data.queue) {
         converted.playlist = {
