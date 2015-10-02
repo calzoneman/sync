@@ -108,7 +108,7 @@ const TBL_CHANNEL_DATA = "" +
     "CREATE TABLE IF NOT EXISTS `channel_data` (" +
         "`channel_id` INT NOT NULL," +
         "`key` VARCHAR(20) NOT NULL," +
-        "`value` TEXT CHARACTER SET utf8mb4 NOT NULL," +
+        "`value` MEDIUMTEXT CHARACTER SET utf8mb4 NOT NULL," +
     "PRIMARY KEY (`channel_id`, `key`)," +
     "FOREIGN KEY (`channel_id`) REFERENCES `channels`(`id`) ON DELETE CASCADE" +
     ") CHARACTER SET utf8";
