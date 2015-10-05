@@ -1,3 +1,22 @@
+2015-10-04
+==========
+
+  * The channel data storage system has been refactored a bit.  For
+    compatibility, the default remains to store JSON objects for each channel in
+    the `chandump` folder, however there is now also the option of storing
+    channel data in the database.  You can take advantage of this by setting
+    `channel-storage: type: 'database'` in your `config.yaml`.
+    - In order to migrate existing channel data from the `chandump` files to the
+      database, run `node lib/channel-storage/migrate.js`.
+  * The database storage method uses foreign keys to associate the channel data
+    with the corresponding row in the `channels` table.  This requires that the
+    tables be stored using the InnoDB engine rather than MyISAM.  If your CyTube
+    tables defaulted to MyISAM, you can fix them by running
+
+    ```sql
+    ALTER TABLE `channels` ENGINE = InnoDB;
+    ```
+
 2015-09-21
 ==========
 
