@@ -556,6 +556,11 @@ module.exports.listStats = function (callback) {
 
 /* Misc */
 module.exports.loadAnnouncement = function () {
+    // Temporary workaround
+    if (!Server.getServer || !Server.getServer()) {
+        return;
+    }
+
     var query = "SELECT * FROM `meta` WHERE `key`='announcement'";
     module.exports.query(query, function (err, rows) {
         if (err) {

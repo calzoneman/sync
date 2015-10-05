@@ -1072,8 +1072,9 @@ Callbacks = {
         errDialog("This channel currently exceeds the maximum size of " +
             toHumanReadable(data.limit) + " (channel size is " +
             toHumanReadable(data.actual) + ").  Please reduce the size by removing " +
-            "unneeded playlist items, filters, and/or emotes or else the channel will " +
-            "be unable to load the next time it is reloaded").attr("id", "chandumptoobig");
+            "unneeded playlist items, filters, and/or emotes.  Changes to the channel " +
+            "will not be saved until the size is reduced to under the limit.")
+            .attr("id", "chandumptoobig");
     }
 }
 

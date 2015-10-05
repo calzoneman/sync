@@ -104,6 +104,15 @@ const TBL_BANS = "" +
     "INDEX (`ip`, `channel`), INDEX (`name`, `channel`)" +
     ") CHARACTER SET utf8";
 
+const TBL_CHANNEL_DATA = "" +
+    "CREATE TABLE IF NOT EXISTS `channel_data` (" +
+        "`channel_id` INT NOT NULL," +
+        "`key` VARCHAR(20) NOT NULL," +
+        "`value` MEDIUMTEXT CHARACTER SET utf8mb4 NOT NULL," +
+    "PRIMARY KEY (`channel_id`, `key`)," +
+    "FOREIGN KEY (`channel_id`) REFERENCES `channels`(`id`) ON DELETE CASCADE" +
+    ") CHARACTER SET utf8";
+
 module.exports.init = function (queryfn, cb) {
     var tables = {
         users: TBL_USERS,
@@ -116,7 +125,8 @@ module.exports.init = function (queryfn, cb) {
         user_playlists: TBL_USER_PLAYLISTS,
         aliases: TBL_ALIASES,
         stats: TBL_STATS,
-        meta: TBL_META
+        meta: TBL_META,
+        channel_data: TBL_CHANNEL_DATA
     };
 
     var AsyncQueue = require("../asyncqueue");
