@@ -7,8 +7,6 @@ import Logger from '../logger';
 const SIZE_LIMIT = 1048576;
 const QUERY_CHANNEL_ID_FOR_NAME = 'SELECT id FROM channels WHERE name = ?';
 const QUERY_CHANNEL_DATA = 'SELECT `key`, `value` FROM channel_data WHERE channel_id = ?';
-const QUERY_UPDATE_CHANNEL_DATA =
-    'INSERT INTO channel_data VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `value` = ?';
 
 function queryAsync(query, substitutions) {
     return new Promise((resolve, reject) => {

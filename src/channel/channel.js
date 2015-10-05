@@ -10,7 +10,7 @@ var sio = require("socket.io");
 var db = require("../database");
 import * as ChannelStore from '../channel-storage/channelstore';
 import { ChannelStateSizeError } from '../errors';
-import * as Promise from 'bluebird';
+import Promise from 'bluebird';
 
 /**
  * Previously, async channel functions were riddled with race conditions due to
