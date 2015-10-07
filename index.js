@@ -1,4 +1,10 @@
-var Server = require("./lib/server");
+try {
+    var Server = require("./lib/server");
+} catch (err) {
+    console.error('FATAL: Failed to require() lib/server.js');
+    console.error('Have you run `npm run build-server` yet to generate it?');
+    process.exit(1);
+}
 var Config = require("./lib/config");
 var Logger = require("./lib/logger");
 require("source-map-support").install();
