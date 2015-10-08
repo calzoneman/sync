@@ -3,7 +3,6 @@ var bcrypt = require("bcrypt");
 var $util = require("./utilities");
 var Logger = require("./logger");
 var Config = require("./config");
-var Server = require("./server");
 var tables = require("./database/tables");
 var net = require("net");
 var util = require("./utilities");
@@ -556,11 +555,6 @@ module.exports.listStats = function (callback) {
 
 /* Misc */
 module.exports.loadAnnouncement = function () {
-    // Temporary workaround
-    if (!Server.getServer || !Server.getServer()) {
-        return;
-    }
-
     var query = "SELECT * FROM `meta` WHERE `key`='announcement'";
     module.exports.query(query, function (err, rows) {
         if (err) {
@@ -578,6 +572,11 @@ module.exports.loadAnnouncement = function () {
             Logger.errlog.log("Invalid announcement data in database: " +
                               announcement.value);
             module.exports.clearAnnouncement();
+            return;
+        }
+
+        var Server = require("./server");
+        if (!Server.getServer || !Server.getServer()) {
             return;
         }
 

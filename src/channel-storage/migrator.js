@@ -140,7 +140,7 @@ function migrate(src, dest) {
             }).catch(err => {
                 console.error(`Failed to migrate /r/${name}: ${err.stack}`);
             });
-        });
+        }, 0);
     });
 }
 
