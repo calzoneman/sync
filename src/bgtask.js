@@ -8,6 +8,7 @@
 var Logger = require("./logger");
 var Config = require("./config");
 var db = require("./database");
+var Promise = require("bluebird");
 
 var init = null;
 
@@ -61,14 +62,13 @@ function initChannelDumper(Server) {
     var CHANNEL_SAVE_INTERVAL = parseInt(Config.get("channel-save-interval"))
                                 * 60000;
     setInterval(function () {
-        for (var i = 0; i < Server.channels.length; i++) {
-            var chan = Server.channels[i];
+        Promise.reduce(Server.channels, (_, chan) => {
             if (!chan.dead && chan.users && chan.users.length > 0) {
-                chan.saveState().catch(err => {
+                return chan.saveState().catch(err => {
                     Logger.errlog.log(`Failed to save /r/${chan.name}: ${err.stack}`);
                 });
             }
-        }
+        }, 0);
     }, CHANNEL_SAVE_INTERVAL);
 }
 
