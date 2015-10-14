@@ -156,6 +156,7 @@
     list-style: none outside none;
     max-height: 500px;
     overflow-y: auto;
+    transform: translateZ(0);
 }
 
 
