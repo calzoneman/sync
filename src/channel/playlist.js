@@ -234,20 +234,29 @@ PlaylistModule.prototype.onUserPostJoin = function (user) {
     user.socket.typecheckedOn("queuePlaylist", TYPE_QUEUE_PLAYLIST, this.handleQueuePlaylist.bind(this, user));
 };
 
+PlaylistModule.prototype.resumeAutolead = function () {
+    this.channel.broadcastAll("setLeader", "");
+
+    this.channel.logger.log("[playlist] Resuming autolead");
+    if (this.current !== null) {
+        // Ensure the video is unpaused before resuming autolead.
+        // In the past, people have reported stuck playlists because
+        // they assigned leader, paused, then removed leader.
+        this.current.media.paused = false;
+        this.sendMediaUpdate(this.channel.users);
+
+        if (!this._leadInterval && this.current.media.seconds > 0) {
+            this._lastUpdate = Date.now();
+            this._leadInterval = setInterval(this._leadLoop.bind(this), 1000);
+            this._leadLoop();
+        }
+    }
+};
+
 PlaylistModule.prototype.onUserPart = function (user) {
     if (this.leader === user) {
         this.leader = null;
-        this.channel.broadcastAll("setLeader", "");
-
-        this.channel.logger.log("[playlist] Resuming autolead");
-        if (this.current !== null) {
-            this.current.media.paused = false;
-            if (!this._leadInterval) {
-                this._lastUpdate = Date.now();
-                this._leadInterval = setInterval(this._leadLoop.bind(this), 1000);
-                this._leadLoop();
-            }
-        }
+        this.resumeAutolead();
     }
 };
 
@@ -736,22 +745,7 @@ PlaylistModule.prototype.handleAssignLeader = function (user, data) {
     }
 
     if (!name) {
-        this.channel.broadcastAll("setLeader", "");
-
-        this.channel.logger.log("[playlist] Resuming autolead");
-        if (this.current !== null) {
-            // Ensure the video is unpaused before resuming autolead.
-            // In the past, people have reported stuck playlists because
-            // they assigned leader, paused, then removed leader.
-            this.current.media.paused = false;
-            this.sendMediaUpdate(this.channel.users);
-
-            if (!this._leadInterval && this.current.media.seconds > 0) {
-                this._lastUpdate = Date.now();
-                this._leadInterval = setInterval(this._leadLoop.bind(this), 1000);
-                this._leadLoop();
-            }
-        }
+        this.resumeAutolead();
         return;
     }
 
