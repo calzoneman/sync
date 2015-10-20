@@ -1,3 +1,25 @@
+2015-10-19
+==========
+
+In order to support future clustering support, the legacy `/sioconfig`
+endpoint is being deprecated.  Instead, you should make a request to
+`/socketconfig/<channel name>.json`.  The response will look similar to
+these:
+
+```json
+{"url":"https://some-website.com:8443","secure":true}
+{"error":"Channel \"!@#$\" does not exist."}
+```
+
+The `url` key specifies the socket.io URL to connect to, and the `secure`
+key indicates whether the connection is secured with TLS.  If an `error` key
+is present, something went wrong and the value will contain an error
+message.
+
+For now, only one URL is returned, however in the future this may be
+extended by adding an `alt` key specifying an array of acceptable URLs to
+connect to.
+
 2015-10-04
 ==========
 

@@ -1096,27 +1096,39 @@ setupCallbacks = function() {
             });
         })(key);
     }
-}
+};
 
-try {
+(function () {
     if (typeof io === "undefined") {
         makeAlert("Uh oh!", "It appears the connection to <code>" + IO_URL + "</code> " +
                             "has failed.  If this error persists, a firewall or " +
                             "antivirus is likely blocking the connection, or the " +
                             "server is down.", "alert-danger")
             .appendTo($("#announcements"));
-        throw false;
+        Callbacks.disconnect();
+        return;
     }
 
-    var opts = { transports: ["websocket", "polling"] };
-    if (IO_URL === IO_URLS["ipv4-ssl"] || IO_URL === IO_URLS["ipv6-ssl"]) {
-        opts.secure = true;
-        socket = io(IO_URL, { secure: true });
-    }
-    socket = io(IO_URL, opts);
-    setupCallbacks();
-} catch (e) {
-    if (e) {
-        Callbacks.disconnect();
-    }
-}
+    $.getJSON("/socketconfig/" + CHANNEL.name + ".json")
+        .done(function (socketConfig) {
+            console.log(socketConfig);
+            if (socketConfig.error) {
+                makeAlert("Socket.io configuration returned error: " +
+                        socketConfig.error, "alert-danger")
+                    .appendTo($("#announcements"));
+                return;
+            }
+
+            var opts = {
+                transports: ["websocket", "polling"],
+                secure: socketConfig.secure
+            };
+
+            socket = io(socketConfig.url, opts);
+            setupCallbacks();
+        }).fail(function () {
+            makeAlert("Failed to retrieve socket.io configuration", "alert-danger")
+                .appendTo($("#announcements"));
+            Callbacks.disconnect();
+        });
+})();
