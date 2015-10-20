@@ -107,6 +107,15 @@ function formatUserlistItem(div) {
     }
 
     var profile = null;
+    /*
+     * 2015-10-19
+     * Prevent rendering unnecessary duplicates of the profile box when
+     * a user's status changes.
+     */
+    name.unbind("mouseenter");
+    name.unbind("mousemove");
+    name.unbind("mouseleave");
+
     name.mouseenter(function(ev) {
         if (profile)
             profile.remove();
