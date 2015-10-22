@@ -7,6 +7,7 @@ This user guide is a work in progress rewrite of the old user guide.  If you not
 * [Registering and managing my user account](account-mgmt.md)
 * [Available user preferences](user-settings.md)
 * [Adding subtitles to Google Drive videos](google-drive-subtitles.md)
+* [Managing chat filters](chat-filters.md)
 
 ## I need help! ##
 
