@@ -14,11 +14,8 @@ export default function initialize(app) {
             });
         }
 
-        clusterClient.getSocketURL(req.params.channel).then(url => {
-            res.json({
-                url,
-                secure: /^(https|wss)/.test(url)
-            });
+        clusterClient.getSocketConfig(req.params.channel).then(config => {
+            res.json(config);
         });
     });
 }

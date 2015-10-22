@@ -1111,7 +1111,6 @@ setupCallbacks = function() {
 
     $.getJSON("/socketconfig/" + CHANNEL.name + ".json")
         .done(function (socketConfig) {
-            console.log(socketConfig);
             if (socketConfig.error) {
                 makeAlert("Socket.io configuration returned error: " +
                         socketConfig.error, "alert-danger")

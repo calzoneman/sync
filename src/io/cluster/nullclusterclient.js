@@ -5,7 +5,11 @@ export default class NullClusterClient {
         this.ioConfig = ioConfig;
     }
 
-    getSocketURL(channel) {
-        return Promise.resolve(this.ioConfig.getSocketURL());
+    getSocketConfig(channel) {
+        const url = this.ioConfig.getSocketURL();
+        return Promise.resolve({
+            url: url,
+            secure: /^(https|wss)/.test(url)
+        });
     }
 }
