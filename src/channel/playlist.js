@@ -646,7 +646,7 @@ PlaylistModule.prototype.handleJumpTo = function (user, data) {
         this.startPlayback();
         this.channel.logger.log("[playlist] " + user.getName() + " skipped " + title);
 
-        if (old && old.temp) {
+        if (old && old.temp && old !== to) {
             this._delete(old.uid);
         }
     }
