@@ -117,7 +117,8 @@ function handleIndex(req, res) {
 }
 
 /**
- * Handles a request for the socket.io information
+ * Legacy socket.io configuration endpoint.  This is being migrated to
+ * /socketconfig/<channel name>.json (see ./routes/socketconfig.js)
  */
 function handleSocketConfig(req, res) {
     if (/\.json$/.test(req.path)) {
@@ -243,6 +244,7 @@ module.exports = {
         app.get("/r/:channel", handleChannel);
         app.get("/", handleIndex);
         app.get("/sioconfig(.json)?", handleSocketConfig);
+        require("./routes/socketconfig")(app);
         app.get("/useragreement", handleUserAgreement);
         app.get("/contact", handleContactPage);
         require("./auth").init(app);
