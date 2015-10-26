@@ -3,21 +3,45 @@ export default class IOConfiguration {
         this.config = config;
     }
 
-    getSocketURL() {
-        return this.config.urls[0];
+    getSocketEndpoints() {
+        return this.config.endpoints.slice();
     }
 }
 
 IOConfiguration.fromOldConfig = function (oldConfig) {
     const config = {
-        urls: []
+        endpoints: []
     };
 
-    ['ipv4-ssl', 'ipv4-nossl', 'ipv6-ssl', 'ipv6-nossl'].forEach(key => {
-        if (oldConfig.get('io.' + key)) {
-            config.urls.push(oldConfig.get('io.' + key));
-        }
-    });
+    if (oldConfig.get('io.ipv4-ssl')) {
+        config.endpoints.push({
+            url: oldConfig.get('io.ipv4-ssl'),
+            secure: true
+        });
+    }
+
+    if (oldConfig.get('io.ipv4-nossl')) {
+        config.endpoints.push({
+            url: oldConfig.get('io.ipv4-nossl'),
+            secure: false
+        });
+    }
+
+    if (oldConfig.get('io.ipv6-ssl')) {
+        config.endpoints.push({
+            url: oldConfig.get('io.ipv4-ssl'),
+            secure: true,
+            ipv6: true
+        });
+    }
+
+    if (oldConfig.get('io.ipv6-nossl')) {
+        config.endpoints.push({
+            url: oldConfig.get('io.ipv4-nossl'),
+            secure: false,
+            ipv6: true
+        });
+    }
 
     return new IOConfiguration(config);
 };

@@ -1112,21 +1112,40 @@ setupCallbacks = function() {
     $.getJSON("/socketconfig/" + CHANNEL.name + ".json")
         .done(function (socketConfig) {
             if (socketConfig.error) {
-                makeAlert("Socket.io configuration returned error: " +
+                makeAlert("Error", "Socket.io configuration returned error: " +
                         socketConfig.error, "alert-danger")
                     .appendTo($("#announcements"));
                 return;
             }
 
+            var chosenServer = null;
+            socketConfig.servers.forEach(function (server) {
+                if (chosenServer === null) {
+                    chosenServer = server;
+                } else if (server.secure && !chosenServer.secure) {
+                    chosenServer = server;
+                } else if (!server.ipv6Only && chosenServer.ipv6Only) {
+                    chosenServer = server;
+                }
+            });
+
+            if (chosenServer === null) {
+                makeAlert("Error",
+                        "Socket.io configuration was unable to find a suitable server",
+                        "alert-danger")
+                    .appendTo($("#announcements"));
+            }
+
             var opts = {
                 transports: ["websocket", "polling"],
-                secure: socketConfig.secure
+                secure: chosenServer.secure
             };
 
-            socket = io(socketConfig.url, opts);
+            socket = io(chosenServer.url, opts);
             setupCallbacks();
         }).fail(function () {
-            makeAlert("Failed to retrieve socket.io configuration", "alert-danger")
+            makeAlert("Error", "Failed to retrieve socket.io configuration",
+                    "alert-danger")
                 .appendTo($("#announcements"));
             Callbacks.disconnect();
         });
