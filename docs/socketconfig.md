@@ -4,7 +4,7 @@ Socket.IO Client Configuration
 As of 2015-10-25, the legacy `/sioconfig` JavaScript for retrieving connection
 information is being deprecated in favor of a new API.  The purpose of this
 change is to allow partitioning channels across multiple servers in order to
-bettle handle increasing traffic.
+better handle increasing traffic.
 
 To get the socket.io configuration for the server hosting a particular channel,
 make a `GET` request to `/socketconfig/<channel name>.json`.  The response will
