@@ -521,6 +521,7 @@ Callbacks = {
 
     clearchat: function() {
         $("#messagebuffer").html("");
+        LASTCHAT.name = "";
     },
 
     userlist: function(data) {
