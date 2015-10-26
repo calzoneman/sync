@@ -5,7 +5,6 @@ In order to support future clustering support, the legacy `/sioconfig`
 endpoint is being deprecated.  Instead, you should make a request to
 `/socketconfig/<channel name>.json`.  See [the
 documentation](docs/socketconfig.md) for more information.
-these:
 
 2015-10-04
 ==========
