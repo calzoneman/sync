@@ -639,3 +639,13 @@ li.vjs-menu-item.vjs-selected {
 .video-js video::-webkit-media-text-track-container {
     bottom: 50px;
 }
+
+input#logout[type="submit"] {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+input#logout[type="submit"]:hover {
+    text-decoration: underline;
+}
