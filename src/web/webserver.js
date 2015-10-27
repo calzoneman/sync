@@ -16,6 +16,8 @@ var morgan = require("morgan");
 var session = require("../session");
 var csrf = require("./csrf");
 var XSS = require("../xss");
+import * as HTTPStatus from './httpstatus';
+import { CSRFError } from '../errors';
 
 const LOG_FORMAT = ':real-address - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
 morgan.token('real-address', function (req) { return req._ip; });
@@ -69,51 +71,6 @@ function redirectHttp(req, res) {
         return true;
     }
     return false;
-}
-
-/**
- * Handles a GET request for /r/:channel - serves channel.html
- */
-function handleChannel(req, res) {
-    if (!$util.isValidChannelName(req.params.channel)) {
-        res.status(404);
-        res.send("Invalid channel name '" + XSS.sanitizeText(req.params.channel) + "'");
-        return;
-    }
-
-    var sio;
-    if (net.isIPv6(ipForRequest(req))) {
-        sio = Config.get("io.ipv6-default");
-    }
-
-    if (!sio) {
-        sio = Config.get("io.ipv4-default");
-    }
-
-    sio += "/socket.io/socket.io.js";
-
-    sendJade(res, "channel", {
-        channelName: req.params.channel,
-        sioSource: sio
-    });
-}
-
-/**
- * Handles a request for the index page
- */
-function handleIndex(req, res) {
-    var channels = Server.getServer().packChannelList(true);
-    channels.sort(function (a, b) {
-        if (a.usercount === b.usercount) {
-            return a.uniqueName > b.uniqueName ? -1 : 1;
-        }
-
-        return b.usercount - a.usercount;
-    });
-
-    sendJade(res, "index", {
-        channels: channels
-    });
 }
 
 /**
@@ -185,7 +142,7 @@ module.exports = {
     /**
      * Initializes webserver callbacks
      */
-    init: function (app) {
+    init: function (app, ioConfig, clusterClient, channelIndex) {
         app.use(function (req, res, next) {
             req._ip = ipForRequest(req);
             next();
@@ -241,10 +198,10 @@ module.exports = {
             Logger.syslog.log("Enabled express-minify for CSS and JS");
         }
 
-        app.get("/r/:channel", handleChannel);
-        app.get("/", handleIndex);
+        require("./routes/channel")(app, ioConfig);
+        require("./routes/index")(app, channelIndex);
         app.get("/sioconfig(.json)?", handleSocketConfig);
-        require("./routes/socketconfig")(app);
+        require("./routes/socketconfig")(app, clusterClient);
         app.get("/useragreement", handleUserAgreement);
         app.get("/contact", handleContactPage);
         require("./auth").init(app);
@@ -256,21 +213,24 @@ module.exports = {
         }));
         app.use(function (err, req, res, next) {
             if (err) {
-                if (err.message && err.message.match(/failed to decode param/i)) {
-                    return res.status(400).send("Malformed path: " + req.path);
-                } else if (err.message && err.message.match(/range not satisfiable/i)) {
-                    return res.status(416).end();
-                } else if (err.message && err.message.match(/request entity too large/i)) {
-                    return res.status(413).end();
-                } else if (err.message && err.message.match(/bad request/i)) {
-                    return res.status(400).end("Bad Request");
-                } else if (err.message && err.message.match(/invalid csrf token/i)) {
-                    res.status(403);
-                    sendJade(res, 'csrferror', { path: req.path });
-                    return;
+                if (err instanceof CSRFError) {
+                    res.status(HTTPStatus.FORBIDDEN);
+                    return sendJade(res, 'csrferror', { path: req.path });
                 }
-                Logger.errlog.log(err.stack);
-                res.status(500).end();
+
+                let { message, status } = err;
+                if (!status) {
+                    status = HTTPStatus.INTERNAL_SERVER_ERROR;
+                }
+                if (!message) {
+                    message = 'An unknown error occurred.';
+                }
+
+                if (Math.floor(status / 100) === 5) {
+                    Logger.errlog.log(err.stack);
+                }
+
+                return res.status(status).send(message);
             } else {
                 next();
             }
