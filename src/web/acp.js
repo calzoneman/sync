@@ -15,7 +15,7 @@ function checkAdmin(cb) {
         if (req.user.global_rank < 255) {
             res.send(403);
             Logger.eventlog.log("[acp] Attempted GET "+req.path+" from non-admin " +
-                                user.name + "@" + webserver.ipForRequest(req));
+                                user.name + "@" + req.realIP);
             return;
         }
 

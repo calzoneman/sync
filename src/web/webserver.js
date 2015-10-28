@@ -20,30 +20,7 @@ import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
 
 const LOG_FORMAT = ':real-address - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
-morgan.token('real-address', function (req) { return req._ip; });
-
-/**
- * Extracts an IP address from a request.  Uses X-Forwarded-For if the IP is localhost
- */
-function ipForRequest(req) {
-    var ip = req.ip;
-    if (ip === "127.0.0.1" || ip === "::1") {
-        var xforward = req.header("x-forwarded-for");
-        if (typeof xforward !== "string") {
-            xforward = [];
-        } else {
-            xforward = xforward.split(",");
-        }
-
-        for (var i = 0; i < xforward.length; i++) {
-            if (net.isIP(xforward[i])) {
-                return xforward[i];
-            }
-        }
-        return ip;
-    }
-    return ip;
-}
+morgan.token('real-address', function (req) { return req.realIP; });
 
 /**
  * Redirects a request to HTTPS if the server supports it
@@ -87,7 +64,7 @@ function handleSocketConfig(req, res) {
 
     var sioconfig = Config.get("sioconfig");
     var iourl;
-    var ip = ipForRequest(req);
+    var ip = req.realIP;
     var ipv6 = false;
 
     if (net.isIPv6(ip)) {
@@ -115,10 +92,7 @@ module.exports = {
      * Initializes webserver callbacks
      */
     init: function (app, webConfig, ioConfig, clusterClient, channelIndex) {
-        app.use(function (req, res, next) {
-            req._ip = ipForRequest(req);
-            next();
-        });
+        require("./middleware/x-forwarded-for")(app, webConfig);
         app.use(bodyParser.urlencoded({
             extended: false,
             limit: '1kb' // No POST data should ever exceed this size under normal usage
@@ -225,8 +199,6 @@ module.exports = {
             }
         });
     },
-
-    ipForRequest: ipForRequest,
 
     redirectHttps: redirectHttps,
 

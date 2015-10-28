@@ -1,5 +1,10 @@
 import clone from 'clone';
 
+const DEFAULT_TRUSTED_PROXIES = [
+    '127.0.0.1',
+    '::1'
+];
+
 export default class WebConfiguration {
     constructor(config) {
         this.config = config;
@@ -7,6 +12,10 @@ export default class WebConfiguration {
 
     getEmailContacts() {
         return clone(this.config.contacts);
+    }
+
+    getTrustedProxies() {
+        return DEFAULT_TRUSTED_PROXIES.slice();
     }
 }
 

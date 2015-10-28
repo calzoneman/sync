@@ -54,7 +54,7 @@ function handleLogin(req, res) {
         if (err) {
             if (err === "Invalid username/password combination") {
                 Logger.eventlog.log("[loginfail] Login failed (bad password): " + name
-                                  + "@" + webserver.ipForRequest(req));
+                                  + "@" + req.realIP);
             }
             sendJade(res, "login", {
                 loggedIn: false,
@@ -173,7 +173,7 @@ function handleRegister(req, res) {
     if (typeof email !== "string") {
         email = "";
     }
-    var ip = webserver.ipForRequest(req);
+    var ip = req.realIP;
 
     if (typeof name !== "string" || typeof password !== "string") {
         res.sendStatus(400);
