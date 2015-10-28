@@ -7,7 +7,7 @@ import { HTTPError } from '../../errors';
 export default function initialize(app, ioConfig) {
     app.get('/r/:channel', (req, res) => {
         if (!req.params.channel || !CyTubeUtil.isValidChannelName(req.params.channel)) {
-            throw new HTTPError(`"${sanitizeText(req.params.channel)} is not a valid ` +
+            throw new HTTPError(`"${sanitizeText(req.params.channel)}" is not a valid ` +
                     'channel name.', { status: HTTPStatus.BAD_REQUEST });
         }
 

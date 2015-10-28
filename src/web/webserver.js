@@ -17,7 +17,7 @@ var session = require("../session");
 var csrf = require("./csrf");
 var XSS = require("../xss");
 import * as HTTPStatus from './httpstatus';
-import { CSRFError } from '../errors';
+import { CSRFError, HTTPError } from '../errors';
 
 const LOG_FORMAT = ':real-address - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
 morgan.token('real-address', function (req) { return req._ip; });
@@ -211,11 +211,19 @@ module.exports = {
         app.use(serveStatic(path.join(__dirname, "..", "..", "www"), {
             maxAge: Config.get("http.max-age") || Config.get("http.cache-ttl")
         }));
+        app.use((req, res, next) => {
+            return next(new HTTPError(`No route for ${req.path}`, {
+                status: HTTPStatus.NOT_FOUND
+            }));
+        });
         app.use(function (err, req, res, next) {
             if (err) {
                 if (err instanceof CSRFError) {
                     res.status(HTTPStatus.FORBIDDEN);
-                    return sendJade(res, 'csrferror', { path: req.path });
+                    return sendJade(res, 'csrferror', {
+                        path: req.path,
+                        referer: req.header('referer')
+                    });
                 }
 
                 let { message, status } = err;
@@ -226,11 +234,17 @@ module.exports = {
                     message = 'An unknown error occurred.';
                 }
 
+                // Log 5xx (server) errors
                 if (Math.floor(status / 100) === 5) {
                     Logger.errlog.log(err.stack);
                 }
 
-                return res.status(status).send(message);
+                res.status(status);
+                return sendJade(res, 'httperror', {
+                    path: req.path,
+                    status: status,
+                    message: message
+                });
             } else {
                 next();
             }

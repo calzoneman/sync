@@ -24,7 +24,8 @@ html(lang="en")
                 li A malicious user has attempted to tamper with your session
                 li Your browser does not support cookies, or they are not enabled
               | If the problem persists, please contact an administrator.
-            a(href=path) Return to previous page
+            if referer
+              a(href=referer) Return to previous page
 
     include footer
     mixin footer()
