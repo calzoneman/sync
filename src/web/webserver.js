@@ -110,39 +110,11 @@ function handleUserAgreement(req, res) {
     });
 }
 
-function handleContactPage(req, res) {
-    // Make a copy to prevent messing with the original
-    var contacts = Config.get("contacts").map(function (c) {
-        return {
-            name: c.name,
-            email: c.email,
-            title: c.title
-        };
-    });
-
-    // Rudimentary hiding of email addresses to prevent spambots
-    contacts.forEach(function (c) {
-        c.emkey = $util.randomSalt(16)
-        var email = new Array(c.email.length);
-        for (var i = 0; i < c.email.length; i++) {
-          email[i] = String.fromCharCode(
-            c.email.charCodeAt(i) ^ c.emkey.charCodeAt(i % c.emkey.length)
-          );
-        }
-        c.email = escape(email.join(""));
-        c.emkey = escape(c.emkey);
-    });
-
-    sendJade(res, "contact", {
-        contacts: contacts
-    });
-}
-
 module.exports = {
     /**
      * Initializes webserver callbacks
      */
-    init: function (app, ioConfig, clusterClient, channelIndex) {
+    init: function (app, webConfig, ioConfig, clusterClient, channelIndex) {
         app.use(function (req, res, next) {
             req._ip = ipForRequest(req);
             next();
@@ -203,7 +175,7 @@ module.exports = {
         app.get("/sioconfig(.json)?", handleSocketConfig);
         require("./routes/socketconfig")(app, clusterClient);
         app.get("/useragreement", handleUserAgreement);
-        app.get("/contact", handleContactPage);
+        require("./routes/contact")(app, webConfig);
         require("./auth").init(app);
         require("./account").init(app);
         require("./acp").init(app);
@@ -232,6 +204,9 @@ module.exports = {
                 }
                 if (!message) {
                     message = 'An unknown error occurred.';
+                } else if (/\.(jade|js)/.test(message)) {
+                    // Prevent leakage of stack traces
+                    message = 'An internal error occurred.';
                 }
 
                 // Log 5xx (server) errors

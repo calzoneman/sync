@@ -44,6 +44,7 @@ var Flags = require("./flags");
 var sio = require("socket.io");
 import LocalChannelIndex from './web/localchannelindex';
 import IOConfiguration from './configuration/ioconfig';
+import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
 
 var Server = function () {
@@ -64,10 +65,12 @@ var Server = function () {
 
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
+    const webConfig = WebConfiguration.fromOldConfig(Config);
     const clusterClient = new NullClusterClient(ioConfig);
     const channelIndex = new LocalChannelIndex();
     self.express = express();
     require("./web/webserver").init(self.express,
+            webConfig,
             ioConfig,
             clusterClient,
             channelIndex);
