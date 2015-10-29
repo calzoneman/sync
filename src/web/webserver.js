@@ -16,6 +16,7 @@ var morgan = require("morgan");
 var session = require("../session");
 var csrf = require("./csrf");
 var XSS = require("../xss");
+import counters from "../counters";
 
 const LOG_FORMAT = ':real-address - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
 morgan.token('real-address', function (req) { return req._ip; });
@@ -187,6 +188,7 @@ module.exports = {
      */
     init: function (app) {
         app.use(function (req, res, next) {
+            counters.add("http:request", 1);
             req._ip = ipForRequest(req);
             next();
         });
