@@ -1138,7 +1138,6 @@ setupCallbacks = function() {
             }
 
             var opts = {
-                transports: ["websocket", "polling"],
                 secure: chosenServer.secure
             };
 
