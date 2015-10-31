@@ -228,7 +228,6 @@ module.exports = {
             } else {
                 var server = require("http").createServer().listen(bind.port, bind.ip);
                 server.on("clientError", function (err, socket) {
-                    console.error("clientError on " + id + " - " + err);
                     try {
                         socket.destroy();
                     } catch (e) {
