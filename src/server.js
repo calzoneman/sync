@@ -46,6 +46,7 @@ import LocalChannelIndex from './web/localchannelindex';
 import IOConfiguration from './configuration/ioconfig';
 import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
+import session from './session';
 
 var Server = function () {
     var self = this;
@@ -73,7 +74,8 @@ var Server = function () {
             webConfig,
             ioConfig,
             clusterClient,
-            channelIndex);
+            channelIndex,
+            session);
 
     // http/https/sio server init -----------------------------------------
     var key = "", cert = "", ca = undefined;
@@ -255,4 +257,3 @@ Server.prototype.shutdown = function () {
         process.exit(1);
     });
 };
-
