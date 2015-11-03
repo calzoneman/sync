@@ -5,7 +5,7 @@ export default function initialize(app, session) {
         if (STATIC_RESOURCE.test(req.path)) {
             return next();
         } else if (!req.signedCookies || !req.signedCookies.auth) {
-            return nuext();
+            return next();
         } else {
             session.verifySession(req.signedCookies.auth, (err, account) => {
                 if (!err) {
