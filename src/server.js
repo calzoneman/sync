@@ -110,7 +110,6 @@ var Server = function () {
             self.servers[id] = https.createServer(opts, self.express)
                                     .listen(bind.port, bind.ip);
             self.servers[id].on("clientError", function (err, socket) {
-                console.error("clientError on " + id + " - " + err);
                 try {
                     socket.destroy();
                 } catch (e) {
@@ -119,7 +118,6 @@ var Server = function () {
         } else if (bind.http) {
             self.servers[id] = self.express.listen(bind.port, bind.ip);
             self.servers[id].on("clientError", function (err, socket) {
-                console.error("clientError on " + id + " - " + err);
                 try {
                     socket.destroy();
                 } catch (e) {

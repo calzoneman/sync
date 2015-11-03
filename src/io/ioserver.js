@@ -14,6 +14,7 @@ var util = require("../utilities");
 var crypto = require("crypto");
 var isTorExit = require("../tor").isTorExit;
 var session = require("../session");
+import counters from '../counters';
 
 var CONNECT_RATE = {
     burst: 5,
@@ -77,6 +78,7 @@ function ipLimitReached(sock) {
     var ip = sock._realip;
 
     sock.on("disconnect", function () {
+        counters.add("socket.io:disconnect", 1);
         ipCount[ip]--;
         if (ipCount[ip] === 0) {
             /* Clear out unnecessary counters to save memory */
@@ -169,6 +171,7 @@ function handleConnection(sock) {
     }
 
     Logger.syslog.log("Accepted socket from " + ip);
+    counters.add("socket.io:accept", 1);
 
     addTypecheckedFunctions(sock);
 
@@ -225,7 +228,6 @@ module.exports = {
             } else {
                 var server = require("http").createServer().listen(bind.port, bind.ip);
                 server.on("clientError", function (err, socket) {
-                    console.error("clientError on " + id + " - " + err);
                     try {
                         socket.destroy();
                     } catch (e) {

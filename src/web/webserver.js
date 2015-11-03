@@ -12,6 +12,7 @@ import morgan from 'morgan';
 import csrf from './csrf';
 import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
+import counters from "../counters";
 
 function initializeLog(app) {
     const logFormat = ':real-address - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
@@ -141,6 +142,11 @@ module.exports = {
      * Initializes webserver callbacks
      */
     init: function (app, webConfig, ioConfig, clusterClient, channelIndex, session) {
+        app.use((req, res, next) => {
+            counters.add("http:request", 1);
+            req._ip = ipForRequest(req);
+            next();
+        });
         require('./middleware/x-forwarded-for')(app, webConfig);
         app.use(bodyParser.urlencoded({
             extended: false,
