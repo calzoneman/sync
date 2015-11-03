@@ -15,7 +15,7 @@ function merge(locals, res) {
         siteAuthor: "Calvin 'calzoneman' 'cyzon' Montgomery",
         loginDomain: Config.get("https.enabled") ? Config.get("https.full-address")
                                                  : Config.get("http.full-address"),
-        csrfToken: res.req.csrfToken(),
+        csrfToken: typeof res.req.csrfToken === 'function' ? res.req.csrfToken() : '',
         baseUrl: getBaseUrl(res)
     };
     if (typeof locals !== "object") {

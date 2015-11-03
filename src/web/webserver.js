@@ -144,7 +144,6 @@ module.exports = {
     init: function (app, webConfig, ioConfig, clusterClient, channelIndex, session) {
         app.use((req, res, next) => {
             counters.add("http:request", 1);
-            req._ip = ipForRequest(req);
             next();
         });
         require('./middleware/x-forwarded-for')(app, webConfig);
