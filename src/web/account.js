@@ -92,7 +92,7 @@ function handleChangePassword(req, res) {
                 return;
             }
 
-            Logger.eventlog.log("[account] " + webserver.ipForRequest(req) +
+            Logger.eventlog.log("[account] " + req.realIP +
                                 " changed password for " + name);
 
             db.users.getUser(name, function (err, user) {
@@ -172,7 +172,7 @@ function handleChangeEmail(req, res) {
                 });
                 return;
             }
-            Logger.eventlog.log("[account] " + webserver.ipForRequest(req) +
+            Logger.eventlog.log("[account] " + req.realIP +
                                 " changed email for " + name +
                                 " to " + email);
             sendJade(res, "account-edit", {
@@ -269,7 +269,7 @@ function handleNewChannel(req, res) {
         db.channels.register(name, req.user.name, function (err, channel) {
             if (!err) {
                 Logger.eventlog.log("[channel] " + req.user.name + "@" +
-                                    webserver.ipForRequest(req) +
+                                    req.realIP +
                                     " registered channel " + name);
                 var sv = Server.getServer();
                 if (sv.isChannelLoaded(name)) {
@@ -336,7 +336,7 @@ function handleDeleteChannel(req, res) {
         db.channels.drop(name, function (err) {
             if (!err) {
                 Logger.eventlog.log("[channel] " + req.user.name + "@" +
-                                    webserver.ipForRequest(req) + " deleted channel " +
+                                    req.realIP + " deleted channel " +
                                     name);
             }
             var sv = Server.getServer();
@@ -498,7 +498,7 @@ function handlePasswordReset(req, res) {
         var hash = $util.sha1($util.randomSalt(64));
         // 24-hour expiration
         var expire = Date.now() + 86400000;
-        var ip = webserver.ipForRequest(req);
+        var ip = req.realIP;
 
         db.addPasswordReset({
             ip: ip,
@@ -575,7 +575,7 @@ function handlePasswordRecover(req, res) {
         return;
     }
 
-    var ip = webserver.ipForRequest(req);
+    var ip = req.realIP;
 
     db.lookupPasswordReset(hash, function (err, row) {
         if (err) {

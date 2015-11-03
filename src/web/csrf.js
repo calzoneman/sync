@@ -2,8 +2,9 @@
  * Adapted from https://github.com/expressjs/csurf
  */
 
+import { CSRFError } from '../errors';
+
 var csrf = require("csrf");
-var createError = require("http-errors");
 
 var tokens = csrf();
 
@@ -39,8 +40,6 @@ exports.verify = function csrfVerify(req) {
     var token = req.body._csrf || req.query._csrf;
 
     if (!tokens.verify(secret, token)) {
-        throw createError(403, 'invalid csrf token', {
-            code: 'EBADCSRFTOKEN'
-        });
+        throw new CSRFError('Invalid CSRF token');
     }
 };

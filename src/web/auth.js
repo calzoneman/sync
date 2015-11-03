@@ -54,7 +54,7 @@ function handleLogin(req, res) {
         if (err) {
             if (err === "Invalid username/password combination") {
                 Logger.eventlog.log("[loginfail] Login failed (bad password): " + name
-                                  + "@" + webserver.ipForRequest(req));
+                                  + "@" + req.realIP);
             }
             sendJade(res, "login", {
                 loggedIn: false,
@@ -127,7 +127,7 @@ function handleLogout(req, res) {
     res.clearCookie("auth");
     req.user = res.user = null;
     // Try to find an appropriate redirect
-    var dest = req.query.dest || req.header("referer");
+    var dest = req.body.dest || req.header("referer");
     dest = dest && dest.match(/login|logout|account/) ? null : dest;
 
     var host = req.hostname;
@@ -173,7 +173,7 @@ function handleRegister(req, res) {
     if (typeof email !== "string") {
         email = "";
     }
-    var ip = webserver.ipForRequest(req);
+    var ip = req.realIP;
 
     if (typeof name !== "string" || typeof password !== "string") {
         res.sendStatus(400);
@@ -234,7 +234,7 @@ module.exports = {
     init: function (app) {
         app.get("/login", handleLoginPage);
         app.post("/login", handleLogin);
-        app.get("/logout", handleLogout);
+        app.post("/logout", handleLogout);
         app.get("/register", handleRegisterPage);
         app.post("/register", handleRegister);
     }

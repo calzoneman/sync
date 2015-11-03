@@ -42,6 +42,11 @@ var $util = require("./utilities");
 var db = require("./database");
 var Flags = require("./flags");
 var sio = require("socket.io");
+import LocalChannelIndex from './web/localchannelindex';
+import IOConfiguration from './configuration/ioconfig';
+import WebConfiguration from './configuration/webconfig';
+import NullClusterClient from './io/cluster/nullclusterclient';
+import session from './session';
 
 var Server = function () {
     var self = this;
@@ -60,8 +65,17 @@ var Server = function () {
     ChannelStore.init();
 
     // webserver init -----------------------------------------------------
+    const ioConfig = IOConfiguration.fromOldConfig(Config);
+    const webConfig = WebConfiguration.fromOldConfig(Config);
+    const clusterClient = new NullClusterClient(ioConfig);
+    const channelIndex = new LocalChannelIndex();
     self.express = express();
-    require("./web/webserver").init(self.express);
+    require("./web/webserver").init(self.express,
+            webConfig,
+            ioConfig,
+            clusterClient,
+            channelIndex,
+            session);
 
     // http/https/sio server init -----------------------------------------
     var key = "", cert = "", ca = undefined;
@@ -241,4 +255,3 @@ Server.prototype.shutdown = function () {
         process.exit(1);
     });
 };
-

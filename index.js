@@ -3,6 +3,7 @@ try {
 } catch (err) {
     console.error('FATAL: Failed to require() lib/server.js');
     console.error('Have you run `npm run build-server` yet to generate it?');
+    console.error(err.stack);
     process.exit(1);
 }
 var Config = require("./lib/config");
