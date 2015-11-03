@@ -127,7 +127,7 @@ function handleLogout(req, res) {
     res.clearCookie("auth");
     req.user = res.user = null;
     // Try to find an appropriate redirect
-    var dest = req.params.dest || req.header("referer");
+    var dest = req.body.dest || req.header("referer");
     dest = dest && dest.match(/login|logout|account/) ? null : dest;
 
     var host = req.hostname;

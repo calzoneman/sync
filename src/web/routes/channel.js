@@ -8,7 +8,7 @@ export default function initialize(app, ioConfig) {
     app.get('/r/:channel', (req, res) => {
         if (!req.params.channel || !CyTubeUtil.isValidChannelName(req.params.channel)) {
             throw new HTTPError(`"${sanitizeText(req.params.channel)}" is not a valid ` +
-                    'channel name.', { status: HTTPStatus.BAD_REQUEST });
+                    'channel name.', { status: HTTPStatus.NOT_FOUND });
         }
 
         const endpoints = ioConfig.getSocketEndpoints();

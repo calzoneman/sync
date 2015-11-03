@@ -1,6 +1,8 @@
 mixin notfound()
   h1 Not Found
   p The page you were looking for doesn't seem to exist.  Please check that you typed the URL correctly.
+  if message
+    p Reason: #{message}
 mixin forbidden()
   h1 Forbidden
   p You don't have permission to access <code>#{path}</code>
