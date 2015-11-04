@@ -169,8 +169,8 @@ module.exports = {
 
         if (webConfig.getEnableMinification()) {
             const cacheDir = path.join(__dirname, '..', '..', 'www', 'cache');
-            if (!fs.existsSync(cache)) {
-                fs.mkdirSync(cache);
+            if (!fs.existsSync(cacheDir)) {
+                fs.mkdirSync(cacheDir);
             }
             app.use(require('express-minify')({
                 cache: cacheDir
