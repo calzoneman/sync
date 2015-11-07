@@ -1101,7 +1101,7 @@ setupCallbacks = function() {
 
 (function () {
     if (typeof io === "undefined") {
-        makeAlert("Uh oh!", "It appears the connection to <code>" + IO_URL + "</code> " +
+        makeAlert("Uh oh!", "It appears the socket.io connection " +
                             "has failed.  If this error persists, a firewall or " +
                             "antivirus is likely blocking the connection, or the " +
                             "server is down.", "alert-danger")
