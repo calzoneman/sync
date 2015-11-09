@@ -1006,28 +1006,19 @@
       if (!(this instanceof RTMPPlayer)) {
         return new RTMPPlayer(data);
       }
-      this.volume = VOLUME;
-      this.load(data);
-    }
-
-    RTMPPlayer.prototype.load = function(data) {
-      data.meta.embed = {
-        tag: 'object',
-        src: 'https://fpdownload.adobe.com/strobe/FlashMediaPlayback_101.swf',
-        params: {
-          flashvars: "src=" + data.id + "&streamType=live&javascriptCallbackFunction=rtmpEventHandler&autoPlay=true&volume=" + VOLUME
-        }
+      data.meta.direct = {
+        480: [
+          {
+            link: data.id
+          }
+        ]
       };
-      return RTMPPlayer.__super__.load.call(this, data);
-    };
-
-    RTMPPlayer.prototype.getVolume = function(cb) {
-      return cb(this.volume);
-    };
+      RTMPPlayer.__super__.constructor.call(this, data);
+    }
 
     return RTMPPlayer;
 
-  })(EmbedPlayer);
+  })(VideoJSPlayer);
 
   HITBOX_ERROR = 'Hitbox.tv only serves its content over plain HTTP, but you are viewing this page over secure HTTPS.  Your browser therefore blocks the hitbox embed due to mixed content policy.  In order to view hitbox, you must view this page over plain HTTP (change "https://" to "http://" in the address bar)-- your websocket will still be connected using secure HTTPS.  This is something I have asked Hitbox to fix but they have not done so yet.';
 
