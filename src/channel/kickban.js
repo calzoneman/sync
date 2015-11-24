@@ -374,12 +374,21 @@ KickBanModule.prototype.banAll = function (actor, name, range, reason, cb) {
                 if (err) {
                     return error(err);
                 }
+
+                var seenIPs = {};
                 var all = ips.map(function (ip) {
                     if (range === "range") {
                         ip = util.getIPRange(ip);
                     } else if (range === "wrange") {
                         ip = util.getWideIPRange(ip);
                     }
+
+                    if (seenIPs.hasOwnProperty(ip)) {
+                        return;
+                    } else {
+                        seenIPs[ip] = true;
+                    }
+
                     return Q.nfcall(self.banIP.bind(self), actor, ip, name, reason);
                 });
 
