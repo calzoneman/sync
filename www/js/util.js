@@ -1491,12 +1491,14 @@ function addChatMessage(data) {
         if (!newMessageDiv.length) {
             newMessageDiv = $("<div/>").attr("id", "newmessages-indicator")
                     .insertBefore($("#chatline"));
+            var bgHack = $("<span/>").attr("id", "newmessages-indicator-bghack")
+                    .appendTo(newMessageDiv);
 
             $("<span/>").addClass("glyphicon glyphicon-chevron-down")
-                    .appendTo(newMessageDiv);
-            $("<span/>").text("New Messages Below").appendTo(newMessageDiv);
+                    .appendTo(bgHack);
+            $("<span/>").text("New Messages Below").appendTo(bgHack);
             $("<span/>").addClass("glyphicon glyphicon-chevron-down")
-                    .appendTo(newMessageDiv);
+                    .appendTo(bgHack);
         }
 
         if (numRemoved > 0) {

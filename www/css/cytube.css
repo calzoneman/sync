@@ -651,11 +651,9 @@ input#logout[type="submit"]:hover {
 }
 
 #newmessages-indicator {
-    background: rgb(0, 0, 0);
-    background: rgba(0, 0, 0, 0.8);
-    line-height: 2.0;
-    position: relative;
-    bottom: 50px;
+    margin-top: -30px;
+    line-height: 30px;
+    height: 30px;
     text-align: center;
     width: 100%;
     font-weight: bold;

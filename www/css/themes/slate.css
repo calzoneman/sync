@@ -97,3 +97,8 @@ input.form-control[type="email"], textarea.form-control {
 .navbar-inverse .navbar-text-nofloat {
     color: #ccc;
 }
+
+#newmessages-indicator-bghack {
+    background: rgb(0, 0, 0);
+    background: rgba(0, 0, 0, 0.9);
+}
