@@ -81,8 +81,16 @@ $("#usercount").mouseleave(function () {
     $("#usercount").find(".profile-box").remove();
 });
 
-$("#messagebuffer").mouseenter(function() { SCROLLCHAT = false; });
-$("#messagebuffer").mouseleave(function() { SCROLLCHAT = true; });
+$("#messagebuffer").scroll(function () {
+    var m = $("#messagebuffer");
+    var isCaughtUp = m.height() + m.scrollTop() >= m.prop("scrollHeight");
+    if (isCaughtUp) {
+        SCROLLCHAT = true;
+        $("#newmessages-indicator").remove();
+    } else {
+        SCROLLCHAT = false;
+    }
+});
 
 $("#guestname").keydown(function (ev) {
     if (ev.keyCode === 13) {
