@@ -85,3 +85,8 @@ input.form-control[type="email"], textarea.form-control {
 .queue_entry.queue_active {
     background-color: #333333;
 }
+
+#newmessages-indicator-bghack {
+    background: rgb(32, 32, 32);
+    background: rgba(32, 32, 32, 0.9);
+}

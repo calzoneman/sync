@@ -186,3 +186,8 @@ input.form-control[type="email"], textarea.form-control {
     min-height: 20px;
     padding: 10px 19px !important;
 }
+
+#newmessages-indicator-bghack {
+    background: rgb(16, 16, 16);
+    background: rgba(16, 16, 16, 0.9);
+}

@@ -649,3 +649,17 @@ input#logout[type="submit"] {
 input#logout[type="submit"]:hover {
     text-decoration: underline;
 }
+
+#newmessages-indicator {
+    margin-top: -30px;
+    line-height: 30px;
+    height: 30px;
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+}
+
+#newmessages-indicator .glyphicon {
+    margin-left: 10px;
+    margin-right: 10px;
+}

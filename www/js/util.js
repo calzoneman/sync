@@ -821,6 +821,7 @@ function showPollMenu() {
 
 function scrollChat() {
     $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+    $("#newmessages-indicator").remove();
 }
 
 function hasPermission(key) {
@@ -1482,9 +1483,29 @@ function addChatMessage(data) {
     div.mouseleave(function() {
         $(".nick-hover").removeClass("nick-hover");
     });
-    trimChatBuffer();
-    if(SCROLLCHAT)
+    var numRemoved = trimChatBuffer();
+    if (SCROLLCHAT) {
         scrollChat();
+    } else {
+        var newMessageDiv = $("#newmessages-indicator");
+        if (!newMessageDiv.length) {
+            newMessageDiv = $("<div/>").attr("id", "newmessages-indicator")
+                    .insertBefore($("#chatline"));
+            var bgHack = $("<span/>").attr("id", "newmessages-indicator-bghack")
+                    .appendTo(newMessageDiv);
+
+            $("<span/>").addClass("glyphicon glyphicon-chevron-down")
+                    .appendTo(bgHack);
+            $("<span/>").text("New Messages Below").appendTo(bgHack);
+            $("<span/>").addClass("glyphicon glyphicon-chevron-down")
+                    .appendTo(bgHack);
+        }
+
+        if (numRemoved > 0) {
+            $("#messagebuffer").scrollTop(
+                    $("#messagebuffer").scrollTop() - div.height());
+        }
+    }
 
     var isHighlight = false;
     if (CLIENT.name && data.username != CLIENT.name) {
@@ -1508,6 +1529,8 @@ function trimChatBuffer() {
     for (var i = 0; i < count; i++) {
         buffer.firstChild.remove();
     }
+
+    return count;
 }
 
 function pingMessage(isHighlight) {
