@@ -475,16 +475,29 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
         }
 
         function handleLookup() {
+            var channelName = self.channel.name;
             InfoGetter.getMedia(data.id, data.type, function (err, media) {
                 if (err) {
                     error(XSS.sanitizeText(String(err)));
-                    self.channel.activeLock.release();
+                    if (self.channel && self.channel.activeLock) {
+                        self.channel.activeLock.release();
+                    } else {
+                        Logger.errlog.log("Attempted release of channel lock after " +
+                                "channel was already unloaded in queueStandard: " +
+                                channelName + " " + data.type + ":" + data.id);
+                    }
                     return lock.release();
                 }
 
                 self._addItem(media, data, user, function () {
                     lock.release();
-                    self.channel.activeLock.release();
+                    if (self.channel && self.channel.activeLock) {
+                        self.channel.activeLock.release();
+                    } else {
+                        Logger.errlog.log("Attempted release of channel lock after " +
+                                "channel was already unloaded in queueStandard: " +
+                                channelName + " " + data.type + ":" + data.id);
+                    }
                 });
             });
         }
