@@ -46,6 +46,7 @@ var CHATHISTIDX = 0;
 var CHATTHROTTLE = false;
 var CHATMAXSIZE = 100;
 var SCROLLCHAT = true;
+var IGNORE_SCROLL_EVENT = false;
 var LASTCHAT = {
     name: ""
 };

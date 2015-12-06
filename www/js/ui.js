@@ -81,7 +81,14 @@ $("#usercount").mouseleave(function () {
     $("#usercount").find(".profile-box").remove();
 });
 
-$("#messagebuffer").scroll(function () {
+$("#messagebuffer").scroll(function (ev) {
+    if (IGNORE_SCROLL_EVENT) {
+        // Skip event, this was triggered by scrollChat() and not by a user action.
+        // Reset for next event.
+        IGNORE_SCROLL_EVENT = false;
+        return;
+    }
+
     var m = $("#messagebuffer");
     var isCaughtUp = m.height() + m.scrollTop() >= m.prop("scrollHeight");
     if (isCaughtUp) {

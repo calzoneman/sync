@@ -820,8 +820,13 @@ function showPollMenu() {
 }
 
 function scrollChat() {
-    $("#messagebuffer").scrollTop($("#messagebuffer").prop("scrollHeight"));
+    scrollAndIgnoreEvent($("#messagebuffer").prop("scrollHeight"));
     $("#newmessages-indicator").remove();
+}
+
+function scrollAndIgnoreEvent(top) {
+    IGNORE_SCROLL_EVENT = true;
+    $("#messagebuffer").scrollTop(top);
 }
 
 function hasPermission(key) {
@@ -1455,12 +1460,6 @@ function formatChatMessage(data, last) {
     if (data.meta.shadow) {
         div.addClass("chat-shadow");
     }
-
-    div.find("img").load(function () {
-        if (SCROLLCHAT) {
-            scrollChat();
-        }
-    });
     return div;
 }
 
@@ -1472,17 +1471,19 @@ function addChatMessage(data) {
         return;
     }
     var div = formatChatMessage(data, LASTCHAT);
+    var msgBuf = $("#messagebuffer");
     // Incoming: a bunch of crap for the feature where if you hover over
     // a message, it highlights messages from that user
     var safeUsername = data.username.replace(/[^\w-]/g, '\\$');
     div.addClass("chat-msg-" + safeUsername);
-    div.appendTo($("#messagebuffer"));
+    div.appendTo(msgBuf);
     div.mouseover(function() {
         $(".chat-msg-" + safeUsername).addClass("nick-hover");
     });
     div.mouseleave(function() {
         $(".nick-hover").removeClass("nick-hover");
     });
+    var oldHeight = msgBuf.prop("scrollHeight");
     var numRemoved = trimChatBuffer();
     if (SCROLLCHAT) {
         scrollChat();
@@ -1499,13 +1500,26 @@ function addChatMessage(data) {
             $("<span/>").text("New Messages Below").appendTo(bgHack);
             $("<span/>").addClass("glyphicon glyphicon-chevron-down")
                     .appendTo(bgHack);
+            newMessageDiv.click(function () {
+                SCROLLCHAT = true;
+                scrollChat();
+            });
         }
 
         if (numRemoved > 0) {
-            $("#messagebuffer").scrollTop(
-                    $("#messagebuffer").scrollTop() - div.height());
+            IGNORE_SCROLL_EVENT = true;
+            var diff = oldHeight - msgBuf.prop("scrollHeight");
+            scrollAndIgnoreEvent(msgBuf.scrollTop() - diff);
         }
     }
+
+    div.find("img").load(function () {
+        if (SCROLLCHAT) {
+            scrollChat();
+        } else if ($(this).position().top < 0) {
+            scrollAndIgnoreEvent(msgBuf.scrollTop() + $(this).height());
+        }
+    });
 
     var isHighlight = false;
     if (CLIENT.name && data.username != CLIENT.name) {
