@@ -90,7 +90,13 @@ $("#messagebuffer").scroll(function (ev) {
     }
 
     var m = $("#messagebuffer");
-    var isCaughtUp = m.height() + m.scrollTop() >= m.prop("scrollHeight");
+    var lastChildHeight = 0;
+    var messages = m.children();
+    if (messages.length > 0) {
+        lastChildHeight = messages[messages.length - 1].clientHeight || 0;
+    }
+
+    var isCaughtUp = m.height() + m.scrollTop() >= m.prop("scrollHeight") - lastChildHeight;
     if (isCaughtUp) {
         SCROLLCHAT = true;
         $("#newmessages-indicator").remove();
