@@ -2561,8 +2561,12 @@ function formatUserPlaylistList() {
 function loadEmotes(data) {
     CHANNEL.emotes = [];
     data.forEach(function (e) {
-        e.regex = new RegExp(e.source, "gi");
-        CHANNEL.emotes.push(e);
+        if (e.image && e.name) {
+            e.regex = new RegExp(e.source, "gi");
+            CHANNEL.emotes.push(e);
+        } else {
+            console.error("Rejecting invalid emote: " + JSON.stringify(e));
+        }
     });
 }
 

@@ -79,6 +79,10 @@ function validateEmote(f) {
     s = "(^|\\s)" + s + "(?!\\S)";
     f.source = s;
 
+    if (!f.image || !f.name) {
+        return false;
+    }
+
     try {
         new RegExp(f.source, "gi");
     } catch (e) {
@@ -140,6 +144,16 @@ EmoteModule.prototype.handleUpdateEmote = function (user, data) {
 
     var f = validateEmote(data);
     if (!f) {
+        var message = "Unable to update emote '" + JSON.stringify(data) + "'.  " +
+                "Please contact an administrator for assistance.";
+        if (!data.image || !data.name) {
+            message = "Emote names and images must not be blank.";
+        }
+
+        user.socket.emit("errorMsg", {
+            msg: message,
+            alert: true
+        });
         return;
     }
 
