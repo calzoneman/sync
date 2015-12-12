@@ -9,9 +9,9 @@ var needPermissionsFixed = [
     path.join(__dirname, "..", "google-drive-subtitles")
 ];
 
-function fixPermissions(uid, gid) {
-    uid = resolveUid(uid);
-    gid = resolveGid(uid);
+function fixPermissions(user, group) {
+    var uid = resolveUid(user);
+    var gid = resolveGid(group);
     needPermissionsFixed.forEach(function (dir) {
         if (fs.existsSync(dir)) {
             fs.chownSync(dir, uid, gid);
@@ -19,12 +19,12 @@ function fixPermissions(uid, gid) {
     });
 }
 
-function resolveUid(uid) {
-    return parseInt(execSync('id -u ' + uid), 10);
+function resolveUid(user) {
+    return parseInt(execSync('id -u ' + user), 10);
 }
 
-function resolveGid(uid) {
-    return parseInt(execSync('id -g ' + uid), 10);
+function resolveGid(group) {
+    return parseInt(execSync('id -g ' + group), 10);
 }
 
 if (Config.get("setuid.enabled")) {
