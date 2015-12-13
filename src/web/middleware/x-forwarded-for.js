@@ -35,6 +35,9 @@ export default function initialize(app, webConfig) {
         if (isTrustedProxy(req.ip)) {
             req.realIP = getForwardedIP(req);
             req.realProtocol = getForwardedProto(req);
+        } else {
+            req.realIP = req.ip;
+            req.realProtocol = req.protocol;
         }
 
         next();

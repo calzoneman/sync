@@ -130,11 +130,45 @@ function addTypecheckedFunctions(sock) {
     };
 }
 
+function ipForwardingMiddleware(webConfig) {
+    function getForwardedIP(socket) {
+        var req = socket.client.request;
+        const xForwardedFor = req.headers['x-forwarded-for'];
+        if (!xForwardedFor) {
+            return socket.client.conn.remoteAddress;
+        }
+
+        const ipList = xForwardedFor.split(',');
+        for (let i = 0; i < ipList.length; i++) {
+            const ip = ipList[i].trim();
+            if (net.isIP(ip)) {
+                return ip;
+            }
+        }
+
+        return socket.client.conn.remoteAddress;
+    }
+
+    function isTrustedProxy(ip) {
+        return webConfig.getTrustedProxies().indexOf(ip) >= 0;
+    }
+
+    return function (socket, accept) {
+        if (isTrustedProxy(socket.client.conn.remoteAddress)) {
+            socket._realip = getForwardedIP(socket);
+        } else {
+            socket._realip = socket.client.conn.remoteAddress;
+        }
+
+        accept(null, true);
+    }
+}
+
 /**
  * Called after a connection is accepted
  */
 function handleConnection(sock) {
-    var ip = sock.client.conn.remoteAddress;
+    var ip = sock._realip;
     if (!ip) {
         sock.emit("kick", {
             reason: "Your IP address could not be determined from the socket connection.  See https://github.com/Automattic/socket.io/issues/1737 for details"
@@ -144,8 +178,8 @@ function handleConnection(sock) {
 
     if (net.isIPv6(ip)) {
         ip = util.expandIPv6(ip);
+        sock._realip = ip;
     }
-    sock._realip = ip;
     sock._displayip = $util.cloakIP(ip);
 
     if (isTorExit(ip)) {
@@ -206,11 +240,12 @@ function handleConnection(sock) {
 }
 
 module.exports = {
-    init: function (srv) {
+    init: function (srv, webConfig) {
         var bound = {};
         var io = sio.instance = sio();
 
         io.use(handleAuth);
+        io.use(ipForwardingMiddleware(webConfig));
         io.on("connection", handleConnection);
 
         Config.get("listen").forEach(function (bind) {
