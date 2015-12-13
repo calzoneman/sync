@@ -314,7 +314,9 @@ Channel.prototype.joinUser = function (user, data) {
                 } else {
                     user.account.channelRank = 0;
                     user.account.effectiveRank = user.account.globalRank;
-                    self.activeLock.release();
+                    if (self.activeLock) {
+                        self.activeLock.release();
+                    }
                 }
             });
         }
