@@ -45,18 +45,6 @@ function redirectHttps(req, res) {
 }
 
 /**
- * Redirects a request to HTTP if the server supports it
- */
-function redirectHttp(req, res) {
-    if (req.secure) {
-        var domain = Config.get('http.full-address');
-        res.redirect(domain + req.path);
-        return true;
-    }
-    return false;
-}
-
-/**
  * Legacy socket.io configuration endpoint.  This is being migrated to
  * /socketconfig/<channel name>.json (see ./routes/socketconfig.js)
  */
@@ -196,7 +184,5 @@ module.exports = {
         initializeErrorHandlers(app);
     },
 
-    redirectHttps: redirectHttps,
-
-    redirectHttp: redirectHttp
+    redirectHttps: redirectHttps
 };
