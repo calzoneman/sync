@@ -29,14 +29,7 @@ function merge(locals, res) {
 
 function getBaseUrl(res) {
     var req = res.req;
-    var proto;
-    if (["http", "https"].indexOf(req.header("x-forwarded-proto")) >= 0) {
-        proto = req.header("x-forwarded-proto");
-    } else {
-        proto = req.protocol;
-    }
-
-    return proto + "://" + req.header("host");
+    return req.realProtocol + "://" + req.header("host");
 }
 
 /**

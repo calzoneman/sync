@@ -31,7 +31,8 @@ function initializeLog(app) {
  * Redirects a request to HTTPS if the server supports it
  */
 function redirectHttps(req, res) {
-    if (!req.secure && Config.get('https.enabled') && Config.get('https.redirect')) {
+    if (req.realProtocol !== 'https' && Config.get('https.enabled') &&
+            Config.get('https.redirect')) {
         var ssldomain = Config.get('https.full-address');
         if (ssldomain.indexOf(req.hostname) < 0) {
             return false;
