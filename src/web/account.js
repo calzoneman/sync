@@ -257,7 +257,8 @@ function handleNewChannel(req, res) {
             return;
         }
 
-        if (channels.length >= Config.get("max-channels-per-user")) {
+        if (channels.length >= Config.get("max-channels-per-user") &&
+                req.user.global_rank < 255) {
             sendJade(res, "account-channels", {
                 channels: channels,
                 newChannelError: "You are not allowed to register more than " +
