@@ -847,3 +847,25 @@ $("#fullscreenbtn").click(function () {
         fn.call(elem);
     }
 });
+
+function handleCSSJSTooLarge(selector) {
+    if (this.value.length > 20000) {
+        var warning = $(selector);
+        if (warning.length > 0) {
+            return;
+        }
+
+        warning = makeAlert("Maximum Size Exceeded", "Inline CSS and JavaScript are " +
+                "limited to 20,000 characters or less.  If you need more room, you " +
+                "need to use the external CSS or JavaScript option.", "alert-danger")
+                .attr("id", selector.replace(/#/, ""));
+        warning.insertBefore(this);
+    } else {
+        $(selector).remove();
+    }
+}
+
+$("#cs-csstext").bind("input", handleCSSJSTooLarge.bind($("#cs-csstext")[0],
+        "#cs-csstext-too-big"));
+$("#cs-jstext").bind("input", handleCSSJSTooLarge.bind($("#cs-jstext")[0],
+        "#cs-jstext-too-big"));
