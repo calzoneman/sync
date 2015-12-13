@@ -1336,6 +1336,13 @@ function parseMediaLink(url) {
             type: "dm"
         };
     }
+    // Raw files need to keep the query string
+    if ((m = url.match(/^fi:(.*)/))) {
+        return {
+            id: m[1],
+            type: "fi"
+        };
+    }
     // Generic for the rest.
     if ((m = url.match(/^([a-z]{2}):([^\?&#]+)/))) {
         return {
