@@ -113,7 +113,7 @@ function fixOldChandump(data) {
     return converted;
 }
 
-function migrate(src, dest) {
+function migrate(src, dest, opts) {
     return src.listChannels().then(names => {
         return Promise.reduce(names, (_, name) => {
             // A long time ago there was a bug where CyTube would save a different
@@ -132,6 +132,15 @@ function migrate(src, dest) {
 
             return src.load(name).then(data => {
                 data = fixOldChandump(data);
+                Object.keys(data).forEach(key => {
+                    if (opts.keyWhitelist.length > 0 &&
+                            opts.keyWhitelist.indexOf(key) < 0) {
+                        delete data[key];
+                    } else if (opts.keyBlacklist.length > 0 &&
+                            opts.keyBlacklist.indexOf(key) >= 0) {
+                        delete data[key];
+                    }
+                });
                 return dest.save(name, data);
             }).then(() => {
                 console.log(`Migrated /r/${name}`);
@@ -144,14 +153,34 @@ function migrate(src, dest) {
     });
 }
 
+function loadOpts(argv) {
+    const opts = {
+        keyWhitelist: [],
+        keyBlacklist: []
+    };
+
+    for (let i = 0; i < argv.length; i++) {
+        if (argv[i] === '-w') {
+            opts.keyWhitelist = (argv[i+1] || '').split(',');
+            i++;
+        } else if (argv[i] === '-b') {
+            opts.keyBlacklist = (argv[i+1] || '').split(',');
+            i++;
+        }
+    }
+
+    return opts;
+}
+
 function main() {
     Config.load('config.yaml');
     db.init();
     const src = new FileStore();
     const dest = new DatabaseStore();
+    const opts = loadOpts(process.argv.slice(2));
 
     Promise.delay(1000).then(() => {
-        return migrate(src, dest);
+        return migrate(src, dest, opts);
     }).then(() => {
         console.log('Migration complete');
         process.exit(0);
