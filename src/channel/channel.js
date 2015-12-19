@@ -178,6 +178,7 @@ Channel.prototype.loadState = function () {
                         this.uniqueName);
             }
         });
+
         this.setFlag(Flags.C_READY);
     }).catch(ChannelStateSizeError, err => {
         const message = "This channel's state size has exceeded the memory limit " +
@@ -207,6 +208,9 @@ Channel.prototype.loadState = function () {
 Channel.prototype.saveState = function () {
     if (!this.is(Flags.C_REGISTERED)) {
         return Promise.resolve();
+    } else if (!this.is(Flags.C_READY)) {
+        return Promise.reject(new Error(`Attempted to save channel ${this.name} ` +
+                `but it wasn't finished loading yet!`));
     }
 
     if (this.is(Flags.C_ERROR)) {
