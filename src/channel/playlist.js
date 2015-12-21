@@ -921,7 +921,8 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
     if (media.type === "fi" && media.meta.bitrate > 1000) {
         user.socket.emit("queueWarn", {
             msg: "This video has a bitrate over 1000kbps.  Clients with slow " +
-                 "connections may experience lots of buffering."
+                 "connections may experience lots of buffering.",
+            link: data.link
         });
     }
 
@@ -933,7 +934,8 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         user.socket.emit("queueWarn", {
             msg: "The codec <code>" + media.meta.codec + "</code> is not supported " +
                  "by all browsers, and is not supported by the flash fallback layer.  " +
-                 "This video may not play for some users."
+                 "This video may not play for some users.",
+            link: data.link
         });
     }
 

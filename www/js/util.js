@@ -2018,9 +2018,7 @@ function queueMessage(data, type) {
     var alerts = $(".qfalert.qf-" + type + " .alert");
     for (var i = 0; i < alerts.length; i++) {
         var al = $(alerts[i]);
-        var cl = al.clone();
-        cl.children().remove();
-        if (cl.text() === data.msg) {
+        if (al.data("reason") === data.msg) {
             var tag = al.find("." + ltype);
             if (tag.length > 0) {
                 var morelinks = al.find(".qflinks");
@@ -2057,9 +2055,10 @@ function queueMessage(data, type) {
         text += "<br><a href='" + data.link + "' target='_blank'>" +
                 data.link + "</a>";
     }
-    makeAlert(title, text, type)
+    var newAlert = makeAlert(title, text, type)
         .addClass("linewrap qfalert qf-" + type)
         .appendTo($("#queuefail"));
+    newAlert.find(".alert").data("reason", data.msg);
 }
 
 function setupChanlogFilter(data) {
