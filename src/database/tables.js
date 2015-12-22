@@ -81,7 +81,7 @@ const TBL_LIBRARIES = "" +
         "`type` VARCHAR(2) NOT NULL," +
         "`meta` TEXT NOT NULL," +
         "`channel` VARCHAR(30) NOT NULL," +
-        "PRIMARY KEY(`id`, `channel`), INDEX(`channel`, `title`)" +
+        "PRIMARY KEY(`id`, `channel`), INDEX(`channel`, `title`(227))" +
     ") CHARACTER SET utf8";
 
 const TBL_RANKS = "" +
