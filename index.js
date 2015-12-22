@@ -2,7 +2,18 @@ try {
     var Server = require("./lib/server");
 } catch (err) {
     console.error('FATAL: Failed to require() lib/server.js');
-    console.error('Have you run `npm run build-server` yet to generate it?');
+    if (/module version mismatch/i.test(err.message)) {
+        console.error('Module version mismatch, try running `npm rebuild` or removing ' +
+                      'the node_modules folder and re-running `npm install`');
+    } else {
+        console.error('Possible causes:\n' +
+                      '  * You haven\'t run `npm run build-server` to regenerate ' +
+                      'the runtime\n' +
+                      '  * You\'ve upgraded node/npm and haven\'t rebuilt dependencies ' +
+                      '(try `npm rebuild` or `rm -rf node_modules && npm install`)\n' +
+                      '  * A dependency failed to install correctly (check the output ' +
+                      'of `npm install` next time)');
+    }
     console.error(err.stack);
     process.exit(1);
 }
