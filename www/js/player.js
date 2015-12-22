@@ -1129,6 +1129,7 @@
     };
 
     GoogleDriveYouTubePlayer.prototype.load = function(data) {
+      this.yt = null;
       this.setMediaProperties(data);
       return this.init(data);
     };

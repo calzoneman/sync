@@ -28,6 +28,7 @@ window.GoogleDriveYouTubePlayer = class GoogleDriveYouTubePlayer extends Player
             @onReady()
 
     load: (data) ->
+        @yt = null
         @setMediaProperties(data)
         @init(data)
 
