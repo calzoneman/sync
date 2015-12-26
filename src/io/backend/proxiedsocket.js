@@ -11,7 +11,7 @@ export default class ProxiedSocket extends EventEmitter {
     }
 
     emit() {
-        const target = socketEmitter.to(this.id);
+        const target = this.socketEmitter.to(this.id);
         target.emit.apply(target, arguments);
     }
 

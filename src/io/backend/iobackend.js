@@ -2,14 +2,15 @@ import Server from 'cytube-common/lib/tcpjson/server';
 import FrontendManager from './frontendmanager';
 
 export default class IOBackend {
-    constructor(proxyListenerConfig) {
+    constructor(proxyListenerConfig, socketEmitter) {
         this.proxyListenerConfig = proxyListenerConfig;
+        this.socketEmitter = socketEmitter;
         this.initFrontendManager();
         this.initProxyListener();
     }
 
     initFrontendManager() {
-        this.frontendManager = new FrontendManager();
+        this.frontendManager = new FrontendManager(this.socketEmitter);
     }
 
     initProxyListener() {

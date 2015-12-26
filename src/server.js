@@ -127,6 +127,20 @@ var Server = function () {
     });
 
     require("./io/ioserver").init(self, webConfig);
+    const redisAdapter = require('socket.io-redis');
+    const IOBackend = require('./io/backend/iobackend');
+    const sioEmitter = require("socket.io").instance;
+    sioEmitter.adapter(redisAdapter());
+    const listenerConfig = {
+        getPort: function () {
+            return 3071;
+        },
+
+        getHost: function () {
+            return '127.0.0.1';
+        }
+    };
+    const backend = new IOBackend(listenerConfig, sioEmitter);
 
     // background tasks init ----------------------------------------------
     require("./bgtask")(self);

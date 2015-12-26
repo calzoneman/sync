@@ -273,7 +273,9 @@ module.exports = {
 
             bound[id] = null;
         });
-    }
+    },
+
+    handleConnection: handleConnection
 };
 
 /* Clean out old rate limiters */
