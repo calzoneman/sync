@@ -208,7 +208,9 @@ Server.prototype.unloadChannel = function (chan) {
     // Empty all outward references from the channel
     var keys = Object.keys(chan);
     for (var i in keys) {
-        delete chan[keys[i]];
+        if (keys[i] !== "refCounter") {
+            delete chan[keys[i]];
+        }
     }
     chan.dead = true;
 };

@@ -447,15 +447,15 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
         });
     };
 
-    var self = this;
-    this.channel.activeLock.lock();
+    const self = this;
+    this.channel.refCounter.ref("PlaylistModule::queueStandard");
     this.semaphore.queue(function (lock) {
         var lib = self.channel.modules.library;
         if (lib && self.channel.is(Flags.C_REGISTERED) && !util.isLive(data.type)) {
             lib.getItem(data.id, function (err, item) {
                 if (err && err !== "Item not in library") {
                     error(err+"");
-                    self.channel.activeLock.release();
+                    self.channel.refCounter.unref("PlaylistModule::queueStandard");
                     return lock.release();
                 }
 
@@ -464,7 +464,7 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
                     data.shouldAddToLibrary = false;
                     self._addItem(item, data, user, function () {
                         lock.release();
-                        self.channel.activeLock.release();
+                        self.channel.refCounter.unref("PlaylistModule::queueStandard");
                     });
                 } else {
                     handleLookup();
@@ -479,25 +479,13 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
             InfoGetter.getMedia(data.id, data.type, function (err, media) {
                 if (err) {
                     error(XSS.sanitizeText(String(err)));
-                    if (self.channel && self.channel.activeLock) {
-                        self.channel.activeLock.release();
-                    } else {
-                        Logger.errlog.log("Attempted release of channel lock after " +
-                                "channel was already unloaded in queueStandard: " +
-                                channelName + " " + data.type + ":" + data.id);
-                    }
+                    self.channel.refCounter.unref("PlaylistModule::queueStandard");
                     return lock.release();
                 }
 
                 self._addItem(media, data, user, function () {
                     lock.release();
-                    if (self.channel && self.channel.activeLock) {
-                        self.channel.activeLock.release();
-                    } else {
-                        Logger.errlog.log("Attempted release of channel lock after " +
-                                "channel was already unloaded in queueStandard: " +
-                                channelName + " " + data.type + ":" + data.id);
-                    }
+                    self.channel.refCounter.unref("PlaylistModule::queueStandard");
                 });
             });
         }
@@ -536,12 +524,12 @@ PlaylistModule.prototype.queueYouTubePlaylist = function (user, data) {
                 }
             }
 
-            self.channel.activeLock.lock();
+            self.channel.refCounter.ref("PlaylistModule::queueYouTubePlaylist");
             vids.forEach(function (media) {
                 data.link = util.formatLink(media.id, media.type);
                 self._addItem(media, data, user);
             });
-            self.channel.activeLock.release();
+            self.channel.refCounter.unref("PlaylistModule::queueYouTubePlaylist");
 
             lock.release();
         });
@@ -560,7 +548,7 @@ PlaylistModule.prototype.handleDelete = function (user, data) {
     }
 
     var plitem = this.items.find(data);
-    self.channel.activeLock.lock();
+    self.channel.refCounter.ref("PlaylistModule::handleDelete");
     this.semaphore.queue(function (lock) {
         if (self._delete(data)) {
             self.channel.logger.log("[playlist] " + user.getName() + " deleted " +
@@ -568,7 +556,7 @@ PlaylistModule.prototype.handleDelete = function (user, data) {
         }
 
         lock.release();
-        self.channel.activeLock.release();
+        self.channel.refCounter.unref("PlaylistModule::handleDelete");
     });
 };
 
@@ -602,27 +590,27 @@ PlaylistModule.prototype.handleMoveMedia = function (user, data) {
         return;
     }
 
-    var self = this;
-    self.channel.activeLock.lock();
+    const self = this;
+    self.channel.refCounter.ref("PlaylistModule::handleMoveMedia");
     self.semaphore.queue(function (lock) {
         if (!self.items.remove(data.from)) {
-            self.channel.activeLock.release();
+            self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
             return lock.release();
         }
 
         if (data.after === "prepend") {
             if (!self.items.prepend(from)) {
-                self.channel.activeLock.release();
+                self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
                 return lock.release();
             }
         } else if (data.after === "append") {
             if (!self.items.append(from)) {
-                self.channel.activeLock.release();
+                self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
                 return lock.release();
             }
         } else {
             if (!self.items.insertAfter(from, data.after)) {
-                self.channel.activeLock.release();
+                self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
                 return lock.release();
             }
         }
@@ -633,7 +621,7 @@ PlaylistModule.prototype.handleMoveMedia = function (user, data) {
                                 from.media.title +
                                 (after ? " after " + after.media.title : ""));
         lock.release();
-        self.channel.activeLock.release();
+        self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
     });
 };
 
@@ -1128,55 +1116,6 @@ PlaylistModule.prototype._leadLoop = function() {
     }
 };
 
-PlaylistModule.prototype.refreshGoogleDocs = function (cb) {
-    var self = this;
-
-    if (self.dead || !self.channel || self.channel.dead) {
-        return;
-    }
-
-    var abort = function () {
-        if (self.current) {
-            self.current.media.meta.object = self.current.media.meta.object || null;
-            self.current.media.meta.failed = true;
-        }
-        if (cb) {
-            cb();
-        }
-    };
-
-    if (!this.current || this.current.media.type !== "gd") {
-        return abort();
-    }
-
-    self.channel.activeLock.lock();
-    InfoGetter.getMedia(this.current.media.id, "gd", function (err, media) {
-        if (err) {
-            Logger.errlog.log("Google Docs autorefresh failed: " + err);
-            Logger.errlog.log("ID was: " + self.current.media.id);
-            if (self.current) {
-                self.current.media.meta.object = self.current.media.meta.object || null;
-                self.current.media.meta.failed = true;
-            }
-            if (cb) {
-                cb();
-            }
-            self.channel.activeLock.release();
-        } else {
-            if (!self.current || self.current.media.type !== "gd") {
-                self.channel.activeLock.release();
-                return abort();
-            }
-
-            self.current.media.meta = media.meta;
-            self.current.media.meta.expiration = Date.now() + 3600000;
-            self.channel.logger.log("[playlist] Auto-refreshed Google Doc video");
-            cb && cb();
-            self.channel.activeLock.release();
-        }
-    });
-};
-
 PlaylistModule.prototype._playNext = function () {
     if (!this.current) {
         return;
@@ -1335,10 +1274,11 @@ PlaylistModule.prototype.handleQueuePlaylist = function (user, data) {
         pos: data.pos
     };
 
-    var self = this;
-    self.channel.activeLock.lock();
+    const self = this;
+    self.channel.refCounter.ref("PlaylistModule::handleQueuePlaylist");
     db.getUserPlaylist(user.getName(), data.name, function (err, pl) {
         if (err) {
+            self.channel.refCounter.unref("PlaylistModule::handleQueuePlaylist");
             return user.socket.emit("errorMsg", {
                 msg: "Playlist load failed: " + err
             });
@@ -1369,7 +1309,6 @@ PlaylistModule.prototype.handleQueuePlaylist = function (user, data) {
                 var m = new Media(item.id, item.title, item.seconds, item.type, item.meta);
                 self._addItem(m, qdata, user);
             });
-            self.channel.activeLock.release();
         } catch (e) {
             Logger.errlog.log("Loading user playlist failed!");
             Logger.errlog.log("PL: " + user.getName() + "-" + data.name);
@@ -1378,7 +1317,8 @@ PlaylistModule.prototype.handleQueuePlaylist = function (user, data) {
                 msg: "Internal error occurred when loading playlist.",
                 link: null
             });
-            self.channel.activeLock.release();
+        } finally {
+            self.channel.refCounter.unref("PlaylistModule::handleQueuePlaylist");
         }
     });
 };
