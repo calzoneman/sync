@@ -9,12 +9,12 @@ export default class FrontendManager {
     }
 
     onConnection(socket) {
-        if (this.frontendConnections.hasOwnProperty(socket.remoteAddressAndPort)) {
+        if (this.frontendConnections.hasOwnProperty(socket.endpoint)) {
             // TODO: do some validation, maybe check if the socket is still connected?
             throw new Error();
         }
 
-        this.frontendConnections[socket.remoteAddressAndPort] = socket;
+        this.frontendConnections[socket.endpoint] = socket;
         socket.on('data', this.onData.bind(this, socket));
     }
 
@@ -30,7 +30,7 @@ export default class FrontendManager {
     }
 
     onSocketConnect(frontendConnection, data) {
-        const mapKey = frontendConnection.remoteAddressAndPort;
+        const mapKey = frontendConnection.endpoint;
         const proxiedSocket = new ProxiedSocket(
                 data.socketID,
                 data.socketData,
@@ -49,7 +49,7 @@ export default class FrontendManager {
     }
 
     onSocketFrame(frontendConnection, data) {
-        const mapKey = frontendConnection.remoteAddressAndPort;
+        const mapKey = frontendConnection.endpoint;
         const socketMap = this.frontendProxiedSockets[mapKey];
         if (!socketMap || !socketMap.hasOwnProperty(data.socketID)) {
             // TODO
