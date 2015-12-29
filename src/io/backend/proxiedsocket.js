@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events';
 
 export default class ProxiedSocket extends EventEmitter {
-    constructor(socketID, socketData, socketEmitter, frontendConnection) {
+    constructor(socketID, socketIP, socketEmitter, frontendConnection) {
         super();
         this.id = socketID;
-        this.ip = socketData.ip;
-        this._realip = socketData.ip;
+        this.ip = socketIP;
+        this._realip = socketIP;
         this.socketEmitter = socketEmitter;
         this.frontendConnection = frontendConnection;
     }
@@ -21,7 +21,7 @@ export default class ProxiedSocket extends EventEmitter {
 
     join(channel) {
         this.frontendConnection.write(
-                this.frontendConnection.protocol.socketJoinSocketChannels(
+                this.frontendConnection.protocol.newSocketJoinRoomsEvent(
                         this.id, [channel]
                 )
         );
@@ -29,7 +29,7 @@ export default class ProxiedSocket extends EventEmitter {
 
     disconnect() {
         this.frontendConnection.write(
-                this.frontendConnection.protocol.socketKick(this.id)
+                this.frontendConnection.protocol.newSocketKickEvent(this.id)
         );
     }
 }

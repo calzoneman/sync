@@ -15,48 +15,38 @@ export default class FrontendManager {
         }
 
         this.frontendConnections[socket.endpoint] = socket;
-        socket.on('data', this.onData.bind(this, socket));
+        socket.on('SocketConnectEvent', this.onSocketConnect.bind(this, socket));
+        socket.on('SocketFrameEvent', this.onSocketFrame.bind(this, socket));
     }
 
-    onData(socket, data) {
-        switch (data.$type) {
-            case 'socketConnect':
-                this.onSocketConnect(socket, data);
-                break;
-            case 'socketFrame':
-                this.onSocketFrame(socket, data);
-                break;
-        }
-    }
-
-    onSocketConnect(frontendConnection, data) {
+    onSocketConnect(frontendConnection, socketID, socketIP) {
         const mapKey = frontendConnection.endpoint;
         const proxiedSocket = new ProxiedSocket(
-                data.socketID,
-                data.socketData,
+                socketID,
+                socketIP,
                 this.socketEmitter,
                 frontendConnection);
 
         if (!this.frontendProxiedSockets.hasOwnProperty(mapKey)) {
             this.frontendProxiedSockets[mapKey] = {};
-        } else if (this.frontendProxiedSockets[mapKey].hasOwnProperty(data.socketID)) {
+        } else if (this.frontendProxiedSockets[mapKey].hasOwnProperty(socketID)) {
             // TODO: Handle this gracefully
             throw new Error();
         }
 
-        this.frontendProxiedSockets[mapKey][data.socketID] = proxiedSocket;
+        this.frontendProxiedSockets[mapKey][socketID] = proxiedSocket;
         ioServer.handleConnection(proxiedSocket);
     }
 
-    onSocketFrame(frontendConnection, data) {
+    onSocketFrame(frontendConnection, socketID, event, args) {
         const mapKey = frontendConnection.endpoint;
         const socketMap = this.frontendProxiedSockets[mapKey];
-        if (!socketMap || !socketMap.hasOwnProperty(data.socketID)) {
+        if (!socketMap || !socketMap.hasOwnProperty(socketID)) {
             // TODO
             throw new Error();
         }
 
-        const socket = socketMap[data.socketID];
-        socket.onProxiedEventReceived.apply(socket, [data.event].concat(data.args));
+        const socket = socketMap[socketID];
+        socket.onProxiedEventReceived.apply(socket, [event].concat(args));
     }
 }

@@ -1,4 +1,4 @@
-import Server from 'cytube-common/lib/tcpjson/server';
+import Server from 'cytube-common/lib/proxy/server';
 import FrontendManager from './frontendmanager';
 
 export default class IOBackend {
