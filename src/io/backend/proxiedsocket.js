@@ -1,11 +1,17 @@
 import { EventEmitter } from 'events';
 
 export default class ProxiedSocket extends EventEmitter {
-    constructor(socketID, socketIP, socketEmitter, frontendConnection) {
+    constructor(socketID, socketIP, socketUser, socketEmitter, frontendConnection) {
         super();
         this.id = socketID;
         this.ip = socketIP;
         this._realip = socketIP;
+        if (socketUser) {
+            this.user = {
+                name: socketUser.name,
+                global_rank: socketUser.globalRank
+            };
+        }
         this.socketEmitter = socketEmitter;
         this.frontendConnection = frontendConnection;
     }

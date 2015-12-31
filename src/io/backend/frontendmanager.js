@@ -19,11 +19,12 @@ export default class FrontendManager {
         socket.on('SocketFrameEvent', this.onSocketFrame.bind(this, socket));
     }
 
-    onSocketConnect(frontendConnection, socketID, socketIP) {
+    onSocketConnect(frontendConnection, socketID, socketIP, socketUser) {
         const mapKey = frontendConnection.endpoint;
         const proxiedSocket = new ProxiedSocket(
                 socketID,
                 socketIP,
+                socketUser,
                 this.socketEmitter,
                 frontendConnection);
 
