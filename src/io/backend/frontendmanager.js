@@ -26,9 +26,10 @@ export default class FrontendManager {
         if (this.frontendConnections.hasOwnProperty(endpoint)) {
             if (this.frontendProxiedSockets.hasOwnProperty(endpoint)) {
                 logger.warn(`Frontend ${endpoint} disconnected`);
-                this.frontendProxiedSockets[endpoint].forEach(proxySocket => {
+                for (const key in this.frontendProxiedSockets[endpoint]) {
+                    const proxySocket = this.frontendProxiedSockets[endpoint][key];
                     proxySocket.onProxiedEventReceived('disconnect');
-                });
+                }
                 delete this.frontendProxiedSockets[endpoint];
             }
             delete this.frontendConnections[endpoint];
