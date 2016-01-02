@@ -1,3 +1,4 @@
+import logger from 'cytube-common/lib/logger';
 import ioServer from '../ioserver';
 import ProxiedSocket from './proxiedsocket';
 
