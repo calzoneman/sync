@@ -15,8 +15,23 @@ export default class FrontendManager {
         }
 
         this.frontendConnections[socket.endpoint] = socket;
+        socket.on('close', this.onFrontendDisconnect.bind(this, socket));
         socket.on('SocketConnectEvent', this.onSocketConnect.bind(this, socket));
         socket.on('SocketFrameEvent', this.onSocketFrame.bind(this, socket));
+    }
+
+    onFrontendDisconnect(socket) {
+        const endpoint = socket.endpoint;
+        if (this.frontendConnections.hasOwnProperty(endpoint)) {
+            if (this.frontendProxiedSockets.hasOwnProperty(endpoint)) {
+                logger.warn(`Frontend ${endpoint} disconnected`);
+                this.frontendProxiedSockets[endpoint].forEach(proxySocket => {
+                    proxySocket.onProxiedEventReceived('disconnect');
+                });
+                delete this.frontendProxiedSockets[endpoint];
+            }
+            delete this.frontendConnections[endpoint];
+        }
     }
 
     onSocketConnect(frontendConnection, socketID, socketIP, socketUser) {
