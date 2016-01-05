@@ -588,7 +588,7 @@ Channel.prototype.readLog = function (cb) {
     const self = this;
     fs.stat(file, function (err, data) {
         if (err) {
-            self.refCounter.unref("readLog");
+            self.refCounter.unref("Channel::readLog");
             return cb(err, null);
         }
 
