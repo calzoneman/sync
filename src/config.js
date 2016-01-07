@@ -50,7 +50,8 @@ var defaults = {
     io: {
         domain: "http://localhost",
         "default-port": 1337,
-        "ip-connection-limit": 10
+        "ip-connection-limit": 10,
+        "per-message-deflate": false
     },
     mail: {
         enabled: false,

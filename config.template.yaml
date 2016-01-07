@@ -105,6 +105,11 @@ io:
   default-port: 1337
   # limit the number of concurrent socket connections per IP address
   ip-connection-limit: 10
+  # Whether or not to use zlib to compress each socket message (this option is
+  # passed through to socket.io/engine.io).
+  # Note that while this may save a little bandwidth, it also consumes a lot
+  # more CPU and will bottleneck pretty quickly under heavy load.
+  per-message-deflate: false
 
 # Mailer details (used for sending password reset links)
 # see https://github.com/andris9/Nodemailer
