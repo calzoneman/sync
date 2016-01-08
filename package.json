@@ -2,7 +2,7 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.14.0",
+  "version": "3.14.1",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
@@ -19,7 +19,7 @@
     "create-error": "^0.3.1",
     "csrf": "^3.0.0",
     "cytube-mediaquery": "git://github.com/CyTube/mediaquery",
-    "cytubefilters": "git://github.com/calzoneman/cytubefilters#f81ee514",
+    "cytubefilters": "git://github.com/calzoneman/cytubefilters#67c7c69a",
     "express": "^4.13.3",
     "express-minify": "^0.1.6",
     "graceful-fs": "^4.1.2",
