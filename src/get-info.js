@@ -9,6 +9,7 @@ var Config = require("./config");
 var ffmpeg = require("./ffmpeg");
 var mediaquery = require("cytube-mediaquery");
 var YouTube = require("cytube-mediaquery/lib/provider/youtube");
+var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 
 /*
  * Preference map of quality => youtube formats.
@@ -158,50 +159,11 @@ var Getters = {
             return Getters.vi_oauth(id, callback);
         }
 
-        var options = {
-            host: "vimeo.com",
-            port: 443,
-            path: "/api/v2/video/" + id + ".json",
-            method: "GET",
-            dataType: "jsonp",
-            timeout: 1000
-        };
-
-        urlRetrieve(https, options, function (status, data) {
-            switch (status) {
-                case 200:
-                    break; /* Request is OK, skip to handling data */
-                case 400:
-                    return callback("Invalid request", null);
-                case 403:
-                    return callback("Private video", null);
-                case 404:
-                    return callback("Video not found", null);
-                case 500:
-                case 503:
-                    return callback("Service unavailable", null);
-                default:
-                    return callback("HTTP " + status, null);
-            }
-
-            try {
-                data = JSON.parse(data);
-                data = data[0];
-                var seconds = data.duration;
-                var title = data.title;
-                var media = new Media(id, title, seconds, "vi");
-                callback(false, media);
-            } catch(e) {
-                var err = e;
-                /**
-                 * This should no longer be necessary as the outer handler
-                 * checks for HTTP 404
-                 */
-                if (buffer.match(/not found/))
-                    err = "Video not found";
-
-                callback(err, null);
-            }
+        Vimeo.lookup(id).then(video => {
+            video = new Media(video.id, video.title, video.duration, "vi");
+            callback(null, video);
+        }).catch(error => {
+            callback(error.message);
         });
     },
 
