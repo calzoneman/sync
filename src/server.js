@@ -140,7 +140,10 @@ var Server = function () {
             return '127.0.0.1';
         }
     };
-    const backend = new IOBackend(listenerConfig, sioEmitter);
+    const redis = require('redis');
+    Promise.promisifyAll(redis.RedisClient.prototype);
+    Promise.promisifyAll(redis.Multi.prototype);
+    const backend = new IOBackend(listenerConfig, sioEmitter, redis.createClient());
 
     // background tasks init ----------------------------------------------
     require("./bgtask")(self);
