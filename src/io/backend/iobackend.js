@@ -3,6 +3,7 @@ import FrontendManager from './frontendmanager';
 import uuid from 'uuid';
 import PoolEntryUpdater from 'cytube-common/lib/redis/poolentryupdater';
 import JSONProtocol from 'cytube-common/lib/proxy/protocol';
+import { formatProxyAddress } from 'cytube-common/lib/util/addressutil';
 
 const BACKEND_POOL = 'backend-hosts';
 
@@ -28,8 +29,10 @@ export default class IOBackend {
     }
 
     initBackendPoolUpdater() {
+        const hostname = this.proxyListenerConfig.getHost();
+        const port = this.proxyListenerConfig.getPort();
         const entry = {
-            address: this.proxyListenerConfig.getHost() + '/' + this.proxyListenerConfig.getPort()
+            address: formatProxyAddress(hostname, port)
         }
         this.poolEntryUpdater = new PoolEntryUpdater(
                 this.poolRedisClient,
