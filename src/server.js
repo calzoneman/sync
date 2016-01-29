@@ -46,6 +46,8 @@ import LocalChannelIndex from './web/localchannelindex';
 import IOConfiguration from './configuration/ioconfig';
 import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
+import { RedisClusterClient } from './io/cluster/redisclusterclient';
+import { FrontendPool } from 'cytube-common/lib/redis/frontendpool';
 import session from './session';
 
 var Server = function () {
@@ -64,10 +66,16 @@ var Server = function () {
     self.db.init();
     ChannelStore.init();
 
+    // redis init
+    const redis = require('redis');
+    Promise.promisifyAll(redis.RedisClient.prototype);
+    Promise.promisifyAll(redis.Multi.prototype);
+
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
     const webConfig = WebConfiguration.fromOldConfig(Config);
-    const clusterClient = new NullClusterClient(ioConfig);
+    const frontendPool = new FrontendPool(redis.createClient());
+    const clusterClient = new RedisClusterClient(frontendPool);
     const channelIndex = new LocalChannelIndex();
     self.express = express();
     require("./web/webserver").init(self.express,
@@ -140,9 +148,6 @@ var Server = function () {
             return '127.0.0.1';
         }
     };
-    const redis = require('redis');
-    Promise.promisifyAll(redis.RedisClient.prototype);
-    Promise.promisifyAll(redis.Multi.prototype);
     const backend = new IOBackend(listenerConfig, sioEmitter, redis.createClient());
 
     // background tasks init ----------------------------------------------
