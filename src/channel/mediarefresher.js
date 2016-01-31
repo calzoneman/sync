@@ -44,6 +44,15 @@ MediaRefresherModule.prototype.onPreMediaChange = function (data, cb) {
     }
 };
 
+MediaRefresherModule.prototype.unload = function () {
+    try {
+        clearInterval(this._interval);
+        this._interval = null;
+    } catch (error) {
+        Logger.errlog.log(error.stack);
+    }
+};
+
 MediaRefresherModule.prototype.initGoogleDocs = function (data, cb) {
     var self = this;
     self.refreshGoogleDocs(data, cb);
@@ -66,8 +75,10 @@ MediaRefresherModule.prototype.initVimeo = function (data, cb) {
     const self = this;
     self.channel.refCounter.ref("MediaRefresherModule::initVimeo");
     Vimeo.extract(data.id).then(function (direct) {
-        if (self.dead || self.channel.dead)
+        if (self.dead || self.channel.dead) {
+            self.unload();
             return;
+        }
 
         if (self._media === data) {
             data.meta.direct = direct;
@@ -88,6 +99,7 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
     var self = this;
 
     if (self.dead || self.channel.dead) {
+        self.unload();
         return;
     }
 
@@ -153,6 +165,7 @@ MediaRefresherModule.prototype.initGooglePlus = function (media, cb) {
     var self = this;
 
     if (self.dead || self.channel.dead) {
+        self.unload();
         return;
     }
 
