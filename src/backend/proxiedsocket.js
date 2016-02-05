@@ -1,3 +1,4 @@
+import logger from 'cytube-common/lib/logger';
 import { EventEmitter } from 'events';
 
 export default class ProxiedSocket extends EventEmitter {
@@ -22,7 +23,11 @@ export default class ProxiedSocket extends EventEmitter {
     }
 
     onProxiedEventReceived() {
-        EventEmitter.prototype.emit.apply(this, arguments);
+        try {
+            EventEmitter.prototype.emit.apply(this, arguments);
+        } catch (error) {
+            logger.error(`Emit failed: ${error.stack}`);
+        }
     }
 
     join(channel) {

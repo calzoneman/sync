@@ -1,5 +1,5 @@
 import Server from 'cytube-common/lib/proxy/server';
-import FrontendManager from './frontendmanager';
+import ProxyInterceptor from './proxyinterceptor';
 import uuid from 'uuid';
 import PoolEntryUpdater from 'cytube-common/lib/redis/poolentryupdater';
 import JSONProtocol from 'cytube-common/lib/proxy/protocol';
@@ -13,19 +13,19 @@ export default class IOBackend {
         this.socketEmitter = socketEmitter;
         this.poolRedisClient = poolRedisClient;
         this.protocol = new JSONProtocol();
-        this.initFrontendManager();
+        this.initProxyInterceptor();
         this.initProxyListener();
         this.initBackendPoolUpdater();
     }
 
-    initFrontendManager() {
-        this.frontendManager = new FrontendManager(this.socketEmitter);
+    initProxyInterceptor() {
+        this.proxyInterceptor = new ProxyInterceptor(this.socketEmitter);
     }
 
     initProxyListener() {
         this.proxyListener = new Server(this.proxyListenerConfig, this.protocol);
         this.proxyListener.on('connection',
-                this.frontendManager.onConnection.bind(this.frontendManager));
+                this.proxyInterceptor.onConnection.bind(this.proxyInterceptor));
     }
 
     initBackendPoolUpdater() {

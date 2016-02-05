@@ -1,18 +1,23 @@
 import logger from 'cytube-common/lib/logger';
-import ioServer from '../ioserver';
+import ioServer from '../io/ioserver';
 import ProxiedSocket from './proxiedsocket';
 
-export default class FrontendManager {
+export default class ProxyInterceptor {
     constructor(socketEmitter) {
         this.socketEmitter = socketEmitter;
         this.frontendConnections = {};
         this.frontendProxiedSockets = {};
     }
 
+    /**
+     * Handle a new frontend proxy connection.
+     *
+     * @param {Connection} socket frontend proxy connection
+     */
     onConnection(socket) {
         if (this.frontendConnections.hasOwnProperty(socket.endpoint)) {
-            // TODO: do some validation, maybe check if the socket is still connected?
-            throw new Error();
+            logger.error(`Duplicate frontend connection: ${socket.endpoint}`);
+            return;
         }
 
         this.frontendConnections[socket.endpoint] = socket;
@@ -48,8 +53,8 @@ export default class FrontendManager {
         if (!this.frontendProxiedSockets.hasOwnProperty(mapKey)) {
             this.frontendProxiedSockets[mapKey] = {};
         } else if (this.frontendProxiedSockets[mapKey].hasOwnProperty(socketID)) {
-            // TODO: Handle this gracefully
-            throw new Error();
+            logger.error(`Duplicate SocketConnectEvent for ${socketID}`);
+            return;
         }
 
         this.frontendProxiedSockets[mapKey][socketID] = proxiedSocket;
@@ -60,8 +65,9 @@ export default class FrontendManager {
         const mapKey = frontendConnection.endpoint;
         const socketMap = this.frontendProxiedSockets[mapKey];
         if (!socketMap || !socketMap.hasOwnProperty(socketID)) {
-            // TODO
-            throw new Error();
+            logger.error(`Received SocketFrameEvent for nonexistent socket`,
+                    { socketID, event });
+            return;
         }
 
         const socket = socketMap[socketID];

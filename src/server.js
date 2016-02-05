@@ -46,9 +46,9 @@ import LocalChannelIndex from './web/localchannelindex';
 import IOConfiguration from './configuration/ioconfig';
 import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
-import { RedisClusterClient } from './io/cluster/redisclusterclient';
-import { FrontendPool } from 'cytube-common/lib/redis/frontendpool';
 import session from './session';
+import { BackendModule } from './backend/backendmodule';
+import { LegacyModule } from './legacymodule';
 
 var Server = function () {
     var self = this;
@@ -60,22 +60,24 @@ var Server = function () {
     self.infogetter = null;
     self.servers = {};
 
+    // backend init
+    var initModule;
+    if (true) {
+        initModule = new BackendModule();
+    } else {
+        initModule = new LegacyModule();
+    }
+
     // database init ------------------------------------------------------
     var Database = require("./database");
     self.db = Database;
     self.db.init();
     ChannelStore.init();
 
-    // redis init
-    const redis = require('redis');
-    Promise.promisifyAll(redis.RedisClient.prototype);
-    Promise.promisifyAll(redis.Multi.prototype);
-
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
     const webConfig = WebConfiguration.fromOldConfig(Config);
-    const frontendPool = new FrontendPool(redis.createClient());
-    const clusterClient = new RedisClusterClient(frontendPool);
+    const clusterClient = initModule.getClusterClient();
     const channelIndex = new LocalChannelIndex();
     self.express = express();
     require("./web/webserver").init(self.express,
@@ -135,26 +137,14 @@ var Server = function () {
     });
 
     require("./io/ioserver").init(self, webConfig);
-    const redisAdapter = require('socket.io-redis');
-    const IOBackend = require('./io/backend/iobackend');
-    const sioEmitter = require("socket.io").instance;
-    sioEmitter.adapter(redisAdapter());
-    const listenerConfig = {
-        getPort: function () {
-            return 3071;
-        },
-
-        getHost: function () {
-            return '127.0.0.1';
-        }
-    };
-    const backend = new IOBackend(listenerConfig, sioEmitter, redis.createClient());
 
     // background tasks init ----------------------------------------------
     require("./bgtask")(self);
 
     // setuid
     require("./setuid");
+
+    initModule.onReady();
 };
 
 Server.prototype.getHTTPIP = function (req) {
