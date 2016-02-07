@@ -11,6 +11,13 @@ var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
 
 const MAX_ITEMS = Config.get("playlist.max-items");
+// Limit requestPlaylist to once per 60 seconds
+const REQ_PLAYLIST_THROTTLE = {
+    burst: 1,
+    sustained: 0,
+    cooldown: 60
+};
+
 
 const TYPE_QUEUE = {
     id: "string,boolean",
@@ -216,9 +223,7 @@ PlaylistModule.prototype.onUserPostJoin = function (user) {
     user.socket.on("playerReady", function () {
         self.sendChangeMedia([user]);
     });
-    user.socket.on("requestPlaylist", function () {
-        self.sendPlaylist([user]);
-    });
+    user.socket.on("requestPlaylist", this.handleRequestPlaylist.bind(this, user));
     user.on("login", function () {
         self.sendPlaylist([user]);
     });
@@ -1321,6 +1326,18 @@ PlaylistModule.prototype.handleQueuePlaylist = function (user, data) {
             self.channel.refCounter.unref("PlaylistModule::handleQueuePlaylist");
         }
     });
+};
+
+PlaylistModule.prototype.handleRequestPlaylist = function (user) {
+    if (user.reqPlaylistLimiter.throttle(REQ_PLAYLIST_THROTTLE)) {
+        user.socket.emit("errorMsg", {
+            msg: "Get Playlist URLs is limited to 1 usage every 60 seconds.  " +
+                    "Please try again later.",
+            code: "REQ_PLAYLIST_LIMIT_REACHED"
+        });
+    } else {
+        this.sendPlaylist([user]);
+    }
 };
 
 module.exports = PlaylistModule;

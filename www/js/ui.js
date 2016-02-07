@@ -490,9 +490,14 @@ $("#voteskip").click(function() {
 $("#getplaylist").click(function() {
     var callback = function(data) {
         hidePlayer();
-        socket.listeners("playlist").splice(
-            socket.listeners("playlist").indexOf(callback)
-        );
+        var idx = socket.listeners("errorMsg").indexOf(errCallback);
+        if (idx >= 0) {
+            socket.listeners("errorMsg").splice(idx);
+        }
+        idx = socket.listeners("playlist").indexOf(callback);
+        if (idx >= 0) {
+            socket.listeners("playlist").splice(idx);
+        }
         var list = [];
         for(var i = 0; i < data.length; i++) {
             var entry = formatURL(data[i].media);
@@ -524,6 +529,22 @@ $("#getplaylist").click(function() {
         outer.modal();
     };
     socket.on("playlist", callback);
+    var errCallback = function(data) {
+        if (data.code !== "REQ_PLAYLIST_LIMIT_REACHED") {
+            return;
+        }
+
+        var idx = socket.listeners("errorMsg").indexOf(errCallback);
+        if (idx >= 0) {
+            socket.listeners("errorMsg").splice(idx);
+        }
+
+        idx = socket.listeners("playlist").indexOf(callback);
+        if (idx >= 0) {
+            socket.listeners("playlist").splice(idx);
+        }
+    };
+    socket.on("errorMsg", errCallback);
     socket.emit("requestPlaylist");
 });
 
