@@ -654,7 +654,7 @@
       case 'mp3':
         return 'audio/mp3';
       case 'vorbis':
-        return 'audio/vorbis';
+        return 'audio/ogg';
       default:
         return 'video/flv';
     }

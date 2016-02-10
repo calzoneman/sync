@@ -5,7 +5,7 @@ codecToMimeType = (codec) ->
         when 'matroska/vp8', 'matroska/vp9' then 'video/webm'
         when 'ogg/theora' then 'video/ogg'
         when 'mp3' then 'audio/mp3'
-        when 'vorbis' then 'audio/vorbis'
+        when 'vorbis' then 'audio/ogg'
         else 'video/flv'
 
 window.FilePlayer = class FilePlayer extends VideoJSPlayer
