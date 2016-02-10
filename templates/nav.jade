@@ -27,7 +27,7 @@ mixin navdefaultlinks(page)
       b.caret
     ul.dropdown-menu
       if loggedIn
-        li: a(href="/logout?dest=#{encodeURIComponent(baseUrl + page)}&_csrf=#{csrfToken}") Logout
+        li: a(href="javascript:$('#logoutform').submit();") Log out
         li.divider
         li: a(href="#{loginDomain}/account/channels") Channels
         li: a(href="#{loginDomain}/account/profile") Profile
@@ -72,5 +72,5 @@ mixin navlogoutform(redirect)
     input(type="hidden", name="_csrf", value=csrfToken)
     span#welcome Welcome, #{loginName}
     span &nbsp;&middot;&nbsp;
-    input#logout.navbar-link(type="submit", value="Logout")
+    input#logout.navbar-link(type="submit", value="Log out")
 

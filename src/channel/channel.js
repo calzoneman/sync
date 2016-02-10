@@ -12,39 +12,65 @@ import * as ChannelStore from '../channel-storage/channelstore';
 import { ChannelStateSizeError } from '../errors';
 import Promise from 'bluebird';
 
-/**
- * Previously, async channel functions were riddled with race conditions due to
- * an event causing the channel to be unloaded while a pending callback still
- * needed to reference it.
- *
- * This solution should be better than constantly checking whether the channel
- * has been unloaded in nested callbacks.  The channel won't be unloaded until
- * nothing needs it anymore.  Conceptually similar to a reference count.
- */
-function ActiveLock(channel) {
-    this.channel = channel;
-    this.count = 0;
-}
+class ReferenceCounter {
+    constructor(channel) {
+        this.channel = channel;
+        this.channelName = channel.name;
+        this.refCount = 0;
+        this.references = {};
+    }
 
-ActiveLock.prototype = {
-    lock: function () {
-        this.count++;
-    },
+    ref(caller) {
+        if (caller) {
+            if (this.references.hasOwnProperty(caller)) {
+                this.references[caller]++;
+            } else {
+                this.references[caller] = 1;
+            }
+        }
 
-    release: function () {
-        this.count--;
-        if (this.count === 0) {
-            /* sanity check */
-            if (this.channel.users.length > 0) {
-                Logger.errlog.log("Warning: ActiveLock count=0 but users.length > 0 (" +
-                                  "channel: " + this.channel.name + ")");
-                this.count = this.channel.users.length;
+        this.refCount++;
+    }
+
+    unref(caller) {
+        if (caller) {
+            if (this.references.hasOwnProperty(caller)) {
+                this.references[caller]--;
+                if (this.references[caller] === 0) {
+                    delete this.references[caller];
+                }
+            } else {
+                Logger.errlog.log("ReferenceCounter::unref() called by caller [" +
+                        caller + "] but this caller had no active references! " +
+                        `(channel: ${this.channelName})`);
+            }
+        }
+
+        this.refCount--;
+        this.checkRefCount();
+    }
+
+    checkRefCount() {
+        if (this.refCount === 0) {
+            if (Object.keys(this.references).length > 0) {
+                Logger.errlog.log("ReferenceCounter::refCount reached 0 but still had " +
+                        "active references: " +
+                        JSON.stringify(Object.keys(this.references)) +
+                        ` (channel: ${this.channelName})`);
+                for (var caller in this.references) {
+                    this.refCount += this.references[caller];
+                }
+            } else if (this.channel.users.length > 0) {
+                Logger.errlog.log("ReferenceCounter::refCount reached 0 but still had " +
+                        this.channel.users.length + " active users" +
+                        ` (channel: ${this.channelName})`);
+                this.refCount = this.channel.users.length;
             } else {
                 this.channel.emit("empty");
             }
         }
     }
-};
+}
 
 function Channel(name) {
     MakeEmitter(this);
@@ -54,7 +80,7 @@ function Channel(name) {
     this.logger = new Logger.Logger(path.join(__dirname, "..", "..", "chanlogs",
                                               this.uniqueName + ".log"));
     this.users = [];
-    this.activeLock = new ActiveLock(this);
+    this.refCounter = new ReferenceCounter(this);
     this.flags = 0;
     var self = this;
     db.channels.load(this, function (err) {
@@ -238,15 +264,16 @@ Channel.prototype.saveState = function () {
 };
 
 Channel.prototype.checkModules = function (fn, args, cb) {
-    var self = this;
+    const self = this;
+    const refCaller = `Channel::checkModules/${fn}`;
     this.waitFlag(Flags.C_READY, function () {
-        self.activeLock.lock();
+        self.refCounter.ref(refCaller);
         var keys = Object.keys(self.modules);
         var next = function (err, result) {
             if (result !== ChannelModule.PASSTHROUGH) {
                 /* Either an error occured, or the module denied the user access */
                 cb(err, result);
-                self.activeLock.release();
+                self.refCounter.unref(refCaller);
                 return;
             }
 
@@ -254,7 +281,7 @@ Channel.prototype.checkModules = function (fn, args, cb) {
             if (m === undefined) {
                 /* No more modules to check */
                 cb(null, ChannelModule.PASSTHROUGH);
-                self.activeLock.release();
+                self.refCounter.unref(refCaller);
                 return;
             }
 
@@ -278,13 +305,13 @@ Channel.prototype.notifyModules = function (fn, args) {
 };
 
 Channel.prototype.joinUser = function (user, data) {
-    var self = this;
+    const self = this;
 
-    self.activeLock.lock();
+    self.refCounter.ref("Channel::user");
     self.waitFlag(Flags.C_READY, function () {
         /* User closed the connection before the channel finished loading */
         if (user.socket.disconnected) {
-            self.activeLock.release();
+            self.refCounter.unref("Channel::user");
             return;
         }
 
@@ -293,7 +320,7 @@ Channel.prototype.joinUser = function (user, data) {
                 if (err) {
                     Logger.errlog.log("user.refreshAccount failed at Channel.joinUser");
                     Logger.errlog.log(err.stack);
-                    self.activeLock.release();
+                    self.refCounter.unref("Channel::user");
                     return;
                 }
 
@@ -304,8 +331,10 @@ Channel.prototype.joinUser = function (user, data) {
         }
 
         function afterAccount() {
-            if (self.dead || user.socket.disconnected) {
-                if (self.activeLock) self.activeLock.release();
+            if (user.socket.disconnected) {
+                self.refCounter.unref("Channel::user");
+                return;
+            } else if (self.dead) {
                 return;
             }
 
@@ -318,9 +347,7 @@ Channel.prototype.joinUser = function (user, data) {
                 } else {
                     user.account.channelRank = 0;
                     user.account.effectiveRank = user.account.globalRank;
-                    if (self.activeLock) {
-                        self.activeLock.release();
-                    }
+                    self.refCounter.unref("Channel::user");
                 }
             });
         }
@@ -408,7 +435,7 @@ Channel.prototype.partUser = function (user) {
     });
     this.sendUsercount(this.users);
 
-    this.activeLock.release();
+    this.refCounter.unref("Channel::user");
     user.die();
 };
 
@@ -555,20 +582,20 @@ Channel.prototype.sendUserJoin = function (users, user) {
 };
 
 Channel.prototype.readLog = function (cb) {
-    var maxLen = 102400;
-    var file = this.logger.filename;
-    this.activeLock.lock();
-    var self = this;
+    const maxLen = 102400;
+    const file = this.logger.filename;
+    this.refCounter.ref("Channel::readLog");
+    const self = this;
     fs.stat(file, function (err, data) {
         if (err) {
-            self.activeLock.release();
+            self.refCounter.unref("Channel::readLog");
             return cb(err, null);
         }
 
-        var start = Math.max(data.size - maxLen, 0);
-        var end = data.size - 1;
+        const start = Math.max(data.size - maxLen, 0);
+        const end = data.size - 1;
 
-        var read = fs.createReadStream(file, {
+        const read = fs.createReadStream(file, {
             start: start,
             end: end
         });
@@ -579,7 +606,7 @@ Channel.prototype.readLog = function (cb) {
         });
         read.on("end", function () {
             cb(null, buffer);
-            self.activeLock.release();
+            self.refCounter.unref("Channel::readLog");
         });
     });
 };
@@ -648,7 +675,7 @@ Channel.prototype.packInfo = function (isAdmin) {
     }
 
     if (isAdmin) {
-        data.activeLockCount = this.activeLock.count;
+        data.activeLockCount = this.refCounter.refCount;
     }
 
     var self = this;

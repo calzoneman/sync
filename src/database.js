@@ -583,7 +583,7 @@ module.exports.loadAnnouncement = function () {
         var sv = Server.getServer();
         sv.announcement = announcement;
         for (var id in sv.ioServers) {
-            sv.ioServers[id].sockets.emit("announcement", announcement);
+            sv.ioServers[id].emit("announcement", announcement);
         }
     });
 };

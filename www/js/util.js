@@ -1575,6 +1575,39 @@ function pingMessage(isHighlight) {
 
 /* layouts */
 
+function undoHDLayout() {
+    $("body").removeClass("hd");
+    $("#drinkbar").detach().removeClass().addClass("col-lg-12 col-md-12")
+      .appendTo("#drinkbarwrap");
+    $("#chatwrap").detach().removeClass().addClass("col-lg-5 col-md-5")
+      .appendTo("#main");
+    $("#videowrap").detach().removeClass().addClass("col-lg-7 col-md-7")
+      .appendTo("#main");
+
+    $("#leftcontrols").detach().removeClass().addClass("col-lg-5 col-md-5")
+      .prependTo("#controlsrow");
+
+    $("#plcontrol").detach().appendTo("#rightcontrols");
+    $("#videocontrols").detach().appendTo("#rightcontrols");
+
+    $("#playlistrow").prepend('<div id="leftpane" class="col-lg-5 col-md-5" />');
+    $("#leftpane").append('<div id="leftpane-inner" class="row" />');
+
+    $("#pollwrap").detach().removeClass().addClass("col-lg-12 col-md-12")
+      .appendTo("#leftpane-inner");
+    $("#playlistmanagerwrap").detach().removeClass().addClass("col-lg-12 col-md-12")
+      .css("margin-top", "10px")
+      .appendTo("#leftpane-inner");
+
+    $("#rightpane").detach().removeClass().addClass("col-lg-7 col-md-7")
+      .appendTo("#playlistrow");
+
+    $("nav").addClass("navbar-fixed-top");
+    $("#mainpage").css("padding-top", "60px");
+    $("#queue").css("max-height", "500px");
+    $("#messagebuffer, #userlist").css("max-height", "");
+}
+
 function compactLayout() {
     /* Undo synchtube layout */
     if ($("body").hasClass("synchtube")) {
@@ -1597,36 +1630,7 @@ function compactLayout() {
 
     /* Undo HD layout */
     if ($("body").hasClass("hd")) {
-        $("body").removeClass("hd");
-        $("#drinkbar").detach().removeClass().addClass("col-lg-12 col-md-12")
-          .appendTo("#drinkbarwrap");
-        $("#chatwrap").detach().removeClass().addClass("col-lg-5 col-md-5")
-          .appendTo("#main");
-        $("#videowrap").detach().removeClass().addClass("col-lg-7 col-md-7")
-          .appendTo("#main");
-
-        $("#leftcontrols").detach().removeClass().addClass("col-lg-5 col-md-5")
-          .prependTo("#controlsrow");
-
-        $("#plcontrol").detach().appendTo("#rightcontrols");
-        $("#videocontrols").detach().appendTo("#rightcontrols");
-
-        $("#playlistrow").prepend('<div id="leftpane" class="col-lg-5 col-md-5" />');
-        $("#leftpane").append('<div id="leftpane-inner" class="row" />');
-
-        $("#pollwrap").detach().removeClass().addClass("col-lg-12 col-md-12")
-          .appendTo("#leftpane-inner");
-        $("#playlistmanagerwrap").detach().removeClass().addClass("col-lg-12 col-md-12")
-          .css("margin-top", "10px")
-          .appendTo("#leftpane-inner");
-
-        $("#rightpane").detach().removeClass().addClass("col-lg-7 col-md-7")
-          .appendTo("#playlistrow");
-
-        $("nav").addClass("navbar-fixed-top");
-        $("#mainpage").css("padding-top", "60px");
-        $("#queue").css("max-height", "500px");
-        $("#messagebuffer, #userlist").css("max-height", "");
+        undoHDLayout();
     }
 
     $("body").addClass("compact");
@@ -1634,6 +1638,9 @@ function compactLayout() {
 }
 
 function fluidLayout() {
+    if ($("body").hasClass("hd")) {
+        undoHDLayout();
+    }
     $(".container").removeClass("container").addClass("container-fluid");
     $("footer .container-fluid").removeClass("container-fluid").addClass("container");
     $("body").addClass("fluid");
@@ -1641,6 +1648,9 @@ function fluidLayout() {
 }
 
 function synchtubeLayout() {
+    if ($("body").hasClass("hd")) {
+        undoHDLayout();
+    }
     if($("#userlisttoggle").hasClass("glyphicon-chevron-right")){
         $("#userlisttoggle").removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-left")
     }
@@ -1652,6 +1662,9 @@ function synchtubeLayout() {
     $("body").addClass("synchtube");
 }
 
+/*
+ * "HD" is kind of a misnomer.  Should be renamed at some point.
+ */
 function hdLayout() {
     var videowrap = $("#videowrap"),
         chatwrap = $("#chatwrap"),

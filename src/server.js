@@ -207,6 +207,24 @@ Server.prototype.unloadChannel = function (chan) {
     chan.notifyModules("unload", []);
     Object.keys(chan.modules).forEach(function (k) {
         chan.modules[k].dead = true;
+        /*
+         * Automatically clean up any timeouts/intervals assigned
+         * to properties of channel modules.  Prevents a memory leak
+         * in case of forgetting to clear the timer on the "unload"
+         * module event.
+         */
+        Object.keys(chan.modules[k]).forEach(function (prop) {
+            if (chan.modules[k][prop] && chan.modules[k][prop]._onTimeout) {
+                Logger.errlog.log("Warning: detected non-null timer when unloading " +
+                        "module " + k + ": " + prop);
+                try {
+                    clearTimeout(chan.modules[k][prop]);
+                    clearInterval(chan.modules[k][prop]);
+                } catch (error) {
+                    Logger.errlog.log(error.stack);
+                }
+            }
+        });
     });
 
     for (var i = 0; i < this.channels.length; i++) {
@@ -220,7 +238,9 @@ Server.prototype.unloadChannel = function (chan) {
     // Empty all outward references from the channel
     var keys = Object.keys(chan);
     for (var i in keys) {
-        delete chan[keys[i]];
+        if (keys[i] !== "refCounter") {
+            delete chan[keys[i]];
+        }
     }
     chan.dead = true;
 };

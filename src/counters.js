@@ -25,11 +25,20 @@ Socket.prototype.packet = function () {
     exports.add('socket.io:packet');
 };
 
+function getConnectedSockets() {
+    var sockets = io.instance.sockets.sockets;
+    if (typeof sockets.length === 'number') {
+        return sockets.length;
+    } else {
+        return Object.keys(sockets).length;
+    }
+}
+
 setInterval(function () {
     try {
         counters['memory:rss'] = process.memoryUsage().rss / 1048576;
         counters['load:1min'] = os.loadavg()[0];
-        counters['socket.io:count'] = io.instance.sockets.sockets.length;
+        counters['socket.io:count'] = getConnectedSockets();
         counterLog.log(JSON.stringify(counters));
     } catch (e) {
         Logger.errlog.log(e.stack);

@@ -44,6 +44,15 @@ MediaRefresherModule.prototype.onPreMediaChange = function (data, cb) {
     }
 };
 
+MediaRefresherModule.prototype.unload = function () {
+    try {
+        clearInterval(this._interval);
+        this._interval = null;
+    } catch (error) {
+        Logger.errlog.log(error.stack);
+    }
+};
+
 MediaRefresherModule.prototype.initGoogleDocs = function (data, cb) {
     var self = this;
     self.refreshGoogleDocs(data, cb);
@@ -63,23 +72,26 @@ MediaRefresherModule.prototype.initVimeo = function (data, cb) {
         return;
     }
 
-    var self = this;
-    self.channel.activeLock.lock();
+    const self = this;
+    self.channel.refCounter.ref("MediaRefresherModule::initVimeo");
     Vimeo.extract(data.id).then(function (direct) {
-        if (self.dead || self.channel.dead)
+        if (self.dead || self.channel.dead) {
+            self.unload();
             return;
+        }
 
         if (self._media === data) {
             data.meta.direct = direct;
             self.channel.logger.log("[mediarefresher] Refreshed vimeo video with ID " +
                 data.id);
         }
-        self.channel.activeLock.release();
 
         if (cb) cb();
     }).catch(function (err) {
         Logger.errlog.log("Unexpected vimeo::extract() fail: " + err.stack);
         if (cb) cb();
+    }).finally(() => {
+        self.channel.refCounter.unref("MediaRefresherModule::initVimeo");
     });
 };
 
@@ -87,10 +99,11 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
     var self = this;
 
     if (self.dead || self.channel.dead) {
+        self.unload();
         return;
     }
 
-    self.channel.activeLock.lock();
+    self.channel.refCounter.ref("MediaRefresherModule::refreshGoogleDocs");
     InfoGetter.getMedia(media.id, "gd", function (err, data) {
         if (self.dead || self.channel.dead) {
             return;
@@ -108,7 +121,7 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
                 self.channel.logger.log("[mediarefresher] Google Docs refresh failed " +
                         "(likely redirect to login page-- make sure it is shared " +
                         "correctly)");
-                self.channel.activeLock.release();
+                self.channel.refCounter.unref("MediaRefresherModule::refreshGoogleDocs");
                 if (cb) cb();
                 return;
             case "Access Denied":
@@ -119,7 +132,7 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
             case "Google Drive videos must be shared publicly":
                 self.channel.logger.log("[mediarefresher] Google Docs refresh failed: " +
                     err);
-                self.channel.activeLock.release();
+                self.channel.refCounter.unref("MediaRefresherModule::refreshGoogleDocs");
                 if (cb) cb();
                 return;
             default:
@@ -128,14 +141,14 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
                         err);
                     Logger.errlog.log("Google Docs refresh failed for ID " + media.id +
                         ": " + err);
-                    self.channel.activeLock.release();
+                    self.channel.refCounter.unref("MediaRefresherModule::refreshGoogleDocs");
                     if (cb) cb();
                     return;
                 }
         }
 
         if (media !== self._media) {
-            self.channel.activeLock.release();
+            self.channel.refCounter.unref("MediaRefresherModule::refreshGoogleDocs");
             if (cb) cb();
             return;
         }
@@ -143,7 +156,7 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
         self.channel.logger.log("[mediarefresher] Refreshed Google Docs video with ID " +
             media.id);
         media.meta = data.meta;
-        self.channel.activeLock.release();
+        self.channel.refCounter.unref("MediaRefresherModule::refreshGoogleDocs");
         if (cb) cb();
     });
 };
@@ -152,10 +165,11 @@ MediaRefresherModule.prototype.initGooglePlus = function (media, cb) {
     var self = this;
 
     if (self.dead || self.channel.dead) {
+        self.unload();
         return;
     }
 
-    self.channel.activeLock.lock();
+    self.channel.refCounter.ref("MediaRefresherModule::initGooglePlus");
     InfoGetter.getMedia(media.id, "gp", function (err, data) {
         if (self.dead || self.channel.dead) {
             return;
@@ -177,7 +191,7 @@ MediaRefresherModule.prototype.initGooglePlus = function (media, cb) {
                     "and is shared publicly"):
                 self.channel.logger.log("[mediarefresher] Google+ refresh failed: " +
                     err);
-                self.channel.activeLock.release();
+                self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
                 if (cb) cb();
                 return;
             default:
@@ -186,14 +200,14 @@ MediaRefresherModule.prototype.initGooglePlus = function (media, cb) {
                         err);
                     Logger.errlog.log("Google+ refresh failed for ID " + media.id +
                         ": " + err);
-                    self.channel.activeLock.release();
+                    self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
                     if (cb) cb();
                     return;
                 }
         }
 
         if (media !== self._media) {
-            self.channel.activeLock.release();
+            self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
             if (cb) cb();
             return;
         }
@@ -201,7 +215,7 @@ MediaRefresherModule.prototype.initGooglePlus = function (media, cb) {
         self.channel.logger.log("[mediarefresher] Refreshed Google+ video with ID " +
             media.id);
         media.meta = data.meta;
-        self.channel.activeLock.release();
+        self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
         if (cb) cb();
     });
 };

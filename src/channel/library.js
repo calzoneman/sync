@@ -51,16 +51,19 @@ LibraryModule.prototype.handleUncache = function (user, data) {
         return;
     }
 
-    var chan = this.channel;
-    chan.activeLock.lock();
+    const chan = this.channel;
+    chan.refCounter.ref("LibraryModule::handleUncache");
     db.channels.deleteFromLibrary(chan.name, data.id, function (err, res) {
-        if (chan.dead || err) {
+        if (chan.dead) {
+            return;
+        } else if (err) {
+            chan.refCounter.unref("LibraryModule::handleUncache");
             return;
         }
 
         chan.logger.log("[library] " + user.getName() + " deleted " + data.id +
                         "from the library");
-        chan.activeLock.release();
+        chan.refCounter.unref("LibraryModule::handleUncache");
     });
 };
 

@@ -242,6 +242,9 @@ function handleConnection(sock) {
 module.exports = {
     init: function (srv, webConfig) {
         var bound = {};
+        const ioOptions = {
+            perMessageDeflate: Config.get("io.per-message-deflate")
+        };
         var io = sio.instance = sio();
 
         io.use(handleAuth);
@@ -259,7 +262,7 @@ module.exports = {
             }
 
             if (id in srv.servers) {
-                io.attach(srv.servers[id]);
+                io.attach(srv.servers[id], ioOptions);
             } else {
                 var server = require("http").createServer().listen(bind.port, bind.ip);
                 server.on("clientError", function (err, socket) {
@@ -268,7 +271,7 @@ module.exports = {
                     } catch (e) {
                     }
                 });
-                io.attach(server);
+                io.attach(server, ioOptions);
             }
 
             bound[id] = null;

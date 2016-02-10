@@ -1,3 +1,13 @@
+2016-01-06
+==========
+
+This release updates socket.io to version 1.4.0.  The updates to socket.io
+include a few security-related fixes, so please be sure to run `npm install`
+to ensure the updated version is installed before restarting your CyTube server.
+
+  * https://nodesecurity.io/advisories/67
+  * https://github.com/socketio/engine.io/commit/391ce0dc8b88a6609d88db83ea064040a05ab803
+
 2015-10-25
 ==========
 

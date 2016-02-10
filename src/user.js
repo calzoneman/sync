@@ -21,6 +21,7 @@ function User(socket) {
     self.channel = null;
     self.queueLimiter = util.newRateLimiter();
     self.chatLimiter = util.newRateLimiter();
+    self.reqPlaylistLimiter = util.newRateLimiter();
     self.awaytimer = false;
 
     var announcement = Server.getServer().announcement;
