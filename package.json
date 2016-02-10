@@ -31,11 +31,14 @@
     "nodemailer": "^1.4.0",
     "oauth": "^0.9.12",
     "q": "^1.4.1",
+    "redis": "^2.4.2",
     "sanitize-html": "git://github.com/calzoneman/sanitize-html",
     "serve-static": "^1.10.0",
     "socket.io": "^1.4.0",
+    "socket.io-redis": "^1.0.0",
     "source-map-support": "^0.4.0",
     "status-message-polyfill": "calzoneman/status-message-polyfill",
+    "uuid": "^2.0.1",
     "yamljs": "^0.1.6"
   },
   "scripts": {

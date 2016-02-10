@@ -47,6 +47,8 @@ import IOConfiguration from './configuration/ioconfig';
 import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
 import session from './session';
+import { BackendModule } from './backend/backendmodule';
+import { LegacyModule } from './legacymodule';
 
 var Server = function () {
     var self = this;
@@ -58,6 +60,14 @@ var Server = function () {
     self.infogetter = null;
     self.servers = {};
 
+    // backend init
+    var initModule;
+    if (true) {
+        initModule = new BackendModule();
+    } else {
+        initModule = new LegacyModule();
+    }
+
     // database init ------------------------------------------------------
     var Database = require("./database");
     self.db = Database;
@@ -67,7 +77,7 @@ var Server = function () {
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
     const webConfig = WebConfiguration.fromOldConfig(Config);
-    const clusterClient = new NullClusterClient(ioConfig);
+    const clusterClient = initModule.getClusterClient();
     const channelIndex = new LocalChannelIndex();
     self.express = express();
     require("./web/webserver").init(self.express,
@@ -133,6 +143,8 @@ var Server = function () {
 
     // setuid
     require("./setuid");
+
+    initModule.onReady();
 };
 
 Server.prototype.getHTTPIP = function (req) {
