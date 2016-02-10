@@ -62,7 +62,7 @@ var Server = function () {
 
     // backend init
     var initModule;
-    if (true) {
+    if (Config.get("new-backend")) {
         initModule = new BackendModule();
     } else {
         initModule = new LegacyModule();
