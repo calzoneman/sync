@@ -47,7 +47,6 @@ import IOConfiguration from './configuration/ioconfig';
 import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
 import session from './session';
-import { BackendModule } from './backend/backendmodule';
 import { LegacyModule } from './legacymodule';
 
 var Server = function () {
@@ -63,6 +62,7 @@ var Server = function () {
     // backend init
     var initModule;
     if (Config.get("new-backend")) {
+        const BackendModule = require('./backend/backendmodule').BackendModule;
         initModule = new BackendModule();
     } else {
         initModule = new LegacyModule();
