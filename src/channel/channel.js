@@ -554,9 +554,13 @@ Channel.prototype.sendUserlist = function (toUsers) {
 
 Channel.prototype.sendUsercount = function (users) {
     var self = this;
-    users.forEach(function (u) {
-        u.socket.emit("usercount", self.users.length);
-    });
+    if (users === self.users) {
+        self.broadcastAll("usercount", self.users.length);
+    } else {
+        users.forEach(function (u) {
+            u.socket.emit("usercount", self.users.length);
+        });
+    }
 };
 
 Channel.prototype.sendUserJoin = function (users, user) {
