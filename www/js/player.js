@@ -881,7 +881,8 @@
       } else {
         iframe = $('<iframe/>').attr({
           src: embed.src,
-          frameborder: '0'
+          frameborder: '0',
+          allowfullscreen: '1'
         });
         return iframe;
       }
