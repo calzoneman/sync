@@ -358,8 +358,8 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 }
 
 .profile-image {
-    width: 80px;
-    height: 80px;
+    max-width: 80px;
+    max-height: 80px;
     border: 1px solid #aaaaaa;
     border-radius: 5px;
 }
