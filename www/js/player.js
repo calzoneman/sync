@@ -994,12 +994,6 @@
 
   })(EmbedPlayer);
 
-  window.rtmpEventHandler = function(id, event, data) {
-    if (event === 'volumechange') {
-      return PLAYER.volume = data.muted ? 0 : data.volume;
-    }
-  };
-
   window.RTMPPlayer = RTMPPlayer = (function(superClass) {
     extend(RTMPPlayer, superClass);
 
