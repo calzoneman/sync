@@ -1079,7 +1079,7 @@ Callbacks = {
     }
 }
 
-var SOCKET_DEBUG = false;
+var SOCKET_DEBUG = localStorage.getItem('cytube_socket_debug') === 'true';
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {

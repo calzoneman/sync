@@ -7,6 +7,14 @@ window.RTMPPlayer = class RTMPPlayer extends VideoJSPlayer
         if not (this instanceof RTMPPlayer)
             return new RTMPPlayer(data)
 
+        @setupMeta(data)
+        super(data)
+
+    load: (data) ->
+        @setupMeta(data)
+        super(data)
+
+    setupMeta: (data) ->
         data.meta.direct =
             # Quality is required for data.meta.direct processing but doesn't
             # matter here because it's dictated by the stream.  Arbitrarily
@@ -16,5 +24,3 @@ window.RTMPPlayer = class RTMPPlayer extends VideoJSPlayer
                     link: data.id
                 }
             ]
-
-        super(data)

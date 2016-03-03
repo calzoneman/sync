@@ -1007,15 +1007,24 @@
       if (!(this instanceof RTMPPlayer)) {
         return new RTMPPlayer(data);
       }
-      data.meta.direct = {
+      this.setupMeta(data);
+      RTMPPlayer.__super__.constructor.call(this, data);
+    }
+
+    RTMPPlayer.prototype.load = function(data) {
+      this.setupMeta(data);
+      return RTMPPlayer.__super__.load.call(this, data);
+    };
+
+    RTMPPlayer.prototype.setupMeta = function(data) {
+      return data.meta.direct = {
         480: [
           {
             link: data.id
           }
         ]
       };
-      RTMPPlayer.__super__.constructor.call(this, data);
-    }
+    };
 
     return RTMPPlayer;
 
