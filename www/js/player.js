@@ -46,6 +46,8 @@
       return cb(VOLUME);
     };
 
+    Player.prototype.destroy = function() {};
+
     return Player;
 
   })();
@@ -587,6 +589,7 @@
 
     VideoJSPlayer.prototype.load = function(data) {
       this.setMediaProperties(data);
+      this.destroy();
       return this.loadPlayer(data);
     };
 
@@ -633,6 +636,13 @@
         }
       } else {
         return cb(VOLUME);
+      }
+    };
+
+    VideoJSPlayer.prototype.destroy = function() {
+      removeOld();
+      if (this.player) {
+        return this.player.dispose();
       }
     };
 
@@ -1259,19 +1269,27 @@
   };
 
   window.loadMediaPlayer = function(data) {
-    var e, error1, error2;
+    var e, error, error1, error2, error3;
+    try {
+      if (window.PLAYER) {
+        window.PLAYER.destroy();
+      }
+    } catch (error1) {
+      error = error1;
+      console.error(error);
+    }
     if (data.meta.direct && data.type !== 'gd') {
       try {
         return window.PLAYER = new VideoJSPlayer(data);
-      } catch (error1) {
-        e = error1;
+      } catch (error2) {
+        e = error2;
         return console.error(e);
       }
     } else if (data.type in TYPE_MAP) {
       try {
         return window.PLAYER = TYPE_MAP[data.type](data);
-      } catch (error2) {
-        e = error2;
+      } catch (error3) {
+        e = error3;
         return console.error(e);
       }
     }

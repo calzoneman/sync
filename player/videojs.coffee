@@ -131,6 +131,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
         # existing player object, however it appears to be pretty glitchy when
         # a video can't be played (either previous or next video).  It's safer
         # to just reset the entire thing.
+        @destroy()
         @loadPlayer(data)
 
     play: ->
@@ -165,3 +166,8 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 cb(@player.volume())
         else
             cb(VOLUME)
+
+    destroy: ->
+        removeOld()
+        if @player
+            @player.dispose()

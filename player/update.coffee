@@ -16,6 +16,12 @@ TYPE_MAP =
     im: ImgurPlayer
 
 window.loadMediaPlayer = (data) ->
+    try
+        if window.PLAYER
+            window.PLAYER.destroy()
+    catch error
+        console.error error
+
     if data.meta.direct and data.type != 'gd'
         try
             window.PLAYER = new VideoJSPlayer(data)

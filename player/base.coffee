@@ -32,3 +32,5 @@ window.Player = class Player
 
     getVolume: (cb) ->
         cb(VOLUME)
+
+    destroy: ->
