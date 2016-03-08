@@ -24,6 +24,7 @@ export default class ProxyInterceptor {
         socket.on('close', this.onFrontendDisconnect.bind(this, socket));
         socket.on('SocketConnectEvent', this.onSocketConnect.bind(this, socket));
         socket.on('SocketFrameEvent', this.onSocketFrame.bind(this, socket));
+        socket.on('SocketDisconnectEvent', this.onSocketDisconnect.bind(this, socket));
     }
 
     onFrontendDisconnect(socket) {
@@ -72,5 +73,18 @@ export default class ProxyInterceptor {
 
         const socket = socketMap[socketID];
         socket.onProxiedEventReceived.apply(socket, [event].concat(args));
+    }
+
+    onSocketDisconnect(frontendConnection, socketID) {
+        const mapKey = frontendConnection.endpoint;
+        const socketMap = this.frontendProxiedSockets[mapKey];
+        if (!socketMap || !socketMap.hasOwnProperty(socketID)) {
+            logger.error(`Received SocketDisconnectEvent for nonexistent socket`,
+                    { socketID });
+            return;
+        }
+
+        const socket = socketMap[socketID];
+        socket.onProxiedEventReceived.apply(socket, ['disconnect']);
     }
 }
