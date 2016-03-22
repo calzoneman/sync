@@ -113,6 +113,20 @@ function readOldFormat(buf) {
     return data;
 }
 
+function isAlternateDisposition(stream) {
+    if (!stream.disposition) {
+        return false;
+    }
+
+    for (var key in stream) {
+        if (key !== "default" && stream.disposition[key]) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function reformatData(data) {
     var reformatted = {};
 
@@ -127,24 +141,54 @@ function reformatData(data) {
     reformatted.title = data.format.tags ? data.format.tags.title : null;
     var container = data.format.format_name.split(",")[0];
 
-    data.streams.forEach(function (stream) {
-        if (stream.codec_type === "video" &&
-                acceptedCodecs.hasOwnProperty(container + "/" + stream.codec_name)) {
-            reformatted.vcodec = stream.codec_name;
-            if (!reformatted.title && stream.tags) {
-                reformatted.title = stream.tags.title;
-            }
-        } else if (stream.codec_type === "audio") {
-            reformatted.acodec = stream.codec_name;
-        }
-    });
+    var isVideo = false;
+    var audio = null;
+    for (var i = 0; i < data.streams.length; i++) {
+        const stream = data.streams[i];
 
-    if (reformatted.vcodec && !(audioOnlyContainers.hasOwnProperty(container))) {
-        reformatted.type = [container, reformatted.vcodec].join("/");
-        reformatted.medium = "video";
-    } else if (reformatted.acodec) {
-        reformatted.type = [container, reformatted.acodec].join("/");
-        reformatted.medium = "audio";
+        // Trash streams with alternate dispositions, e.g. `attached_pic` for
+        // embedded album art on MP3s (not a real video stream)
+        if (isAlternateDisposition(stream)) {
+            continue;
+        }
+
+        if (stream.codec_type === "video" &&
+                !audioOnlyContainers.hasOwnProperty(container)) {
+            isVideo = true;
+            if (acceptedCodecs.hasOwnProperty(container + "/" + stream.codec_name)) {
+                reformatted.vcodec = stream.codec_name;
+                reformatted.medium = "video";
+                reformatted.type = [container, reformatted.vcodec].join("/");
+
+                if (stream.tags && stream.tags.title) {
+                    reformatted.title = stream.tags.title;
+                }
+
+                return reformatted;
+            }
+        } else if (stream.codec_type === "audio" && !audio &&
+                acceptedAudioCodecs.hasOwnProperty(stream.codec_name)) {
+            audio = {
+                acodec: stream.codec_name,
+                medium: "audio"
+            };
+
+            if (stream.tags && stream.tags.title) {
+                audio.title = stream.tags.title;
+            }
+        }
+    }
+
+    // Override to make sure video files with no valid video streams but some
+    // acceptable audio stream are rejected.
+    if (isVideo) {
+        return reformatted;
+    }
+
+    if (audio) {
+        for (var key in audio) {
+            reformatted[key] = audio[key];
+        }
     }
 
     return reformatted;
@@ -273,10 +317,6 @@ exports.query = function (filename, cb) {
             }
 
             if (data.medium === "video") {
-                if (!acceptedCodecs.hasOwnProperty(data.type)) {
-                    return cb("Unsupported video codec " + data.type);
-                }
-
                 data = {
                     title: data.title || "Raw Video",
                     duration: data.duration,
@@ -286,10 +326,6 @@ exports.query = function (filename, cb) {
 
                 cb(null, data);
             } else if (data.medium === "audio") {
-                if (!acceptedAudioCodecs.hasOwnProperty(data.acodec)) {
-                    return cb("Unsupported audio codec " + data.acodec);
-                }
-
                 data = {
                     title: data.title || "Raw Audio",
                     duration: data.duration,
@@ -299,9 +335,8 @@ exports.query = function (filename, cb) {
 
                 cb(null, data);
             } else {
-                return cb("Parsed metadata did not contain a valid video or audio " +
-                          "stream.  Either the file is invalid or it has a format " +
-                          "unsupported by this server's version of ffmpeg.");
+                return cb("File did not contain an acceptable codec.  See " +
+                          "https://git.io/va9g9 for details.");
             }
         });
     });

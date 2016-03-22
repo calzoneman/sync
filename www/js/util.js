@@ -2064,6 +2064,7 @@ function queueMessage(data, type) {
         }
     }
     var text = data.msg;
+    text = text.replace(/(https?:[^ ]+)/g, "<a href='$1' target='_blank'>$1</a>");
     if (typeof data.link === "string") {
         text += "<br><a href='" + data.link + "' target='_blank'>" +
                 data.link + "</a>";
