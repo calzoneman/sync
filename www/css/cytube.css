@@ -664,3 +664,19 @@ input#logout[type="submit"]:hover {
     margin-left: 10px;
     margin-right: 10px;
 }
+
+#soundcloud-volume-holder {
+    position: absolute;
+    top: 170px;
+    width: 100%;
+}
+
+#soundcloud-volume-label {
+    margin-left: 2px;
+}
+
+#soundcloud-volume {
+    margin-top: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+}

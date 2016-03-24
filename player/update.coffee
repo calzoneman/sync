@@ -102,7 +102,7 @@ window.handleMediaUpdate = (data) ->
     )
 
 window.removeOld = (replace) ->
-    $('#sc_volume').remove()
+    $('#soundcloud-volume-holder').remove()
     replace ?= $('<div/>').addClass('embed-responsive-item')
     old = $('#ytapiplayer')
     replace.insertBefore(old)

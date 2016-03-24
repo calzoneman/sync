@@ -714,7 +714,7 @@
       this.setMediaProperties(data);
       waitUntilDefined(window, 'SC', (function(_this) {
         return function() {
-          var soundUrl, volumeSlider, widget;
+          var sliderHolder, soundUrl, volumeSlider, widget;
           removeOld();
           if (data.meta.scuri) {
             soundUrl = data.meta.scuri;
@@ -726,7 +726,9 @@
             id: 'scplayer',
             src: "https://w.soundcloud.com/player/?url=" + soundUrl
           });
-          volumeSlider = $('<div/>').attr('id', 'widget-volume').css('top', '170px').insertAfter(widget).slider({
+          sliderHolder = $('<div/>').attr('id', 'soundcloud-volume-holder').insertAfter(widget);
+          $('<span/>').attr('id', 'soundcloud-volume-label').addClass('label label-default').text('Volume').appendTo(sliderHolder);
+          volumeSlider = $('<div/>').attr('id', 'soundcloud-volume').appendTo(sliderHolder).slider({
             range: 'min',
             value: VOLUME * 100,
             stop: function(event, ui) {
@@ -1350,7 +1352,7 @@
 
   window.removeOld = function(replace) {
     var old;
-    $('#sc_volume').remove();
+    $('#soundcloud-volume-holder').remove();
     if (replace == null) {
       replace = $('<div/>').addClass('embed-responsive-item');
     }
