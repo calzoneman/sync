@@ -1169,6 +1169,9 @@ PlaylistModule.prototype.handleClean = function (user, msg, meta) {
     var cmd = args.shift();
     var target = generateTargetRegex(args.join(" "));
 
+    this.channel.logger.log("[playlist] " + user.getName() + " used " + cmd +
+            " with target regex: " + target);
+
     var cleanfn;
     if (cmd === "/clean") {
         cleanfn = function (item) { return target.test(item.queueby); };
