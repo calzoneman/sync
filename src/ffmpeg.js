@@ -38,6 +38,14 @@ function initFFLog() {
     fflog.initialized = true;
 }
 
+function fixRedirectIfNeeded(urldata, redirect) {
+    if (!/^https?:/.test(redirect)) {
+        redirect = urldata.protocol + "//" + urldata.host + redirect;
+    }
+
+    return redirect;
+}
+
 function testUrl(url, cb, redirCount) {
     if (!redirCount) redirCount = 0;
     var data = urlparse.parse(url);
@@ -59,7 +67,8 @@ function testUrl(url, cb, redirCount) {
                 return cb("Too many redirects.  Please provide a direct link to the " +
                           "file");
             }
-            return testUrl(res.headers["location"], cb, redirCount + 1);
+            return testUrl(fixRedirectIfNeeded(data, res.headers["location"]), cb,
+                    redirCount + 1);
         }
 
         if (res.statusCode !== 200) {
