@@ -771,9 +771,14 @@
         } else {
           soundUrl = data.id;
         }
-        return this.soundcloud.load(soundUrl, {
+        this.soundcloud.load(soundUrl, {
           auto_play: true
         });
+        return this.soundcloud.bind(SC.Widget.Events.READY, (function(_this) {
+          return function() {
+            return _this.setVolume(VOLUME);
+          };
+        })(this));
       } else {
         return console.error('SoundCloudPlayer::load() called but soundcloud is not ready');
       }

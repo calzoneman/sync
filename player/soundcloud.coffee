@@ -69,6 +69,9 @@ window.SoundCloudPlayer = class SoundCloudPlayer extends Player
             else
                 soundUrl = data.id
             @soundcloud.load(soundUrl, auto_play: true)
+            @soundcloud.bind(SC.Widget.Events.READY, =>
+                @setVolume(VOLUME)
+            )
         else
             console.error('SoundCloudPlayer::load() called but soundcloud is not ready')
 
