@@ -1167,6 +1167,12 @@ PlaylistModule.prototype.handleClean = function (user, msg, meta) {
 
     var args = msg.split(" ");
     var cmd = args.shift();
+    if (args.length === 0) {
+        return user.socket.emit("errorMsg", {
+            msg: "No target given for " + cmd + ".  Usage: /clean <username> or " +
+                "/cleantitle <title>"
+        });
+    }
     var target = generateTargetRegex(args.join(" "));
 
     this.channel.logger.log("[playlist] " + user.getName() + " used " + cmd +
