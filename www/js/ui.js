@@ -28,25 +28,21 @@ $("#modflair").click(function () {
     var m = $("#modflair");
     if (m.hasClass("label-success")) {
         USEROPTS.modhat = false;
-        m.removeClass("label-success")
-         .addClass("label-default");
+        m.removeClass("label-success");
+        if (SUPERADMIN) {
+            USEROPTS.adminhat = true;
+            m.addClass("label-danger");
+        } else {
+            m.addClass("label-default");
+        }
+    } else if (m.hasClass("label-danger")) {
+        USEROPTS.adminhat = false;
+        m.removeClass("label-danger")
+            .addClass("label-default");
     } else {
         USEROPTS.modhat = true;
         m.removeClass("label-default")
-         .addClass("label-success");
-    }
-});
-
-$("#adminflair").click(function () {
-    var m = $("#adminflair");
-    if (m.hasClass("label-danger")) {
-        USEROPTS.adminhat = false;
-        m.removeClass("label-danger")
-         .addClass("label-default");
-    } else {
-        USEROPTS.adminhat = true;
-        m.removeClass("label-default")
-         .addClass("label-danger");
+            .addClass("label-success");
     }
 });
 
