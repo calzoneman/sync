@@ -593,7 +593,7 @@ table td {
     border-top-width: 0;
 }
 
-#emotelist table {
+.emotelist-table {
     margin: auto;
 }
 
@@ -618,7 +618,7 @@ table td {
     cursor: pointer;
 }
 
-#emotelist-paginator-container {
+.emotelist-paginator-container {
     text-align: center;
 }
 

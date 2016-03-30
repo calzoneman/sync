@@ -1018,7 +1018,7 @@ Callbacks = {
         var tbl = $("#cs-emotes table");
         tbl.data("entries", data);
         formatCSEmoteList();
-        EMOTELIST.emoteListChanged = true;
+        EMOTELIST.handleChange();
     },
 
     updateEmote: function (data) {

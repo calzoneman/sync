@@ -184,14 +184,14 @@ html(lang="en")
             h4 Emote List
           .modal-body
             .pull-left
-              input#emotelist-search.form-control(type="text", placeholder="Search")
+              input.emotelist-search.form-control(type="text", placeholder="Search")
             .pull-right
               .checkbox
                 label
-                  input#emotelist-alphabetical(type="checkbox")
+                  input.emotelist-alphabetical(type="checkbox")
                   | Sort alphabetically
-            #emotelist-paginator-container
-            table
+            .emotelist-paginator-container
+            table.emotelist-table
               tbody
           .modal-footer
     #channeloptions.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")

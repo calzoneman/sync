@@ -2901,20 +2901,51 @@ function googlePlusSimulator2014(data) {
     return data;
 }
 
-function EmoteList() {
-    this.modal = $("#emotelist");
-    this.modal.on("hidden.bs.modal", unhidePlayer);
-    this.table = document.querySelector("#emotelist table");
+function EmoteList(selector) {
+    this.elem = $(selector);
+    this.initSearch();
+    this.initSortOption();
+    this.table = this.elem.find(".emotelist-table")[0];
+    this.paginatorContainer = this.elem.find(".emotelist-paginator-container");
     this.cols = 5;
     this.itemsPerPage = 25;
     this.emotes = [];
-    this.emoteListChanged = true;
     this.page = 0;
 }
 
+EmoteList.prototype.initSearch = function () {
+    this.searchbar = this.elem.find(".emotelist-search");
+    var self = this;
+
+    this.searchbar.keyup(function () {
+        var value = this.value.toLowerCase();
+        if (value) {
+            self.filter = function (emote) {
+                return emote.name.toLowerCase().indexOf(value) >= 0;
+            };
+        } else {
+            self.filter = null;
+        }
+        self.handleChange();
+        self.loadPage(0);
+    });
+};
+
+EmoteList.prototype.initSortOption = function () {
+    this.sortOption = this.elem.find(".emotelist-alphabetical");
+    this.sortAlphabetical = false;
+    var self = this;
+
+    this.sortOption.change(function () {
+        self.sortAlphabetical = this.checked;
+        self.handleChange();
+        self.loadPage(0);
+    });
+};
+
 EmoteList.prototype.handleChange = function () {
     this.emotes = CHANNEL.emotes.slice();
-    if (USEROPTS.emotelist_sort) {
+    if (this.sortAlphabetical) {
         this.emotes.sort(function (a, b) {
             var x = a.name.toLowerCase();
             var y = b.name.toLowerCase();
@@ -2935,19 +2966,9 @@ EmoteList.prototype.handleChange = function () {
 
     this.paginator = new NewPaginator(this.emotes.length, this.itemsPerPage,
             this.loadPage.bind(this));
-    var container = document.getElementById("emotelist-paginator-container");
-    container.innerHTML = "";
-    container.appendChild(this.paginator.elem);
+    this.paginatorContainer.html("");
+    this.paginatorContainer.append(this.paginator.elem);
     this.paginator.loadPage(this.page);
-    this.emoteListChanged = false;
-};
-
-EmoteList.prototype.show = function () {
-    if (this.emoteListChanged) {
-        this.handleChange();
-    }
-
-    this.modal.modal();
 };
 
 EmoteList.prototype.loadPage = function (page) {
@@ -3002,7 +3023,8 @@ EmoteList.prototype.loadPage = function (page) {
     this.page = page;
 };
 
-window.EMOTELIST = new EmoteList();
+window.EMOTELIST = new EmoteList("#emotelist");
+window.EMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
 function showChannelSettings() {
     hidePlayer();
