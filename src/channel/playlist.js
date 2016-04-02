@@ -740,6 +740,7 @@ PlaylistModule.prototype.handleAssignLeader = function (user, data) {
         this.leader = null;
         if (old.account.effectiveRank === 1.5) {
             old.account.effectiveRank = old.account.oldRank;
+            old.emit("effectiveRankChange", old.account.effectiveRank);
             old.socket.emit("rank", old.account.effectiveRank);
         }
 
@@ -766,6 +767,7 @@ PlaylistModule.prototype.handleAssignLeader = function (user, data) {
             if (this.leader.account.effectiveRank < 1.5) {
                 this.leader.account.oldRank = this.leader.account.effectiveRank;
                 this.leader.account.effectiveRank = 1.5;
+                this.leader.emit("effectiveRankChange", 1.5);
                 this.leader.socket.emit("rank", 1.5);
             }
 

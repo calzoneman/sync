@@ -646,12 +646,12 @@ Channel.prototype.handleReadLog = function (user) {
     });
 };
 
-Channel.prototype._broadcast = function (msg, data, ns) {
+Channel.prototype.broadcastToRoom = function (msg, data, ns) {
     sio.instance.in(ns).emit(msg, data);
 };
 
 Channel.prototype.broadcastAll = function (msg, data) {
-    this._broadcast(msg, data, this.name);
+    this.broadcastToRoom(msg, data, this.name);
 };
 
 Channel.prototype.packInfo = function (isAdmin) {

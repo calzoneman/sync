@@ -12,10 +12,15 @@ const TYPE_VOTE = {
     option: "number"
 };
 
+const ROOM_VIEW_HIDDEN = ":viewHidden";
+const ROOM_NO_VIEW_HIDDEN = ":noViewHidden";
+
 function PollModule(channel) {
     ChannelModule.apply(this, arguments);
 
     this.poll = null;
+    this.roomViewHidden = this.channel.uniqueName + ROOM_VIEW_HIDDEN;
+    this.roomNoViewHidden = this.channel.uniqueName + ROOM_NO_VIEW_HIDDEN;
     if (this.channel.modules.chat) {
         this.channel.modules.chat.registerCommand("poll", this.handlePollCmd.bind(this, false));
         this.channel.modules.chat.registerCommand("hpoll", this.handlePollCmd.bind(this, true));
@@ -59,20 +64,53 @@ PollModule.prototype.save = function (data) {
 };
 
 PollModule.prototype.onUserPostJoin = function (user) {
-    this.sendPoll([user]);
+    this.sendPoll(user);
     user.socket.typecheckedOn("newPoll", TYPE_NEW_POLL, this.handleNewPoll.bind(this, user));
     user.socket.typecheckedOn("vote", TYPE_VOTE, this.handleVote.bind(this, user));
     user.socket.on("closePoll", this.handleClosePoll.bind(this, user));
+    this.addUserToPollRoom(user);
+    const self = this;
+    user.on("effectiveRankChange", () => {
+        self.addUserToPollRoom(user);
+    });
+};
+
+PollModule.prototype.addUserToPollRoom = function (user) {
+    const perms = this.channel.modules.permissions;
+    if (perms.canViewHiddenPoll(user)) {
+        user.socket.leave(this.roomNoViewHidden);
+        user.socket.join(this.roomViewHidden);
+    } else {
+        user.socket.leave(this.roomViewHidden);
+        user.socket.join(this.roomNoViewHidden);
+    }
 };
 
 PollModule.prototype.onUserPart = function(user) {
     if (this.poll) {
         this.poll.unvote(user.realip);
-        this.sendPollUpdate(this.channel.users);
+        this.broadcastPoll(false);
     }
 };
 
-PollModule.prototype.sendPoll = function (users) {
+PollModule.prototype.sendPoll = function (user) {
+    if (!this.poll) {
+        return;
+    }
+
+    var perms = this.channel.modules.permissions;
+
+    user.socket.emit("closePoll");
+    if (perms.canViewHiddenPoll(user)) {
+        var unobscured = this.poll.packUpdate(true);
+        user.socket.emit("newPoll", unobscured);
+    } else {
+        var obscured = this.poll.packUpdate(false);
+        user.socket.emit("newPoll", obscured);
+    }
+};
+
+PollModule.prototype.broadcastPoll = function (isNewPoll) {
     if (!this.poll) {
         return;
     }
@@ -81,32 +119,13 @@ PollModule.prototype.sendPoll = function (users) {
     var unobscured = this.poll.packUpdate(true);
     var perms = this.channel.modules.permissions;
 
-    users.forEach(function (u) {
-        u.socket.emit("closePoll");
-        if (perms.canViewHiddenPoll(u)) {
-            u.socket.emit("newPoll", unobscured);
-        } else {
-            u.socket.emit("newPoll", obscured);
-        }
-    });
-};
-
-PollModule.prototype.sendPollUpdate = function (users) {
-    if (!this.poll) {
-        return;
+    const event = isNewPoll ? "newPoll" : "updatePoll";
+    if (isNewPoll) {
+        this.channel.broadcastAll("closePoll");
     }
 
-    var obscured = this.poll.packUpdate(false);
-    var unobscured = this.poll.packUpdate(true);
-    var perms = this.channel.modules.permissions;
-
-    users.forEach(function (u) {
-        if (perms.canViewHiddenPoll(u)) {
-            u.socket.emit("updatePoll", unobscured);
-        } else {
-            u.socket.emit("updatePoll", obscured);
-        }
-    });
+    this.channel.broadcastToRoom(event, unobscured, this.roomViewHidden);
+    this.channel.broadcastToRoom(event, obscured, this.roomNoViewHidden);
 };
 
 PollModule.prototype.handleNewPoll = function (user, data) {
@@ -132,7 +151,7 @@ PollModule.prototype.handleNewPoll = function (user, data) {
     }
 
     this.poll = poll;
-    this.sendPoll(this.channel.users);
+    this.broadcastPoll(true);
     this.channel.logger.log("[poll] " + user.getName() + " opened poll: '" + poll.title + "'");
 };
 
@@ -143,7 +162,7 @@ PollModule.prototype.handleVote = function (user, data) {
 
     if (this.poll) {
         this.poll.vote(user.realip, data.option);
-        this.sendPollUpdate(this.channel.users);
+        this.broadcastPoll(false);
     }
 };
 
@@ -179,7 +198,7 @@ PollModule.prototype.handlePollCmd = function (obscured, user, msg, meta) {
     var title = args.shift();
     var poll = new Poll(user.getName(), title, args, obscured);
     this.poll = poll;
-    this.sendPoll(this.channel.users);
+    this.broadcastPoll(true);
     this.channel.logger.log("[poll] " + user.getName() + " opened poll: '" + poll.title + "'");
 };
 

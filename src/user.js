@@ -429,6 +429,9 @@ User.prototype.refreshAccount = function (opts, cb) {
                 }
             }
             self.account = account;
+            if (account.effectiveRank !== old.effectiveRank) {
+                self.emit("effectiveRankChange", self.account.effectiveRank);
+            }
         }
         cb(err, account);
     });
