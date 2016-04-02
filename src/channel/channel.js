@@ -1,4 +1,3 @@
-var MakeEmitter = require("../emitter");
 var Logger = require("../logger");
 var ChannelModule = require("./module");
 var Flags = require("../flags");
@@ -11,6 +10,7 @@ var db = require("../database");
 import * as ChannelStore from '../channel-storage/channelstore';
 import { ChannelStateSizeError } from '../errors';
 import Promise from 'bluebird';
+import { EventEmitter } from 'events';
 
 class ReferenceCounter {
     constructor(channel) {
@@ -73,7 +73,6 @@ class ReferenceCounter {
 }
 
 function Channel(name) {
-    MakeEmitter(this);
     this.name = name;
     this.uniqueName = name.toLowerCase();
     this.modules = {};
@@ -92,6 +91,8 @@ function Channel(name) {
         }
     });
 }
+
+Channel.prototype = Object.create(EventEmitter.prototype);
 
 Channel.prototype.is = function (flag) {
     return Boolean(this.flags & flag);
@@ -114,7 +115,7 @@ Channel.prototype.waitFlag = function (flag, cb) {
     } else {
         var wait = function (f) {
             if (f === flag) {
-                self.unbind("setFlag", wait);
+                self.removeListener("setFlag", wait);
                 cb();
             }
         };

@@ -1,17 +1,16 @@
 var Logger = require("./logger");
 var Server = require("./server");
 var util = require("./utilities");
-var MakeEmitter = require("./emitter");
 var db = require("./database");
 var InfoGetter = require("./get-info");
 var Config = require("./config");
 var ACP = require("./acp");
 var Account = require("./account");
 var Flags = require("./flags");
+import { EventEmitter } from 'events';
 
 function User(socket) {
     var self = this;
-    MakeEmitter(self);
     self.flags = 0;
     self.socket = socket;
     self.realip = socket._realip;
@@ -103,6 +102,8 @@ function User(socket) {
     });
 }
 
+User.prototype = Object.create(EventEmitter.prototype);
+
 User.prototype.die = function () {
     for (var key in this.socket._events) {
         delete this.socket._events[key];
@@ -143,7 +144,7 @@ User.prototype.waitFlag = function (flag, cb) {
     } else {
         var wait = function (f) {
             if (f === flag) {
-                self.unbind("setFlag", wait);
+                self.removeListener("setFlag", wait);
                 cb();
             }
         };
