@@ -38,6 +38,14 @@ export default class ProxiedSocket extends EventEmitter {
         );
     }
 
+    leave(room) {
+        this.frontendConnection.write(
+                this.frontendConnection.protocol.newSocketLeaveRoomsEvent(
+                        this.id, [room]
+                )
+        );
+    }
+
     disconnect() {
         this.frontendConnection.write(
                 this.frontendConnection.protocol.newSocketKickEvent(this.id)
