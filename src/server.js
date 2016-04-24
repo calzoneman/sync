@@ -49,7 +49,6 @@ import NullClusterClient from './io/cluster/nullclusterclient';
 import session from './session';
 import { LegacyModule } from './legacymodule';
 import * as Switches from './switches';
-console.log(Switches);
 
 var Server = function () {
     var self = this;
