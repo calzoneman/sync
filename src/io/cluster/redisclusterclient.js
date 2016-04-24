@@ -1,3 +1,8 @@
+import Promise from 'bluebird';
+
+const ONE_SECOND = 1000;
+const ERR_TIMEOUT = 'Timed out when retrieving server information';
+
 class RedisClusterClient {
     constructor(frontendPool) {
         this.frontendPool = frontendPool;
@@ -10,7 +15,7 @@ class RedisClusterClient {
             }
 
             return { servers: result };
-        });
+        }).timeout(ONE_SECOND, ERR_TIMEOUT);
     }
 }
 

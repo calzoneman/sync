@@ -48,6 +48,8 @@ import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
 import session from './session';
 import { LegacyModule } from './legacymodule';
+import * as Switches from './switches';
+console.log(Switches);
 
 var Server = function () {
     var self = this;
@@ -62,6 +64,9 @@ var Server = function () {
     // backend init
     var initModule;
     if (Config.get("new-backend")) {
+        if (Config.get("dual-backend")) {
+            Switches.setActive(Switches.DUAL_BACKEND, true);
+        }
         const BackendModule = require('./backend/backendmodule').BackendModule;
         initModule = new BackendModule();
     } else {

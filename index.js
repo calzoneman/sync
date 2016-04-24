@@ -19,6 +19,7 @@ try {
 }
 var Config = require("./lib/config");
 var Logger = require("./lib/logger");
+const Switches = require("./lib/switches");
 require("source-map-support").install();
 
 Config.load("config.yaml");
@@ -61,5 +62,16 @@ function handleLine(line) {
                 Logger.syslog.log("Deleted old channel tables");
             }
         });
+    } else if (line.indexOf("/switch") === 0) {
+        var args = line.split(" ");
+        args.shift();
+        if (args.length === 1) {
+            Logger.syslog.log("Switch " + args[0] + " is " +
+                    (Switches.isActive(args[0]) ? "ON" : "OFF"));
+        } else if (args.length === 2) {
+            Switches.setActive(args[0], args[1].toLowerCase() === "on" ? true : false);
+            Logger.syslog.log("Switch " + args[0] + " is now " +
+                    (Switches.isActive(args[0]) ? "ON" : "OFF"));
+        }
     }
 }
