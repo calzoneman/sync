@@ -37,7 +37,8 @@ class BackendModule {
         const redisClientProvider = this.getRedisClientProvider();
         this.redisAdapter = redisAdapter({
             pubClient: redisClientProvider.get(),
-            subClient: redisClientProvider.get()
+            // return_buffers is needed for msgpack-js to function correctly
+            subClient: redisClientProvider.get({ return_buffers: true })
         });
         this.sioEmitter = require('socket.io').instance;
         this.sioEmitter.adapter(this.redisAdapter);

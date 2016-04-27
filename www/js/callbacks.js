@@ -1119,8 +1119,17 @@ setupCallbacks = function() {
                 return;
             }
 
+            var servers;
+            if (socketConfig.alt && socketConfig.alt.length > 0 &&
+                    localStorage.useAltServer) {
+                servers = socketConfig.alt;
+                console.log("Using alt servers: " + JSON.stringify(servers));
+            } else {
+                servers = socketConfig.servers;
+            }
+
             var chosenServer = null;
-            socketConfig.servers.forEach(function (server) {
+            servers.forEach(function (server) {
                 if (chosenServer === null) {
                     chosenServer = server;
                 } else if (server.secure && !chosenServer.secure) {
@@ -1129,6 +1138,8 @@ setupCallbacks = function() {
                     chosenServer = server;
                 }
             });
+
+            console.log("Connecting to " + JSON.stringify(chosenServer));
 
             if (chosenServer === null) {
                 makeAlert("Error",
