@@ -4,20 +4,12 @@ var counterLog = new Logger.Logger(path.resolve(__dirname, '..', 'counters.log')
 import os from 'os';
 import io from 'socket.io';
 import Socket from 'socket.io/lib/socket';
+import * as Metrics from 'cytube-common/lib/metrics/metrics';
+import { JSONFileMetricsReporter } from 'cytube-common/lib/metrics/jsonfilemetricsreporter';
 
 var counters = {};
 
-exports.add = function (counter, value) {
-    if (!value) {
-        value = 1;
-    }
-
-    if (!counters.hasOwnProperty(counter)) {
-        counters[counter] = value;
-    } else {
-        counters[counter] += value;
-    }
-};
+exports.add = Metrics.incCounter;
 
 Socket.prototype._packet = Socket.prototype.packet;
 Socket.prototype.packet = function () {
@@ -34,14 +26,6 @@ function getConnectedSockets() {
     }
 }
 
-setInterval(function () {
-    try {
-        counters['memory:rss'] = process.memoryUsage().rss / 1048576;
-        counters['load:1min'] = os.loadavg()[0];
-        counters['socket.io:count'] = getConnectedSockets();
-        counterLog.log(JSON.stringify(counters));
-    } catch (e) {
-        Logger.errlog.log(e.stack);
-    }
-    counters = {};
-}, 60000);
+const reporter = new JSONFileMetricsReporter('counters.log');
+Metrics.setReporter(reporter);
+Metrics.setReportInterval(60000);
