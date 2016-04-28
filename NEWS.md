@@ -1,3 +1,11 @@
+2016-04-27
+==========
+
+A new dependency has been added on `cytube-common`, a module that will hold
+common code shared between the current version of CyTube and the upcoming work
+around splitting it into multiple services.  You will need to be sure to run
+`npm install` after pulling in this change to pull in the new dependency.
+
 2016-01-06
 ==========
 
