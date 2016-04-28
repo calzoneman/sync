@@ -20,6 +20,7 @@ export default class ProxyInterceptor {
             return;
         }
 
+        logger.info(`Got proxy connection from ${socket.endpoint}`);
         this.frontendConnections[socket.endpoint] = socket;
         socket.on('close', this.onFrontendDisconnect.bind(this, socket));
         socket.on('SocketConnectEvent', this.onSocketConnect.bind(this, socket));

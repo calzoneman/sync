@@ -20,6 +20,7 @@ class BackendModule {
     }
 
     initConfig() {
+        logger.initialize(null, null, LegacyConfig.get('debug'));
         try {
             this.backendConfig = loadFromToml(BackendConfiguration, BACKEND_CONFIG_PATH);
         } catch (error) {
