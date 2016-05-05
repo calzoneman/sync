@@ -342,7 +342,8 @@ ChatModule.prototype.filterMessage = function (msg) {
         if (filtered !== link) {
             return filtered;
         } else if (convertLinks) {
-            return "<a href=\"" + link + "\" target=\"_blank\">" + link + "</a>";
+            return "<a href=\"" + link + "\" target=\"_blank\" " +
+                    "rel=\"noopener noreferrer\">" + link + "</a>";
         } else {
             return link;
         }

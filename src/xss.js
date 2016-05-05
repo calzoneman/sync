@@ -29,7 +29,8 @@ const ALLOWED_ATTRIBUTES = [
     "style",
     "title",
     "valign",
-    "width"
+    "width",
+    "rel"
 ];
 
 const ALLOWED_SCHEMES = [
