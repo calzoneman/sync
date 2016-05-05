@@ -2901,7 +2901,7 @@ function googlePlusSimulator2014(data) {
     return data;
 }
 
-function EmoteList(selector) {
+function EmoteList(selector, emoteClickCallback) {
     this.elem = $(selector);
     this.initSearch();
     this.initSortOption();
@@ -2911,6 +2911,7 @@ function EmoteList(selector) {
     this.itemsPerPage = 25;
     this.emotes = [];
     this.page = 0;
+    this.emoteClickCallback = emoteClickCallback || function(){};
 }
 
 EmoteList.prototype.initSearch = function () {
@@ -3000,20 +3001,7 @@ EmoteList.prototype.loadPage = function (page) {
             img.src = emote.image;
             img.className = "emote-preview";
             img.title = emote.name;
-            img.onclick = function () {
-                var val = chatline.value;
-                if (!val) {
-                    chatline.value = emote.name;
-                } else {
-                    if (!val.charAt(val.length - 1).match(/\s/)) {
-                        chatline.value += " ";
-                    }
-                    chatline.value += emote.name;
-                }
-
-                _this.modal.modal("hide");
-                chatline.focus();
-            };
+            img.onclick = _this.emoteClickCallback.bind(null, emote);
 
             td.appendChild(img);
             row.appendChild(td);
@@ -3023,7 +3011,22 @@ EmoteList.prototype.loadPage = function (page) {
     this.page = page;
 };
 
-window.EMOTELIST = new EmoteList("#emotelist");
+function onEmoteClicked(emote) {
+    var val = chatline.value;
+    if (!val) {
+        chatline.value = emote.name;
+    } else {
+        if (!val.charAt(val.length - 1).match(/\s/)) {
+            chatline.value += " ";
+        }
+        chatline.value += emote.name;
+    }
+
+    window.EMOTELISTMODAL.modal("hide");
+    chatline.focus();
+}
+
+window.EMOTELIST = new EmoteList("#emotelist", onEmoteClicked);
 window.EMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
 function showChannelSettings() {
