@@ -29,3 +29,6 @@ function getConnectedSockets() {
 const reporter = new JSONFileMetricsReporter('counters.log');
 Metrics.setReporter(reporter);
 Metrics.setReportInterval(60000);
+Metrics.addReportHook((metrics) => {
+    metrics.incCounter('socket.io:count', getConnectedSockets());
+});
