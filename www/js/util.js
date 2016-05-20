@@ -3037,3 +3037,28 @@ function showChannelSettings() {
 
     $("#channeloptions").modal();
 }
+
+// There is a point where this file needed to stop and we have clearly passed
+// it but let's keep going and see what happens
+
+function startQueueSpinner() {
+    if ($("#queueprogress").length > 0) {
+        return;
+    }
+
+    var progress = $("<div/>").addClass("progress").attr("id", "queueprogress");
+    var progressBar = $("<div/>").addClass("progress-bar progress-bar-striped active")
+            .attr({
+                role: "progressbar",
+                "aria-valuenow": "100",
+                "aria-valuemin": "0",
+                "aria-valuemax": "100",
+            }).css({
+                width: "100%"
+            }).appendTo(progress);
+    progress.appendTo($("#addfromurl"));
+}
+
+function stopQueueSpinner() {
+    $("#queueprogress").remove();
+}

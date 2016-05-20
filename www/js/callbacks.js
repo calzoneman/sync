@@ -25,6 +25,7 @@ Callbacks = {
             .text("Connected")
             .appendTo($("#messagebuffer"));
         scrollChat();
+        stopQueueSpinner();
     },
 
     disconnect: function() {
@@ -723,6 +724,7 @@ Callbacks = {
 
     queue: function(data) {
         PL_ACTION_QUEUE.queue(function (plq) {
+            stopQueueSpinner();
             var li = makeQueueEntry(data.item, true);
             if (data.item.uid === PL_CURRENT)
                 li.addClass("queue_active");
@@ -760,6 +762,7 @@ Callbacks = {
     },
 
     queueFail: function (data) {
+        stopQueueSpinner();
         queueMessage(data, "alert-danger");
     },
 
