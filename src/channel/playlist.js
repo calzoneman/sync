@@ -361,25 +361,29 @@ PlaylistModule.prototype.handleQueue = function (user, data) {
     if (data.type === "yp" && !perms.canAddList(user)) {
         user.socket.emit("queueFail", {
             msg: "You don't have permission to add playlists",
-            link: link
+            link: link,
+            id: id
         });
         return;
     } else if (util.isLive(type) && !perms.canAddLive(user)) {
         user.socket.emit("queueFail", {
             msg: "You don't have permission to add live media",
-            link: link
+            link: link,
+            id: id
         });
         return;
     } else if (type === "cu" && !perms.canAddCustom(user)) {
         user.socket.emit("queueFail", {
             msg: "You don't have permission to add custom embeds",
-            link: link
+            link: link,
+            id: id
         });
         return;
     } else if (type === "fi" && !perms.canAddRawFile(user)) {
         user.socket.emit("queueFail", {
             msg: "You don't have permission to add raw video files",
-            link: link
+            link: link,
+            id: id
         });
         return;
     }
@@ -412,7 +416,8 @@ PlaylistModule.prototype.handleQueue = function (user, data) {
     if (user.queueLimiter.throttle(limit)) {
         user.socket.emit("queueFail", {
             msg: "You are adding videos too quickly",
-            link: link
+            link: link,
+            id: id
         });
         return;
     }
@@ -448,7 +453,8 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
     var error = function (what) {
         user.socket.emit("queueFail", {
             msg: what,
-            link: data.link
+            link: data.link,
+            id: data.id
         });
     };
 
@@ -501,7 +507,8 @@ PlaylistModule.prototype.queueYouTubePlaylist = function (user, data) {
     var error = function (what) {
         user.socket.emit("queueFail", {
             msg: what,
-            link: data.link
+            link: data.link,
+            id: data.id
         });
     };
 
@@ -865,7 +872,8 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
     var qfail = function (msg) {
         user.socket.emit("queueFail", {
             msg: msg,
-            link: data.link
+            link: data.link,
+            id: data.id
         });
         if (cb) {
             cb();

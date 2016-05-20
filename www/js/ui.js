@@ -420,7 +420,7 @@ function queue(pos, src) {
             delete data.link;
 
             socket.emit("queue", data);
-            startQueueSpinner();
+            startQueueSpinner(data.id);
             if (emitQueue.length > 0) {
                 notification.textContent = "Waiting to queue " + emitQueue[0].link;
             } else {
