@@ -93,7 +93,7 @@ function testUrl(url, cb, redirCount) {
                 return cb("The request for the audio/video file has been redirected " +
                           "more than twice.  This could indicate a misconfiguration " +
                           "on the website hosting the link.  For best results, use " +
-                          "a direct link.");
+                          "a direct link.  See https://git.io/vrE75 for details.");
             }
             return testUrl(fixRedirectIfNeeded(data, res.headers["location"]), cb,
                     redirCount + 1);
@@ -107,7 +107,8 @@ function testUrl(url, cb, redirCount) {
             return cb("Expected a content-type starting with 'audio' or 'video', but " +
                       "got '" + res.headers["content-type"] + "'.  Only direct links " +
                       "to video and audio files are accepted, and the website hosting " +
-                      "the file must be configured to send the correct MIME type.");
+                      "the file must be configured to send the correct MIME type.  " +
+                      "See https://git.io/vrE75 for details.");
         }
 
         cb();
@@ -386,7 +387,7 @@ exports.query = function (filename, cb) {
                 cb(null, data);
             } else {
                 return cb("File did not contain an acceptable codec.  See " +
-                          "https://git.io/va9g9 for details.");
+                          "https://git.io/vrE75 for details.");
             }
         });
     });
