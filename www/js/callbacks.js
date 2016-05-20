@@ -1121,7 +1121,7 @@ setupCallbacks = function() {
 
             var servers;
             if (socketConfig.alt && socketConfig.alt.length > 0 &&
-                    localStorage.useAltServer) {
+                    localStorage.useAltServer === "true") {
                 servers = socketConfig.alt;
                 console.log("Using alt servers: " + JSON.stringify(servers));
             } else {
