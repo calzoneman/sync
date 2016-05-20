@@ -2070,7 +2070,7 @@ function queueMessage(data, type) {
     }
     var newAlert = makeAlert(title, text, type)
         .addClass("linewrap qfalert qf-" + type)
-        .appendTo($("#queuefail"));
+        .prependTo($("#queuefail"));
     newAlert.find(".alert").data("reason", data.msg);
 }
 
