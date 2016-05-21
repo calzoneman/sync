@@ -2075,15 +2075,6 @@ function queueMessage(data, type) {
 }
 
 function setupChanlogFilter(data) {
-    var getKey = function (ln) {
-        var left = ln.indexOf("[", 1);
-        var right = ln.indexOf("]", left);
-        if (left === -1 || right === -1) {
-            return "unknown";
-        }
-        return ln.substring(left+1, right);
-    };
-
     data = data.split("\n").filter(function (ln) {
         return ln.indexOf("[") === 0 && ln.indexOf("]") > 0;
     });
@@ -2095,7 +2086,10 @@ function setupChanlogFilter(data) {
 
     var keys = {};
     data.forEach(function (ln) {
-        keys[getKey(ln)] = true;
+        var m = ln.match(/^\[.*?\] \[(\w+?)\].*$/);
+        if (m) {
+            keys[m[1]] = true;
+        }
     });
 
     Object.keys(keys).forEach(function (key) {
