@@ -753,6 +753,17 @@ function applyOpts() {
 }
 
 function showPollMenu() {
+    function parseTimeout(t) {
+        var m;
+        if (m = t.match(/^(\d+):(\d+)$/)) {
+            return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+        } else if (t.match(/^(\d+)$/)) {
+            return parseInt(m[1], 10);
+        } else {
+            throw new Error("Invalid timeout value '" + t + "'");
+        }
+    }
+
     $("#pollwrap .poll-menu").remove();
     var menu = $("<div/>").addClass("well poll-menu")
         .prependTo($("#pollwrap"));
@@ -771,12 +782,20 @@ function showPollMenu() {
         .appendTo(menu);
 
     $("<strong/>").text("Timeout (optional)").appendTo(menu);
+    $("<p/>").text("If you specify a timeout, the poll will automatically " +
+                   "be closed after that amount of time.  You can either " +
+                   "specify the number of seconds or use the format " +
+                   "minutes:seconds.  Examples: 90 (90 seconds), 5:30 " +
+                   "(5 minutes, 30 seconds)")
+        .addClass("text-muted")
+        .appendTo(menu);
     var timeout = $("<input/>").addClass("form-control")
         .attr("type", "text")
         .appendTo(menu);
+    var timeoutError = null;
 
     var checkboxOuter = $("<div/>").addClass("checkbox").appendTo(menu);
-    var lbl = $("<label/>").text("Hide poll results")
+    var lbl = $("<label/>").text("Hide poll results until it closes")
         .appendTo(checkboxOuter);
     var hidden = $("<input/>").attr("type", "checkbox")
         .prependTo(lbl);
@@ -802,6 +821,23 @@ function showPollMenu() {
         .text("Open Poll")
         .appendTo(menu)
         .click(function() {
+            var t = timeout.val().trim();
+            if (t) {
+                try {
+                    t = parseTimeout(t);
+                } catch (e) {
+                    if (timeoutError) {
+                        timeoutError.remove();
+                    }
+
+                    timeoutError = $("<p/>").addClass("text-danger").text(e.message);
+                    timeoutError.insertAfter(timeout);
+                    timeout.focus();
+                    return;
+                }
+            } else {
+                t = undefined;
+            }
             var opts = [];
             menu.find(".poll-menu-option").each(function() {
                 if($(this).val() != "")
@@ -811,7 +847,7 @@ function showPollMenu() {
                 title: title.val(),
                 opts: opts,
                 obscured: hidden.prop("checked"),
-                timeout: timeout.val() ? parseInt(timeout.val()) : undefined
+                timeout: t
             });
             menu.remove();
         });
