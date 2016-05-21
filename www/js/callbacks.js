@@ -155,29 +155,6 @@ Callbacks = {
                   "channels</a> page.");
     },
 
-    registerChannel: function(data) {
-        if ($("#chanregisterbtn").length > 0) {
-            $("#chanregisterbtn").text("Register it")
-                .attr("disabled", false);
-        }
-        if(data.success) {
-            $("#chregnotice").remove();
-        }
-        else {
-            makeAlert("Error", data.error, "alert-danger")
-                .insertAfter($("#chregnotice"));
-        }
-    },
-
-    unregisterChannel: function(data) {
-        if(data.success) {
-            alert("Channel unregistered");
-        }
-        else {
-            alert(data.error);
-        }
-    },
-
     setMotd: function(motd) {
         CHANNEL.motd = motd;
         $("#motd").html(motd);
@@ -342,30 +319,6 @@ Callbacks = {
         formatCSBanlist();
     },
 
-    recentLogins: function(entries) {
-        var tbl = $("#loginhistory table");
-        // I originally added this check because of a race condition
-        // Now it seems to work without but I don't trust it
-        if(!tbl.hasClass("table")) {
-            setTimeout(function() {
-                Callbacks.recentLogins(entries);
-            }, 100);
-            return;
-        }
-        if(tbl.children().length > 1) {
-            $(tbl.children()[1]).remove();
-        }
-        for(var i = 0; i < entries.length; i++) {
-            var tr = document.createElement("tr");
-            var name = $("<td/>").text(entries[i].name).appendTo(tr);
-            var aliases = $("<td/>").text(entries[i].aliases.join(", ")).appendTo(tr);
-            var time = new Date(entries[i].time).toTimeString();
-            $("<td/>").text(time).appendTo(tr);
-
-            $(tr).appendTo(tbl);
-        }
-    },
-
     channelRanks: function(entries) {
         var tbl = $("#cs-chanranks table");
         tbl.data("entries", entries);
@@ -513,11 +466,6 @@ Callbacks = {
         if (pm.find(".panel-body").is(":hidden")) {
             pm.removeClass("panel-default").addClass("panel-primary");
         }
-    },
-
-    joinMessage: function(data) {
-        if(USEROPTS.joinmessage)
-            addChatMessage(data);
     },
 
     clearchat: function() {

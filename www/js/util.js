@@ -642,7 +642,6 @@ function showUserOptions() {
     $("#us-no-emotes").prop("checked", USEROPTS.no_emotes);
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
-    $("#us-joinmessage").prop("checked", USEROPTS.joinmessage);
     $("#us-shadowchat").prop("checked", USEROPTS.show_shadowchat);
 
     formatScriptAccessPrefs();
@@ -677,7 +676,6 @@ function saveUserOptions() {
 
     if (CLIENT.rank >= 2) {
         USEROPTS.modhat      = $("#us-modflair").prop("checked");
-        USEROPTS.joinmessage = $("#us-joinmessage").prop("checked");
         USEROPTS.show_shadowchat = $("#us-shadowchat").prop("checked");
     }
 
