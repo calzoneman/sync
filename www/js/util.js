@@ -3041,9 +3041,14 @@ function showChannelSettings() {
 // There is a point where this file needed to stop and we have clearly passed
 // it but let's keep going and see what happens
 
-function startQueueSpinner(id) {
+function startQueueSpinner(data) {
     if ($("#queueprogress").length > 0) {
         return;
+    }
+
+    var id = data.id;
+    if (data.type === "yp") {
+        id = "$any";
     }
 
     var progress = $("<div/>").addClass("progress").attr("id", "queueprogress")
@@ -3060,10 +3065,12 @@ function startQueueSpinner(id) {
     progress.appendTo($("#addfromurl"));
 }
 
-function stopQueueSpinner(id) {
-    if (id && $("#queueprogress").data("queue-id") === id) {
-        $("#queueprogress").remove();
-    } else if (id === null) {
+function stopQueueSpinner(data) {
+    var shouldRemove = (typeof data === 'object' &&
+                        $("#queueprogress").data("queue-id") === data.id);
+    shouldRemove = shouldRemove || data === null;
+    shouldRemove = shouldRemove || $("#queueprogress").data("queue-id") === "$any";
+    if (shouldRemove) {
         $("#queueprogress").remove();
     }
 }

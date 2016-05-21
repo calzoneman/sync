@@ -724,7 +724,7 @@ Callbacks = {
 
     queue: function(data) {
         PL_ACTION_QUEUE.queue(function (plq) {
-            stopQueueSpinner(data.item.media.id);
+            stopQueueSpinner(data.item.media);
             var li = makeQueueEntry(data.item, true);
             if (data.item.uid === PL_CURRENT)
                 li.addClass("queue_active");
