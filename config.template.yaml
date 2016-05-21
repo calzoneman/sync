@@ -66,6 +66,9 @@ http:
   gzip-threshold: 1024
   # Secret used for signed cookies.  Can be anything, but make it unique and hard to guess
   cookie-secret: 'change-me'
+  index:
+    # Maximum number of channels to display on the index page public channel list
+    max-entries: 50
 
 # HTTPS server details
 https:

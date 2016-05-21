@@ -41,6 +41,10 @@ export default class WebConfiguration {
     getCacheTTL() {
         return this.config.cacheTTL;
     }
+
+    getMaxIndexEntries() {
+        return this.config.maxIndexEntries;
+    }
 }
 
 WebConfiguration.fromOldConfig = function (oldConfig) {
@@ -69,6 +73,8 @@ WebConfiguration.fromOldConfig = function (oldConfig) {
     config.enableMinification = oldConfig.get('http.minify');
 
     config.cacheTTL = oldConfig.get('http.max-age');
+
+    config.maxIndexEntries = oldConfig.get('http.index.max-entries');
 
     return new WebConfiguration(config);
 };

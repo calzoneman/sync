@@ -1,6 +1,6 @@
 import { sendJade } from '../jade';
 
-export default function initialize(app, channelIndex) {
+export default function initialize(app, channelIndex, maxEntries) {
     app.get('/', (req, res) => {
         channelIndex.listPublicChannels().then((channels) => {
             channels.sort((a, b) => {
@@ -10,6 +10,8 @@ export default function initialize(app, channelIndex) {
 
                 return b.usercount - a.usercount;
             });
+
+            channels = channels.slice(0, maxEntries);
 
             sendJade(res, 'index', {
                 channels: channels

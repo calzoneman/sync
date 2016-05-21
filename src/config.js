@@ -34,7 +34,10 @@ var defaults = {
         "max-age": "7d",
         gzip: true,
         "gzip-threshold": 1024,
-        "cookie-secret": "change-me"
+        "cookie-secret": "change-me",
+        index: {
+            "max-entries": 50
+        }
     },
     https: {
         enabled: false,
