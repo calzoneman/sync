@@ -277,7 +277,7 @@ Server.prototype.announce = function (data) {
 
 Server.prototype.shutdown = function () {
     Logger.syslog.log("Unloading channels");
-    Promise.map(this.channels, channel => {
+    Promise.reduce(this.channels, (_, channel) => {
         return channel.saveState().tap(() => {
             Logger.syslog.log(`Saved /r/${channel.name}`);
         }).catch(err => {
