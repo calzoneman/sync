@@ -3094,7 +3094,8 @@ function startQueueSpinner(data) {
 }
 
 function stopQueueSpinner(data) {
-    var shouldRemove = (typeof data === 'object' &&
+    var shouldRemove = (data !== null &&
+                        typeof data === 'object' &&
                         $("#queueprogress").data("queue-id") === data.id);
     shouldRemove = shouldRemove || data === null;
     shouldRemove = shouldRemove || $("#queueprogress").data("queue-id") === "$any";

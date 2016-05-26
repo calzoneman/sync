@@ -711,7 +711,7 @@ Callbacks = {
 
     queueFail: function (data) {
         if (data.id) {
-            stopQueueSpinner(id);
+            stopQueueSpinner(data);
         }
         queueMessage(data, "alert-danger");
     },
