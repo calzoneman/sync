@@ -62,12 +62,15 @@ function initChannelDumper(Server) {
     var CHANNEL_SAVE_INTERVAL = parseInt(Config.get("channel-save-interval"))
                                 * 60000;
     setInterval(function () {
+        var wait = CHANNEL_SAVE_INTERVAL / Server.channels.length;
         Promise.reduce(Server.channels, (_, chan) => {
-            if (!chan.dead && chan.users && chan.users.length > 0) {
-                return chan.saveState().catch(err => {
-                    Logger.errlog.log(`Failed to save /r/${chan.name}: ${err.stack}`);
-                });
-            }
+            return Promise.delay(wait).then(() => {
+                if (!chan.dead && chan.users && chan.users.length > 0) {
+                    return chan.saveState().catch(err => {
+                        Logger.errlog.log(`Failed to save /r/${chan.name}: ${err.stack}`);
+                    });
+                }
+            });
         }, 0);
     }, CHANNEL_SAVE_INTERVAL);
 }
