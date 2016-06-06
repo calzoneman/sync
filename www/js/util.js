@@ -757,7 +757,7 @@ function showPollMenu() {
         var m;
         if (m = t.match(/^(\d+):(\d+)$/)) {
             return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
-        } else if (t.match(/^(\d+)$/)) {
+        } else if (m = t.match(/^(\d+)$/)) {
             return parseInt(m[1], 10);
         } else {
             throw new Error("Invalid timeout value '" + t + "'");
