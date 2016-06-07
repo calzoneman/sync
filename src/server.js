@@ -48,6 +48,7 @@ import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
 import session from './session';
 import { LegacyModule } from './legacymodule';
+import { PartitionModule } from './partition/partitionmodule';
 import * as Switches from './switches';
 
 var Server = function () {
@@ -68,6 +69,8 @@ var Server = function () {
         }
         const BackendModule = require('./backend/backendmodule').BackendModule;
         initModule = new BackendModule();
+    } else if (Config.get('enable-partition')) {
+        initModule = new PartitionModule();
     } else {
         initModule = new LegacyModule();
     }
