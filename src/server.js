@@ -71,6 +71,7 @@ var Server = function () {
         initModule = new BackendModule();
     } else if (Config.get('enable-partition')) {
         initModule = new PartitionModule();
+        self.partitionDecider = initModule.getPartitionDecider();
     } else {
         initModule = new LegacyModule();
     }
@@ -186,8 +187,15 @@ Server.prototype.isChannelLoaded = function (name) {
 };
 
 Server.prototype.getChannel = function (name) {
-    var self = this;
     var cname = name.toLowerCase();
+    if (this.partitionDecider &&
+            !this.partitionDecider.isChannelOnThisPartition(cname)) {
+        const error = new Error(`Channel '${cname}' is mapped to a different partition`);
+        error.code = 'EWRONGPART';
+        throw error;
+    }
+
+    var self = this;
     for (var i = 0; i < self.channels.length; i++) {
         if (self.channels[i].uniqueName === cname)
             return self.channels[i];
