@@ -6,7 +6,8 @@ Callbacks = {
 
     /* fired when socket connection completes */
     connect: function() {
-        socket.emit("initChannelCallbacks");
+        SOCKETIO_CONNECT_ERROR_COUNT = 0;
+        $("#socketio-connect-error").remove();
         socket.emit("joinChannel", {
             name: CHANNEL.name
         });
@@ -1050,14 +1051,32 @@ setupCallbacks = function() {
             });
         })(key);
     }
+
+    socket.on("connect_error", function (error) {
+        SOCKETIO_CONNECT_ERROR_COUNT++;
+        if (SOCKETIO_CONNECT_ERROR_COUNT >= 3 &&
+                $("#socketio-connect-error").length === 0) {
+            var message = "Failed to connect to the server.  Try clearing your " +
+                          "cache and refreshing the page.";
+            makeAlert("Error", message, "alert-danger")
+                .attr("id", "socketio-connect-error")
+                .appendTo($("#announcements"));
+        }
+    });
 };
 
 (function () {
     if (typeof io === "undefined") {
-        makeAlert("Uh oh!", "It appears the socket.io connection " +
-                            "has failed.  If this error persists, a firewall or " +
-                            "antivirus is likely blocking the connection, or the " +
-                            "server is down.", "alert-danger")
+        var script = document.getElementById("socketio-js");
+        var source = "unknown";
+        if (script) {
+            source = script.src;
+        }
+
+        var message = "The socket.io library could not be loaded from <code>" +
+                      source + "</code>.  Ensure that it is not being blocked " +
+                      "by a script blocking extension or firewall and try again.";
+        makeAlert("Error", message, "alert-danger")
             .appendTo($("#announcements"));
         Callbacks.disconnect();
         return;
