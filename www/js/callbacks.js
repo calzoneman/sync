@@ -6,6 +6,7 @@ Callbacks = {
 
     /* fired when socket connection completes */
     connect: function() {
+        HAS_CONNECTED_BEFORE = true;
         SOCKETIO_CONNECT_ERROR_COUNT = 0;
         $("#socketio-connect-error").remove();
         socket.emit("joinChannel", {
@@ -1034,6 +1035,7 @@ Callbacks = {
 
     partitionChange: function (socketConfig) {
         window.socket.disconnect();
+        HAS_CONNECTED_BEFORE = false;
         ioServerConnect(socketConfig);
         setupCallbacks();
     }
@@ -1059,6 +1061,14 @@ setupCallbacks = function() {
     }
 
     socket.on("connect_error", function (error) {
+        // If the socket has connected at least once during this
+        // session and now gets a connect error, it is likely because
+        // the server is down temporarily and not because of any configuration
+        // issue.  Therefore, omit the warning message about refreshing.
+        if (HAS_CONNECTED_BEFORE) {
+            return;
+        }
+
         SOCKETIO_CONNECT_ERROR_COUNT++;
         if (SOCKETIO_CONNECT_ERROR_COUNT >= 3 &&
                 $("#socketio-connect-error").length === 0) {
