@@ -68,12 +68,12 @@ var Server = function () {
             Switches.setActive(Switches.DUAL_BACKEND, true);
         }
         const BackendModule = require('./backend/backendmodule').BackendModule;
-        initModule = new BackendModule();
+        initModule = this.initModule = new BackendModule();
     } else if (Config.get('enable-partition')) {
-        initModule = new PartitionModule();
+        initModule = this.initModule = new PartitionModule();
         self.partitionDecider = initModule.getPartitionDecider();
     } else {
-        initModule = new LegacyModule();
+        initModule = this.initModule = new LegacyModule();
     }
 
     // database init ------------------------------------------------------
@@ -300,5 +300,45 @@ Server.prototype.shutdown = function () {
     }).catch(err => {
         Logger.errlog.log(`Caught error while saving channels: ${err.stack}`);
         process.exit(1);
+    });
+};
+
+Server.prototype.reloadPartitionMap = function () {
+    if (!Config.get("enable-partition")) {
+        return;
+    }
+
+    var config;
+    try {
+        config = this.initModule.loadPartitionMap();
+    } catch (error) {
+        return;
+    }
+
+    this.initModule.partitionConfig.config = config.config;
+
+    const channels = Array.prototype.slice.call(this.channels);
+    Promise.reduce(channels, (_, channel) => {
+        if (channel.dead) {
+            return;
+        }
+
+        if (!this.partitionDecider.isChannelOnThisPartition(channel.uniqueName)) {
+            Logger.syslog.log("Partition changed for " + channel.uniqueName);
+            return channel.saveState().then(() => {
+                channel.broadcastAll("partitionChange",
+                        this.partitionDecider.getPartitionForChannel(channel.uniqueName));
+                const users = Array.prototype.slice.call(channel.users);
+                users.forEach(u => {
+                    try {
+                        u.socket.disconnect();
+                    } catch (error) {
+                    }
+                });
+                this.unloadChannel(channel);
+            });
+        }
+    }, 0).then(() => {
+        Logger.syslog.log("Partition reload complete");
     });
 };

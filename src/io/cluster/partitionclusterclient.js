@@ -6,9 +6,8 @@ class PartitionClusterClient {
     }
 
     getSocketConfig(channel) {
-        return Promise.resolve({
-            servers: this.partitionDecider.getPartitionForChannel(channel)
-        });
+        return Promise.resolve(
+                this.partitionDecider.getPartitionForChannel(channel));
     }
 }
 

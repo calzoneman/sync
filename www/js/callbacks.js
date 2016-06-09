@@ -1030,6 +1030,12 @@ Callbacks = {
             "unneeded playlist items, filters, and/or emotes.  Changes to the channel " +
             "will not be saved until the size is reduced to under the limit.")
             .attr("id", "chandumptoobig");
+    },
+
+    partitionChange: function (socketConfig) {
+        window.socket.disconnect();
+        ioServerConnect(socketConfig);
+        setupCallbacks();
     }
 }
 
@@ -1065,6 +1071,50 @@ setupCallbacks = function() {
     });
 };
 
+function ioServerConnect(socketConfig) {
+    if (socketConfig.error) {
+        makeAlert("Error", "Socket.io configuration returned error: " +
+                socketConfig.error, "alert-danger")
+            .appendTo($("#announcements"));
+        return;
+    }
+
+    var servers;
+    if (socketConfig.alt && socketConfig.alt.length > 0 &&
+            localStorage.useAltServer === "true") {
+        servers = socketConfig.alt;
+        console.log("Using alt servers: " + JSON.stringify(servers));
+    } else {
+        servers = socketConfig.servers;
+    }
+
+    var chosenServer = null;
+    servers.forEach(function (server) {
+        if (chosenServer === null) {
+            chosenServer = server;
+        } else if (server.secure && !chosenServer.secure) {
+            chosenServer = server;
+        } else if (!server.ipv6Only && chosenServer.ipv6Only) {
+            chosenServer = server;
+        }
+    });
+
+    console.log("Connecting to " + JSON.stringify(chosenServer));
+
+    if (chosenServer === null) {
+        makeAlert("Error",
+                "Socket.io configuration was unable to find a suitable server",
+                "alert-danger")
+            .appendTo($("#announcements"));
+    }
+
+    var opts = {
+        secure: chosenServer.secure
+    };
+
+    window.socket = io(chosenServer.url, opts);
+}
+
 (function () {
     if (typeof io === "undefined") {
         var script = document.getElementById("socketio-js");
@@ -1084,47 +1134,7 @@ setupCallbacks = function() {
 
     $.getJSON("/socketconfig/" + CHANNEL.name + ".json")
         .done(function (socketConfig) {
-            if (socketConfig.error) {
-                makeAlert("Error", "Socket.io configuration returned error: " +
-                        socketConfig.error, "alert-danger")
-                    .appendTo($("#announcements"));
-                return;
-            }
-
-            var servers;
-            if (socketConfig.alt && socketConfig.alt.length > 0 &&
-                    localStorage.useAltServer === "true") {
-                servers = socketConfig.alt;
-                console.log("Using alt servers: " + JSON.stringify(servers));
-            } else {
-                servers = socketConfig.servers;
-            }
-
-            var chosenServer = null;
-            servers.forEach(function (server) {
-                if (chosenServer === null) {
-                    chosenServer = server;
-                } else if (server.secure && !chosenServer.secure) {
-                    chosenServer = server;
-                } else if (!server.ipv6Only && chosenServer.ipv6Only) {
-                    chosenServer = server;
-                }
-            });
-
-            console.log("Connecting to " + JSON.stringify(chosenServer));
-
-            if (chosenServer === null) {
-                makeAlert("Error",
-                        "Socket.io configuration was unable to find a suitable server",
-                        "alert-danger")
-                    .appendTo($("#announcements"));
-            }
-
-            var opts = {
-                secure: chosenServer.secure
-            };
-
-            socket = io(chosenServer.url, opts);
+            ioServerConnect(socketConfig);
             setupCallbacks();
         }).fail(function () {
             makeAlert("Error", "Failed to retrieve socket.io configuration",
