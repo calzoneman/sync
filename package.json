@@ -44,9 +44,9 @@
   },
   "scripts": {
     "build-player": "$npm_node_execpath build-player.js",
-    "build-server": "babel --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/",
+    "build-server": "babel -D --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/",
     "postinstall": "./postinstall.sh",
-    "server-dev": "babel --watch --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/"
+    "server-dev": "babel -D --watch --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/"
   },
   "devDependencies": {
     "coffee-script": "^1.9.2"

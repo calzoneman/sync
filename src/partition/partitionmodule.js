@@ -2,6 +2,7 @@ import { loadFromToml } from 'cytube-common/lib/configuration/configloader';
 import { PartitionConfig } from './partitionconfig';
 import { PartitionDecider } from './partitiondecider';
 import { PartitionClusterClient } from '../io/cluster/partitionclusterclient';
+import RedisClientProvider from 'cytube-common/lib/redis/redisclientprovider';
 import logger from 'cytube-common/lib/logger';
 import LegacyConfig from '../config';
 import path from 'path';
@@ -57,6 +58,16 @@ class PartitionModule {
         }
 
         return this.partitionClusterClient;
+    }
+
+    getRedisClientProvider() {
+        if (!this.redisClientProvider) {
+            this.redisClientProvider = new RedisClientProvider(
+                    this.partitionConfig.getRedisConfig()
+            );
+        }
+
+        return this.redisClientProvider;
     }
 }
 

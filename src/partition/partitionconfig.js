@@ -18,6 +18,10 @@ class PartitionConfig {
     getIdentity() {
         return this.config.identity;
     }
+
+    getRedisConfig() {
+        return this.config.redis;
+    }
 }
 
 export { PartitionConfig };

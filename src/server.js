@@ -43,6 +43,7 @@ var db = require("./database");
 var Flags = require("./flags");
 var sio = require("socket.io");
 import LocalChannelIndex from './web/localchannelindex';
+import { PartitionChannelIndex } from './partition/partitionchannelindex';
 import IOConfiguration from './configuration/ioconfig';
 import WebConfiguration from './configuration/webconfig';
 import NullClusterClient from './io/cluster/nullclusterclient';
@@ -86,7 +87,14 @@ var Server = function () {
     const ioConfig = IOConfiguration.fromOldConfig(Config);
     const webConfig = WebConfiguration.fromOldConfig(Config);
     const clusterClient = initModule.getClusterClient();
-    const channelIndex = new LocalChannelIndex();
+    var channelIndex;
+    if (Config.get("enable-partition")) {
+        channelIndex = new PartitionChannelIndex(
+                initModule.getRedisClientProvider().get()
+        );
+    } else {
+        channelIndex = new LocalChannelIndex();
+    }
     self.express = express();
     require("./web/webserver").init(self.express,
             webConfig,
