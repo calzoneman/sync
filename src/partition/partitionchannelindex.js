@@ -15,6 +15,10 @@ class PartitionChannelIndex {
         this.redisClient = redisClient;
         this.uid = uuid.v4();
         this.cachedList = [];
+        this.redisClient.on('error', error => {
+            Logger.errlog.log(`Redis error: ${error}`);
+        });
+
         process.nextTick(() => {
             SERVER = require('../server').getServer();
             this.refreshCache();
