@@ -258,6 +258,7 @@ Server.prototype.unloadChannel = function (chan) {
     }
 
     Logger.syslog.log("Unloaded channel " + chan.name);
+    chan.broadcastUsercount.cancel();
     // Empty all outward references from the channel
     var keys = Object.keys(chan);
     for (var i in keys) {

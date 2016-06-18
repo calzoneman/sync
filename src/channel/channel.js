@@ -11,6 +11,9 @@ import * as ChannelStore from '../channel-storage/channelstore';
 import { ChannelStateSizeError } from '../errors';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
+import { throttle } from '../util/throttle';
+
+const USERCOUNT_THROTTLE = 10000;
 
 class ReferenceCounter {
     constructor(channel) {
@@ -81,6 +84,9 @@ function Channel(name) {
     this.users = [];
     this.refCounter = new ReferenceCounter(this);
     this.flags = 0;
+    this.broadcastUsercount = throttle(() => {
+        this.broadcastAll("usercount", this.users.length);
+    }, USERCOUNT_THROTTLE);
     var self = this;
     db.channels.load(this, function (err) {
         if (err && err !== "Channel is not registered") {
@@ -403,7 +409,7 @@ Channel.prototype.acceptUser = function (user) {
     });
 
     this.sendUserlist([user]);
-    this.sendUsercount(this.users);
+    this.broadcastUsercount();
     if (!this.is(Flags.C_REGISTERED)) {
         user.socket.emit("channelNotRegistered");
     }
@@ -434,7 +440,7 @@ Channel.prototype.partUser = function (user) {
     Object.keys(this.modules).forEach(function (m) {
         self.modules[m].onUserPart(user);
     });
-    this.sendUsercount(this.users);
+    this.broadcastUsercount();
 
     this.refCounter.unref("Channel::user");
     user.die();
