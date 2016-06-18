@@ -73,5 +73,7 @@ function handleLine(line) {
             Logger.syslog.log("Switch " + args[0] + " is now " +
                     (Switches.isActive(args[0]) ? "ON" : "OFF"));
         }
+    } else if (line.indexOf("/reload-partitions") === 0) {
+        sv.reloadPartitionMap();
     }
 }

@@ -53,7 +53,20 @@ function User(socket) {
         }
 
         self.waitFlag(Flags.U_READY, function () {
-            var chan = Server.getServer().getChannel(data.name);
+            var chan;
+            try {
+                chan = Server.getServer().getChannel(data.name);
+            } catch (error) {
+                if (error.code !== 'EWRONGPART') {
+                    throw error;
+                }
+
+                self.socket.emit("errorMsg", {
+                    msg: "Channel '" + data.name + "' is hosted on another server.  " +
+                         "Try refreshing the page to update the connection URL."
+                });
+                return;
+            }
             chan.joinUser(self, data);
         });
     });
