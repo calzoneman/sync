@@ -1272,7 +1272,8 @@
     rt: RTMPPlayer,
     hb: HitboxPlayer,
     us: UstreamPlayer,
-    im: ImgurPlayer
+    im: ImgurPlayer,
+    vm: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {

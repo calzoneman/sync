@@ -10,6 +10,7 @@ var ffmpeg = require("./ffmpeg");
 var mediaquery = require("cytube-mediaquery");
 var YouTube = require("cytube-mediaquery/lib/provider/youtube");
 var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
+var Vidme = require("cytube-mediaquery/lib/provider/vidme");
 
 /*
  * Preference map of quality => youtube formats.
@@ -547,6 +548,20 @@ var Getters = {
         var media = new Media(id, title, "--:--", "hb");
         callback(false, media);
     },
+
+    /* vid.me */
+    vm: function (id, callback) {
+        if (!/^[\w-]+$/.test(id)) {
+            process.nextTick(callback, "Invalid vid.me ID");
+            return;
+        }
+
+        Vidme.lookup(id).then(video => {
+            const media = new Media(video.id, video.title, video.duration,
+                                    "vm", video.meta);
+            process.nextTick(callback, false, media);
+        });
+    }
 };
 
 module.exports = {
