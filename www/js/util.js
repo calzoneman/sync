@@ -1354,6 +1354,13 @@ function parseMediaLink(url) {
         };
     }
 
+    if((m = url.match(/vid\.me\/([\w-]+)/))) {
+        return {
+            id: m[1],
+            type: "vm"
+        };
+    }
+
     /*  Shorthand URIs  */
     // To catch Google Plus by ID alone
     if ((m = url.match(/^(?:gp:)?(\d{21}_\d{19}_\d{19})/))) {

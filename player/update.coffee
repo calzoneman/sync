@@ -14,6 +14,7 @@ TYPE_MAP =
     hb: HitboxPlayer
     us: UstreamPlayer
     im: ImgurPlayer
+    vm: VideoJSPlayer
 
 window.loadMediaPlayer = (data) ->
     try
