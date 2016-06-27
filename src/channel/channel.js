@@ -322,22 +322,31 @@ Channel.prototype.joinUser = function (user, data) {
             return;
         }
 
-        if (self.is(Flags.C_REGISTERED)) {
-            user.waitFlag(Flags.U_LOGGED_IN, () => {
-                user.refreshAccount({
-                    channel: self.name,
-                    name: user.getName()
-                }, function (err, account) {
-                    if (err) {
-                        Logger.errlog.log("user.refreshAccount failed at Channel.joinUser");
-                        Logger.errlog.log(err.stack);
-                        self.refCounter.unref("Channel::user");
-                        return;
-                    }
+        function refreshUserAccount(cb) {
+            user.refreshAccount({
+                channel: self.name,
+                name: user.getName()
+            }, function (err, account) {
+                if (err) {
+                    Logger.errlog.log("user.refreshAccount failed at Channel.joinUser");
+                    Logger.errlog.log(err.stack);
+                    self.refCounter.unref("Channel::user");
+                    return;
+                }
 
-                    afterAccount();
-                });
+                if (cb) {
+                    process.nextTick(cb);
+                }
             });
+        }
+
+        if (self.is(Flags.C_REGISTERED) && user.is(Flags.U_LOGGED_IN)) {
+            refreshUserAccount(afterAccount);
+        } else if (self.is(Flags.C_REGISTERED)) {
+            user.waitFlag(Flags.U_LOGGED_IN, () => {
+                refreshUserAccount();
+            });
+            afterAccount();
         } else {
             afterAccount();
         }

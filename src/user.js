@@ -301,7 +301,6 @@ User.prototype.login = function (name, pw) {
                 name: user.name
             });
             db.recordVisit(self.realip, self.getName());
-            self.socket.emit("rank", self.account.effectiveRank);
             Logger.syslog.log(self.realip + " logged in as " + user.name);
             self.setFlag(Flags.U_LOGGED_IN);
             self.clearFlag(Flags.U_LOGGING_IN);
@@ -388,7 +387,6 @@ User.prototype.guestLogin = function (name) {
                 guest: true
             });
             db.recordVisit(self.realip, self.getName());
-            self.socket.emit("rank", 0);
             Logger.syslog.log(self.realip + " signed in as " + name);
             self.setFlag(Flags.U_LOGGED_IN);
             self.emit("login", self.account);
@@ -443,6 +441,7 @@ User.prototype.refreshAccount = function (opts, cb) {
             }
             self.account = account;
             if (account.effectiveRank !== old.effectiveRank) {
+                self.socket.emit("rank", self.account.effectiveRank);
                 self.emit("effectiveRankChange", self.account.effectiveRank);
             }
         }
