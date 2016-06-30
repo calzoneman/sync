@@ -213,8 +213,8 @@ function handleConnection(sock) {
     if (sock.user) {
         user.setFlag(Flags.U_REGISTERED);
         user.clearFlag(Flags.U_READY);
-        user.refreshAccount({ name: sock.user.name },
-                            function (err, account) {
+        user.account.name = sock.user.name;
+        user.refreshAccount(function (err, account) {
             if (err) {
                 user.clearFlag(Flags.U_REGISTERED);
                 user.setFlag(Flags.U_READY);

@@ -322,11 +322,9 @@ Channel.prototype.joinUser = function (user, data) {
             return;
         }
 
-        function refreshUserAccount(cb) {
-            user.refreshAccount({
-                channel: self.name,
-                name: user.getName()
-            }, function (err, account) {
+        user.channel = self;
+        if (self.is(Flags.C_REGISTERED)) {
+            user.refreshAccount(function (err, account) {
                 if (err) {
                     Logger.errlog.log("user.refreshAccount failed at Channel.joinUser");
                     Logger.errlog.log(err.stack);
@@ -334,19 +332,8 @@ Channel.prototype.joinUser = function (user, data) {
                     return;
                 }
 
-                if (cb) {
-                    process.nextTick(cb);
-                }
+                afterAccount();
             });
-        }
-
-        if (self.is(Flags.C_REGISTERED) && user.is(Flags.U_LOGGED_IN)) {
-            refreshUserAccount(afterAccount);
-        } else if (self.is(Flags.C_REGISTERED)) {
-            user.waitFlag(Flags.U_LOGGED_IN, () => {
-                refreshUserAccount();
-            });
-            afterAccount();
         } else {
             afterAccount();
         }
@@ -361,11 +348,9 @@ Channel.prototype.joinUser = function (user, data) {
 
             self.checkModules("onUserPreJoin", [user, data], function (err, result) {
                 if (result === ChannelModule.PASSTHROUGH) {
-                    if (user.account.channelRank !== user.account.globalRank) {
-                        user.socket.emit("rank", user.account.effectiveRank);
-                    }
                     self.acceptUser(user);
                 } else {
+                    user.channel = null;
                     user.account.channelRank = 0;
                     user.account.effectiveRank = user.account.globalRank;
                     self.refCounter.unref("Channel::user");
@@ -376,7 +361,6 @@ Channel.prototype.joinUser = function (user, data) {
 };
 
 Channel.prototype.acceptUser = function (user) {
-    user.channel = this;
     user.setFlag(Flags.U_IN_CHANNEL);
     user.socket.join(this.name);
     user.autoAFK();
