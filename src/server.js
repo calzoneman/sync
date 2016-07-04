@@ -3,6 +3,7 @@ var singleton = null;
 var Config = require("./config");
 var Promise = require("bluebird");
 import * as ChannelStore from './channel-storage/channelstore';
+import { EventEmitter } from 'events';
 
 module.exports = {
     init: function () {
@@ -163,6 +164,8 @@ var Server = function () {
     initModule.onReady();
 };
 
+Server.prototype = Object.create(EventEmitter.prototype);
+
 Server.prototype.getHTTPIP = function (req) {
     var ip = req.ip;
     if (ip === "127.0.0.1" || ip === "::1") {
@@ -285,12 +288,22 @@ Server.prototype.packChannelList = function (publicOnly, isAdmin) {
 };
 
 Server.prototype.announce = function (data) {
+    this.setAnnouncement(data);
+
     if (data == null) {
-        this.announcement = null;
         db.clearAnnouncement();
     } else {
-        this.announcement = data;
         db.setAnnouncement(data);
+    }
+
+    this.emit("announcement", data);
+};
+
+Server.prototype.setAnnouncement = function (data) {
+    if (data == null) {
+        this.announcement = null;
+    } else {
+        this.announcement = data;
         sio.instance.emit("announcement", data);
     }
 };

@@ -6,6 +6,7 @@ import RedisClientProvider from 'cytube-common/lib/redis/redisclientprovider';
 import logger from 'cytube-common/lib/logger';
 import LegacyConfig from '../config';
 import path from 'path';
+import { AnnouncementRefresher } from './announcementrefresher';
 
 const PARTITION_CONFIG_PATH = path.resolve(__dirname, '..', '..', 'conf',
                                            'partitions.toml');
@@ -16,7 +17,7 @@ class PartitionModule {
     }
 
     onReady() {
-
+        this.getAnnouncementRefresher();
     }
 
     initConfig() {
@@ -68,6 +69,18 @@ class PartitionModule {
         }
 
         return this.redisClientProvider;
+    }
+
+    getAnnouncementRefresher() {
+        if (!this.announcementRefresher) {
+            const provider = this.getRedisClientProvider();
+            this.announcementRefresher = new AnnouncementRefresher(
+                    provider.get(),
+                    provider.get()
+            );
+        }
+
+        return this.announcementRefresher;
     }
 }
 
