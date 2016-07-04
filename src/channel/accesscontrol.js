@@ -31,11 +31,13 @@ AccessControlModule.prototype.onUserPreJoin = function (user, data, cb) {
             user.socket.emit("needPassword", typeof data.pw !== "undefined");
             /* Option 1: log in as a moderator */
             user.waitFlag(Flags.U_LOGGED_IN, function () {
-                user.refreshAccount({ channel: self.channel.name }, function (err, account) {
-
+                user.channel = chan;
+                user.refreshAccount(function (err, account) {
                     /* Already joined the channel by some other condition */
                     if (user.is(Flags.U_IN_CHANNEL)) {
                         return;
+                    } else if (user.channel === chan) {
+                        user.channel = null;
                     }
 
                     if (account.effectiveRank >= 2) {
