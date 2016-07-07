@@ -5,6 +5,7 @@ var sanitizeHTML = require("sanitize-html");
 const ALLOWED_TAGS = [
     "button",
     "center",
+    "cite"
     "details",
     "font",
     "h1",
@@ -13,8 +14,12 @@ const ALLOWED_TAGS = [
     "marquee", // It pains me to do this, but a lot of people use it...
     "s",
     "section",
+    "small",
     "span",
-    "summary"
+    "sub",
+    "summary",
+    "sup",
+    "template"
 ];
 
 const ALLOWED_ATTRIBUTES = [
