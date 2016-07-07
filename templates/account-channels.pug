@@ -2,16 +2,16 @@ doctype html
 html(lang="en")
   head
     include head
-    mixin head()
+    +head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        mixin navheader()
+        +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            mixin navdefaultlinks("/account/channels")
-          mixin navloginlogout("/account/channels")
+            +navdefaultlinks("/account/channels")
+          +navloginlogout("/account/channels")
       section#mainpage
         .container
           if !loggedIn
@@ -38,13 +38,13 @@ html(lang="en")
                     for c in channels
                       tr
                         th
-                          form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete #{c.name}?  This cannot be undone');")
+                          form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete " +c.name+ "?  This cannot be undone');")
                             input(type="hidden", name="_csrf", value=csrfToken)
                             input(type="hidden", name="action", value="delete_channel")
-                            input(type="hidden", name="name", value="#{c.name}")
+                            input(type="hidden", name="name", value=c.name)
                             button.btn.btn-xs.btn-danger(type="submit") Delete
                               span.glyphicon.glyphicon-trash
-                          a(href="/r/#{c.name}", style="margin-left: 5px")= c.name
+                          a(href="/r/"+c.name, style="margin-left: 5px")= c.name
             .col-lg-6.col-md-6
               h3 Register a new channel
               if newChannelError
@@ -60,4 +60,4 @@ html(lang="en")
                 button.btn.btn-primary.btn-block(type="submit") Register
 
     include footer
-    mixin footer()
+    +footer()

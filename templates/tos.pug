@@ -2,16 +2,16 @@ doctype html
 html(lang="en")
   head
     include head
-    mixin head()
+    +head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        mixin navheader()
+        +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            mixin navdefaultlinks("/useragreement")
-          mixin navloginlogout("/useragreement")
+            +navdefaultlinks("/useragreement")
+          +navloginlogout("/useragreement")
       section#mainpage
         .container
           .col-md-12
@@ -38,4 +38,4 @@ html(lang="en")
             li Attempting to exploit the site in order to gain unauthorized access or interrupt service is not allowed.  If you believe you have found an exploit, please responsibly disclose it to an administrator.
             li Use good judgement when representing #{siteTitle} on other websites.  Do not spam links to your channel.
     include footer
-    mixin footer()
+    +footer()
