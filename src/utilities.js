@@ -220,6 +220,8 @@
                 return "http://vimeo.com/" + id;
             case "dm":
                 return "http://dailymotion.com/video/" + id;
+            case "vm":
+                return "https://vid.me/" + id;
             case "sc":
                 return id;
             case "li":
