@@ -43,6 +43,7 @@ PollModule.prototype.load = function (data) {
             this.poll.options = data.poll.options;
             this.poll.counts = data.poll.counts;
             this.poll.votes = data.poll.votes;
+            this.poll.timestamp = data.poll.timestamp;
         }
     }
 };
@@ -59,7 +60,8 @@ PollModule.prototype.save = function (data) {
         options: this.poll.options,
         counts: this.poll.counts,
         votes: this.poll.votes,
-        obscured: this.poll.obscured
+        obscured: this.poll.obscured,
+        timestamp: this.poll.timestamp
     };
 };
 

@@ -937,6 +937,8 @@ Callbacks = {
             })(i);
 
         }
+        $("<span/>").addClass("label label-default pull-right").data('timestamp',data.timestamp).appendTo(poll)
+            .text(new Date(data.timestamp).toTimeString().split(" ")[0]);
 
         poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
     },
