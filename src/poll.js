@@ -17,6 +17,7 @@ var Poll = function(initiator, title, options, obscured) {
         this.counts[i] = 0;
     }
     this.votes = {};
+    this.timestamp = Date.now();
 }
 
 Poll.prototype.vote = function(ip, option) {
@@ -46,7 +47,8 @@ Poll.prototype.packUpdate = function (showhidden) {
         title: this.title,
         options: this.options,
         counts: counts,
-        initiator: this.initiator
+        initiator: this.initiator,
+        timestamp: this.timestamp
     };
     return packed;
 }
