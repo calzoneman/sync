@@ -1,4 +1,4 @@
-var jade = require("jade");
+var pug = require("pug");
 var fs = require("fs");
 var path = require("path");
 var Config = require("../config");
@@ -6,7 +6,7 @@ var templates = path.join(__dirname, "..", "..", "templates");
 var cache = {};
 
 /**
- * Merges locals with globals for jade rendering
+ * Merges locals with globals for pug rendering
  */
 function merge(locals, res) {
     var _locals = {
@@ -33,14 +33,14 @@ function getBaseUrl(res) {
 }
 
 /**
- * Renders and serves a jade template
+ * Renders and serves a pug template
  */
-function sendJade(res, view, locals) {
+function sendPug(res, view, locals) {
     locals.loggedIn = locals.loggedIn || !!res.user;
     locals.loginName = locals.loginName || res.user ? res.user.name : false;
     if (!(view in cache) || Config.get("debug")) {
-        var file = path.join(templates, view + ".jade");
-        var fn = jade.compile(fs.readFileSync(file), {
+        var file = path.join(templates, view + ".pug");
+        var fn = pug.compile(fs.readFileSync(file), {
             filename: file,
             pretty: !Config.get("http.minify")
         });
@@ -51,5 +51,5 @@ function sendJade(res, view, locals) {
 }
 
 module.exports = {
-    sendJade: sendJade
+    sendPug: sendPug
 };

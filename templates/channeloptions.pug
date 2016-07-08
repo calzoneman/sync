@@ -50,19 +50,19 @@ mixin miscoptions
   #cs-miscoptions.tab-pane.active
     h4 General Settings
     form.form-horizontal(action="javascript:void(0)")
-      mixin rcheckbox-auto("cs-allow_voteskip", "Allow voteskip")
-      mixin rcheckbox-auto("cs-allow_dupes", "Allow duplicate videos on the playlist")
-      mixin textbox-auto("cs-voteskip_ratio", "Voteskip ratio", "0.5")
-      mixin textbox-auto("cs-maxlength", "Max video length", "HH:MM:SS")
-      mixin textbox-auto("cs-afk_timeout", "Auto-AFK Delay", "0 (disabled)")
+      +rcheckbox-auto("cs-allow_voteskip", "Allow voteskip")
+      +rcheckbox-auto("cs-allow_dupes", "Allow duplicate videos on the playlist")
+      +textbox-auto("cs-voteskip_ratio", "Voteskip ratio", "0.5")
+      +textbox-auto("cs-maxlength", "Max video length", "HH:MM:SS")
+      +textbox-auto("cs-afk_timeout", "Auto-AFK Delay", "0 (disabled)")
       .form-group
         .col-sm-offset-4
     h4 Chat Settings
     form.form-horizontal(action="javascript:void(0)")
-      mixin rcheckbox-auto("cs-enable_link_regex", "Convert URLs in chat to links")
-      mixin rcheckbox-auto("cs-chat_antiflood", "Throttle chat")
-      mixin textbox-auto("cs-chat_antiflood_burst", "# of messages allowed before throttling")
-      mixin textbox-auto("cs-chat_antiflood_sustained", "# of messages (after burst) allowed per second")
+      +rcheckbox-auto("cs-enable_link_regex", "Convert URLs in chat to links")
+      +rcheckbox-auto("cs-chat_antiflood", "Throttle chat")
+      +textbox-auto("cs-chat_antiflood_burst", "# of messages allowed before throttling")
+      +textbox-auto("cs-chat_antiflood_sustained", "# of messages (after burst) allowed per second")
       .form-group
         .col-sm-8.col-sm-offset-4
           span.text-info Changes are automatically saved.
@@ -72,14 +72,14 @@ mixin adminoptions
     h4 Admin-Only Settings
     form.form-horizontal(action="javascript:void(0)")
       - var defname = "CyTube - /r/" + channelName
-      mixin textbox-auto("cs-pagetitle", "Page title", defname)
-      mixin textbox-auto("cs-password", "Password", "leave blank to disable")
-      mixin textbox-auto("cs-externalcss", "External CSS", "Stylesheet URL")
-      mixin textbox-auto("cs-externaljs", "External Javascript", "Script URL")
-      mixin rcheckbox-auto("cs-show_public", "List channel publicly")
-      mixin rcheckbox-auto("cs-torbanned", "Block connections from Tor")
-      mixin rcheckbox-auto("cs-allow_ascii_control", "Allow ASCII control characters (e.g. newlines)")
-      mixin textbox-auto("cs-playlist_max_per_user", "Maximum # of videos per user")
+      +textbox-auto("cs-pagetitle", "Page title", defname)
+      +textbox-auto("cs-password", "Password", "leave blank to disable")
+      +textbox-auto("cs-externalcss", "External CSS", "Stylesheet URL")
+      +textbox-auto("cs-externaljs", "External Javascript", "Script URL")
+      +rcheckbox-auto("cs-show_public", "List channel publicly")
+      +rcheckbox-auto("cs-torbanned", "Block connections from Tor")
+      +rcheckbox-auto("cs-allow_ascii_control", "Allow ASCII control characters (e.g. newlines)")
+      +textbox-auto("cs-playlist_max_per_user", "Maximum # of videos per user")
       .form-group
         .col-sm-8.col-sm-offset-4
           span.text-info Set to 0 for no limit
