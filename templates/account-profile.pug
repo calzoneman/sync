@@ -2,16 +2,16 @@ doctype html
 html(lang="en")
   head
     include head
-    mixin head()
+    +head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        mixin navheader()
+        +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            mixin navdefaultlinks("/account/profile")
-          mixin navloginlogout("/account/profile")
+            +navdefaultlinks("/account/profile")
+          +navloginlogout("/account/profile")
       section#mainpage
         .container
           if !loggedIn
@@ -42,6 +42,6 @@ html(lang="en")
                 button.btn.btn-primary.btn-block(type="submit") Save
 
     include footer
-    mixin footer()
+    +footer()
     script(type="text/javascript").
       $("#profileimage").val("#{profileImage}");

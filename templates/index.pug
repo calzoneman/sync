@@ -2,16 +2,16 @@ doctype html
 html(lang="en")
   head
     include head
-    mixin head()
+    +head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        mixin navheader()
+        +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            mixin navdefaultlinks("/")
-          mixin navloginlogout("/")
+            +navdefaultlinks("/")
+          +navloginlogout("/")
       section#mainpage
         .container
           .col-lg-9.col-md-9
@@ -24,7 +24,7 @@ html(lang="en")
               tbody
                 each chan in channels
                   tr
-                    td: a(href="/r/#{chan.name}") #{chan.pagetitle} (#{chan.name})
+                    td: a(href="/r/"+chan.name) #{chan.pagetitle} (#{chan.name})
                     td= chan.usercount
                     td= chan.mediatitle
           .col-lg-3.col-md-3
@@ -32,7 +32,7 @@ html(lang="en")
             input#channelname.form-control(type="text", placeholder="Channel Name")
             p.text-muted New channels can be registered from the <a href="/account/channels">My Channels</a> page.
     include footer
-    mixin footer()
+    +footer()
     script(type="text/javascript").
       $("#channelname").keydown(function (ev) {
         if (ev.keyCode === 13) {

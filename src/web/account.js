@@ -5,7 +5,7 @@
  */
 
 var webserver = require("./webserver");
-var sendJade = require("./jade").sendJade;
+var sendPug = require("./pug").sendPug;
 var Logger = require("../logger");
 var db = require("../database");
 var $util = require("../utilities");
@@ -22,7 +22,7 @@ function handleAccountEditPage(req, res) {
         return;
     }
 
-    sendJade(res, "account-edit", {});
+    sendPug(res, "account-edit", {});
 }
 
 /**
@@ -61,14 +61,14 @@ function handleChangePassword(req, res) {
     }
 
     if (newpassword.length === 0) {
-        sendJade(res, "account-edit", {
+        sendPug(res, "account-edit", {
             errorMessage: "New password must not be empty"
         });
         return;
     }
 
     if (!req.user) {
-        sendJade(res, "account-edit", {
+        sendPug(res, "account-edit", {
             errorMessage: "You must be logged in to change your password"
         });
         return;
@@ -78,7 +78,7 @@ function handleChangePassword(req, res) {
 
     db.users.verifyLogin(name, oldpassword, function (err, user) {
         if (err) {
-            sendJade(res, "account-edit", {
+            sendPug(res, "account-edit", {
                 errorMessage: err
             });
             return;
@@ -86,7 +86,7 @@ function handleChangePassword(req, res) {
 
         db.users.setPassword(name, newpassword, function (err, dbres) {
             if (err) {
-                sendJade(res, "account-edit", {
+                sendPug(res, "account-edit", {
                     errorMessage: err
                 });
                 return;
@@ -97,7 +97,7 @@ function handleChangePassword(req, res) {
 
             db.users.getUser(name, function (err, user) {
                 if (err) {
-                    return sendJade(res, "account-edit", {
+                    return sendPug(res, "account-edit", {
                         errorMessage: err
                     });
                 }
@@ -106,7 +106,7 @@ function handleChangePassword(req, res) {
                 var expiration = new Date(parseInt(req.signedCookies.auth.split(":")[1]));
                 session.genSession(user, expiration, function (err, auth) {
                     if (err) {
-                        return sendJade(res, "account-edit", {
+                        return sendPug(res, "account-edit", {
                             errorMessage: err
                         });
                     }
@@ -126,7 +126,7 @@ function handleChangePassword(req, res) {
                         });
                     }
 
-                    sendJade(res, "account-edit", {
+                    sendPug(res, "account-edit", {
                         successMessage: "Password changed."
                     });
                 });
@@ -151,7 +151,7 @@ function handleChangeEmail(req, res) {
     }
 
     if (!$util.isValidEmail(email) && email !== "") {
-        sendJade(res, "account-edit", {
+        sendPug(res, "account-edit", {
             errorMessage: "Invalid email address"
         });
         return;
@@ -159,7 +159,7 @@ function handleChangeEmail(req, res) {
 
     db.users.verifyLogin(name, password, function (err, user) {
         if (err) {
-            sendJade(res, "account-edit", {
+            sendPug(res, "account-edit", {
                 errorMessage: err
             });
             return;
@@ -167,7 +167,7 @@ function handleChangeEmail(req, res) {
 
         db.users.setEmail(name, email, function (err, dbres) {
             if (err) {
-                sendJade(res, "account-edit", {
+                sendPug(res, "account-edit", {
                     errorMessage: err
                 });
                 return;
@@ -175,7 +175,7 @@ function handleChangeEmail(req, res) {
             Logger.eventlog.log("[account] " + req.realIP +
                                 " changed email for " + name +
                                 " to " + email);
-            sendJade(res, "account-edit", {
+            sendPug(res, "account-edit", {
                 successMessage: "Email address changed."
             });
         });
@@ -191,13 +191,13 @@ function handleAccountChannelPage(req, res) {
     }
 
     if (!req.user) {
-        return sendJade(res, "account-channels", {
+        return sendPug(res, "account-channels", {
             channels: []
         });
     }
 
     db.channels.listUserChannels(req.user.name, function (err, channels) {
-        sendJade(res, "account-channels", {
+        sendPug(res, "account-channels", {
             channels: channels
         });
     });
@@ -235,14 +235,14 @@ function handleNewChannel(req, res) {
     }
 
     if (!req.user) {
-        return sendJade(res, "account-channels", {
+        return sendPug(res, "account-channels", {
             channels: []
         });
     }
 
     db.channels.listUserChannels(req.user.name, function (err, channels) {
         if (err) {
-            sendJade(res, "account-channels", {
+            sendPug(res, "account-channels", {
                 channels: [],
                 newChannelError: err
             });
@@ -250,7 +250,7 @@ function handleNewChannel(req, res) {
         }
 
         if (name.match(Config.get("reserved-names.channels"))) {
-            sendJade(res, "account-channels", {
+            sendPug(res, "account-channels", {
                 channels: channels,
                 newChannelError: "That channel name is reserved"
             });
@@ -259,7 +259,7 @@ function handleNewChannel(req, res) {
 
         if (channels.length >= Config.get("max-channels-per-user") &&
                 req.user.global_rank < 255) {
-            sendJade(res, "account-channels", {
+            sendPug(res, "account-channels", {
                 channels: channels,
                 newChannelError: "You are not allowed to register more than " +
                                  Config.get("max-channels-per-user") + " channels."
@@ -290,7 +290,7 @@ function handleNewChannel(req, res) {
             }
 
 
-            sendJade(res, "account-channels", {
+            sendPug(res, "account-channels", {
                 channels: channels,
                 newChannelError: err ? err : undefined
             });
@@ -309,7 +309,7 @@ function handleDeleteChannel(req, res) {
     }
 
     if (!req.user) {
-        return sendJade(res, "account-channels", {
+        return sendPug(res, "account-channels", {
             channels: [],
         });
     }
@@ -317,7 +317,7 @@ function handleDeleteChannel(req, res) {
 
     db.channels.lookup(name, function (err, channel) {
         if (err) {
-            sendJade(res, "account-channels", {
+            sendPug(res, "account-channels", {
                 channels: [],
                 deleteChannelError: err
             });
@@ -326,7 +326,7 @@ function handleDeleteChannel(req, res) {
 
         if (channel.owner !== req.user.name && req.user.global_rank < 255) {
             db.channels.listUserChannels(req.user.name, function (err2, channels) {
-                sendJade(res, "account-channels", {
+                sendPug(res, "account-channels", {
                     channels: err2 ? [] : channels,
                     deleteChannelError: "You do not have permission to delete this channel"
                 });
@@ -354,7 +354,7 @@ function handleDeleteChannel(req, res) {
                 }
             }
             db.channels.listUserChannels(req.user.name, function (err2, channels) {
-                sendJade(res, "account-channels", {
+                sendPug(res, "account-channels", {
                     channels: err2 ? [] : channels,
                     deleteChannelError: err ? err : undefined
                 });
@@ -372,7 +372,7 @@ function handleAccountProfilePage(req, res) {
     }
 
     if (!req.user) {
-        return sendJade(res, "account-profile", {
+        return sendPug(res, "account-profile", {
             profileImage: "",
             profileText: ""
         });
@@ -380,7 +380,7 @@ function handleAccountProfilePage(req, res) {
 
     db.users.getProfile(req.user.name, function (err, profile) {
         if (err) {
-            sendJade(res, "account-profile", {
+            sendPug(res, "account-profile", {
                 profileError: err,
                 profileImage: "",
                 profileText: ""
@@ -388,7 +388,7 @@ function handleAccountProfilePage(req, res) {
             return;
         }
 
-        sendJade(res, "account-profile", {
+        sendPug(res, "account-profile", {
             profileImage: profile.image,
             profileText: profile.text,
             profileError: false
@@ -403,7 +403,7 @@ function handleAccountProfile(req, res) {
     csrf.verify(req);
 
     if (!req.user) {
-        return sendJade(res, "account-profile", {
+        return sendPug(res, "account-profile", {
             profileImage: "",
             profileText: "",
             profileError: "You must be logged in to edit your profile",
@@ -415,7 +415,7 @@ function handleAccountProfile(req, res) {
 
     db.users.setProfile(req.user.name, { image: image, text: text }, function (err) {
         if (err) {
-            sendJade(res, "account-profile", {
+            sendPug(res, "account-profile", {
                 profileImage: "",
                 profileText: "",
                 profileError: err
@@ -423,7 +423,7 @@ function handleAccountProfile(req, res) {
             return;
         }
 
-        sendJade(res, "account-profile", {
+        sendPug(res, "account-profile", {
             profileImage: image,
             profileText: text,
             profileError: false
@@ -439,7 +439,7 @@ function handlePasswordResetPage(req, res) {
         return;
     }
 
-    sendJade(res, "account-passwordreset", {
+    sendPug(res, "account-passwordreset", {
         reset: false,
         resetEmail: "",
         resetErr: false
@@ -461,7 +461,7 @@ function handlePasswordReset(req, res) {
     }
 
     if (!$util.isValidUserName(name)) {
-        sendJade(res, "account-passwordreset", {
+        sendPug(res, "account-passwordreset", {
             reset: false,
             resetEmail: "",
             resetErr: "Invalid username '" + name + "'"
@@ -471,7 +471,7 @@ function handlePasswordReset(req, res) {
 
     db.users.getEmail(name, function (err, actualEmail) {
         if (err) {
-            sendJade(res, "account-passwordreset", {
+            sendPug(res, "account-passwordreset", {
                 reset: false,
                 resetEmail: "",
                 resetErr: err
@@ -480,14 +480,14 @@ function handlePasswordReset(req, res) {
         }
 
         if (actualEmail !== email.trim()) {
-            sendJade(res, "account-passwordreset", {
+            sendPug(res, "account-passwordreset", {
                 reset: false,
                 resetEmail: "",
                 resetErr: "Provided email does not match the email address on record for " + name
             });
             return;
         } else if (actualEmail === "") {
-            sendJade(res, "account-passwordreset", {
+            sendPug(res, "account-passwordreset", {
                 reset: false,
                 resetEmail: "",
                 resetErr: name + " doesn't have an email address on record.  Please contact an " +
@@ -509,7 +509,7 @@ function handlePasswordReset(req, res) {
             expire: expire
         }, function (err, dbres) {
             if (err) {
-                sendJade(res, "account-passwordreset", {
+                sendPug(res, "account-passwordreset", {
                     reset: false,
                     resetEmail: "",
                     resetErr: err
@@ -521,7 +521,7 @@ function handlePasswordReset(req, res) {
                                 name + " <" + email + ">");
 
             if (!Config.get("mail.enabled")) {
-                sendJade(res, "account-passwordreset", {
+                sendPug(res, "account-passwordreset", {
                     reset: false,
                     resetEmail: email,
                     resetErr: "This server does not have mail support enabled.  Please " +
@@ -548,14 +548,14 @@ function handlePasswordReset(req, res) {
             Config.get("mail.nodemailer").sendMail(mail, function (err, response) {
                 if (err) {
                     Logger.errlog.log("mail fail: " + err);
-                    sendJade(res, "account-passwordreset", {
+                    sendPug(res, "account-passwordreset", {
                         reset: false,
                         resetEmail: email,
                         resetErr: "Sending reset email failed.  Please contact an " +
                                   "administrator for assistance."
                     });
                 } else {
-                    sendJade(res, "account-passwordreset", {
+                    sendPug(res, "account-passwordreset", {
                         reset: true,
                         resetEmail: email,
                         resetErr: false
@@ -580,7 +580,7 @@ function handlePasswordRecover(req, res) {
 
     db.lookupPasswordReset(hash, function (err, row) {
         if (err) {
-            sendJade(res, "account-passwordrecover", {
+            sendPug(res, "account-passwordrecover", {
                 recovered: false,
                 recoverErr: err
             });
@@ -588,7 +588,7 @@ function handlePasswordRecover(req, res) {
         }
 
         if (Date.now() >= row.expire) {
-            sendJade(res, "account-passwordrecover", {
+            sendPug(res, "account-passwordrecover", {
                 recovered: false,
                 recoverErr: "This password recovery link has expired.  Password " +
                             "recovery links are valid only for 24 hours after " +
@@ -604,7 +604,7 @@ function handlePasswordRecover(req, res) {
         }
         db.users.setPassword(row.name, newpw, function (err) {
             if (err) {
-                sendJade(res, "account-passwordrecover", {
+                sendPug(res, "account-passwordrecover", {
                     recovered: false,
                     recoverErr: "Database error.  Please contact an administrator if " +
                                 "this persists."
@@ -616,7 +616,7 @@ function handlePasswordRecover(req, res) {
             db.deletePasswordReset(hash);
             Logger.eventlog.log("[account] " + ip + " recovered password for " + row.name);
 
-            sendJade(res, "account-passwordrecover", {
+            sendPug(res, "account-passwordrecover", {
                 recovered: true,
                 recoverPw: newpw
             });

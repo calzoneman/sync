@@ -1,6 +1,6 @@
 import CyTubeUtil from '../../utilities';
 import { sanitizeText } from '../../xss';
-import { sendJade } from '../jade';
+import { sendPug } from '../pug';
 import * as HTTPStatus from '../httpstatus';
 import { HTTPError } from '../../errors';
 
@@ -17,7 +17,7 @@ export default function initialize(app, ioConfig) {
         }
         const socketBaseURL = endpoints[0].url;
 
-        sendJade(res, 'channel', {
+        sendPug(res, 'channel', {
             channelName: req.params.channel,
             sioSource: `${socketBaseURL}/socket.io/socket.io.js`
         });
