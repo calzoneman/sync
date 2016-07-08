@@ -13,26 +13,26 @@ doctype html
 html(lang="en")
   head
     include head
-    mixin head()
+    +head()
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        mixin navheader()
+        +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            mixin navdefaultlinks(path)
-          mixin navloginlogout(path)
+            +navdefaultlinks(path)
+          +navloginlogout(path)
 
       section#mainpage.container
         .col-md-12
           .alert.alert-danger
             if status == 404
-              mixin notfound()
+              +notfound()
             else if status == 403
-              mixin forbidden()
+              +forbidden()
             else
-              mixin genericerror()
+              +genericerror()
 
     include footer
-    mixin footer()
+    +footer()
