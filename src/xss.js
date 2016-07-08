@@ -5,7 +5,7 @@ var sanitizeHTML = require("sanitize-html");
 const ALLOWED_TAGS = [
     "button",
     "center",
-    "cite"
+    "cite",
     "details",
     "font",
     "h1",
