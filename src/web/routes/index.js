@@ -1,4 +1,4 @@
-import { sendJade } from '../jade';
+import { sendPug } from '../pug';
 
 export default function initialize(app, channelIndex, maxEntries) {
     app.get('/', (req, res) => {
@@ -13,7 +13,7 @@ export default function initialize(app, channelIndex, maxEntries) {
 
             channels = channels.slice(0, maxEntries);
 
-            sendJade(res, 'index', {
+            sendPug(res, 'index', {
                 channels: channels
             });
         });

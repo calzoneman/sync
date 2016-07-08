@@ -4,11 +4,11 @@
  * @author Calvin Montgomery <cyzon@cyzon.us>
  */
 
-var jade = require("jade");
+var pug = require("pug");
 var path = require("path");
 var webserver = require("./webserver");
 var cookieall = webserver.cookieall;
-var sendJade = require("./jade").sendJade;
+var sendPug = require("./pug").sendPug;
 var Logger = require("../logger");
 var $util = require("../utilities");
 var db = require("../database");
@@ -56,7 +56,7 @@ function handleLogin(req, res) {
                 Logger.eventlog.log("[loginfail] Login failed (bad password): " + name
                                   + "@" + req.realIP);
             }
-            sendJade(res, "login", {
+            sendPug(res, "login", {
                 loggedIn: false,
                 loginError: err
             });
@@ -65,7 +65,7 @@ function handleLogin(req, res) {
 
         session.genSession(user, expiration, function (err, auth) {
             if (err) {
-                sendJade(res, "login", {
+                sendPug(res, "login", {
                     loggedIn: false,
                     loginError: err
                 });
@@ -93,7 +93,7 @@ function handleLogin(req, res) {
                 res.redirect(dest);
             } else {
                 res.user = user;
-                sendJade(res, "login", {});
+                sendPug(res, "login", {});
             }
         });
     });
@@ -108,12 +108,12 @@ function handleLoginPage(req, res) {
     }
 
     if (req.user) {
-        return sendJade(res, "login", {
+        return sendPug(res, "login", {
             wasAlreadyLoggedIn: true
         });
     }
 
-    sendJade(res, "login", {
+    sendPug(res, "login", {
         redirect: req.query.dest || req.header("referer")
     });
 }
@@ -138,7 +138,7 @@ function handleLogout(req, res) {
     if (dest) {
         res.redirect(dest);
     } else {
-        sendJade(res, "logout", {});
+        sendPug(res, "logout", {});
     }
 }
 
@@ -151,11 +151,11 @@ function handleRegisterPage(req, res) {
     }
 
     if (req.user) {
-        sendJade(res, "register", {});
+        sendPug(res, "register", {});
         return;
     }
 
-    sendJade(res, "register", {
+    sendPug(res, "register", {
         registered: false,
         registerError: false
     });
@@ -181,21 +181,21 @@ function handleRegister(req, res) {
     }
 
     if (name.length === 0) {
-        sendJade(res, "register", {
+        sendPug(res, "register", {
             registerError: "Username must not be empty"
         });
         return;
     }
 
     if (name.match(Config.get("reserved-names.usernames"))) {
-        sendJade(res, "register", {
+        sendPug(res, "register", {
             registerError: "That username is reserved"
         });
         return;
     }
 
     if (password.length === 0) {
-        sendJade(res, "register", {
+        sendPug(res, "register", {
             registerError: "Password must not be empty"
         });
         return;
@@ -204,7 +204,7 @@ function handleRegister(req, res) {
     password = password.substring(0, 100);
 
     if (email.length > 0 && !$util.isValidEmail(email)) {
-        sendJade(res, "register", {
+        sendPug(res, "register", {
             registerError: "Invalid email address"
         });
         return;
@@ -212,13 +212,13 @@ function handleRegister(req, res) {
 
     db.users.register(name, password, email, ip, function (err) {
         if (err) {
-            sendJade(res, "register", {
+            sendPug(res, "register", {
                 registerError: err
             });
         } else {
             Logger.eventlog.log("[register] " + ip + " registered account: " + name +
                              (email.length > 0 ? " <" + email + ">" : ""));
-            sendJade(res, "register", {
+            sendPug(res, "register", {
                 registered: true,
                 registerName: name,
                 redirect: req.body.redirect

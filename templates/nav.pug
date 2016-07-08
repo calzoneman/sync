@@ -1,4 +1,4 @@
-- var links = { "/": "Home" }
+- var links = { "/": "Home" };
 
 mixin navlink(page, title, active)
   if active
@@ -19,9 +19,9 @@ mixin navheader()
 mixin navdefaultlinks(page)
   each t, p in links
     if p == page
-      mixin navlink(p, t, true)
+      +navlink(p, t, true)
     else
-      mixin navlink(p, t, false)
+      +navlink(p, t, false)
   li.dropdown
     a.dropdown-toggle(href="#", data-toggle="dropdown") Account
       b.caret
@@ -29,24 +29,24 @@ mixin navdefaultlinks(page)
       if loggedIn
         li: a(href="javascript:$('#logoutform').submit();") Log out
         li.divider
-        li: a(href="#{loginDomain}/account/channels") Channels
-        li: a(href="#{loginDomain}/account/profile") Profile
-        li: a(href="#{loginDomain}/account/edit") Change Password/Email
+        li: a(href=loginDomain+"/account/channels") Channels
+        li: a(href=loginDomain+"/account/profile") Profile
+        li: a(href=loginDomain+"/account/edit") Change Password/Email
       else
-        li: a(href="#{loginDomain}/login?dest=#{encodeURIComponent(baseUrl + page)}") Login
-        li: a(href="#{loginDomain}/register") Register
+        li: a(href=loginDomain+"/login?dest=" + encodeURIComponent(baseUrl + page)) Login
+        li: a(href=loginDomain+"/register") Register
 
 mixin navloginlogout(redirect)
   if loggedIn
-    mixin navlogoutform(redirect)
+    +navlogoutform(redirect)
   else
-    mixin navloginform(redirect)
+    +navloginform(redirect)
 
 mixin navloginform(redirect)
   if loginDomain == null
     - loginDomain = ""
   .visible-lg
-    form#loginform.navbar-form.navbar-right(action="#{loginDomain}/login", method="post")
+    form#loginform.navbar-form.navbar-right(action=loginDomain+"/login", method="post")
       input(type="hidden", name="_csrf", value=csrfToken)
       input(type="hidden", name="dest", value=baseUrl + redirect)
       .form-group
@@ -61,7 +61,7 @@ mixin navloginform(redirect)
       button#login.btn.btn-default(type="submit") Login
   .visible-md
     p#loginform.navbar-text.pull-right
-      a#login.navbar-link(href="#{loginDomain}/login?dest=#{encodeURIComponent(baseUrl + redirect)}") Log in
+      a#login.navbar-link(href=loginDomain+"/login?dest="+encodeURIComponent(baseUrl+redirect)) Log in
       span &nbsp;&middot;&nbsp;
       a#register.navbar-link(href="/register") Register
 

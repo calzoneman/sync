@@ -1,7 +1,7 @@
 var path = require("path");
 var fs = require("fs");
 var webserver = require("./webserver");
-var sendJade = require("./jade").sendJade;
+var sendPug = require("./pug").sendPug;
 var Logger = require("../logger");
 var db = require("../database");
 var Config = require("../config");
@@ -35,7 +35,7 @@ function handleAcp(req, res, user) {
     }
     sio += "/socket.io/socket.io.js";
 
-    sendJade(res, "acp", {
+    sendPug(res, "acp", {
         sioSource: sio
     });
 }

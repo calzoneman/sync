@@ -2,21 +2,21 @@ doctype html
 html(lang="en")
   head
     include head
-    mixin head()
+    +head()
     link(rel="stylesheet", type="text/css", href="/css/acp.css")
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
         include nav
-        mixin navheader()
+        +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            mixin navdefaultlinks("/acp")
+            +navdefaultlinks("/acp")
             li#nav-acp-section.dropdown
               a#nav-acp-dd-toggle.dropdown-toggle(data-toggle="dropdown", href="javascript:void(0)") Menu
                 span.caret
               ul.dropdown-menu
-          mixin navloginlogout("/acp")
+          +navloginlogout("/acp")
       section#mainpage
         .container
           .row
@@ -125,7 +125,7 @@ html(lang="en")
               canvas#stat_mem(width="1140", height="400")
 
     include footer
-    mixin footer()
+    +footer()
     script(type="text/javascript").
       var USEROPTS = { secure_connection: true };
     script(src=sioSource)

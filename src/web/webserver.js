@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import net from 'net';
 import express from 'express';
-import { sendJade } from './jade';
+import { sendPug } from './pug';
 import Logger from '../logger';
 import Config from '../config';
 import bodyParser from 'body-parser';
@@ -76,7 +76,7 @@ function handleLegacySocketConfig(req, res) {
 }
 
 function handleUserAgreement(req, res) {
-    sendJade(res, 'tos', {
+    sendPug(res, 'tos', {
         domain: Config.get('http.domain')
     });
 }
@@ -92,7 +92,7 @@ function initializeErrorHandlers(app) {
         if (err) {
             if (err instanceof CSRFError) {
                 res.status(HTTPStatus.FORBIDDEN);
-                return sendJade(res, 'csrferror', {
+                return sendPug(res, 'csrferror', {
                     path: req.path,
                     referer: req.header('referer')
                 });
@@ -104,7 +104,7 @@ function initializeErrorHandlers(app) {
             }
             if (!message) {
                 message = 'An unknown error occurred.';
-            } else if (/\.(jade|js)/.test(message)) {
+            } else if (/\.(pug|js)/.test(message)) {
                 // Prevent leakage of stack traces
                 message = 'An internal error occurred.';
             }
@@ -115,7 +115,7 @@ function initializeErrorHandlers(app) {
             }
 
             res.status(status);
-            return sendJade(res, 'httperror', {
+            return sendPug(res, 'httperror', {
                 path: req.path,
                 status: status,
                 message: message
