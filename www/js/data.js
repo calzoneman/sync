@@ -97,7 +97,7 @@ function getOrDefault(k, def) {
 }
 
 var USEROPTS = {
-    theme                : getOrDefault("theme", "/css/themes/slate.css"),
+    theme                : getOrDefault("theme", DEFAULT_THEME), // Set in head template
     layout               : getOrDefault("layout", "fluid"),
     synch                : getOrDefault("synch", true),
     hidevid              : getOrDefault("hidevid", false),
@@ -204,9 +204,9 @@ function eraseCookie(name) {
 (function () {
     var localVersion = parseFloat(getOpt("version"));
     if (isNaN(localVersion)) {
-        USEROPTS.theme = "/css/themes/slate.css";
+        USEROPTS.theme = DEFAULT_THEME;
         USEROPTS.layout = "fluid";
-        setOpt("theme", "/css/themes/slate.css");
+        setOpt("theme", DEFAULT_THEME);
         setOpt("layout", "fluid");
         setOpt("version", CL_VERSION);
     }
