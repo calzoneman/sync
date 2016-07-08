@@ -29,6 +29,8 @@ function formatURL(data) {
             return "http://vimeo.com/" + data.id;
         case "dm":
             return "http://dailymotion.com/video/" + data.id;
+        case "vm":
+            return "https://vid.me/" + data.id;
         case "sc":
             return data.id;
         case "li":
