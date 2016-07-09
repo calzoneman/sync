@@ -11,6 +11,7 @@ class PartitionDecider {
     }
 
     getPartitionIdentityForChannel(channel) {
+        channel = channel.toLowerCase();
         const overrideMap = this.config.getOverrideMap();
         if (overrideMap.hasOwnProperty(channel)) {
             return overrideMap[channel];
