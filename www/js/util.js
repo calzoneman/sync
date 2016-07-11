@@ -696,7 +696,7 @@ function applyOpts() {
         var old = $("#usertheme").attr("id", "usertheme_old");
         var theme = USEROPTS.theme;
         if (theme === "default") {
-            theme = "/css/themes/slate.css";
+            theme = DEFAULT_THEME;
         }
         $("<link/>").attr("rel", "stylesheet")
             .attr("type", "text/css")
