@@ -38,6 +38,7 @@ function getBaseUrl(res) {
 function sendPug(res, view, locals) {
     locals.loggedIn = locals.loggedIn || !!res.user;
     locals.loginName = locals.loginName || res.user ? res.user.name : false;
+    locals.superadmin = locals.superadmin || res.user ? res.user.global_rank >= 255 : false;
     if (!(view in cache) || Config.get("debug")) {
         var file = path.join(templates, view + ".pug");
         var fn = pug.compile(fs.readFileSync(file), {
