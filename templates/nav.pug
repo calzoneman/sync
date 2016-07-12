@@ -36,6 +36,13 @@ mixin navdefaultlinks(page)
         li: a(href=loginDomain+"/login?dest=" + encodeURIComponent(baseUrl + page)) Login
         li: a(href=loginDomain+"/register") Register
 
+mixin navsuperadmin(newTab)
+  if superadmin
+    if newTab
+      li: a(href="/acp", target="_blank") ACP
+    else
+      li: a(href="/acp") ACP
+
 mixin navloginlogout(redirect)
   if loggedIn
     +navlogoutform(redirect)

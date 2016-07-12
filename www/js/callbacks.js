@@ -369,10 +369,6 @@ Callbacks = {
         CLIENT.rank = r;
         handlePermissionChange();
         if(SUPERADMIN && $("#setrank").length == 0) {
-            $("<a/>").attr("href", "/acp")
-                .attr("target", "_blank")
-                .text("ACP")
-                .appendTo($("<li/>").appendTo($(".nav")[0]));
             var li = $("<li/>").addClass("dropdown")
                 .attr("id", "setrank")
                 .appendTo($(".nav")[0]);
