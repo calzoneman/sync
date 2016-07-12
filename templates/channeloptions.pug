@@ -179,12 +179,22 @@ mixin emotes
       .form-group
         .col-sm-8.col-sm-offset-4
           button#cs-emotes-newsubmit.btn.btn-primary Create Emote
-    table.table.table-striped.table-condensed
+    form.form-inline
+      .form-group
+        input.emotelist-search.form-control(type="text", placeholder="Search")
+      .form-group
+        .checkbox
+          label
+            input.emotelist-alphabetical(type="checkbox")
+            | Sort alphabetically
+    .emotelist-paginator-container
+    table.emotelist-table.table.table-striped.table-condensed
       thead
         tr
           th Delete
           th Name
           th Image
+      tbody
 
     button#cs-emotes-export.btn.btn-default Export emote list
     button#cs-emotes-import.btn.btn-default Import emote list

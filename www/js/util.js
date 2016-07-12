@@ -2477,58 +2477,6 @@ function formatCSChatFilterList() {
     });
 }
 
-function formatCSEmoteList() {
-    var tbl = $("#cs-emotes table");
-    tbl.find("tbody").remove();
-    var entries = CHANNEL.emotes || [];
-    entries.forEach(function (f) {
-        var tr = $("<tr/>").appendTo(tbl);
-        var del = $("<button/>").addClass("btn btn-xs btn-danger")
-            .appendTo($("<td/>").appendTo(tr));
-        $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(del);
-        del.click(function () {
-            socket.emit("removeEmote", f);
-        });
-        var name = $("<code/>").text(f.name).addClass("linewrap")
-            .appendTo($("<td/>").appendTo(tr));
-        var image = $("<code/>").text(f.image).addClass("linewrap")
-            .appendTo($("<td/>").appendTo(tr));
-        image.popover({
-            html: true,
-            trigger: "hover",
-            content: '<img src="' + f.image + '" class="channel-emote">'
-        });
-
-        image.click(function () {
-            var td = image.parent();
-            td.find(".popover").remove();
-            image.detach();
-            var edit = $("<input/>").addClass("form-control").attr("type", "text")
-                .appendTo(td);
-
-            edit.val(f.image);
-            edit.focus();
-
-            var finish = function () {
-                var val = edit.val();
-                edit.remove();
-                image.appendTo(td);
-                socket.emit("updateEmote", {
-                    name: f.name,
-                    image: val
-                });
-            };
-
-            edit.blur(finish);
-            edit.keydown(function (ev) {
-                if (ev.keyCode === 13) {
-                    finish();
-                }
-            });
-        });
-    });
-}
-
 function formatTime(sec) {
     var h = Math.floor(sec / 3600) + "";
     var m = Math.floor((sec % 3600) / 60) + "";
@@ -3112,3 +3060,95 @@ function stopQueueSpinner(data) {
         $("#queueprogress").remove();
     }
 }
+
+function CSEmoteList(selector) {
+    EmoteList.call(this, selector);
+}
+
+CSEmoteList.prototype = Object.create(EmoteList.prototype);
+
+CSEmoteList.prototype.loadPage = function (page) {
+    var tbody = this.table.children[1];
+    tbody.innerHTML = "";
+
+    var start = page * this.itemsPerPage;
+    if (start >= this.emotes.length) {
+        return;
+    }
+    var end = Math.min(start + this.itemsPerPage, this.emotes.length);
+    var self = this;
+
+    for (var i = start; i < end; i++) {
+        var row = document.createElement("tr");
+        tbody.appendChild(row);
+
+        (function (emote) {
+            // Add delete button
+            var tdDelete = document.createElement("td");
+            var btnDelete = document.createElement("button");
+            btnDelete.className = "btn btn-xs btn-danger";
+            var pennJillette = document.createElement("span");
+            pennJillette.className = "glyphicon glyphicon-trash";
+            btnDelete.appendChild(pennJillette);
+            tdDelete.appendChild(btnDelete);
+            row.appendChild(tdDelete);
+
+            // Add emote name
+            // TODO: editable
+            var tdName = document.createElement("td");
+            var nameDisplay = document.createElement("code");
+            nameDisplay.textContent = emote.name;
+            tdName.appendChild(nameDisplay);
+            row.appendChild(tdName);
+
+            // Add emote image
+            var tdImage = document.createElement("td");
+            var urlDisplay = document.createElement("code");
+            urlDisplay.textContent = emote.image;
+            tdImage.appendChild(urlDisplay);
+            row.appendChild(tdImage);
+
+            // Add popover to display the image
+            var $urlDisplay = $(urlDisplay);
+            $urlDisplay.popover({
+                html: true,
+                trigger: "hover",
+                content: '<img src="' + emote.image + '" class="channel-emote">'
+            });
+
+            // Change the image for an emote
+            $urlDisplay.click(function (clickEvent) {
+                $(tdImage).find(".popover").remove();
+                $urlDisplay.detach();
+
+                var editInput = document.createElement("input");
+                editInput.className = "form-control";
+                editInput.type = "text";
+                editInput.value = emote.image;
+                tdImage.appendChild(editInput);
+                editInput.focus();
+
+                function save() {
+                    var val = editInput.value;
+                    tdImage.removeChild(editInput);
+                    tdImage.appendChild(urlDisplay);
+
+                    socket.emit("updateEmote", {
+                        name: emote.name,
+                        image: val
+                    });
+                }
+
+                editInput.onblur = save;
+                editInput.onkeyup = function (event) {
+                    if (event.keyCode === 13) {
+                        save();
+                    }
+                };
+            });
+        })(this.emotes[i]);
+    }
+};
+
+window.CSEMOTELIST = new CSEmoteList("#cs-emotes");
+window.CSEMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
