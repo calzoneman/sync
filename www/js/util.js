@@ -642,6 +642,7 @@ function showUserOptions() {
     $("#us-ping-sound").val(USEROPTS.boop);
     $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
     $("#us-no-emotes").prop("checked", USEROPTS.no_emotes);
+    $("#us-strip-image").prop("checked", USEROPTS.strip_image);
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-shadowchat").prop("checked", USEROPTS.show_shadowchat);
@@ -675,6 +676,7 @@ function saveUserOptions() {
     USEROPTS.boop                 = $("#us-ping-sound").val();
     USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
     USEROPTS.no_emotes            = $("#us-no-emotes").prop("checked");
+    USEROPTS.strip_image          = $("#us-strip-image").prop("checked");
 
     if (CLIENT.rank >= 2) {
         USEROPTS.modhat      = $("#us-modflair").prop("checked");
@@ -1433,6 +1435,16 @@ function sendVideoUpdate() {
 
 /* chat */
 
+function stripImages(msg){
+    if (!USEROPTS.strip_image) {
+        return msg;
+    }
+    return msg.replace(IMAGE_MATCH, function(match,img){
+        return CHANNEL.opts.enable_link_regex ? 
+            '<a target="_blank" href="'+img+'">'+img+'</a>' : img;
+    });
+}
+
 function formatChatMessage(data, last) {
     // Backwards compat
     if (!data.meta || data.msgclass) {
@@ -1452,6 +1464,7 @@ function formatChatMessage(data, last) {
     if (data.meta.forceShowName)
         skip = false;
 
+    data.msg = stripImages(data.msg);
     data.msg = execEmotes(data.msg);
 
     last.name = data.username;
@@ -1519,8 +1532,8 @@ function addChatMessage(data) {
     if (data.meta.shadow && !USEROPTS.show_shadowchat) {
         return;
     }
-    var div = formatChatMessage(data, LASTCHAT);
     var msgBuf = $("#messagebuffer");
+    var div = formatChatMessage(data, LASTCHAT);
     // Incoming: a bunch of crap for the feature where if you hover over
     // a message, it highlights messages from that user
     var safeUsername = data.username.replace(/[^\w-]/g, '\\$');
