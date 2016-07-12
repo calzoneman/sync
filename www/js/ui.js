@@ -44,6 +44,8 @@ $("#modflair").click(function () {
         m.removeClass("label-default")
             .addClass("label-success");
     }
+    $("#us-modflair").prop("checked", USEROPTS.modhat);
+    setOpt('modhat', USEROPTS.modhat);
 });
 
 $("#usercount").mouseenter(function (ev) {
