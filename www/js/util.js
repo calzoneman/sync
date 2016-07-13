@@ -3014,53 +3014,6 @@ function onEmoteClicked(emote) {
 window.EMOTELIST = new EmoteList("#emotelist", onEmoteClicked);
 window.EMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
-function showChannelSettings() {
-    hidePlayer();
-    $("#channeloptions").on("hidden.bs.modal", function () {
-        unhidePlayer();
-    });
-
-    $("#channeloptions").modal();
-}
-
-// There is a point where this file needed to stop and we have clearly passed
-// it but let's keep going and see what happens
-
-function startQueueSpinner(data) {
-    if ($("#queueprogress").length > 0) {
-        return;
-    }
-
-    var id = data.id;
-    if (data.type === "yp") {
-        id = "$any";
-    }
-
-    var progress = $("<div/>").addClass("progress").attr("id", "queueprogress")
-            .data("queue-id", id);
-    var progressBar = $("<div/>").addClass("progress-bar progress-bar-striped active")
-            .attr({
-                role: "progressbar",
-                "aria-valuenow": "100",
-                "aria-valuemin": "0",
-                "aria-valuemax": "100",
-            }).css({
-                width: "100%"
-            }).appendTo(progress);
-    progress.appendTo($("#addfromurl"));
-}
-
-function stopQueueSpinner(data) {
-    var shouldRemove = (data !== null &&
-                        typeof data === 'object' &&
-                        $("#queueprogress").data("queue-id") === data.id);
-    shouldRemove = shouldRemove || data === null;
-    shouldRemove = shouldRemove || $("#queueprogress").data("queue-id") === "$any";
-    if (shouldRemove) {
-        $("#queueprogress").remove();
-    }
-}
-
 function CSEmoteList(selector) {
     EmoteList.call(this, selector);
 }
@@ -3077,6 +3030,7 @@ CSEmoteList.prototype.loadPage = function (page) {
     }
     var end = Math.min(start + this.itemsPerPage, this.emotes.length);
     var self = this;
+    this.page = page;
 
     for (var i = start; i < end; i++) {
         var row = document.createElement("tr");
@@ -3092,6 +3046,12 @@ CSEmoteList.prototype.loadPage = function (page) {
             btnDelete.appendChild(pennJillette);
             tdDelete.appendChild(btnDelete);
             row.appendChild(tdDelete);
+
+            btnDelete.onclick = function deleteEmote() {
+                document.getElementById("cs-emotes-newname").value = emote.name;
+                document.getElementById("cs-emotes-newimage").value = emote.image;
+                socket.emit("removeEmote", emote);
+            };
 
             // Add emote name
             // TODO: editable
@@ -3152,3 +3112,50 @@ CSEmoteList.prototype.loadPage = function (page) {
 
 window.CSEMOTELIST = new CSEmoteList("#cs-emotes");
 window.CSEMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
+
+function showChannelSettings() {
+    hidePlayer();
+    $("#channeloptions").on("hidden.bs.modal", function () {
+        unhidePlayer();
+    });
+
+    $("#channeloptions").modal();
+}
+
+// There is a point where this file needed to stop and we have clearly passed
+// it but let's keep going and see what happens
+
+function startQueueSpinner(data) {
+    if ($("#queueprogress").length > 0) {
+        return;
+    }
+
+    var id = data.id;
+    if (data.type === "yp") {
+        id = "$any";
+    }
+
+    var progress = $("<div/>").addClass("progress").attr("id", "queueprogress")
+            .data("queue-id", id);
+    var progressBar = $("<div/>").addClass("progress-bar progress-bar-striped active")
+            .attr({
+                role: "progressbar",
+                "aria-valuenow": "100",
+                "aria-valuemin": "0",
+                "aria-valuemax": "100",
+            }).css({
+                width: "100%"
+            }).appendTo(progress);
+    progress.appendTo($("#addfromurl"));
+}
+
+function stopQueueSpinner(data) {
+    var shouldRemove = (data !== null &&
+                        typeof data === 'object' &&
+                        $("#queueprogress").data("queue-id") === data.id);
+    shouldRemove = shouldRemove || data === null;
+    shouldRemove = shouldRemove || $("#queueprogress").data("queue-id") === "$any";
+    if (shouldRemove) {
+        $("#queueprogress").remove();
+    }
+}
