@@ -40,18 +40,12 @@ class AnnouncementRefresher {
             return;
         }
 
-        SERVER.setAnnouncement({
-            title: data.title,
-            text: data.text,
-            from: data.from
-        });
+        SERVER.setAnnouncement(data.data);
     }
 
     sendAnnouncement(data) {
         const message = JSON.stringify({
-            title: data.title,
-            text: data.text,
-            from: data.from,
+            data: data,
             partitionID: this.uuid
         });
         this.pubClient.publish(SERVER_ANNOUNCEMENTS, message);
