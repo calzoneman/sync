@@ -67,7 +67,8 @@ Callbacks = {
 
     announcement: function(data) {
         $("#announcements").html("");
-        makeAlert(data.title, data.text)
+        var signature = "<br>\u2014" + data.from;
+        var announcement = makeAlert(data.title, data.text + signature)
             .appendTo($("#announcements"));
     },
 

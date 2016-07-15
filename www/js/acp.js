@@ -91,7 +91,8 @@ $("#acp-announce-submit").click(function () {
 socket.on("announcement", function (data) {
     $("#acp-announcements").find(".announcement").remove();
 
-    var al = makeAlert(data.title, data.text)
+    var signature = "<br>\u2014" + data.from;
+    var al = makeAlert(data.title, data.text + signature)
         .removeClass("col-md-12")
         .addClass("announcement")
         .insertAfter($("#acp-announcements h3")[0]);
