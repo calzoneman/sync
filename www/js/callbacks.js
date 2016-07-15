@@ -969,10 +969,8 @@ Callbacks = {
 
     emoteList: function (data) {
         loadEmotes(data);
-        var tbl = $("#cs-emotes table");
-        tbl.data("entries", data);
-        formatCSEmoteList();
         EMOTELIST.handleChange();
+        CSEMOTELIST.handleChange();
     },
 
     updateEmote: function (data) {
@@ -982,15 +980,16 @@ Callbacks = {
             if (CHANNEL.emotes[i].name === data.name) {
                 found = true;
                 CHANNEL.emotes[i] = data;
-                formatCSEmoteList();
                 break;
             }
         }
 
         if (!found) {
             CHANNEL.emotes.push(data);
-            formatCSEmoteList();
         }
+
+        EMOTELIST.handleChange();
+        CSEMOTELIST.handleChange();
     },
 
     removeEmote: function (data) {
