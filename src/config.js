@@ -116,6 +116,10 @@ var defaults = {
     },
     "channel-storage": {
         type: "file"
+    },
+    "service-socket": {
+        enabled: false,
+        socket: "service.sock"
     }
 };
 
