@@ -97,6 +97,18 @@ function handleLine(line) {
                 }
             })
         }
+    } else if (line.indexOf("/unloadchan") === 0) {
+        var args = line.split(/\s+/); args.shift();
+        if(args.length){
+            var name = args.shift();
+            var chan = sv.getChannel(name);
+            var users = Array.prototype.slice.call(chan.users);
+            chan.emit("empty");
+            users.forEach(function (u) {
+                u.kick("Channel shutting down");
+            });
+            Logger.eventlog.log("[acp] " + "SYSTEM" + " forced unload of " + name);
+        }
     }
 }
 
