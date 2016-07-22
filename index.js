@@ -45,6 +45,7 @@ process.stdin.on("data", function (data) {
     }
 });
 
+var validIP = require('net').isIP;
 function handleLine(line) {
     if (line === "/reload") {
         Logger.syslog.log("Reloading config");
@@ -75,5 +76,46 @@ function handleLine(line) {
         }
     } else if (line.indexOf("/reload-partitions") === 0) {
         sv.reloadPartitionMap();
+    } else if (line.indexOf("/globalban") === 0) {
+        var args = line.split(/\s+/); args.shift();
+        if (args.length >= 2 && validIP(args[0]) !== 0) {
+            var ip = args.shift();
+            var comment = args.join(' ');
+            require("./lib/database").globalBanIP(ip, comment, function (err, res) {
+                if (!err) {
+                    Logger.eventlog.log("[acp] " + "SYSTEM" + " global banned " + ip);
+                }
+            })
+        }
+    } else if (line.indexOf("/unglobalban") === 0) {
+        var args = line.split(/\s+/); args.shift();
+        if (args.length >= 1 && validIP(args[0]) !== 0) {
+            var ip = args.shift();
+            require("./lib/database").globalUnbanIP(ip, function (err, res) {
+                if (!err) {
+                    Logger.eventlog.log("[acp] " + "SYSTEM" + " un-global banned " + ip);
+                }
+            })
+        }
+    } else if (line.indexOf("/unloadchan") === 0) {
+        var args = line.split(/\s+/); args.shift();
+        if(args.length){
+            var name = args.shift();
+            var chan = sv.getChannel(name);
+            var users = Array.prototype.slice.call(chan.users);
+            chan.emit("empty");
+            users.forEach(function (u) {
+                u.kick("Channel shutting down");
+            });
+            Logger.eventlog.log("[acp] " + "SYSTEM" + " forced unload of " + name);
+        }
     }
+}
+
+// Go Go Gadget Service Socket
+if (Config.get("service-socket.enabled")) {
+    Logger.syslog.log("Opening service socket");
+    var ServiceSocket = require('./lib/servsock');
+    var server = new ServiceSocket;
+    server.init(handleLine, Config.get("service-socket.socket"));
 }

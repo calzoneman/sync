@@ -237,3 +237,9 @@ setuid:
 # concurrent updates), then run `node lib/channel-storage/migrate.js`.
 channel-storage:
   type: 'file'
+
+# Allows for external services to access the system commandline
+# Useful for setups where stdin isn't available such as when using PM2
+service-socket:
+  enabled: false
+  socket: 'service.sock'
