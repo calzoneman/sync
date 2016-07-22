@@ -105,8 +105,8 @@ function cmdouthndlr(type, args) {
 
 function cleanup(){
     console.info('\n',"Terminating.",'\n');
-    eventlog.stdin.end();
-    syslog.stdin.end();
+    eventlog.kill('SIGTERM');
+    syslog.kill('SIGTERM');
     client.end();
     process.exit(0);
 }

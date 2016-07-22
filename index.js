@@ -45,7 +45,7 @@ process.stdin.on("data", function (data) {
     }
 });
 
-var net = require('net');
+var validIP = require('net').isIP;
 function handleLine(line) {
     if (line === "/reload") {
         Logger.syslog.log("Reloading config");
@@ -78,7 +78,7 @@ function handleLine(line) {
         sv.reloadPartitionMap();
     } else if (line.indexOf("/globalban") === 0) {
         var args = line.split(/\s+/); args.shift();
-        if (args.length >= 2 && net.isIP(args[0]) !== 0) {
+        if (args.length >= 2 && validIP(args[0]) !== 0) {
             var ip = args.shift();
             var comment = args.join(' ');
             require("./lib/database").globalBanIP(ip, comment, function (err, res) {
@@ -89,7 +89,7 @@ function handleLine(line) {
         }
     } else if (line.indexOf("/unglobalban") === 0) {
         var args = line.split(/\s+/); args.shift();
-        if (args.length === 1 && net.isIP(args[0]) !== 0) {
+        if (args.length >= 1 && validIP(args[0]) !== 0) {
             var ip = args.shift();
             require("./lib/database").globalUnbanIP(ip, function (err, res) {
                 if (!err) {
