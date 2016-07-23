@@ -394,7 +394,7 @@ function queue(pos, src) {
             if (data.id == null || data.type == null) {
                 makeAlert("Error", "Failed to parse link " + link +
                           ".  Please check that it is correct",
-                          "alert-danger")
+                          "alert-danger", true)
                     .insertAfter($("#addfromurl"));
             } else {
                 emitQueue.push({

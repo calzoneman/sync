@@ -1,4 +1,4 @@
-function makeAlert(title, text, klass) {
+function makeAlert(title, text, klass, textOnly) {
     if(!klass) {
         klass = "alert-info";
     }
@@ -7,8 +7,9 @@ function makeAlert(title, text, klass) {
 
     var al = $("<div/>").addClass("alert")
         .addClass(klass)
-        .html(text)
         .appendTo(wrap);
+    textOnly ? al.text(text) : al.html(text) ;
+
     $("<br/>").prependTo(al);
     $("<strong/>").text(title).prependTo(al);
     $("<button/>").addClass("close pull-right").html("&times;")
