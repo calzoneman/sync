@@ -131,6 +131,21 @@ ChatModule.prototype.handleChatMsg = function (user, data) {
 
     // Limit to 240 characters
     data.msg = data.msg.substring(0, 240);
+
+    const firstSeen = user.getFirstSeenTime();
+    // TODO: configurable times
+    if (firstSeen > Date.now() - 5 * 60 * 1000) {
+        user.socket.emit("spamFiltered", {
+            reason: "NEW_USER_CHAT"
+        });
+        return;
+    } else if ((firstSeen > Date.now() - 24 * 60 * 60 * 1000) && data.msg.match(LINK)) {
+        user.socket.emit("spamFiltered", {
+            reason: "NEW_USER_CHAT_LINK"
+        });
+        return;
+    }
+
     // If channel doesn't permit them, strip ASCII control characters
     if (!this.channel.modules.options ||
         !this.channel.modules.options.get("allow_ascii_control")) {

@@ -52,7 +52,8 @@ function handleAuth(socket, accept) {
         if (!err) {
             socket.user = {
                 name: user.name,
-                global_rank: user.global_rank
+                global_rank: user.global_rank,
+                registrationTime: new Date(user.time)
             };
         }
         accept(null, true);
@@ -235,6 +236,7 @@ function handleConnection(sock) {
         user.setFlag(Flags.U_REGISTERED);
         user.clearFlag(Flags.U_READY);
         user.account.name = sock.user.name;
+        user.registrationTime = sock.user.registrationTime;
         user.refreshAccount(function (err, account) {
             if (err) {
                 user.clearFlag(Flags.U_REGISTERED);
