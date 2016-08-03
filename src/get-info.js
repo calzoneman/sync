@@ -561,6 +561,8 @@ var Getters = {
             const media = new Media(video.id, video.title, video.duration,
                                     "vm", video.meta);
             process.nextTick(callback, false, media);
+        }).catch(function (err) {
+            callback(err.message || err, null);
         });
     },
 
@@ -575,6 +577,8 @@ var Getters = {
             const media = new Media(video.id, video.title, video.duration,
                                     "sb", video.meta);
             process.nextTick(callback, false, media);
+        }).catch(function (err) {
+            callback(err.message || err, null);
         });
     }
 };
