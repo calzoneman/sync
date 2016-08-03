@@ -11,6 +11,7 @@ var mediaquery = require("cytube-mediaquery");
 var YouTube = require("cytube-mediaquery/lib/provider/youtube");
 var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 var Vidme = require("cytube-mediaquery/lib/provider/vidme");
+var Streamable = require("cytube-mediaquery/lib/provider/streamable");
 
 /*
  * Preference map of quality => youtube formats.
@@ -559,6 +560,20 @@ var Getters = {
         Vidme.lookup(id).then(video => {
             const media = new Media(video.id, video.title, video.duration,
                                     "vm", video.meta);
+            process.nextTick(callback, false, media);
+        });
+    },
+
+    /* streamable */
+    sb: function (id, callback) {
+        if (!/^[\w-]+$/.test(id)) {
+            process.nextTick(callback, "Invalid streamable.com ID");
+            return;
+        }
+
+        Streamable.lookup(id).then(video => {
+            const media = new Media(video.id, video.title, video.duration,
+                                    "sb", video.meta);
             process.nextTick(callback, false, media);
         });
     }

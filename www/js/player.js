@@ -1273,7 +1273,8 @@
     hb: HitboxPlayer,
     us: UstreamPlayer,
     im: ImgurPlayer,
-    vm: VideoJSPlayer
+    vm: VideoJSPlayer,
+    sb: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {

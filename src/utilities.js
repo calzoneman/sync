@@ -242,6 +242,8 @@
                 return id;
             case "hb":
                 return "http://hitbox.tv/" + id;
+            case "sb":
+                return "https://streamable.com/" + id;
             default:
                 return "";
         }

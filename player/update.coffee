@@ -15,6 +15,7 @@ TYPE_MAP =
     us: UstreamPlayer
     im: ImgurPlayer
     vm: VideoJSPlayer
+    sb: VideoJSPlayer
 
 window.loadMediaPlayer = (data) ->
     try
