@@ -229,7 +229,7 @@ function handleConnection(sock) {
             db.recordVisit(ip, user.getName());
             user.socket.emit("rank", user.account.effectiveRank);
             user.setFlag(Flags.U_LOGGED_IN);
-            user.emit("login", account);
+            user.emit("login", user.account);
             Logger.syslog.log(ip + " logged in as " + user.getName());
             user.setFlag(Flags.U_READY);
         });
