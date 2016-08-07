@@ -930,6 +930,8 @@ function handleModPermissions() {
     $("#cs-torbanned").prop("checked", CHANNEL.opts.torbanned);
     $("#cs-allow_ascii_control").prop("checked", CHANNEL.opts.allow_ascii_control);
     $("#cs-playlist_max_per_user").val(CHANNEL.opts.playlist_max_per_user || 0);
+    $("#cs-new_user_chat_delay").val(CHANNEL.opts.new_user_chat_delay || 0);
+    $("#cs-new_user_chat_link_delay").val(CHANNEL.opts.new_user_chat_link_delay || 0);
     (function() {
         if(typeof CHANNEL.opts.maxlength != "number") {
             $("#cs-maxlength").val("");
@@ -1450,7 +1452,7 @@ function stripImages(msg){
         return msg;
     }
     return msg.replace(IMAGE_MATCH, function(match,img){
-        return CHANNEL.opts.enable_link_regex ? 
+        return CHANNEL.opts.enable_link_regex ?
             '<a target="_blank" href="'+img+'">'+img+'</a>' : img;
     });
 }

@@ -25,7 +25,9 @@ function OptionsModule(channel) {
         allow_dupes: false,        // Allow duplicate videos on the playlist
         torbanned: false,          // Block connections from Tor exit nodes
         allow_ascii_control: false,// Allow ASCII control characters (\x00-\x1f)
-        playlist_max_per_user: 0   // Maximum number of playlist items per user
+        playlist_max_per_user: 0,  // Maximum number of playlist items per user
+        new_user_chat_delay: 10 * 60 * 1000,      // Minimum account/IP age to chat
+        new_user_chat_link_delay: 60 * 60 * 1000  // Minimum account/IP age to post links
     };
 }
 
@@ -268,6 +270,20 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
         var max = parseInt(data.playlist_max_per_user);
         if (!isNaN(max) && max >= 0) {
             this.opts.playlist_max_per_user = max;
+        }
+    }
+
+    if ("new_user_chat_delay" in data) {
+        var delay = parseInt(data.new_user_chat_delay);
+        if (!isNaN(delay) && delay >= 0) {
+            this.opts.new_user_chat_delay = delay;
+        }
+    }
+
+    if ("new_user_chat_link_delay" in data) {
+        var delay = parseInt(data.new_user_chat_link_delay);
+        if (!isNaN(delay) && delay >= 0) {
+            this.opts.new_user_chat_link_delay = delay;
         }
     }
 
