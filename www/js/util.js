@@ -1366,6 +1366,13 @@ function parseMediaLink(url) {
         };
     }
 
+    if ((m = url.match(/(.*\.m3u8)/))) {
+        return {
+            id: m[1],
+            type: "hl"
+        };
+    }
+
     /*  Shorthand URIs  */
     // To catch Google Plus by ID alone
     if ((m = url.match(/^(?:gp:)?(\d{21}_\d{19}_\d{19})/))) {
@@ -1441,7 +1448,7 @@ function stripImages(msg){
         return msg;
     }
     return msg.replace(IMAGE_MATCH, function(match,img){
-        return CHANNEL.opts.enable_link_regex ? 
+        return CHANNEL.opts.enable_link_regex ?
             '<a target="_blank" href="'+img+'">'+img+'</a>' : img;
     });
 }

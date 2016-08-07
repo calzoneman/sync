@@ -19,6 +19,7 @@ var order = [
     'ustream.coffee',
     'imgur.coffee',
     'gdrive-youtube.coffee',
+    'hls.coffee',
     'update.coffee'
 ];
 
