@@ -125,13 +125,12 @@ ChatModule.prototype.restrictNewAccount = function restrictNewAccount(user, data
     if (user.account.effectiveRank < 2 && this.channel.modules.options) {
         const firstSeen = user.getFirstSeenTime();
         const opts = this.channel.modules.options;
-        // TODO: configurable times
-        if (firstSeen > Date.now() - opts.get("new_user_chat_delay")) {
+        if (firstSeen > Date.now() - opts.get("new_user_chat_delay")*1000) {
             user.socket.emit("spamFiltered", {
                 reason: "NEW_USER_CHAT"
             });
             return true;
-        } else if ((firstSeen > Date.now() - opts.get("new_user_chat_link_delay"))
+        } else if ((firstSeen > Date.now() - opts.get("new_user_chat_link_delay")*1000)
                 && data.msg.match(LINK)) {
             user.socket.emit("spamFiltered", {
                 reason: "NEW_USER_CHAT_LINK"
@@ -201,7 +200,7 @@ ChatModule.prototype.handlePm = function (user, data) {
             msg: "You must be signed in to send PMs"
         });
     }
-    
+
     // Restrict new accounts/IPs from chatting and posting links
     if (this.restrictNewAccount(user, data)) {
         return;
