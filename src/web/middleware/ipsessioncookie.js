@@ -9,7 +9,7 @@ try {
     SALT = require(SALT_PATH);
 } catch (error) {
     SALT = crypto.randomBytes(32).toString('base64');
-    fs.writeFileSync(SALT_PATH, SALT);
+    fs.writeFileSync(SALT_PATH, JSON.stringify(SALT));
 }
 
 function sha256(input) {
