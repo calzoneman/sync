@@ -52,6 +52,8 @@ function formatURL(data) {
             return data.id;
         case "hb":
             return "http://hitbox.tv/" + data.id;
+        case "hl":
+            return data.id;
         default:
             return "#";
     }

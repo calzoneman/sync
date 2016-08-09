@@ -119,7 +119,7 @@
             });
         }
 
-        return result.join(":"); 
+        return result.join(":");
     },
 
     root.formatTime = function (sec) {
@@ -242,6 +242,8 @@
                 return id;
             case "hb":
                 return "http://hitbox.tv/" + id;
+            case "hl":
+                return id;
             default:
                 return "";
         }
@@ -257,6 +259,7 @@
             case "im":
             case "jw":
             case "hb":
+            case "hl":
                 return true;
             default:
                 return false;
