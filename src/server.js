@@ -18,6 +18,11 @@ module.exports = {
             exists || fs.mkdir(chandumppath);
         });
 
+        var statepath = path.join(__dirname, "../state");
+        fs.exists(statepath, function (exists) {
+            exists || fs.mkdir(statepath);
+        });
+
         var gdvttpath = path.join(__dirname, "../google-drive-subtitles");
         fs.exists(gdvttpath, function (exists) {
             exists || fs.mkdir(gdvttpath);

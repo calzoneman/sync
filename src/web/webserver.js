@@ -146,6 +146,7 @@ module.exports = {
         }
         app.use(cookieParser(webConfig.getCookieSecret()));
         app.use(csrf.init(webConfig.getCookieDomain()));
+        app.use('/r/:channel', require('./middleware/ipsessioncookie').ipSessionCookieMiddleware);
         initializeLog(app);
         require('./middleware/authorize')(app, session);
 
