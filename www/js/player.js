@@ -1305,7 +1305,8 @@
     us: UstreamPlayer,
     im: ImgurPlayer,
     vm: VideoJSPlayer,
-    hl: HLSPlayer
+    hl: HLSPlayer,
+    sb: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {
