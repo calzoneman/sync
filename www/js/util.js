@@ -52,6 +52,8 @@ function formatURL(data) {
             return data.id;
         case "hb":
             return "http://hitbox.tv/" + data.id;
+        case "hl":
+            return data.id;
         case "sb":
             return "https://streamable.com/" + data.id;
         default:
@@ -1368,6 +1370,13 @@ function parseMediaLink(url) {
         };
     }
 
+    if ((m = url.match(/(.*\.m3u8)/))) {
+        return {
+            id: m[1],
+            type: "hl"
+        };
+    }
+
     if((m = url.match(/streamable\.com\/([\w-]+)/))) {
         return {
             id: m[1],
@@ -1450,7 +1459,7 @@ function stripImages(msg){
         return msg;
     }
     return msg.replace(IMAGE_MATCH, function(match,img){
-        return CHANNEL.opts.enable_link_regex ? 
+        return CHANNEL.opts.enable_link_regex ?
             '<a target="_blank" href="'+img+'">'+img+'</a>' : img;
     });
 }

@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -1257,6 +1257,37 @@
 
   })(Player);
 
+  window.HLSPlayer = HLSPlayer = (function(superClass) {
+    extend(HLSPlayer, superClass);
+
+    function HLSPlayer(data) {
+      if (!(this instanceof HLSPlayer)) {
+        return new HLSPlayer(data);
+      }
+      this.setupMeta(data);
+      HLSPlayer.__super__.constructor.call(this, data);
+    }
+
+    HLSPlayer.prototype.load = function(data) {
+      this.setupMeta(data);
+      return HLSPlayer.__super__.load.call(this, data);
+    };
+
+    HLSPlayer.prototype.setupMeta = function(data) {
+      return data.meta.direct = {
+        480: [
+          {
+            link: data.id,
+            contentType: 'application/x-mpegURL'
+          }
+        ]
+      };
+    };
+
+    return HLSPlayer;
+
+  })(VideoJSPlayer);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
@@ -1274,6 +1305,7 @@
     us: UstreamPlayer,
     im: ImgurPlayer,
     vm: VideoJSPlayer,
+    hl: HLSPlayer,
     sb: VideoJSPlayer
   };
 

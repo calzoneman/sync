@@ -458,6 +458,13 @@ var Getters = {
         callback(false, media);
     },
 
+    /* HLS stream */
+    hl: function (id, callback) {
+        var title = "Livestream";
+        var media = new Media(id, title, "--:--", "hl");
+        callback(false, media);
+    },
+
     /* imgur.com albums */
     im: function (id, callback) {
         /**
