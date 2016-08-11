@@ -2,6 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 
+const STATE_FOLDER_PATH = path.resolve(__dirname, '..', '..', '..', 'state');
 const SALT_PATH = path.resolve(__dirname, '..', '..', '..', 'state', 'ipsessionsalt.json');
 
 const NO_EXPIRATION = new Date('Fri, 31 Dec 9999 23:59:59 GMT');
@@ -10,6 +11,13 @@ try {
     SALT = require(SALT_PATH);
 } catch (error) {
     SALT = crypto.randomBytes(32).toString('base64');
+    try {
+        fs.mkdirSync(STATE_FOLDER_PATH);
+    } catch (error) {
+        if (error.code !== 'EEXIST') {
+            throw error;
+        }
+    }
     fs.writeFileSync(SALT_PATH, JSON.stringify(SALT));
 }
 
