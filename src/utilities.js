@@ -297,8 +297,6 @@
             var accumulator = "";
 
             parts = parts.map(function (segment, i) {
-                if (i < 2) return segment;
-
                 var part = iphash(accumulator + segment + i, 3);
                 accumulator += segment;
                 return part;
@@ -314,8 +312,6 @@
             var accumulator = "";
 
             parts = parts.map(function (segment, i) {
-                if (i < 2) return segment;
-
                 var part = iphash(accumulator + segment + i, 4);
                 accumulator += segment;
                 return part;
