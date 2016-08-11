@@ -288,6 +288,7 @@ User.prototype.login = function (name, pw) {
         }
 
         self.account.name = user.name;
+        self.registrationTime = new Date(user.time);
         self.setFlag(Flags.U_REGISTERED);
         self.refreshAccount(function (err, account) {
             if (err) {
@@ -451,11 +452,11 @@ User.prototype.refreshAccount = function (cb) {
 
 User.prototype.getFirstSeenTime = function getFirstSeenTime() {
     if (this.registrationTime && this.socket.ipSessionFirstSeen) {
-        return Math.min(this.registrationTime.getTime(), this.socket.ipSessionFirstSeen);
+        return Math.min(this.registrationTime.getTime(), this.socket.ipSessionFirstSeen.getTime());
     } else if (this.registrationTime) {
         return this.registrationTime.getTime();
     } else if (this.socket.ipSessionFirstSeen) {
-        return this.socket.ipSessionFirstSeen;
+        return this.socket.ipSessionFirstSeen.getTime();
     } else {
         Logger.errlog.log(`User "${this.getName()}" (IP: ${this.realip}) has neither ` +
                 "an IP sesion first seen time nor a registered account.");

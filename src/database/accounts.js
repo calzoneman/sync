@@ -134,7 +134,7 @@ module.exports = {
                 callback(err, null);
                 return;
             }
-            
+
             if (accts.length >= Config.get("max-accounts-per-ip")) {
                 delete registrationLock[lname];
                 callback("You have registered too many accounts from this "+
@@ -207,7 +207,7 @@ module.exports = {
            the hashes match.
         */
 
-        db.query("SELECT name,password,global_rank FROM `users` WHERE name=?",
+        db.query("SELECT name,password,global_rank,time FROM `users` WHERE name=?",
                  [name],
         function (err, rows) {
             if (err) {
