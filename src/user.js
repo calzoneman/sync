@@ -450,15 +450,15 @@ User.prototype.refreshAccount = function (cb) {
 };
 
 User.prototype.getFirstSeenTime = function getFirstSeenTime() {
-    if (this.registrationTime && this.socket.ipReputation && this.socket.ipReputation.first_seen) {
-        return Math.min(this.registrationTime.getTime(), this.socket.ipReputation.first_seen.getTime());
+    if (this.registrationTime && this.socket.ipSessionFirstSeen) {
+        return Math.min(this.registrationTime.getTime(), this.socket.ipSessionFirstSeen);
     } else if (this.registrationTime) {
         return this.registrationTime.getTime();
-    } else if (this.socket.ipReputation && this.socket.ipReputation.first_seen) {
-        return this.socket.ipReputation.first_seen.getTime();
+    } else if (this.socket.ipSessionFirstSeen) {
+        return this.socket.ipSessionFirstSeen;
     } else {
         Logger.errlog.log(`User "${this.getName()}" (IP: ${this.realip}) has neither ` +
-                "an IP reputation nor a registered account.");
+                "an IP sesion first seen time nor a registered account.");
         return Date.now();
     }
 };

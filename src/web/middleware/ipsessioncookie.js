@@ -4,6 +4,7 @@ import crypto from 'crypto';
 
 const SALT_PATH = path.resolve(__dirname, '..', '..', '..', 'state', 'ipsessionsalt.json');
 
+const NO_EXPIRATION = new Date('Fri, 31 Dec 9999 23:59:59 GMT');
 var SALT;
 try {
     SALT = require(SALT_PATH);
@@ -67,7 +68,8 @@ export function ipSessionCookieMiddleware(req, res, next) {
     if (!hasSession) {
         res.cookie('ip-session', createIPSessionCookie(req.realIP, firstSeen), {
             signed: true,
-            httpOnly: true
+            httpOnly: true,
+            expires: NO_EXPIRATION
         });
     }
 
