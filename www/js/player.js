@@ -510,19 +510,20 @@
     VideoJSPlayer.prototype.loadPlayer = function(data) {
       return waitUntilDefined(window, 'videojs', (function(_this) {
         return function() {
-          var sources, video;
+          var video;
           video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item').attr({
             width: '100%',
             height: '100%'
           });
           removeOld(video);
-          sources = sortSources(data.meta.direct);
-          if (sources.length === 0) {
+          _this.sources = sortSources(data.meta.direct);
+          if (_this.sources.length === 0) {
             console.error('VideoJSPlayer::constructor(): data.meta.direct has no sources!');
             _this.mediaType = null;
             return;
           }
-          sources.forEach(function(source) {
+          _this.sourceIdx = 0;
+          _this.sources.forEach(function(source) {
             return $('<source/>').attr({
               src: source.src,
               type: source.type,
@@ -549,6 +550,19 @@
             controls: true
           });
           return _this.player.ready(function() {
+            _this.player.on('error', function() {
+              var err;
+              err = _this.player.error();
+              if (err && err.code === 4) {
+                console.error('Caught error, trying next source');
+                _this.sourceIdx++;
+                if (_this.sourceIdx < _this.sources.length) {
+                  return _this.player.src(_this.sources[_this.sourceIdx]);
+                } else {
+                  return console.error('Out of sources, video will not play');
+                }
+              }
+            });
             _this.setVolume(VOLUME);
             _this.player.on('ended', function() {
               if (CLIENT.leader) {
