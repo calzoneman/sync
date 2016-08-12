@@ -114,12 +114,13 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 # not to run until the ready() function returns.
                 setTimeout(->
                     $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each((i, elem) ->
-                        if elem.textContent == localStorage.lastSubtitle
+                        textNode = elem.childNodes[0]
+                        if textNode.textContent == localStorage.lastSubtitle
                             elem.click()
 
                         elem.onclick = ->
-                            if elem.attributes['aria-selected'].value == 'true'
-                                localStorage.lastSubtitle = elem.textContent
+                            if elem.attributes['aria-checked'].value == 'true'
+                                localStorage.lastSubtitle = textNode.textContent
                     )
                 , 1)
             )

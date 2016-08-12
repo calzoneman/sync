@@ -12,6 +12,8 @@ var YouTube = require("cytube-mediaquery/lib/provider/youtube");
 var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 var Vidme = require("cytube-mediaquery/lib/provider/vidme");
 var Streamable = require("cytube-mediaquery/lib/provider/streamable");
+require("cytube-mediaquery/lib/provider/googledrive").setHTML5HackEnabled(
+        Config.get("google-drive.html5-hack-enabled"));
 
 /*
  * Preference map of quality => youtube formats.

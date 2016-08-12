@@ -30,6 +30,14 @@ window.loadMediaPlayer = (data) ->
             window.PLAYER = new VideoJSPlayer(data)
         catch e
             console.error e
+    else if data.type is 'gd'
+        try
+            if data.meta.html5hack
+                window.PLAYER = new VideoJSPlayer(data)
+            else
+                window.PLAYER = new GoogleDriveYouTubePlayer(data)
+        catch e
+            console.error e
     else if data.type of TYPE_MAP
         try
             window.PLAYER = TYPE_MAP[data.type](data)

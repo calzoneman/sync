@@ -572,12 +572,14 @@
             });
             return setTimeout(function() {
               return $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each(function(i, elem) {
-                if (elem.textContent === localStorage.lastSubtitle) {
+                var textNode;
+                textNode = elem.childNodes[0];
+                if (textNode.textContent === localStorage.lastSubtitle) {
                   elem.click();
                 }
                 return elem.onclick = function() {
-                  if (elem.attributes['aria-selected'].value === 'true') {
-                    return localStorage.lastSubtitle = elem.textContent;
+                  if (elem.attributes['aria-checked'].value === 'true') {
+                    return localStorage.lastSubtitle = textNode.textContent;
                   }
                 };
               });
@@ -1310,7 +1312,7 @@
   };
 
   window.loadMediaPlayer = function(data) {
-    var e, error, error1, error2, error3;
+    var e, error, error1, error2, error3, error4;
     try {
       if (window.PLAYER) {
         window.PLAYER.destroy();
@@ -1326,11 +1328,22 @@
         e = error2;
         return console.error(e);
       }
+    } else if (data.type === 'gd') {
+      try {
+        if (data.meta.html5hack) {
+          return window.PLAYER = new VideoJSPlayer(data);
+        } else {
+          return window.PLAYER = new GoogleDriveYouTubePlayer(data);
+        }
+      } catch (error3) {
+        e = error3;
+        return console.error(e);
+      }
     } else if (data.type in TYPE_MAP) {
       try {
         return window.PLAYER = TYPE_MAP[data.type](data);
-      } catch (error3) {
-        e = error3;
+      } catch (error4) {
+        e = error4;
         return console.error(e);
       }
     }
