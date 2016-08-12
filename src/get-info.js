@@ -12,6 +12,7 @@ var YouTube = require("cytube-mediaquery/lib/provider/youtube");
 var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 var Vidme = require("cytube-mediaquery/lib/provider/vidme");
 var Streamable = require("cytube-mediaquery/lib/provider/streamable");
+var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 
 /*
  * Preference map of quality => youtube formats.
@@ -500,6 +501,7 @@ var Getters = {
 
     /* google docs */
     gd: function (id, callback) {
+        GoogleDrive.setHTML5HackEnabled(Config.get("google-drive.html5-hack-enabled"));
         var data = {
             type: "googledrive",
             kind: "single",
