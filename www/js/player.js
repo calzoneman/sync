@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -666,6 +666,20 @@
 
   })(Player);
 
+  window.GoogleDrivePlayer = GoogleDrivePlayer = (function(superClass) {
+    extend(GoogleDrivePlayer, superClass);
+
+    function GoogleDrivePlayer(data) {
+      if (!(this instanceof GoogleDrivePlayer)) {
+        return new GoogleDrivePlayer(data);
+      }
+      GoogleDrivePlayer.__super__.constructor.call(this, data);
+    }
+
+    return GoogleDrivePlayer;
+
+  })(VideoJSPlayer);
+
   codecToMimeType = function(codec) {
     switch (codec) {
       case 'mov/h264':
@@ -1308,7 +1322,7 @@
     yt: YouTubePlayer,
     vi: VimeoPlayer,
     dm: DailymotionPlayer,
-    gd: GoogleDriveYouTubePlayer,
+    gd: GoogleDrivePlayer,
     gp: VideoJSPlayer,
     fi: FilePlayer,
     jw: FilePlayer,
@@ -1345,7 +1359,7 @@
     } else if (data.type === 'gd') {
       try {
         if (data.meta.html5hack) {
-          return window.PLAYER = new VideoJSPlayer(data);
+          return window.PLAYER = new window.GoogleDrivePlayer(data);
         } else {
           return window.PLAYER = new GoogleDriveYouTubePlayer(data);
         }

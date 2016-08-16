@@ -216,3 +216,6 @@ function eraseCookie(name) {
 
 /* to be implemented in callbacks.js */
 function setupCallbacks() { }
+
+window.enableCyTubeGoogleDriveUserscript = true;
+window.enableCyTubeGoogleDriveUserscriptDebug = true;
