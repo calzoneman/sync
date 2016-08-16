@@ -54,13 +54,14 @@
             url: url,
             onload: function (res) {
                 var data = {};
+                var error;
                 res.responseText.split('&').forEach(function (kv) {
                     var pair = kv.split('=');
                     data[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
                 });
 
                 if (data.status === 'fail') {
-                    var error = new Error('Google Docs request failed: ' +
+                    error = new Error('Google Docs request failed: ' +
                             'metadata indicated status=fail');
                     error.response = res.responseText;
                     error.reason = 'RESPONSE_STATUS_FAIL';
@@ -68,7 +69,7 @@
                 }
 
                 if (!data.fmt_stream_map) {
-                    var error = new Error('Google Docs request failed: ' +
+                    error = new Error('Google Docs request failed: ' +
                             'metadata lookup returned no valid links');
                     error.response = res.responseText;
                     error.reason = 'MISSING_LINKS';
