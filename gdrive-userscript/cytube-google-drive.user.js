@@ -11,10 +11,6 @@
 // ==/UserScript==
 
 (function () {
-    if (!unsafeWindow.enableCyTubeGoogleDriveUserscript) {
-        return;
-    }
-
     function debug(message) {
         if (!unsafeWindow.enableCyTubeGoogleDriveUserscriptDebug) {
             return;
@@ -152,4 +148,5 @@
 
     unsafeWindow.GoogleDrivePlayer = GoogleDrivePlayer;
     unsafeWindow.console.log('Initialized userscript Google Drive player');
+    unsafeWindow.hasDriveUserscript = true;
 })();

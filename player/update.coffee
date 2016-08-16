@@ -32,7 +32,7 @@ window.loadMediaPlayer = (data) ->
             console.error e
     else if data.type is 'gd'
         try
-            if data.meta.html5hack
+            if data.meta.html5hack or window.hasDriveUserscript
                 window.PLAYER = new window.GoogleDrivePlayer(data)
             else
                 window.PLAYER = new GoogleDriveYouTubePlayer(data)

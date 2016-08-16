@@ -1358,7 +1358,7 @@
       }
     } else if (data.type === 'gd') {
       try {
-        if (data.meta.html5hack) {
+        if (data.meta.html5hack || window.hasDriveUserscript) {
           return window.PLAYER = new window.GoogleDrivePlayer(data);
         } else {
           return window.PLAYER = new GoogleDriveYouTubePlayer(data);
