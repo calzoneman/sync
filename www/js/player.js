@@ -503,8 +503,7 @@
       if (!(this instanceof VideoJSPlayer)) {
         return new VideoJSPlayer(data);
       }
-      this.setMediaProperties(data);
-      this.loadPlayer(data);
+      this.load(data);
     }
 
     VideoJSPlayer.prototype.loadPlayer = function(data) {
@@ -675,6 +674,28 @@
       }
       GoogleDrivePlayer.__super__.constructor.call(this, data);
     }
+
+    GoogleDrivePlayer.prototype.load = function(data) {
+      if (typeof window.getGoogleDriveMetadata === 'function') {
+        return window.getGoogleDriveMetadata(data.id, (function(_this) {
+          return function(error, metadata) {
+            var alertBox;
+            if (error) {
+              console.error(error);
+              alertBox = window.document.createElement('div');
+              alertBox.className = 'alert alert-danger';
+              alertBox.textContent = error.message;
+              return document.getElementById('ytapiplayer').appendChild(alertBox);
+            } else {
+              data.meta.direct = metadata.videoMap;
+              return GoogleDrivePlayer.__super__.load.call(_this, data);
+            }
+          };
+        })(this));
+      } else {
+        return GoogleDrivePlayer.__super__.load.call(this, data);
+      }
+    };
 
     return GoogleDrivePlayer;
 
@@ -1359,7 +1380,7 @@
     } else if (data.type === 'gd') {
       try {
         if (data.meta.html5hack || window.hasDriveUserscript) {
-          return window.PLAYER = new window.GoogleDrivePlayer(data);
+          return window.PLAYER = new GoogleDrivePlayer(data);
         } else {
           return window.PLAYER = new GoogleDriveYouTubePlayer(data);
         }

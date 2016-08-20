@@ -7,16 +7,20 @@
 // @grant GM_xmlhttpRequest
 // @connect docs.google.com
 // @run-at document-end
-// @version 1.0.0
+// @version 1.1.0
 // ==/UserScript==
 
-(function () {
+try {
     function debug(message) {
         if (!unsafeWindow.enableCyTubeGoogleDriveUserscriptDebug) {
             return;
         }
 
-        unsafeWindow.console.log.apply(unsafeWindow.console, arguments);
+        try {
+            unsafeWindow.console.log(message);
+        } catch (error) {
+            unsafeWindow.console.error(error);
+        }
     }
 
     var ITAG_QMAP = {
@@ -53,36 +57,42 @@
             method: 'GET',
             url: url,
             onload: function (res) {
-                var data = {};
-                var error;
-                res.responseText.split('&').forEach(function (kv) {
-                    var pair = kv.split('=');
-                    data[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-                });
+                try {
+                    debug('Got response ' + res.responseText);
+                    var data = {};
+                    var error;
+                    res.responseText.split('&').forEach(function (kv) {
+                        var pair = kv.split('=');
+                        data[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+                    });
 
-                if (data.status === 'fail') {
-                    error = new Error('Google Docs request failed: ' +
-                            'metadata indicated status=fail');
-                    error.response = res.responseText;
-                    error.reason = 'RESPONSE_STATUS_FAIL';
-                    return cb(error);
+                    if (data.status === 'fail') {
+                        error = new Error('Google Docs request failed: ' +
+                                'metadata indicated status=fail');
+                        error.response = res.responseText;
+                        error.reason = 'RESPONSE_STATUS_FAIL';
+                        return cb(error);
+                    }
+
+                    if (!data.fmt_stream_map) {
+                        error = new Error('Google Docs request failed: ' +
+                                'metadata lookup returned no valid links');
+                        error.response = res.responseText;
+                        error.reason = 'MISSING_LINKS';
+                        return cb(error);
+                    }
+
+                    data.links = {};
+                    data.fmt_stream_map.split(',').forEach(function (item) {
+                        var pair = item.split('|');
+                        data.links[pair[0]] = pair[1];
+                    });
+                    data.videoMap = mapLinks(data.links);
+
+                    cb(null, data);
+                } catch (error) {
+                    unsafeWindow.console.error(error);
                 }
-
-                if (!data.fmt_stream_map) {
-                    error = new Error('Google Docs request failed: ' +
-                            'metadata lookup returned no valid links');
-                    error.response = res.responseText;
-                    error.reason = 'MISSING_LINKS';
-                    return cb(error);
-                }
-
-                data.links = {};
-                data.fmt_stream_map.split(',').forEach(function (item) {
-                    var pair = item.split('|');
-                    data.links[pair[0]] = pair[1];
-                });
-
-                cb(null, data);
             },
 
             onerror: function () {
@@ -118,36 +128,83 @@
         return videos;
     }
 
-    function GoogleDrivePlayer(data) {
-        if (!(this instanceof GoogleDrivePlayer)) {
-            return new GoogleDrivePlayer(data);
-        }
+    /*
+     * Greasemonkey 2.0 has this wonderful sandbox that attempts
+     * to prevent script developers from shooting themselves in
+     * the foot by removing the trigger from the gun, i.e. it's
+     * impossible to cross the boundary between the browser JS VM
+     * and the privileged sandbox that can run GM_xmlhttpRequest().
+     *
+     * So in this case, we have to resort to polling a special
+     * variable to see if getGoogleDriveMetadata needs to be called
+     * and deliver the result into another special variable that is
+     * being polled on the browser side.
+     */
 
-        this.setMediaProperties(data);
-        this.load(data);
+    /*
+     * Browser side function -- sets gdUserscript.pollID to the
+     * ID of the Drive video to be queried and polls
+     * gdUserscript.pollResult for the result.
+     */
+    function getGoogleDriveMetadata_GM(id, callback) {
+        debug('Setting GD poll ID to ' + id);
+        unsafeWindow.gdUserscript.pollID = id;
+        var tries = 0;
+        var i = setInterval(function () {
+            if (unsafeWindow.gdUserscript.pollResult) {
+                debug('Got result');
+                clearInterval(i);
+                var result = unsafeWindow.gdUserscript.pollResult;
+                unsafeWindow.gdUserscript.pollResult = null;
+                callback(result.error, result.result);
+            } else if (++tries > 100) {
+                // Took longer than 10 seconds, give up
+                clearInterval(i);
+            }
+        }, 100);
     }
 
-    GoogleDrivePlayer.prototype = Object.create(unsafeWindow.VideoJSPlayer.prototype);
-
-    GoogleDrivePlayer.prototype.load = function (data) {
-        var self = this;
-        getVideoInfo(data.id, function (err, videoData) {
-            if (err) {
-                debug(err);
-                var alertBox = unsafeWindow.document.createElement('div');
-                alertBox.className = 'alert alert-danger';
-                alertBox.textContent = err.message;
-                document.getElementById('ytapiplayer').appendChild(alertBox);
-                return;
+    /*
+     * Sandbox side function -- polls gdUserscript.pollID for
+     * the ID of a Drive video to be queried, looks up the
+     * metadata, and stores it in gdUserscript.pollResult
+     */
+    function setupGDPoll() {
+        unsafeWindow.gdUserscript = cloneInto({}, unsafeWindow);
+        var pollInterval = setInterval(function () {
+            if (unsafeWindow.gdUserscript.pollID) {
+                var id = unsafeWindow.gdUserscript.pollID;
+                unsafeWindow.gdUserscript.pollID = null;
+                debug('Polled and got ' + id);
+                getVideoInfo(id, function (error, data) {
+                    unsafeWindow.gdUserscript.pollResult = cloneInto({
+                        error: error,
+                        result: data
+                    }, unsafeWindow);
+                });
             }
+        }, 1000);
+    }
 
-            debug('Retrieved links: ' + JSON.stringify(videoData.links));
-            data.meta.direct = mapLinks(videoData.links);
-            unsafeWindow.VideoJSPlayer.prototype.loadPlayer.call(self, data);
-        });
-    };
+    function isRunningTampermonkey() {
+        try {
+            return GM_info.scriptHandler === 'Tampermonkey';
+        } catch (error) {
+            return false;
+        }
+    }
 
-    unsafeWindow.GoogleDrivePlayer = GoogleDrivePlayer;
+    if (isRunningTampermonkey()) {
+        unsafeWindow.getGoogleDriveMetadata = getVideoInfo;
+    } else {
+        debug('Using non-TM polling workaround');
+        unsafeWindow.getGoogleDriveMetadata = exportFunction(
+                getGoogleDriveMetadata_GM, unsafeWindow);
+        setupGDPoll();
+    }
+
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
-})();
+} catch (error) {
+    unsafeWindow.console.error(error);
+}

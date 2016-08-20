@@ -43,8 +43,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
         if not (this instanceof VideoJSPlayer)
             return new VideoJSPlayer(data)
 
-        @setMediaProperties(data)
-        @loadPlayer(data)
+        @load(data)
 
     loadPlayer: (data) ->
         waitUntilDefined(window, 'videojs', =>

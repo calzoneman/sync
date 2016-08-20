@@ -33,7 +33,7 @@ window.loadMediaPlayer = (data) ->
     else if data.type is 'gd'
         try
             if data.meta.html5hack or window.hasDriveUserscript
-                window.PLAYER = new window.GoogleDrivePlayer(data)
+                window.PLAYER = new GoogleDrivePlayer(data)
             else
                 window.PLAYER = new GoogleDriveYouTubePlayer(data)
         catch e
