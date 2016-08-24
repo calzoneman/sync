@@ -558,7 +558,10 @@
                 if (_this.sourceIdx < _this.sources.length) {
                   return _this.player.src(_this.sources[_this.sourceIdx]);
                 } else {
-                  return console.error('Out of sources, video will not play');
+                  console.error('Out of sources, video will not play');
+                  if (_this.mediaType === 'gd' && !window.hasDriveUserscript) {
+                    return window.promptToInstallDriveUserscript();
+                  }
                 }
               }
             });
@@ -1179,6 +1182,7 @@
 
     GoogleDriveYouTubePlayer.prototype.init = function(data) {
       var embed;
+      window.promptToInstallDriveUserscript();
       embed = $('<embed />').attr({
         type: 'application/x-shockwave-flash',
         src: "https://www.youtube.com/get_player?docid=" + data.id + "&ps=docs&partnerid=30&enablejsapi=1&cc_load_policy=1&auth_timeout=86400000000",
@@ -1307,6 +1311,32 @@
     return GoogleDriveYouTubePlayer;
 
   })(Player);
+
+  window.promptToInstallDriveUserscript = function() {
+    var alertBox, closeButton, infoLink;
+    if (document.getElementById('prompt-install-drive-userscript')) {
+      return;
+    }
+    alertBox = document.createElement('div');
+    alertBox.id = 'prompt-install-drive-userscript';
+    alertBox.className = 'alert alert-info';
+    alertBox.innerHTML = "Due to continual breaking changes making it increasingly difficult to\nmaintain Google Drive support, you can now install a userscript that\nsimplifies the code and has better compatibility.  In the future, the\nold player will be removed.";
+    alertBox.appendChild(document.createElement('br'));
+    infoLink = document.createElement('a');
+    infoLink.className = 'btn btn-info';
+    infoLink.href = '/google_drive_userscript';
+    infoLink.textContent = 'Click here for details';
+    infoLink.target = '_blank';
+    alertBox.appendChild(infoLink);
+    closeButton = document.createElement('button');
+    closeButton.className = 'close pull-right';
+    closeButton.innerHTML = '&times;';
+    closeButton.onclick = function() {
+      return alertBox.parentNode.removeChild(alertBox);
+    };
+    alertBox.insertBefore(closeButton, alertBox.firstChild);
+    return document.getElementById('videowrap').appendChild(alertBox);
+  };
 
   window.HLSPlayer = HLSPlayer = (function(superClass) {
     extend(HLSPlayer, superClass);

@@ -1,3 +1,16 @@
+2016-08-23
+==========
+
+A few weeks ago, the previous Google Drive player stopped working.  This is
+nothing new; Google Drive has consistently broken a few times a year ever since
+support for it was added.  However, it's becoming increasingly difficult and
+complicated to provide good support for Google Drive, so I've made the decision
+to phase out the native player and require a userscript for it, in order to
+bypass CORS and allow each browser to request the video stream itself.
+
+See [the updated documentation](docs/gdrive-userscript-serveradmins.md) for
+details on how to enable this for your users.
+
 2016-04-27
 ==========
 
