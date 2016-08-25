@@ -15,6 +15,7 @@ var crypto = require("crypto");
 var isTorExit = require("../tor").isTorExit;
 var session = require("../session");
 import counters from '../counters';
+import { verifyIPSessionCookie } from '../web/middleware/ipsessioncookie';
 
 var CONNECT_RATE = {
     burst: 5,
@@ -25,33 +26,54 @@ var ipThrottle = {};
 // Keep track of number of connections per IP
 var ipCount = {};
 
+function parseCookies(socket, accept) {
+    var req = socket.request;
+    if (req.headers.cookie) {
+        cookieParser(req, null, () => {
+            accept(null, true);
+        });
+    } else {
+        req.cookies = {};
+        req.signedCookies = {};
+        accept(null, true);
+    }
+}
 /**
  * Called before an incoming socket.io connection is accepted.
  */
 function handleAuth(socket, accept) {
-    var data = socket.request;
-
     socket.user = false;
-    if (data.headers.cookie) {
-        cookieParser(data, null, function () {
-            var auth = data.signedCookies.auth;
-            if (!auth) {
-                return accept(null, true);
-            }
-
-            session.verifySession(auth, function (err, user) {
-                if (!err) {
-                    socket.user = {
-                        name: user.name,
-                        global_rank: user.global_rank
-                    };
-                }
-                accept(null, true);
-            });
-        });
-    } else {
-        accept(null, true);
+    var auth = socket.request.signedCookies.auth;
+    if (!auth) {
+        return accept(null, true);
     }
+
+    session.verifySession(auth, function (err, user) {
+        if (!err) {
+            socket.user = {
+                name: user.name,
+                global_rank: user.global_rank,
+                registrationTime: new Date(user.time)
+            };
+        }
+        accept(null, true);
+    });
+}
+
+function handleIPSessionCookie(socket, accept) {
+    var cookie = socket.request.signedCookies['ip-session'];
+    if (!cookie) {
+        socket.ipSessionFirstSeen = new Date();
+        return accept(null, true);
+    }
+
+    var sessionMatch = verifyIPSessionCookie(socket._realip, cookie);
+    if (sessionMatch) {
+        socket.ipSessionFirstSeen = sessionMatch.date;
+    } else {
+        socket.ipSessionFirstSeen = new Date();
+    }
+    accept(null, true);
 }
 
 function throttleIP(sock) {
@@ -214,6 +236,7 @@ function handleConnection(sock) {
         user.setFlag(Flags.U_REGISTERED);
         user.clearFlag(Flags.U_READY);
         user.account.name = sock.user.name;
+        user.registrationTime = sock.user.registrationTime;
         user.refreshAccount(function (err, account) {
             if (err) {
                 user.clearFlag(Flags.U_REGISTERED);
@@ -247,8 +270,10 @@ module.exports = {
         };
         var io = sio.instance = sio();
 
-        io.use(handleAuth);
         io.use(ipForwardingMiddleware(webConfig));
+        io.use(parseCookies);
+        io.use(handleIPSessionCookie);
+        io.use(handleAuth);
         io.on("connection", handleConnection);
 
         Config.get("listen").forEach(function (bind) {

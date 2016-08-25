@@ -636,6 +636,36 @@ $(".cs-textbox").keyup(function () {
     }, 1000);
 });
 
+$(".cs-textbox-timeinput").keyup(function (event) {
+    var box = $(this);
+    var key = box.attr("id").replace("cs-", "");
+    var value = box.val();
+    var lastkey = Date.now();
+    box.data("lastkey", lastkey);
+
+    setTimeout(function () {
+        if (box.data("lastkey") !== lastkey || box.val() !== value) {
+            return;
+        }
+
+        $("#cs-textbox-timeinput-validation-error-" + key).remove();
+        $(event.target).parent().removeClass("has-error");
+        var data = {};
+        try {
+            data[key] = parseTimeout(value);
+        } catch (error) {
+            var msg = "Invalid timespan value '" + value + "'.  Please use the format " +
+                      "HH:MM:SS or enter a single number for the number of seconds.";
+            var validationError = $("<p/>").addClass("text-danger").text(msg)
+                    .attr("id", "cs-textbox-timeinput-validation-error-" + key);
+            validationError.insertAfter(event.target);
+            $(event.target).parent().addClass("has-error");
+            return;
+        }
+        socket.emit("setOptions", data);
+    }, 1000);
+});
+
 $("#cs-chanlog-refresh").click(function () {
     socket.emit("readChanLog");
 });

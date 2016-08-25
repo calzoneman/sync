@@ -88,6 +88,22 @@ Callbacks = {
         scrollChat();
     },
 
+    spamFiltered: function(data) {
+        var message = "Spam Filtered.";
+        switch (data.reason) {
+            case "NEW_USER_CHAT":
+                message = "Your account is too new to chat in this channel.  " +
+                        "Please wait a while and try again.";
+                break;
+            case "NEW_USER_CHAT_LINK":
+                message = "Your account is too new to post links in this channel.  " +
+                        "Please wait a while and try again.";
+                break;
+        }
+
+        errDialog(message);
+    },
+
     needPassword: function (wrongpw) {
         var div = $("<div/>");
         $("<strong/>").text("Channel Password")

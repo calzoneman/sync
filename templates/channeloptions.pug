@@ -46,6 +46,15 @@ mixin textbox-auto(id, label, placeholder)
       else
         input.form-control.cs-textbox(id=id, type="text")
 
+mixin textbox-timeinput-auto(id, label, placeholder)
+  .form-group
+    label.control-label.col-sm-4(for=id)= label
+    .col-sm-8
+      if placeholder
+        input.form-control.cs-textbox-timeinput(id=id, type="text", placeholder=placeholder)
+      else
+        input.form-control.cs-textbox-timeinput(id=id, type="text")
+
 mixin miscoptions
   #cs-miscoptions.tab-pane.active
     h4 General Settings
@@ -63,6 +72,11 @@ mixin miscoptions
       +rcheckbox-auto("cs-chat_antiflood", "Throttle chat")
       +textbox-auto("cs-chat_antiflood_burst", "# of messages allowed before throttling")
       +textbox-auto("cs-chat_antiflood_sustained", "# of messages (after burst) allowed per second")
+      +textbox-timeinput-auto("cs-new_user_chat_delay", "Delay before new accounts can chat", "0")
+      .form-group
+        .col-sm-8.col-sm-offset-4
+          span.text-info Restrictions to new accounts can be disabled by setting the delay to 0.
+      +textbox-timeinput-auto("cs-new_user_chat_link_delay", "Delay before new accounts can post links in chat", "0")
       .form-group
         .col-sm-8.col-sm-offset-4
           span.text-info Changes are automatically saved.

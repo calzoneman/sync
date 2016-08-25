@@ -761,18 +761,23 @@ function applyOpts() {
     }
 }
 
-function showPollMenu() {
-    function parseTimeout(t) {
-        var m;
-        if (m = t.match(/^(\d+):(\d+)$/)) {
-            return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
-        } else if (m = t.match(/^(\d+)$/)) {
-            return parseInt(m[1], 10);
-        } else {
-            throw new Error("Invalid timeout value '" + t + "'");
-        }
+function parseTimeout(t) {
+    var m;
+    if (m = t.match(/^(\d+):(\d+):(\d+)$/)) {
+        // HH:MM:SS
+        return parseInt(m[1], 10) * 3600 + parseInt(m[2], 10) * 60 + parseInt(m[3], 10);
+    } else if (m = t.match(/^(\d+):(\d+)$/)) {
+        // MM:SS
+        return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+    } else if (m = t.match(/^(\d+)$/)) {
+        // Seconds
+        return parseInt(m[1], 10);
+    } else {
+        throw new Error("Invalid timeout value '" + t + "'");
     }
+}
 
+function showPollMenu() {
     $("#pollwrap .poll-menu").remove();
     var menu = $("<div/>").addClass("well poll-menu")
         .prependTo($("#pollwrap"));
@@ -932,6 +937,8 @@ function handleModPermissions() {
     $("#cs-torbanned").prop("checked", CHANNEL.opts.torbanned);
     $("#cs-allow_ascii_control").prop("checked", CHANNEL.opts.allow_ascii_control);
     $("#cs-playlist_max_per_user").val(CHANNEL.opts.playlist_max_per_user || 0);
+    $("#cs-new_user_chat_delay").val(formatTime(CHANNEL.opts.new_user_chat_delay || 0));
+    $("#cs-new_user_chat_link_delay").val(formatTime(CHANNEL.opts.new_user_chat_link_delay || 0));
     (function() {
         if(typeof CHANNEL.opts.maxlength != "number") {
             $("#cs-maxlength").val("");
