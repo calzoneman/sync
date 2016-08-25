@@ -2,7 +2,7 @@ TYPE_MAP =
     yt: YouTubePlayer
     vi: VimeoPlayer
     dm: DailymotionPlayer
-    gd: GoogleDriveYouTubePlayer
+    gd: GoogleDrivePlayer
     gp: VideoJSPlayer
     fi: FilePlayer
     jw: FilePlayer
@@ -32,8 +32,8 @@ window.loadMediaPlayer = (data) ->
             console.error e
     else if data.type is 'gd'
         try
-            if data.meta.html5hack
-                window.PLAYER = new VideoJSPlayer(data)
+            if data.meta.html5hack or window.hasDriveUserscript
+                window.PLAYER = new GoogleDrivePlayer(data)
             else
                 window.PLAYER = new GoogleDriveYouTubePlayer(data)
         catch e

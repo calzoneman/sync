@@ -2,7 +2,7 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.19.0",
+  "version": "3.20.0",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
@@ -47,7 +47,8 @@
     "build-player": "$npm_node_execpath build-player.js",
     "build-server": "babel -D --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/",
     "postinstall": "./postinstall.sh",
-    "server-dev": "babel -D --watch --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/"
+    "server-dev": "babel -D --watch --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/",
+    "generate-userscript": "$npm_node_execpath gdrive-userscript/generate-userscript $@ > www/js/cytube-google-drive.user.js"
   },
   "devDependencies": {
     "coffee-script": "^1.9.2"

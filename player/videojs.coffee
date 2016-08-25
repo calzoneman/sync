@@ -43,8 +43,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
         if not (this instanceof VideoJSPlayer)
             return new VideoJSPlayer(data)
 
-        @setMediaProperties(data)
-        @loadPlayer(data)
+        @load(data)
 
     loadPlayer: (data) ->
         waitUntilDefined(window, 'videojs', =>
@@ -94,6 +93,8 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                             @player.src(@sources[@sourceIdx])
                         else
                             console.error('Out of sources, video will not play')
+                            if @mediaType is 'gd' and not window.hasDriveUserscript
+                                window.promptToInstallDriveUserscript()
                 )
                 @setVolume(VOLUME)
                 @player.on('ended', ->

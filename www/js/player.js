@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -503,8 +503,7 @@
       if (!(this instanceof VideoJSPlayer)) {
         return new VideoJSPlayer(data);
       }
-      this.setMediaProperties(data);
-      this.loadPlayer(data);
+      this.load(data);
     }
 
     VideoJSPlayer.prototype.loadPlayer = function(data) {
@@ -559,7 +558,10 @@
                 if (_this.sourceIdx < _this.sources.length) {
                   return _this.player.src(_this.sources[_this.sourceIdx]);
                 } else {
-                  return console.error('Out of sources, video will not play');
+                  console.error('Out of sources, video will not play');
+                  if (_this.mediaType === 'gd' && !window.hasDriveUserscript) {
+                    return window.promptToInstallDriveUserscript();
+                  }
                 }
               }
             });
@@ -665,6 +667,42 @@
     return VideoJSPlayer;
 
   })(Player);
+
+  window.GoogleDrivePlayer = GoogleDrivePlayer = (function(superClass) {
+    extend(GoogleDrivePlayer, superClass);
+
+    function GoogleDrivePlayer(data) {
+      if (!(this instanceof GoogleDrivePlayer)) {
+        return new GoogleDrivePlayer(data);
+      }
+      GoogleDrivePlayer.__super__.constructor.call(this, data);
+    }
+
+    GoogleDrivePlayer.prototype.load = function(data) {
+      if (typeof window.getGoogleDriveMetadata === 'function') {
+        return window.getGoogleDriveMetadata(data.id, (function(_this) {
+          return function(error, metadata) {
+            var alertBox;
+            if (error) {
+              console.error(error);
+              alertBox = window.document.createElement('div');
+              alertBox.className = 'alert alert-danger';
+              alertBox.textContent = error.message;
+              return document.getElementById('ytapiplayer').appendChild(alertBox);
+            } else {
+              data.meta.direct = metadata.videoMap;
+              return GoogleDrivePlayer.__super__.load.call(_this, data);
+            }
+          };
+        })(this));
+      } else {
+        return GoogleDrivePlayer.__super__.load.call(this, data);
+      }
+    };
+
+    return GoogleDrivePlayer;
+
+  })(VideoJSPlayer);
 
   codecToMimeType = function(codec) {
     switch (codec) {
@@ -1144,6 +1182,7 @@
 
     GoogleDriveYouTubePlayer.prototype.init = function(data) {
       var embed;
+      window.promptToInstallDriveUserscript();
       embed = $('<embed />').attr({
         type: 'application/x-shockwave-flash',
         src: "https://www.youtube.com/get_player?docid=" + data.id + "&ps=docs&partnerid=30&enablejsapi=1&cc_load_policy=1&auth_timeout=86400000000",
@@ -1273,6 +1312,32 @@
 
   })(Player);
 
+  window.promptToInstallDriveUserscript = function() {
+    var alertBox, closeButton, infoLink;
+    if (document.getElementById('prompt-install-drive-userscript')) {
+      return;
+    }
+    alertBox = document.createElement('div');
+    alertBox.id = 'prompt-install-drive-userscript';
+    alertBox.className = 'alert alert-info';
+    alertBox.innerHTML = "Due to continual breaking changes making it increasingly difficult to\nmaintain Google Drive support, you can now install a userscript that\nsimplifies the code and has better compatibility.  In the future, the\nold player will be removed.";
+    alertBox.appendChild(document.createElement('br'));
+    infoLink = document.createElement('a');
+    infoLink.className = 'btn btn-info';
+    infoLink.href = '/google_drive_userscript';
+    infoLink.textContent = 'Click here for details';
+    infoLink.target = '_blank';
+    alertBox.appendChild(infoLink);
+    closeButton = document.createElement('button');
+    closeButton.className = 'close pull-right';
+    closeButton.innerHTML = '&times;';
+    closeButton.onclick = function() {
+      return alertBox.parentNode.removeChild(alertBox);
+    };
+    alertBox.insertBefore(closeButton, alertBox.firstChild);
+    return document.getElementById('videowrap').appendChild(alertBox);
+  };
+
   window.HLSPlayer = HLSPlayer = (function(superClass) {
     extend(HLSPlayer, superClass);
 
@@ -1308,7 +1373,7 @@
     yt: YouTubePlayer,
     vi: VimeoPlayer,
     dm: DailymotionPlayer,
-    gd: GoogleDriveYouTubePlayer,
+    gd: GoogleDrivePlayer,
     gp: VideoJSPlayer,
     fi: FilePlayer,
     jw: FilePlayer,
@@ -1344,8 +1409,8 @@
       }
     } else if (data.type === 'gd') {
       try {
-        if (data.meta.html5hack) {
-          return window.PLAYER = new VideoJSPlayer(data);
+        if (data.meta.html5hack || window.hasDriveUserscript) {
+          return window.PLAYER = new GoogleDrivePlayer(data);
         } else {
           return window.PLAYER = new GoogleDriveYouTubePlayer(data);
         }
