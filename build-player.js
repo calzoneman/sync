@@ -8,6 +8,7 @@ var order = [
     'youtube.coffee',
     'dailymotion.coffee',
     'videojs.coffee',
+    'gdrive-player.coffee',
     'raw-file.coffee',
     'soundcloud.coffee',
     'embed.coffee',
@@ -19,6 +20,7 @@ var order = [
     'ustream.coffee',
     'imgur.coffee',
     'gdrive-youtube.coffee',
+    'hls.coffee',
     'update.coffee'
 ];
 

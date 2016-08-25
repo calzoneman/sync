@@ -36,6 +36,9 @@ function getBaseUrl(res) {
  * Renders and serves a pug template
  */
 function sendPug(res, view, locals) {
+    if (!locals) {
+        locals = {};
+    }
     locals.loggedIn = locals.loggedIn || !!res.user;
     locals.loginName = locals.loginName || res.user ? res.user.name : false;
     locals.superadmin = locals.superadmin || res.user ? res.user.global_rank >= 255 : false;

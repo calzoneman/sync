@@ -178,6 +178,7 @@ module.exports = {
         require('./account').init(app);
         require('./acp').init(app);
         require('../google2vtt').attach(app);
+        require('./routes/google_drive_userscript')(app);
         app.use(serveStatic(path.join(__dirname, '..', '..', 'www'), {
             maxAge: webConfig.getCacheTTL()
         }));

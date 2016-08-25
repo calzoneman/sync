@@ -1,0 +1,74 @@
+doctype html
+html(lang="en")
+  head
+    include head
+    +head()
+  body
+    #wrap
+      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+        include nav
+        +navheader()
+        #nav-collapsible.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            +navdefaultlinks("/google_drive_userscript")
+          +navloginlogout("/google_drive_userscript")
+      section#mainpage
+        .container
+          .col-md-8.col-md-offset-2
+            h1 Google Drive Userscript
+            h2 Why?
+            p.
+              Since Google Drive support was launched in early 2014, it has broken
+              at least 4-5 times, requiring increasing effort to get it working again
+              and disrupting many channels.  This is because there is no official API
+              for it like there is for YouTube videos, which means support for it
+              relies on undocumented tricks.  In August 2016, the decision was made
+              to phase out the native support for Google Drive and instead require
+              users to install a userscript, which allows to bypass certain browser
+              restrictions and make the code easier, simpler, and less prone to failure
+              (it could still break due to future Google Drive changes, but is less
+              likely to be difficult to fix).
+            h2 How It Works
+            p.
+              The userscript is a short script that you can install using a browser
+              extension such as Greasemonkey or Tampermonkey that runs on the page
+              and provides additional functionality needed to play Google Drive
+              videos.
+            h2 Installation
+            ul
+              li
+                strong Chrome
+                | &mdash;Install <a href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo" target="_blank">Tampermonkey</a>.
+              li
+                strong Firefox
+                | &mdash;Install <a href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/" target="_blank">Tampermonkey</a>
+                | or <a href="https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/" target="_blank">Greasemonkey</a>.
+              li
+                strong Other Browsers
+                | &mdash;Install the appropriate userscript plugin for your browser.
+                | Tampermonkey supports many browsers besides Chrome.
+            p.
+              Once you have installed the userscript manager addon for your browser,
+              you can <a href="/js/cytube-google-drive.user.js?v=1.1" target="_blank">
+              install the userscript</a>.  If this link 404s, it means the administrator
+              of this server hasn't generated it yet.
+            p.
+              You can find a guide with screenshots of the installation process
+              <a href="https://github.com/calzoneman/sync/wiki/Google-Drive-Userscript-Installation-Guide" target="_blank">on GitHub</a>.
+
+    include footer
+    +footer()
+    script(type="text/javascript").
+      function showEmail(btn, email, key) {
+        email = unescape(email);
+        key = unescape(key);
+        var dest = new Array(email.length);
+        for (var i = 0; i < email.length; i++) {
+          dest[i] = String.fromCharCode(email.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        email = dest.join("");
+        $("<a/>").attr("href", "mailto:" + email)
+          .text(email)
+          .insertBefore(btn);
+        $(btn).remove();
+      }

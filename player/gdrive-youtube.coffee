@@ -7,6 +7,7 @@ window.GoogleDriveYouTubePlayer = class GoogleDriveYouTubePlayer extends Player
         @init(data)
 
     init: (data) ->
+        window.promptToInstallDriveUserscript()
         embed = $('<embed />').attr(
             type: 'application/x-shockwave-flash'
             src: "https://www.youtube.com/get_player?docid=#{data.id}&ps=docs\
@@ -102,3 +103,30 @@ window.GoogleDriveYouTubePlayer = class GoogleDriveYouTubePlayer extends Player
                 cb(@yt.getVolume() / 100)
         else
             cb(VOLUME)
+
+window.promptToInstallDriveUserscript = ->
+    if document.getElementById('prompt-install-drive-userscript')
+        return
+    alertBox = document.createElement('div')
+    alertBox.id = 'prompt-install-drive-userscript'
+    alertBox.className = 'alert alert-info'
+    alertBox.innerHTML = """
+Due to continual breaking changes making it increasingly difficult to
+maintain Google Drive support, you can now install a userscript that
+simplifies the code and has better compatibility.  In the future, the
+old player will be removed."""
+    alertBox.appendChild(document.createElement('br'))
+    infoLink = document.createElement('a')
+    infoLink.className = 'btn btn-info'
+    infoLink.href = '/google_drive_userscript'
+    infoLink.textContent = 'Click here for details'
+    infoLink.target = '_blank'
+    alertBox.appendChild(infoLink)
+
+    closeButton = document.createElement('button')
+    closeButton.className = 'close pull-right'
+    closeButton.innerHTML = '&times;'
+    closeButton.onclick = ->
+        alertBox.parentNode.removeChild(alertBox)
+    alertBox.insertBefore(closeButton, alertBox.firstChild)
+    document.getElementById('videowrap').appendChild(alertBox)

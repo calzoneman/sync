@@ -675,7 +675,7 @@ PlaylistModule.prototype.handlePlayNext = function (user) {
         title = this.current.media.title;
     }
 
-    this.channel.logger.log("[playlist] " + user.getName() + " skipped" + title);
+    this.channel.logger.log("[playlist] " + user.getName() + " skipped " + title);
     this._playNext();
 };
 

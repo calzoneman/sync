@@ -52,6 +52,8 @@ function formatURL(data) {
             return data.id;
         case "hb":
             return "http://hitbox.tv/" + data.id;
+        case "hl":
+            return data.id;
         case "sb":
             return "https://streamable.com/" + data.id;
         default:
@@ -1372,6 +1374,13 @@ function parseMediaLink(url) {
         return {
             id: m[1],
             type: "vm"
+        };
+    }
+
+    if ((m = url.match(/(.*\.m3u8)/))) {
+        return {
+            id: m[1],
+            type: "hl"
         };
     }
 

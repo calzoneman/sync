@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -503,26 +503,26 @@
       if (!(this instanceof VideoJSPlayer)) {
         return new VideoJSPlayer(data);
       }
-      this.setMediaProperties(data);
-      this.loadPlayer(data);
+      this.load(data);
     }
 
     VideoJSPlayer.prototype.loadPlayer = function(data) {
       return waitUntilDefined(window, 'videojs', (function(_this) {
         return function() {
-          var sources, video;
+          var video;
           video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item').attr({
             width: '100%',
             height: '100%'
           });
           removeOld(video);
-          sources = sortSources(data.meta.direct);
-          if (sources.length === 0) {
+          _this.sources = sortSources(data.meta.direct);
+          if (_this.sources.length === 0) {
             console.error('VideoJSPlayer::constructor(): data.meta.direct has no sources!');
             _this.mediaType = null;
             return;
           }
-          sources.forEach(function(source) {
+          _this.sourceIdx = 0;
+          _this.sources.forEach(function(source) {
             return $('<source/>').attr({
               src: source.src,
               type: source.type,
@@ -549,6 +549,22 @@
             controls: true
           });
           return _this.player.ready(function() {
+            _this.player.on('error', function() {
+              var err;
+              err = _this.player.error();
+              if (err && err.code === 4) {
+                console.error('Caught error, trying next source');
+                _this.sourceIdx++;
+                if (_this.sourceIdx < _this.sources.length) {
+                  return _this.player.src(_this.sources[_this.sourceIdx]);
+                } else {
+                  console.error('Out of sources, video will not play');
+                  if (_this.mediaType === 'gd' && !window.hasDriveUserscript) {
+                    return window.promptToInstallDriveUserscript();
+                  }
+                }
+              }
+            });
             _this.setVolume(VOLUME);
             _this.player.on('ended', function() {
               if (CLIENT.leader) {
@@ -572,12 +588,14 @@
             });
             return setTimeout(function() {
               return $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each(function(i, elem) {
-                if (elem.textContent === localStorage.lastSubtitle) {
+                var textNode;
+                textNode = elem.childNodes[0];
+                if (textNode.textContent === localStorage.lastSubtitle) {
                   elem.click();
                 }
                 return elem.onclick = function() {
-                  if (elem.attributes['aria-selected'].value === 'true') {
-                    return localStorage.lastSubtitle = elem.textContent;
+                  if (elem.attributes['aria-checked'].value === 'true') {
+                    return localStorage.lastSubtitle = textNode.textContent;
                   }
                 };
               });
@@ -649,6 +667,42 @@
     return VideoJSPlayer;
 
   })(Player);
+
+  window.GoogleDrivePlayer = GoogleDrivePlayer = (function(superClass) {
+    extend(GoogleDrivePlayer, superClass);
+
+    function GoogleDrivePlayer(data) {
+      if (!(this instanceof GoogleDrivePlayer)) {
+        return new GoogleDrivePlayer(data);
+      }
+      GoogleDrivePlayer.__super__.constructor.call(this, data);
+    }
+
+    GoogleDrivePlayer.prototype.load = function(data) {
+      if (typeof window.getGoogleDriveMetadata === 'function') {
+        return window.getGoogleDriveMetadata(data.id, (function(_this) {
+          return function(error, metadata) {
+            var alertBox;
+            if (error) {
+              console.error(error);
+              alertBox = window.document.createElement('div');
+              alertBox.className = 'alert alert-danger';
+              alertBox.textContent = error.message;
+              return document.getElementById('ytapiplayer').appendChild(alertBox);
+            } else {
+              data.meta.direct = metadata.videoMap;
+              return GoogleDrivePlayer.__super__.load.call(_this, data);
+            }
+          };
+        })(this));
+      } else {
+        return GoogleDrivePlayer.__super__.load.call(this, data);
+      }
+    };
+
+    return GoogleDrivePlayer;
+
+  })(VideoJSPlayer);
 
   codecToMimeType = function(codec) {
     switch (codec) {
@@ -1128,6 +1182,7 @@
 
     GoogleDriveYouTubePlayer.prototype.init = function(data) {
       var embed;
+      window.promptToInstallDriveUserscript();
       embed = $('<embed />').attr({
         type: 'application/x-shockwave-flash',
         src: "https://www.youtube.com/get_player?docid=" + data.id + "&ps=docs&partnerid=30&enablejsapi=1&cc_load_policy=1&auth_timeout=86400000000",
@@ -1257,11 +1312,68 @@
 
   })(Player);
 
+  window.promptToInstallDriveUserscript = function() {
+    var alertBox, closeButton, infoLink;
+    if (document.getElementById('prompt-install-drive-userscript')) {
+      return;
+    }
+    alertBox = document.createElement('div');
+    alertBox.id = 'prompt-install-drive-userscript';
+    alertBox.className = 'alert alert-info';
+    alertBox.innerHTML = "Due to continual breaking changes making it increasingly difficult to\nmaintain Google Drive support, you can now install a userscript that\nsimplifies the code and has better compatibility.  In the future, the\nold player will be removed.";
+    alertBox.appendChild(document.createElement('br'));
+    infoLink = document.createElement('a');
+    infoLink.className = 'btn btn-info';
+    infoLink.href = '/google_drive_userscript';
+    infoLink.textContent = 'Click here for details';
+    infoLink.target = '_blank';
+    alertBox.appendChild(infoLink);
+    closeButton = document.createElement('button');
+    closeButton.className = 'close pull-right';
+    closeButton.innerHTML = '&times;';
+    closeButton.onclick = function() {
+      return alertBox.parentNode.removeChild(alertBox);
+    };
+    alertBox.insertBefore(closeButton, alertBox.firstChild);
+    return document.getElementById('videowrap').appendChild(alertBox);
+  };
+
+  window.HLSPlayer = HLSPlayer = (function(superClass) {
+    extend(HLSPlayer, superClass);
+
+    function HLSPlayer(data) {
+      if (!(this instanceof HLSPlayer)) {
+        return new HLSPlayer(data);
+      }
+      this.setupMeta(data);
+      HLSPlayer.__super__.constructor.call(this, data);
+    }
+
+    HLSPlayer.prototype.load = function(data) {
+      this.setupMeta(data);
+      return HLSPlayer.__super__.load.call(this, data);
+    };
+
+    HLSPlayer.prototype.setupMeta = function(data) {
+      return data.meta.direct = {
+        480: [
+          {
+            link: data.id,
+            contentType: 'application/x-mpegURL'
+          }
+        ]
+      };
+    };
+
+    return HLSPlayer;
+
+  })(VideoJSPlayer);
+
   TYPE_MAP = {
     yt: YouTubePlayer,
     vi: VimeoPlayer,
     dm: DailymotionPlayer,
-    gd: GoogleDriveYouTubePlayer,
+    gd: GoogleDrivePlayer,
     gp: VideoJSPlayer,
     fi: FilePlayer,
     jw: FilePlayer,
@@ -1274,11 +1386,12 @@
     us: UstreamPlayer,
     im: ImgurPlayer,
     vm: VideoJSPlayer,
+    hl: HLSPlayer,
     sb: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {
-    var e, error, error1, error2, error3;
+    var e, error, error1, error2, error3, error4;
     try {
       if (window.PLAYER) {
         window.PLAYER.destroy();
@@ -1294,11 +1407,22 @@
         e = error2;
         return console.error(e);
       }
+    } else if (data.type === 'gd') {
+      try {
+        if (data.meta.html5hack || window.hasDriveUserscript) {
+          return window.PLAYER = new GoogleDrivePlayer(data);
+        } else {
+          return window.PLAYER = new GoogleDriveYouTubePlayer(data);
+        }
+      } catch (error3) {
+        e = error3;
+        return console.error(e);
+      }
     } else if (data.type in TYPE_MAP) {
       try {
         return window.PLAYER = TYPE_MAP[data.type](data);
-      } catch (error3) {
-        e = error3;
+      } catch (error4) {
+        e = error4;
         return console.error(e);
       }
     }

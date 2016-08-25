@@ -43,8 +43,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
         if not (this instanceof VideoJSPlayer)
             return new VideoJSPlayer(data)
 
-        @setMediaProperties(data)
-        @loadPlayer(data)
+        @load(data)
 
     loadPlayer: (data) ->
         waitUntilDefined(window, 'videojs', =>
@@ -53,14 +52,15 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 .attr(width: '100%', height: '100%')
             removeOld(video)
 
-            sources = sortSources(data.meta.direct)
-            if sources.length == 0
+            @sources = sortSources(data.meta.direct)
+            if @sources.length == 0
                 console.error('VideoJSPlayer::constructor(): data.meta.direct
                                has no sources!')
                 @mediaType = null
                 return
 
-            sources.forEach((source) ->
+            @sourceIdx = 0
+            @sources.forEach((source) ->
                 $('<source/>').attr(
                     src: source.src
                     type: source.type
@@ -84,6 +84,18 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
 
             @player = videojs(video[0], autoplay: true, controls: true)
             @player.ready(=>
+                @player.on('error', =>
+                    err = @player.error()
+                    if err and err.code == 4
+                        console.error('Caught error, trying next source')
+                        @sourceIdx++
+                        if @sourceIdx < @sources.length
+                            @player.src(@sources[@sourceIdx])
+                        else
+                            console.error('Out of sources, video will not play')
+                            if @mediaType is 'gd' and not window.hasDriveUserscript
+                                window.promptToInstallDriveUserscript()
+                )
                 @setVolume(VOLUME)
                 @player.on('ended', ->
                     if CLIENT.leader
@@ -114,12 +126,13 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 # not to run until the ready() function returns.
                 setTimeout(->
                     $('#ytapiplayer .vjs-subtitles-button .vjs-menu-item').each((i, elem) ->
-                        if elem.textContent == localStorage.lastSubtitle
+                        textNode = elem.childNodes[0]
+                        if textNode.textContent == localStorage.lastSubtitle
                             elem.click()
 
                         elem.onclick = ->
-                            if elem.attributes['aria-selected'].value == 'true'
-                                localStorage.lastSubtitle = elem.textContent
+                            if elem.attributes['aria-checked'].value == 'true'
+                                localStorage.lastSubtitle = textNode.textContent
                     )
                 , 1)
             )
