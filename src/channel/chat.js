@@ -121,7 +121,17 @@ ChatModule.prototype.shadowMutedUsers = function () {
     });
 };
 
+const SERVER_START_DATE = Date.now();
 ChatModule.prototype.restrictNewAccount = function restrictNewAccount(user, data) {
+    // TODO: this is temporary to prevent hundreds of guests from getting
+    // blocked immediately after this feature is rolled out.
+    //
+    // Will be removed later.
+    if (SERVER_START_DATE + this.channel.modules.options.get("new_user_chat_delay")*1000
+            >= Date.now()) {
+        return false;
+    }
+
     if (user.account.effectiveRank < 2 && this.channel.modules.options) {
         const firstSeen = user.getFirstSeenTime();
         const opts = this.channel.modules.options;
