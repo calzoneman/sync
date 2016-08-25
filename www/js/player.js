@@ -963,18 +963,6 @@
 
   })(Player);
 
-  window.twitchEventCallback = function(events) {
-    if (!(PLAYER instanceof TwitchPlayer)) {
-      return false;
-    }
-    return events.forEach(function(event) {
-      if (event.event === 'playerInit') {
-        PLAYER.twitch.unmute();
-        return PLAYER.twitch.ready = true;
-      }
-    });
-  };
-
   window.TwitchPlayer = TwitchPlayer = (function(superClass) {
     extend(TwitchPlayer, superClass);
 
@@ -982,23 +970,146 @@
       if (!(this instanceof TwitchPlayer)) {
         return new TwitchPlayer(data);
       }
-      this.load(data);
+      this.setMediaProperties(data);
+      waitUntilDefined(window, 'Twitch', (function(_this) {
+        return function() {
+          return waitUntilDefined(Twitch, 'Player', function() {
+            return _this.init(data);
+          });
+        };
+      })(this));
     }
 
-    TwitchPlayer.prototype.load = function(data) {
-      data.meta.embed = {
-        src: '//www-cdn.jtvnw.net/swflibs/TwitchPlayer.swf',
-        tag: 'object',
-        params: {
-          flashvars: "embed=1&hostname=localhost&channel=" + data.id + "& eventsCallback=twitchEventCallback&auto_play=true&start_volume=" + (Math.floor(VOLUME * 100))
-        }
+    TwitchPlayer.prototype.init = function(data) {
+      var options;
+      removeOld();
+      options = {
+        channel: data.id
       };
-      return TwitchPlayer.__super__.load.call(this, data);
+      this.twitch = new Twitch.Player('ytapiplayer', options);
+      return this.twitch.addEventListener(Twitch.Player.READY, (function(_this) {
+        return function() {
+          _this.setVolume(VOLUME);
+          _this.twitch.setQuality(_this.mapQuality(USEROPTS.default_quality));
+          _this.twitch.addEventListener(Twitch.Player.PLAY, function() {
+            if (CLIENT.leader) {
+              return sendVideoUpdate();
+            }
+          });
+          _this.twitch.addEventListener(Twitch.Player.PAUSE, function() {
+            if (CLIENT.leader) {
+              return sendVideoUpdate();
+            }
+          });
+          return _this.twitch.addEventListener(Twitch.Player.ENDED, function() {
+            if (CLIENT.leader) {
+              return socket.emit('playNext');
+            }
+          });
+        };
+      })(this));
+    };
+
+    TwitchPlayer.prototype.load = function(data) {
+      var error, error1;
+      this.setMediaProperties(data);
+      try {
+        return this.twitch.setChannel(data.id);
+      } catch (error1) {
+        error = error1;
+        return console.error(error);
+      }
+    };
+
+    TwitchPlayer.prototype.pause = function() {
+      var error, error1;
+      try {
+        return this.twitch.pause();
+      } catch (error1) {
+        error = error1;
+        return console.error(error);
+      }
+    };
+
+    TwitchPlayer.prototype.play = function() {
+      var error, error1;
+      try {
+        return this.twitch.play();
+      } catch (error1) {
+        error = error1;
+        return console.error(error);
+      }
+    };
+
+    TwitchPlayer.prototype.seekTo = function(time) {
+      var error, error1;
+      try {
+        return this.twitch.seek(time);
+      } catch (error1) {
+        error = error1;
+        return console.error(error);
+      }
+    };
+
+    TwitchPlayer.prototype.getTime = function(cb) {
+      var error, error1;
+      try {
+        return cb(this.twitch.getVolume());
+      } catch (error1) {
+        error = error1;
+        return console.error(error);
+      }
+    };
+
+    TwitchPlayer.prototype.setVolume = function(volume) {
+      var error, error1;
+      try {
+        this.twitch.setVolume(volume);
+        if (volume > 0) {
+          return this.twitch.setMuted(false);
+        }
+      } catch (error1) {
+        error = error1;
+        return console.error(error);
+      }
+    };
+
+    TwitchPlayer.prototype.getVolume = function(cb) {
+      var error, error1;
+      try {
+        if (this.twitch.isPaused()) {
+          return cb(0);
+        } else {
+          return cb(this.twitch.getVolume());
+        }
+      } catch (error1) {
+        error = error1;
+        return console.error(error);
+      }
+    };
+
+    TwitchPlayer.prototype.mapQuality = function(quality) {
+      switch (String(quality)) {
+        case '1080':
+          return 'chunked';
+        case '720':
+          return 'high';
+        case '480':
+          return 'medium';
+        case '360':
+          return 'low';
+        case '240':
+          return 'mobile';
+        case 'best':
+          return 'chunked';
+        default:
+          return '';
+      }
     };
 
     return TwitchPlayer;
 
-  })(EmbedPlayer);
+  })(Player);
 
   window.LivestreamPlayer = LivestreamPlayer = (function(superClass) {
     extend(LivestreamPlayer, superClass);
