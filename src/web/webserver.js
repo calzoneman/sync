@@ -162,6 +162,13 @@ module.exports = {
             if (!fs.existsSync(cacheDir)) {
                 fs.mkdirSync(cacheDir);
             }
+            app.use((req, res, next) => {
+                if (/\.user\.js/.test(req.url)) {
+                    res._no_minify = true;
+                }
+
+                next();
+            });
             app.use(require('express-minify')({
                 cache: cacheDir
             }));
