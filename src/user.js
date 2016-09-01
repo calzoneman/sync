@@ -67,6 +67,16 @@ function User(socket) {
                 });
                 return;
             }
+
+            if (!chan.is(Flags.C_READY)) {
+                chan.once("loadFail", reason => {
+                    self.socket.emit("errorMsg", {
+                        msg: reason,
+                        alert: true
+                    });
+                    self.kick(`Channel could not be loaded: ${reason}`);
+                });
+            }
             chan.joinUser(self, data);
         });
     });

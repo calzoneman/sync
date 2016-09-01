@@ -90,6 +90,10 @@ function Channel(name) {
     var self = this;
     db.channels.load(this, function (err) {
         if (err && err !== "Channel is not registered") {
+            self.emit("loadFail", "Failed to load channel data from the database");
+            // Force channel to be unloaded, so that it will load properly when
+            // the database connection comes back
+            self.emit("empty");
             return;
         } else {
             self.initModules();
