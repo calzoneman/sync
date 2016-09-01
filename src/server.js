@@ -220,14 +220,20 @@ Server.prototype.getChannel = function (name) {
     return c;
 };
 
-Server.prototype.unloadChannel = function (chan) {
+Server.prototype.unloadChannel = function (chan, options) {
     if (chan.dead) {
         return;
     }
 
-    chan.saveState().catch(error => {
-        Logger.errlog.log(`Failed to save /r/${chan.name} for unload: ${error.stack}`);
-    });
+    if (!options) {
+        options = {};
+    }
+
+    if (!options.skipSave) {
+        chan.saveState().catch(error => {
+            Logger.errlog.log(`Failed to save /r/${chan.name} for unload: ${error.stack}`);
+        });
+    }
 
     chan.logger.log("[init] Channel shutting down");
     chan.logger.close();
@@ -359,7 +365,7 @@ Server.prototype.reloadPartitionMap = function () {
                     } catch (error) {
                     }
                 });
-                this.unloadChannel(channel);
+                this.unloadChannel(channel, { skipSave: true });
             }).catch(error => {
                 Logger.errlog.log(`Failed to unload /r/${channel.name} for ` +
                                   `partition map flip: ${error.stack}`);
