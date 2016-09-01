@@ -318,13 +318,13 @@ Server.prototype.setAnnouncement = function (data) {
 
 Server.prototype.shutdown = function () {
     Logger.syslog.log("Unloading channels");
-    Promise.reduce(this.channels, (_, channel) => {
+    Promise.map(this.channels, channel => {
         return channel.saveState().tap(() => {
             Logger.syslog.log(`Saved /r/${channel.name}`);
         }).catch(err => {
             Logger.errlog.log(`Failed to save /r/${channel.name}: ${err.stack}`);
         });
-    }).then(() => {
+    }, { concurrency: 5 }).then(() => {
         Logger.syslog.log("Goodbye");
         process.exit(0);
     }).catch(err => {
@@ -348,7 +348,7 @@ Server.prototype.reloadPartitionMap = function () {
     this.initModule.partitionConfig.config = config.config;
 
     const channels = Array.prototype.slice.call(this.channels);
-    Promise.reduce(channels, (_, channel) => {
+    Promise.map(channels, channel => {
         if (channel.dead) {
             return;
         }
@@ -371,7 +371,7 @@ Server.prototype.reloadPartitionMap = function () {
                                   `partition map flip: ${error.stack}`);
             });
         }
-    }, 0).then(() => {
+    }, { concurrency: 5 }).then(() => {
         Logger.syslog.log("Partition reload complete");
     });
 };
