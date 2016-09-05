@@ -1299,7 +1299,14 @@ function parseMediaLink(url) {
         };
     }
 
-    if((m = url.match(/twitch\.tv\/([^\?&#]+)/))) {
+    if((m = url.match(/twitch\.tv\/(?:.*?)\/([cv])\/(\d+)/))) {
+        return {
+            id: m[1] + m[2],
+            type: "tv"
+        };
+    }
+
+    if((m = url.match(/twitch\.tv\/([\w-]+)/))) {
         return {
             id: m[1],
             type: "tw"
