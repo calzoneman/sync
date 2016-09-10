@@ -9,6 +9,7 @@ TYPE_MAP =
     sc: SoundCloudPlayer
     li: LivestreamPlayer
     tw: TwitchPlayer
+    tv: TwitchPlayer
     cu: CustomEmbedPlayer
     rt: RTMPPlayer
     hb: HitboxPlayer

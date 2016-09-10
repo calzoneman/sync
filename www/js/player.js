@@ -983,20 +983,28 @@
     TwitchPlayer.prototype.init = function(data) {
       var options;
       removeOld();
-      options = {
-        channel: data.id
-      };
+      if (data.type === 'tv') {
+        options = {
+          video: data.id
+        };
+      } else {
+        options = {
+          channel: data.id
+        };
+      }
       this.twitch = new Twitch.Player('ytapiplayer', options);
       return this.twitch.addEventListener(Twitch.Player.READY, (function(_this) {
         return function() {
           _this.setVolume(VOLUME);
           _this.twitch.setQuality(_this.mapQuality(USEROPTS.default_quality));
           _this.twitch.addEventListener(Twitch.Player.PLAY, function() {
+            _this.paused = false;
             if (CLIENT.leader) {
               return sendVideoUpdate();
             }
           });
           _this.twitch.addEventListener(Twitch.Player.PAUSE, function() {
+            _this.paused = true;
             if (CLIENT.leader) {
               return sendVideoUpdate();
             }
@@ -1014,7 +1022,11 @@
       var error, error1;
       this.setMediaProperties(data);
       try {
-        return this.twitch.setChannel(data.id);
+        if (data.type === 'tv') {
+          return this.twitch.setVideo(data.id);
+        } else {
+          return this.twitch.setChannel(data.id);
+        }
       } catch (error1) {
         error = error1;
         return console.error(error);
@@ -1024,7 +1036,8 @@
     TwitchPlayer.prototype.pause = function() {
       var error, error1;
       try {
-        return this.twitch.pause();
+        this.twitch.pause();
+        return this.paused = true;
       } catch (error1) {
         error = error1;
         return console.error(error);
@@ -1034,7 +1047,8 @@
     TwitchPlayer.prototype.play = function() {
       var error, error1;
       try {
-        return this.twitch.play();
+        this.twitch.play();
+        return this.paused = false;
       } catch (error1) {
         error = error1;
         return console.error(error);
@@ -1054,7 +1068,7 @@
     TwitchPlayer.prototype.getTime = function(cb) {
       var error, error1;
       try {
-        return cb(this.twitch.getVolume());
+        return cb(this.twitch.getCurrentTime());
       } catch (error1) {
         error = error1;
         return console.error(error);
@@ -1491,6 +1505,7 @@
     sc: SoundCloudPlayer,
     li: LivestreamPlayer,
     tw: TwitchPlayer,
+    tv: TwitchPlayer,
     cu: CustomEmbedPlayer,
     rt: RTMPPlayer,
     hb: HitboxPlayer,

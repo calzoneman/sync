@@ -12,17 +12,25 @@ window.TwitchPlayer = class TwitchPlayer extends Player
 
     init: (data) ->
         removeOld()
-        options =
-            channel: data.id
+        if data.type is 'tv'
+            # VOD
+            options =
+                video: data.id
+        else
+            # Livestream
+            options =
+                channel: data.id
         @twitch = new Twitch.Player('ytapiplayer', options)
         @twitch.addEventListener(Twitch.Player.READY, =>
             @setVolume(VOLUME)
             @twitch.setQuality(@mapQuality(USEROPTS.default_quality))
             @twitch.addEventListener(Twitch.Player.PLAY, =>
+                @paused = false
                 if CLIENT.leader
                     sendVideoUpdate()
             )
             @twitch.addEventListener(Twitch.Player.PAUSE, =>
+                @paused = true
                 if CLIENT.leader
                     sendVideoUpdate()
             )
@@ -35,19 +43,26 @@ window.TwitchPlayer = class TwitchPlayer extends Player
     load: (data) ->
         @setMediaProperties(data)
         try
-            @twitch.setChannel(data.id)
+            if data.type is 'tv'
+                # VOD
+                @twitch.setVideo(data.id)
+            else
+                # Livestream
+                @twitch.setChannel(data.id)
         catch error
             console.error(error)
 
     pause: ->
         try
             @twitch.pause()
+            @paused = true
         catch error
             console.error(error)
 
     play: ->
         try
             @twitch.play()
+            @paused = false
         catch error
             console.error(error)
 
@@ -59,7 +74,7 @@ window.TwitchPlayer = class TwitchPlayer extends Player
 
     getTime: (cb) ->
         try
-            cb(@twitch.getVolume())
+            cb(@twitch.getCurrentTime())
         catch error
             console.error(error)
 

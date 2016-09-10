@@ -13,6 +13,7 @@ var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 var Vidme = require("cytube-mediaquery/lib/provider/vidme");
 var Streamable = require("cytube-mediaquery/lib/provider/streamable");
 var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
+var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
 
 /*
  * Preference map of quality => youtube formats.
@@ -393,6 +394,25 @@ var Getters = {
         var title = "Twitch.tv - " + id;
         var media = new Media(id, title, "--:--", "tw");
         callback(false, media);
+    },
+
+    /* twitch VOD */
+    tv: function (id, callback) {
+        var m = id.match(/([cv]\d+)/);
+        if (m) {
+            id = m[1];
+        } else {
+            process.nextTick(callback, "Invalid Twitch VOD ID");
+            return;
+        }
+
+        TwitchVOD.lookup(id).then(video => {
+            const media = new Media(video.id, video.title, video.duration,
+                                    "tv", video.meta);
+            process.nextTick(callback, false, media);
+        }).catch(function (err) {
+            callback(err.message || err, null);
+        });
     },
 
     /* ustream.tv */
