@@ -26,8 +26,8 @@ function OptionsModule(channel) {
         torbanned: false,          // Block connections from Tor exit nodes
         allow_ascii_control: false,// Allow ASCII control characters (\x00-\x1f)
         playlist_max_per_user: 0,  // Maximum number of playlist items per user
-        new_user_chat_delay: 10 * 60,      // Minimum account/IP age to chat
-        new_user_chat_link_delay: 60 * 60  // Minimum account/IP age to post links
+        new_user_chat_delay: 0,      // Minimum account/IP age to chat
+        new_user_chat_link_delay: 0  // Minimum account/IP age to post links
     };
 }
 
