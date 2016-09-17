@@ -352,6 +352,7 @@ Channel.prototype.joinUser = function (user, data) {
 
             self.checkModules("onUserPreJoin", [user, data], function (err, result) {
                 if (result === ChannelModule.PASSTHROUGH) {
+                    user.channel = self;
                     self.acceptUser(user);
                 } else {
                     user.channel = null;
