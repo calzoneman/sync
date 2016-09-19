@@ -243,3 +243,7 @@ channel-storage:
 service-socket:
   enabled: false
   socket: 'service.sock'
+
+# Twitch Client ID for the data API (used for VOD lookups)
+# https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup
+twitch-client-id: null

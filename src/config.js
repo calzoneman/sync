@@ -123,7 +123,8 @@ var defaults = {
     },
     "google-drive": {
         "html5-hack-enabled": false
-    }
+    },
+    "twitch-client-id": null
 };
 
 /**
@@ -377,6 +378,16 @@ function preprocessConfig(cfg) {
             "not work.  See youtube-v3-key in config.template.yaml and " +
             "https://developers.google.com/youtube/registering_an_application for " +
             "information on registering an API key.");
+    }
+
+    if (cfg["twitch-client-id"]) {
+        require("cytube-mediaquery/lib/provider/twitch-vod").setClientID(
+                cfg["twitch-client-id"]);
+    } else {
+        Logger.errlog.log("Warning: No Twitch Client ID set.  Twitch VOD links will " +
+            "not work.  See twitch-client-id in config.template.yaml and " +
+            "https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup" +
+            "for more information on registering a client ID");
     }
 
     return cfg;
