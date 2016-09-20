@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HITBOX_ERROR, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, USTREAM_ERROR, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -1220,8 +1220,6 @@
 
   })(VideoJSPlayer);
 
-  HITBOX_ERROR = 'Hitbox.tv only serves its content over plain HTTP, but you are viewing this page over secure HTTPS.  Your browser therefore blocks the hitbox embed due to mixed content policy.  In order to view hitbox, you must view this page over plain HTTP (change "https://" to "http://" in the address bar)-- your websocket will still be connected using secure HTTPS.  This is something I have asked Hitbox to fix but they have not done so yet.';
-
   window.HitboxPlayer = HitboxPlayer = (function(superClass) {
     extend(HitboxPlayer, superClass);
 
@@ -1234,13 +1232,11 @@
 
     HitboxPlayer.prototype.load = function(data) {
       data.meta.embed = {
-        src: "http://hitbox.tv/embed/" + data.id,
+        src: "https://www.hitbox.tv/embed/" + data.id,
         tag: 'iframe'
       };
       return HitboxPlayer.__super__.load.call(this, data);
     };
-
-    HitboxPlayer.prototype.mixedContentError = HITBOX_ERROR;
 
     return HitboxPlayer;
 
