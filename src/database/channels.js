@@ -273,6 +273,7 @@ module.exports = {
             // than the database has stored.  Update accordingly.
             chan.name = res[0].name;
             chan.uniqueName = chan.name.toLowerCase();
+            chan.id = res[0].id;
             chan.setFlag(Flags.C_REGISTERED);
             chan.logger.log("[init] Loaded channel from database");
             callback(null, true);

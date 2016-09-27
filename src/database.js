@@ -80,6 +80,10 @@ module.exports.query = function (query, sub, callback) {
                 Metrics.stopTimer(timer);
             }
 
+            if (process.env.SHOW_SQL) {
+                console.log(query);
+            }
+
             if (sub) {
                 conn.query(query, sub, cback);
             } else {

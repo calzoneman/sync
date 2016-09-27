@@ -84,6 +84,7 @@ function Channel(name) {
     this.users = [];
     this.refCounter = new ReferenceCounter(this);
     this.flags = 0;
+    this.id = 0;
     this.broadcastUsercount = throttle(() => {
         this.broadcastAll("usercount", this.users.length);
     }, USERCOUNT_THROTTLE);
@@ -206,7 +207,7 @@ Channel.prototype.loadState = function () {
         self.setFlag(Flags.C_READY | Flags.C_ERROR);
     }
 
-    ChannelStore.load(this.uniqueName).then(data => {
+    ChannelStore.load(this.id, this.uniqueName).then(data => {
         Object.keys(this.modules).forEach(m => {
             try {
                 this.modules[m].load(data);
@@ -260,7 +261,8 @@ Channel.prototype.saveState = function () {
         this.modules[m].save(data);
     });
 
-    return ChannelStore.save(this.uniqueName, data).catch(ChannelStateSizeError, err => {
+    return ChannelStore.save(this.id, this.uniqueName, data)
+            .catch(ChannelStateSizeError, err => {
         this.users.forEach(u => {
             if (u.account.effectiveRank >= 2) {
                 u.socket.emit("warnLargeChandump", {

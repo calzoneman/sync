@@ -16,7 +16,7 @@ export class FileStore {
         return path.join(CHANDUMP_DIR, channelName);
     }
 
-    load(channelName) {
+    load(id, channelName) {
         const filename = this.filenameForChannel(channelName);
         return statAsync(filename).then(stats => {
             if (stats.size > SIZE_LIMIT) {
@@ -36,7 +36,7 @@ export class FileStore {
         });
     }
 
-    save(channelName, data) {
+    save(id, channelName, data) {
         const filename = this.filenameForChannel(channelName);
         const fileContents = new Buffer(JSON.stringify(data), 'utf8');
         if (fileContents.length > SIZE_LIMIT) {

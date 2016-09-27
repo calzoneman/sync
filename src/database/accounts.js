@@ -233,48 +233,6 @@ module.exports = {
     },
 
     /**
-     * Verify an auth string of the form name:hash
-     */
-    verifyAuth: function (auth, callback) {
-        if (typeof callback !== "function") {
-            return;
-        }
-
-        if (typeof auth !== "string") {
-            callback("Invalid auth string", null);
-            return;
-        }
-
-        var split = auth.split(":");
-        if (split.length !== 2) {
-            callback("Invalid auth string", null);
-            return;
-        }
-
-        var name = split[0];
-        var hash = split[1];
-        db.query("SELECT name,password,global_rank FROM `users` WHERE " +
-                 "name=? and password=?", [name, hash],
-        function (err, rows) {
-            if (err) {
-                callback(err, null);
-                return;
-            }
-
-            if (rows.length === 0) {
-                callback("Auth string does not match an existing user", null);
-                return;
-            }
-
-            callback(null, {
-                name: rows[0].name,
-                hash: rows[0].password,
-                global_rank: rows[0].global_rank
-            });
-        });
-    },
-
-    /**
      * Change a user's password
      */
     setPassword: function (name, pw, callback) {
