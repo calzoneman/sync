@@ -42,14 +42,15 @@ module.exports.getAccount = function (name, ip, opts, cb) {
     .then(function (aliases) {
         data.aliases = aliases;
         if (name && opts.registered) {
-            return Q.nfcall(db.users.getGlobalRank, name);
+            return Q.nfcall(db.users.getUser, name);
         } else if (name) {
-            return 0;
+            return { global_rank: 0, profile: { text: "", image: "" } };
         } else {
-            return -1;
+            return { global_rank: -1, profile: { text: "", image: "" } };
         }
-    }).then(function (globalRank) {
-        data.globalRank = globalRank;
+    }).then(function (user) {
+        data.globalRank = user.global_rank;
+        data.profile = user.profile;
         if (opts.channel && opts.registered) {
             return Q.nfcall(db.channels.getRank, opts.channel, name);
         } else {
@@ -63,13 +64,6 @@ module.exports.getAccount = function (name, ip, opts, cb) {
         }
     }).then(function (chanRank) {
         data.channelRank = chanRank;
-        /* Look up profile for registered user */
-        if (data.globalRank >= 1) {
-            return Q.nfcall(db.users.getProfile, name);
-        } else {
-            return { text: "", image: "" };
-        }
-    }).then(function (profile) {
         setImmediate(function () {
             cb(null, new Account({
                 name: name,
@@ -77,7 +71,7 @@ module.exports.getAccount = function (name, ip, opts, cb) {
                 aliases: data.aliases,
                 globalRank: data.globalRank,
                 channelRank: data.channelRank,
-                profile: profile
+                profile: data.profile
             }));
         });
     }).catch(function (err) {
