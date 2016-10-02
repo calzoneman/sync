@@ -113,9 +113,13 @@ function handleLoginPage(req, res) {
         });
     }
 
-    sendPug(res, "login", {
-        redirect: req.query.dest || req.header("referer")
-    });
+    var redirect = req.query.dest || req.header("referer");
+    var locals = {};
+    if (!/\/register/.test(redirect)) {
+        locals.redirect = redirect;
+    }
+
+    sendPug(res, "login", locals);
 }
 
 /**
