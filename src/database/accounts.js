@@ -83,6 +83,15 @@ module.exports = {
                 return callback("User does not exist");
             }
 
+            try {
+                var profile = JSON.parse(rows[0].profile);
+                profile.image = profile.image || "";
+                profile.text = profile.text || "";
+                rows[0].profile = profile;
+            } catch (error) {
+                rows[0].profile = { image: "", text: "" };
+            }
+
             callback(null, rows[0]);
         });
     },
