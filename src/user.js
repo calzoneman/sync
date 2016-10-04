@@ -16,12 +16,17 @@ function User(socket) {
     self.realip = socket._realip;
     self.displayip = socket._displayip;
     self.hostmask = socket._hostmask;
-    self.account = Account.default(self.realip);
     self.channel = null;
     self.queueLimiter = util.newRateLimiter();
     self.chatLimiter = util.newRateLimiter();
     self.reqPlaylistLimiter = util.newRateLimiter();
     self.awaytimer = false;
+    if (socket.user) {
+        self.account = new Account.Account(self.realip, socket.user, socket.aliases);
+        self.registrationTime = new Date(self.account.user.time);
+    } else {
+        self.account = new Account.Account(self.realip, null, socket.aliases);
+    }
 
     var announcement = Server.getServer().announcement;
     if (announcement != null) {
@@ -297,28 +302,21 @@ User.prototype.login = function (name, pw) {
             return;
         }
 
-        self.account.name = user.name;
+        self.account.user = user;
+        self.account.update();
+        self.socket.emit("rank", self.account.effectiveRank);
+        self.emit("effectiveRankChange", self.account.effectiveRank);
         self.registrationTime = new Date(user.time);
         self.setFlag(Flags.U_REGISTERED);
-        self.refreshAccount(function (err, account) {
-            if (err) {
-                Logger.errlog.log("[SEVERE] getAccount failed for user " + user.name);
-                Logger.errlog.log(err);
-                self.clearFlag(Flags.U_REGISTERED);
-                self.clearFlag(Flags.U_LOGGING_IN);
-                self.account.name = "";
-                return;
-            }
-            self.socket.emit("login", {
-                success: true,
-                name: user.name
-            });
-            db.recordVisit(self.realip, self.getName());
-            Logger.syslog.log(self.realip + " logged in as " + user.name);
-            self.setFlag(Flags.U_LOGGED_IN);
-            self.clearFlag(Flags.U_LOGGING_IN);
-            self.emit("login", self.account);
+        self.socket.emit("login", {
+            success: true,
+            name: user.name
         });
+        db.recordVisit(self.realip, self.getName());
+        Logger.syslog.log(self.realip + " logged in as " + user.name);
+        self.setFlag(Flags.U_LOGGED_IN);
+        self.clearFlag(Flags.U_LOGGING_IN);
+        self.emit("login", self.account);
     });
 };
 
@@ -383,25 +381,19 @@ User.prototype.guestLogin = function (name) {
         // Login succeeded
         lastguestlogin[self.realip] = Date.now();
 
-        self.account.name = name;
-        self.refreshAccount(function (err, account) {
-            if (err) {
-                Logger.errlog.log("[SEVERE] getAccount failed for guest login " + name);
-                Logger.errlog.log(err);
-                self.account.name = "";
-                return;
-            }
-
-            self.socket.emit("login", {
-                success: true,
-                name: name,
-                guest: true
-            });
-            db.recordVisit(self.realip, self.getName());
-            Logger.syslog.log(self.realip + " signed in as " + name);
-            self.setFlag(Flags.U_LOGGED_IN);
-            self.emit("login", self.account);
+        self.account.guestName = name;
+        self.account.update();
+        self.socket.emit("rank", self.account.effectiveRank);
+        self.emit("effectiveRankChange", self.account.effectiveRank);
+        self.socket.emit("login", {
+            success: true,
+            name: name,
+            guest: true
         });
+        db.recordVisit(self.realip, self.getName());
+        Logger.syslog.log(self.realip + " signed in as " + name);
+        self.setFlag(Flags.U_LOGGED_IN);
+        self.emit("login", self.account);
     });
 };
 
@@ -420,46 +412,6 @@ setInterval(function () {
     }
 }, 5 * 60 * 1000);
 
-User.prototype.refreshAccount = function (cb) {
-    var name = this.account.name;
-    var opts = {
-        registered: this.is(Flags.U_REGISTERED),
-        channel: this.inRegisteredChannel() ? this.channel.name : false
-    };
-    var self = this;
-    var old = this.account;
-    Account.getAccount(name, this.realip, opts, function (err, account) {
-        // TODO
-        //
-        // This is a hack to fix #583, an issue where racing callbacks
-        // from refreshAccount() can cause the user's rank to get out
-        // of sync.  Ideally this should be removed in favor of a more
-        // robust way of handling updating account state, perhaps a mutex.
-        if (self.is(Flags.U_REGISTERED) !== opts.registered ||
-                (self.inRegisteredChannel() && !opts.channel) ||
-                self.account.name !== name) {
-            self.refreshAccount(cb);
-            return;
-        }
-
-        if (!err) {
-            /* Update account if anything changed in the meantime */
-            for (var key in old) {
-                if (self.account[key] !== old[key]) {
-                    account[key] = self.account[key];
-                }
-            }
-            self.account = account;
-            if (account.effectiveRank !== old.effectiveRank) {
-                self.socket.emit("rank", self.account.effectiveRank);
-                self.emit("effectiveRankChange", self.account.effectiveRank);
-            }
-        }
-
-        process.nextTick(cb, err, account);
-    });
-};
-
 User.prototype.getFirstSeenTime = function getFirstSeenTime() {
     if (this.registrationTime && this.socket.ipSessionFirstSeen) {
         return Math.min(this.registrationTime.getTime(), this.socket.ipSessionFirstSeen.getTime());
@@ -471,6 +423,16 @@ User.prototype.getFirstSeenTime = function getFirstSeenTime() {
         Logger.errlog.log(`User "${this.getName()}" (IP: ${this.realip}) has neither ` +
                 "an IP sesion first seen time nor a registered account.");
         return Date.now();
+    }
+};
+
+User.prototype.setChannelRank = function setRank(rank) {
+    const changed = this.account.effectiveRank !== rank;
+    this.account.channelRank = rank;
+    this.account.update();
+    this.socket.emit("rank", this.account.effectiveRank);
+    if (changed) {
+        this.emit("effectiveRankChange", this.account.effectiveRank);
     }
 };
 

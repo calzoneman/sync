@@ -10,5 +10,6 @@ module.exports = {
     U_AFK        : 1 << 4,
     U_MUTED      : 1 << 5,
     U_SMUTED     : 1 << 6,
-    U_IN_CHANNEL : 1 << 7
+    U_IN_CHANNEL : 1 << 7,
+    U_HAS_CHANNEL_RANK: 1 << 8
 };

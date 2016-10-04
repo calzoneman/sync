@@ -1,83 +1,37 @@
 var db = require("./database");
 var Q = require("q");
 
-function Account(opts) {
-    var defaults = {
-        name: "",
-        ip: "",
-        aliases: [],
-        globalRank: -1,
-        channelRank: -1,
-        guest: true,
-        profile: {
-            image: "",
-            text: ""
-        }
-    };
+const DEFAULT_PROFILE = Object.freeze({ image: '', text: '' });
 
-    this.name = opts.name || defaults.name;
-    this.lowername = this.name.toLowerCase();
-    this.ip = opts.ip || defaults.ip;
-    this.aliases = opts.aliases || defaults.aliases;
-    this.globalRank = "globalRank" in opts ? opts.globalRank : defaults.globalRank;
-    this.channelRank = "channelRank" in opts ? opts.channelRank : defaults.channelRank;
-    this.effectiveRank = Math.max(this.globalRank, this.channelRank);
-    this.guest = this.globalRank === 0;
-    this.profile = opts.profile || defaults.profile;
+class Account {
+    constructor(ip, user, aliases) {
+        this.ip = ip;
+        this.user = user;
+        this.aliases = aliases;
+        this.channelRank = -1;
+        this.guestName = null;
+
+        this.update();
+    }
+
+    update() {
+        if (this.user !== null) {
+            this.name = this.user.name;
+            this.globalRank = this.user.global_rank;
+        } else if (this.guestName !== null) {
+            this.name = this.guestName;
+            this.globalRank = 0;
+        } else {
+            this.name = '';
+            this.globalRank = -1;
+        }
+        this.lowername = this.name.toLowerCase();
+        this.effectiveRank = Math.max(this.channelRank, this.globalRank);
+        this.profile = (this.user === null) ? DEFAULT_PROFILE : this.user.profile;
+    }
 }
 
-module.exports.default = function (ip) {
-    return new Account({ ip: ip });
-};
-
-module.exports.getAccount = function (name, ip, opts, cb) {
-    if (!cb) {
-        cb = opts;
-        opts = {};
-    }
-    opts.channel = opts.channel || false;
-
-    var data = {};
-    Q.nfcall(db.getAliases, ip)
-    .then(function (aliases) {
-        data.aliases = aliases;
-        if (name && opts.registered) {
-            return Q.nfcall(db.users.getUser, name);
-        } else if (name) {
-            return { global_rank: 0, profile: { text: "", image: "" } };
-        } else {
-            return { global_rank: -1, profile: { text: "", image: "" } };
-        }
-    }).then(function (user) {
-        data.globalRank = user.global_rank;
-        data.profile = user.profile;
-        if (opts.channel && opts.registered) {
-            return Q.nfcall(db.channels.getRank, opts.channel, name);
-        } else {
-            if (opts.registered) {
-                return 1;
-            } else if (name) {
-                return 0;
-            } else {
-                return -1;
-            }
-        }
-    }).then(function (chanRank) {
-        data.channelRank = chanRank;
-        setImmediate(function () {
-            cb(null, new Account({
-                name: name,
-                ip: ip,
-                aliases: data.aliases,
-                globalRank: data.globalRank,
-                channelRank: data.channelRank,
-                profile: data.profile
-            }));
-        });
-    }).catch(function (err) {
-        cb(err, null);
-    }).done();
-};
+module.exports.Account = Account;
 
 module.exports.rankForName = function (name, opts, cb) {
     if (!cb) {

@@ -7,7 +7,6 @@ var Config = require("../config");
 var cookieParser = require("cookie-parser")(Config.get("http.cookie-secret"));
 var $util = require("../utilities");
 var Flags = require("../flags");
-var Account = require("../account");
 var typecheck = require("json-typecheck");
 var net = require("net");
 var util = require("../utilities");
@@ -16,6 +15,9 @@ var isTorExit = require("../tor").isTorExit;
 var session = require("../session");
 import counters from '../counters';
 import { verifyIPSessionCookie } from '../web/middleware/ipsessioncookie';
+import Promise from 'bluebird';
+const verifySession = Promise.promisify(session.verifySession);
+const getAliases = Promise.promisify(db.getAliases);
 
 var CONNECT_RATE = {
     burst: 5,
@@ -38,24 +40,31 @@ function parseCookies(socket, accept) {
         accept(null, true);
     }
 }
+
 /**
  * Called before an incoming socket.io connection is accepted.
  */
 function handleAuth(socket, accept) {
-    socket.user = false;
-    var auth = socket.request.signedCookies.auth;
-    if (!auth) {
-        return accept(null, true);
+    socket.user = null;
+    socket.aliases = [];
+
+    const promises = [];
+    const auth = socket.request.signedCookies.auth;
+    if (auth) {
+        promises.push(verifySession(auth).then(user => {
+            socket.user = Object.assign({}, user);
+        }).catch(error => {
+            // Do nothing
+        }));
     }
 
-    session.verifySession(auth, function (err, user) {
-        if (!err) {
-            socket.user = {
-                name: user.name,
-                global_rank: user.global_rank,
-                registrationTime: new Date(user.time)
-            };
-        }
+    promises.push(getAliases(socket._realip).then(aliases => {
+        socket.aliases = aliases;
+    }).catch(error => {
+        // Do nothing
+    }));
+
+    Promise.all(promises).then(() => {
         accept(null, true);
     });
 }
@@ -234,28 +243,17 @@ function handleConnection(sock) {
     var user = new User(sock);
     if (sock.user) {
         user.setFlag(Flags.U_REGISTERED);
-        user.clearFlag(Flags.U_READY);
-        user.account.name = sock.user.name;
-        user.registrationTime = sock.user.registrationTime;
-        user.refreshAccount(function (err, account) {
-            if (err) {
-                user.clearFlag(Flags.U_REGISTERED);
-                user.setFlag(Flags.U_READY);
-                return;
-            }
-
-            user.socket.emit("login", {
-                success: true,
-                name: user.getName(),
-                guest: false
-            });
-            db.recordVisit(ip, user.getName());
-            user.socket.emit("rank", user.account.effectiveRank);
-            user.setFlag(Flags.U_LOGGED_IN);
-            user.emit("login", account);
-            Logger.syslog.log(ip + " logged in as " + user.getName());
-            user.setFlag(Flags.U_READY);
+        user.socket.emit("login", {
+            success: true,
+            name: user.getName(),
+            guest: false
         });
+        db.recordVisit(ip, user.getName());
+        user.socket.emit("rank", user.account.effectiveRank);
+        user.setFlag(Flags.U_LOGGED_IN);
+        user.emit("login", user.account);
+        Logger.syslog.log(ip + " logged in as " + user.getName());
+        user.setFlag(Flags.U_READY);
     } else {
         user.socket.emit("rank", -1);
         user.setFlag(Flags.U_READY);

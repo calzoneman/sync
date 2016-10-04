@@ -329,41 +329,33 @@ Channel.prototype.joinUser = function (user, data) {
         }
 
         user.channel = self;
-        if (self.is(Flags.C_REGISTERED)) {
-            user.refreshAccount(function (err, account) {
-                if (err) {
-                    Logger.errlog.log("user.refreshAccount failed at Channel.joinUser");
-                    Logger.errlog.log(err.stack);
-                    self.refCounter.unref("Channel::user");
-                    return;
+        user.waitFlag(Flags.U_LOGGED_IN, () => {
+            db.channels.getRank(self.name, user.getName(), (error, rank) => {
+                if (!error) {
+                    user.setChannelRank(rank);
+                    user.setFlag(Flags.U_HAS_CHANNEL_RANK);
                 }
-
-                afterAccount();
             });
-        } else {
-            afterAccount();
+        });
+
+        if (user.socket.disconnected) {
+            self.refCounter.unref("Channel::user");
+            return;
+        } else if (self.dead) {
+            return;
         }
 
-        function afterAccount() {
-            if (user.socket.disconnected) {
+        self.checkModules("onUserPreJoin", [user, data], function (err, result) {
+            if (result === ChannelModule.PASSTHROUGH) {
+                user.channel = self;
+                self.acceptUser(user);
+            } else {
+                user.channel = null;
+                user.account.channelRank = 0;
+                user.account.effectiveRank = user.account.globalRank;
                 self.refCounter.unref("Channel::user");
-                return;
-            } else if (self.dead) {
-                return;
             }
-
-            self.checkModules("onUserPreJoin", [user, data], function (err, result) {
-                if (result === ChannelModule.PASSTHROUGH) {
-                    user.channel = self;
-                    self.acceptUser(user);
-                } else {
-                    user.channel = null;
-                    user.account.channelRank = 0;
-                    user.account.effectiveRank = user.account.globalRank;
-                    self.refCounter.unref("Channel::user");
-                }
-            });
-        }
+        });
     });
 };
 
@@ -401,7 +393,6 @@ Channel.prototype.acceptUser = function (user) {
         if (user.account.globalRank === 0) loginStr += " (guest)";
         loginStr += " (aliases: " + user.account.aliases.join(",") + ")";
         self.logger.log(loginStr);
-
         self.sendUserJoin(self.users, user);
     });
 
