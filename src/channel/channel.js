@@ -334,6 +334,12 @@ Channel.prototype.joinUser = function (user, data) {
                 if (!error) {
                     user.setChannelRank(rank);
                     user.setFlag(Flags.U_HAS_CHANNEL_RANK);
+                    if (user.inChannel()) {
+                        self.broadcastAll("setUserRank", {
+                            name: user.getName(),
+                            rank: rank
+                        });
+                    }
                 }
             });
         });
