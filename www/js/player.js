@@ -679,6 +679,7 @@
     }
 
     GoogleDrivePlayer.prototype.load = function(data) {
+      window.maybePromptToUpgradeUserscript();
       if (typeof window.getGoogleDriveMetadata === 'function') {
         return window.getGoogleDriveMetadata(data.id, (function(_this) {
           return function(error, metadata) {
@@ -687,7 +688,7 @@
               console.error(error);
               alertBox = window.document.createElement('div');
               alertBox.className = 'alert alert-danger';
-              alertBox.textContent = error.message;
+              alertBox.textContent = error;
               return document.getElementById('ytapiplayer').appendChild(alertBox);
             } else {
               data.meta.direct = metadata.videoMap;
@@ -1019,7 +1020,7 @@
     };
 
     TwitchPlayer.prototype.load = function(data) {
-      var error, error1;
+      var error;
       this.setMediaProperties(data);
       try {
         if (data.type === 'tv') {
@@ -1034,7 +1035,7 @@
     };
 
     TwitchPlayer.prototype.pause = function() {
-      var error, error1;
+      var error;
       try {
         this.twitch.pause();
         return this.paused = true;
@@ -1045,7 +1046,7 @@
     };
 
     TwitchPlayer.prototype.play = function() {
-      var error, error1;
+      var error;
       try {
         this.twitch.play();
         return this.paused = false;
@@ -1056,7 +1057,7 @@
     };
 
     TwitchPlayer.prototype.seekTo = function(time) {
-      var error, error1;
+      var error;
       try {
         return this.twitch.seek(time);
       } catch (error1) {
@@ -1066,7 +1067,7 @@
     };
 
     TwitchPlayer.prototype.getTime = function(cb) {
-      var error, error1;
+      var error;
       try {
         return cb(this.twitch.getCurrentTime());
       } catch (error1) {
@@ -1076,7 +1077,7 @@
     };
 
     TwitchPlayer.prototype.setVolume = function(volume) {
-      var error, error1;
+      var error;
       try {
         this.twitch.setVolume(volume);
         if (volume > 0) {
@@ -1089,7 +1090,7 @@
     };
 
     TwitchPlayer.prototype.getVolume = function(cb) {
-      var error, error1;
+      var error;
       try {
         if (this.twitch.isPaused()) {
           return cb(0);
@@ -1513,7 +1514,7 @@
   };
 
   window.loadMediaPlayer = function(data) {
-    var e, error, error1, error2, error3, error4;
+    var e, error;
     try {
       if (window.PLAYER) {
         window.PLAYER.destroy();
@@ -1525,8 +1526,8 @@
     if (data.meta.direct && data.type !== 'gd') {
       try {
         return window.PLAYER = new VideoJSPlayer(data);
-      } catch (error2) {
-        e = error2;
+      } catch (error1) {
+        e = error1;
         return console.error(e);
       }
     } else if (data.type === 'gd') {
@@ -1536,15 +1537,15 @@
         } else {
           return window.PLAYER = new GoogleDriveYouTubePlayer(data);
         }
-      } catch (error3) {
-        e = error3;
+      } catch (error1) {
+        e = error1;
         return console.error(e);
       }
     } else if (data.type in TYPE_MAP) {
       try {
         return window.PLAYER = TYPE_MAP[data.type](data);
-      } catch (error4) {
-        e = error4;
+      } catch (error1) {
+        e = error1;
         return console.error(e);
       }
     }

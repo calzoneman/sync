@@ -3205,3 +3205,54 @@ function stopQueueSpinner(data) {
         $("#queueprogress").remove();
     }
 }
+
+function maybePromptToUpgradeUserscript() {
+    if (document.getElementById('prompt-upgrade-drive-userscript')) {
+        return;
+    }
+
+    if (!window.hasDriveUserscript) {
+        return;
+    }
+
+    var currentVersion = [1, 2];
+    var userscriptVersion = window.driveUserscriptVersion;
+    if (!userscriptVersion) {
+        userscriptVersion = '1.0';
+    }
+    userscriptVersion = userscriptVersion.split('.').map(function (part) {
+        return parseInt(part, 10);
+    });
+
+    var older = false;
+    for (var i = 0; i < currentVersion.length; i++) {
+        if (userscriptVersion[i] < currentVersion[i]) {
+            older = true;
+        }
+    }
+
+    if (!older) {
+        return;
+    }
+
+    var alertBox = document.createElement('div');
+    alertBox.id = 'prompt-upgrade-drive-userscript';
+    alertBox.className = 'alert alert-info'
+    alertBox.innerHTML = 'A newer version of the Google Drive userscript is available.';
+    alertBox.appendChild(document.createElement('br'));
+    var infoLink = document.createElement('a');
+    infoLink.className = 'btn btn-info';
+    infoLink.href = '/google_drive_userscript';
+    infoLink.textContent = 'Click here for installation instructions';
+    infoLink.target = '_blank';
+    alertBox.appendChild(infoLink);
+
+    var closeButton = document.createElement('button');
+    closeButton.className = 'close pull-right';
+    closeButton.innerHTML = '&times;';
+    closeButton.onclick = function () {
+        alertBox.parentNode.removeChild(alertBox);
+    }
+    alertBox.insertBefore(closeButton, alertBox.firstChild)
+    document.getElementById('videowrap').appendChild(alertBox);
+}

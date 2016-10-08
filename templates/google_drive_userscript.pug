@@ -49,7 +49,7 @@ html(lang="en")
                 | Tampermonkey supports many browsers besides Chrome.
             p.
               Once you have installed the userscript manager addon for your browser,
-              you can <a href="/js/cytube-google-drive.user.js?v=1.1" target="_blank">
+              you can <a href="/js/cytube-google-drive.user.js" target="_blank">
               install the userscript</a>.  If this link 404s, it means the administrator
               of this server hasn't generated it yet.
             p.
@@ -58,17 +58,3 @@ html(lang="en")
 
     include footer
     +footer()
-    script(type="text/javascript").
-      function showEmail(btn, email, key) {
-        email = unescape(email);
-        key = unescape(key);
-        var dest = new Array(email.length);
-        for (var i = 0; i < email.length; i++) {
-          dest[i] = String.fromCharCode(email.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-        }
-        email = dest.join("");
-        $("<a/>").attr("href", "mailto:" + email)
-          .text(email)
-          .insertBefore(btn);
-        $(btn).remove();
-      }

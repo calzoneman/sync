@@ -7,7 +7,7 @@
 // @grant GM_xmlhttpRequest
 // @connect docs.google.com
 // @run-at document-end
-// @version 1.1.0
+// @version 1.2.0
 // ==/UserScript==
 
 try {
@@ -67,18 +67,14 @@ try {
                     });
 
                     if (data.status === 'fail') {
-                        error = new Error('Google Docs request failed: ' +
-                                'metadata indicated status=fail');
-                        error.response = res.responseText;
-                        error.reason = 'RESPONSE_STATUS_FAIL';
+                        var error = 'Google Docs request failed: ' +
+                                unescape(data.reason).replace(/\+/g, ' ');
                         return cb(error);
                     }
 
                     if (!data.fmt_stream_map) {
-                        error = new Error('Google Docs request failed: ' +
-                                'metadata lookup returned no valid links');
-                        error.response = res.responseText;
-                        error.reason = 'MISSING_LINKS';
+                        var error = 'Google Docs request failed: ' +
+                                'metadata lookup returned no valid links';
                         return cb(error);
                     }
 
@@ -96,8 +92,8 @@ try {
             },
 
             onerror: function () {
-                var error = new Error('Google Docs request failed: ' +
-                        'metadata lookup HTTP request failed');
+                var error = 'Google Docs request failed: ' +
+                        'metadata lookup HTTP request failed';
                 error.reason = 'HTTP_ONERROR';
                 return cb(error);
             }
@@ -205,6 +201,7 @@ try {
 
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
+    unsafeWindow.driveUserscriptVersion = '1.2';
 } catch (error) {
     unsafeWindow.console.error(error);
 }
