@@ -679,23 +679,36 @@
     }
 
     GoogleDrivePlayer.prototype.load = function(data) {
-      window.maybePromptToUpgradeUserscript();
+      if (!window.hasDriveUserscript && !data.meta.direct) {
+        window.promptToInstallDriveUserscript();
+      } else if (window.hasDriveUserscript) {
+        window.maybePromptToUpgradeUserscript();
+      }
       if (typeof window.getGoogleDriveMetadata === 'function') {
-        return window.getGoogleDriveMetadata(data.id, (function(_this) {
-          return function(error, metadata) {
-            var alertBox;
-            if (error) {
-              console.error(error);
-              alertBox = window.document.createElement('div');
-              alertBox.className = 'alert alert-danger';
-              alertBox.textContent = error;
-              return document.getElementById('ytapiplayer').appendChild(alertBox);
-            } else {
-              data.meta.direct = metadata.videoMap;
-              return GoogleDrivePlayer.__super__.load.call(_this, data);
-            }
+        return setTimeout((function(_this) {
+          return function() {
+            return backoffRetry(function(cb) {
+              return window.getGoogleDriveMetadata(data.id, cb);
+            }, function(error, metadata) {
+              var alertBox;
+              if (error) {
+                console.error(error);
+                alertBox = window.document.createElement('div');
+                alertBox.className = 'alert alert-danger';
+                alertBox.textContent = error;
+                return document.getElementById('ytapiplayer').appendChild(alertBox);
+              } else {
+                data.meta.direct = metadata.videoMap;
+                return GoogleDrivePlayer.__super__.load.call(_this, data);
+              }
+            }, {
+              maxTries: 3,
+              delay: 1000,
+              factor: 1.2,
+              jitter: 500
+            });
           };
-        })(this));
+        })(this), Math.random() * 1000);
       } else {
         return GoogleDrivePlayer.__super__.load.call(this, data);
       }
@@ -1526,17 +1539,6 @@
     if (data.meta.direct && data.type !== 'gd') {
       try {
         return window.PLAYER = new VideoJSPlayer(data);
-      } catch (error1) {
-        e = error1;
-        return console.error(e);
-      }
-    } else if (data.type === 'gd') {
-      try {
-        if (data.meta.html5hack || window.hasDriveUserscript) {
-          return window.PLAYER = new GoogleDrivePlayer(data);
-        } else {
-          return window.PLAYER = new GoogleDriveYouTubePlayer(data);
-        }
       } catch (error1) {
         e = error1;
         return console.error(e);

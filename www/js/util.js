@@ -3256,3 +3256,34 @@ function maybePromptToUpgradeUserscript() {
     alertBox.insertBefore(closeButton, alertBox.firstChild)
     document.getElementById('videowrap').appendChild(alertBox);
 }
+
+function backoffRetry(fn, cb, options) {
+    var jitter = options.jitter || 0;
+    var factor = options.factor || 1;
+    var isRetryable = options.isRetryable || function () { return true; };
+    var tries = 0;
+
+    function callback(error, result) {
+        tries++;
+        factor *= factor;
+        if (error) {
+            if (tries >= options.maxTries) {
+                console.log('Max tries exceeded');
+                cb(error, result);
+            } else if (isRetryable(error)) {
+                var offset = Math.random() * jitter;
+                var delay = options.delay * factor + offset;
+                console.log('Retrying on error: ' + error);
+                console.log('Waiting ' + delay + ' ms before retrying');
+
+                setTimeout(function () {
+                    fn(callback);
+                }, delay);
+            }
+        } else {
+            cb(error, result);
+        }
+    }
+
+    fn(callback);
+}
