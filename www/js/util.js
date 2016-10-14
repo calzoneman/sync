@@ -693,16 +693,16 @@ function saveUserOptions() {
     //If user wants desktop applications, ask the browser for permission.
     if(USEROPTS.desktop_notification != "never")
     {
-		//Ask for permission
-		if (!Notification) 
-		{
-			alert('Desktop notifications are not availble on your system, please update your browser.'); 
-			USEROPTS.desktop_notification = "never"
-		} else if (Notification.permission !== "granted")
-		{
-			Notification.requestPermission();
-		}
-	}
+        //Ask for permission
+        if (!Notification) 
+        {
+            alert('Desktop notifications are not availble on your system, please update your browser.'); 
+            USEROPTS.desktop_notification = "never"
+        } else if (Notification.permission !== "granted")
+        {
+            Notification.requestPermission();
+        }
+    }
 
     storeOpts();
     applyOpts();
@@ -1661,19 +1661,19 @@ function trimChatBuffer() {
 
 function showMessage(message, nameMentioned) {
     if(USEROPTS.desktop_notification != "never") {
-		
-		if(USEROPTS.desktop_notification == "always" || 
-		   USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
-			   
-			var notification = new Notification(CHANNEL.name, {
-				body: message
-			});
+        
+        if(USEROPTS.desktop_notification == "always" || 
+           USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
+               
+            var notification = new Notification(CHANNEL.name, {
+                body: message
+            });
 
-			notification.onclick = function () {
-				window.focus();
-			};
-		}
-	}
+            notification.onclick = function () {
+                window.focus();
+            };
+        }
+    }
 }
 
 function pingMessage(isHighlight) {   
