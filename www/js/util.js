@@ -1659,7 +1659,12 @@ function addChatMessage(data) {
     }
 
     pingMessage(isHighlight);
-    showMessage(data.username + ": " + data.msg, isHighlight);
+    
+    //Strip HTML before passing it to the notification
+    var tmp = document.createElement("DIV");
+    tmp.innerHTML = data.msg;
+    
+    showMessage(safeUsername + ": " + tmp.textContent, isHighlight);
 
 }
 
@@ -1689,13 +1694,13 @@ function showMessage(message, nameMentioned) {
 
         if(USEROPTS.desktop_notification == "always" || 
 		   USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
-            
+
             var notificationOptions = {
                 body: message,
                 icon: "/favicon.ico"
             }
-            
-            var n = new Notification(CHANNEL.name, notificationOptions);
+
+            var n = new Notification("/r/" + CHANNEL.name, notificationOptions);
             setTimeout(n.close.bind(n), 5000); 
 		}
     }
