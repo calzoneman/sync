@@ -1683,26 +1683,28 @@ function trimChatBuffer() {
 }
 
 function showMessage(message, nameMentioned) {
-    if(USEROPTS.desktop_notification != "never") {
-        
-        //It is possible that the user has revoked the permission to show notifications
-        //since the last time they opened cytube.
-        if(Notification.permission !== "granted") {
-            //If they deny/ignore the permission, the USEROPTS is set back to never.
-            getNotificationPermission();
-        }
-
-        if(USEROPTS.desktop_notification == "always" || 
-		   USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
-
-            var notificationOptions = {
-                body: message,
-                icon: "/favicon.ico"
+    if (!FOCUSED) {
+        if(USEROPTS.desktop_notification != "never") {
+            
+            //It is possible that the user has revoked the permission to show notifications
+            //since the last time they opened cytube.
+            if(Notification.permission !== "granted") {
+                //If they deny/ignore the permission, the USEROPTS is set back to never.
+                getNotificationPermission();
             }
 
-            var n = new Notification("/r/" + CHANNEL.name, notificationOptions);
-            setTimeout(n.close.bind(n), 5000); 
-		}
+            if(USEROPTS.desktop_notification == "always" || 
+               USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
+
+                var notificationOptions = {
+                    body: message,
+                    icon: "/favicon.ico"
+                }
+
+                var n = new Notification("/r/" + CHANNEL.name, notificationOptions);
+                setTimeout(n.close.bind(n), 5000);
+            }
+        }
     }
 }
 
