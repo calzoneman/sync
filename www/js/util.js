@@ -645,6 +645,7 @@ function showUserOptions() {
     $("#us-sort-afk").prop("checked", USEROPTS.sort_afk);
     $("#us-blink-title").val(USEROPTS.blink_title);
     $("#us-ping-sound").val(USEROPTS.boop);
+    $("#us-desktop-notification").val(USEROPTS.desktop_notification);
     $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
     $("#us-no-emotes").prop("checked", USEROPTS.no_emotes);
     $("#us-strip-image").prop("checked", USEROPTS.strip_image);
@@ -678,6 +679,7 @@ function saveUserOptions() {
     USEROPTS.sort_rank            = $("#us-sort-rank").prop("checked");
     USEROPTS.sort_afk             = $("#us-sort-afk").prop("checked");
     USEROPTS.blink_title          = $("#us-blink-title").val();
+    USEROPTS.desktop_notification = $("#us-desktop-notification").val();
     USEROPTS.boop                 = $("#us-ping-sound").val();
     USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
     USEROPTS.no_emotes            = $("#us-no-emotes").prop("checked");
@@ -687,6 +689,20 @@ function saveUserOptions() {
         USEROPTS.modhat      = $("#us-modflair").prop("checked");
         USEROPTS.show_shadowchat = $("#us-shadowchat").prop("checked");
     }
+    
+    //If user wants desktop applications, ask the browser for permission.
+    if(USEROPTS.desktop_notification != "never")
+    {
+		//Ask for permission
+		if (!Notification) 
+		{
+			alert('Desktop notifications are not availble on your system, please update your browser.'); 
+			USEROPTS.desktop_notification = "never"
+		} else if (Notification.permission !== "granted")
+		{
+			Notification.requestPermission();
+		}
+	}
 
     storeOpts();
     applyOpts();
@@ -1625,6 +1641,7 @@ function addChatMessage(data) {
     }
 
     pingMessage(isHighlight);
+    showMessage(data.username + ": " + data.msg, isHighlight);
 
 }
 
@@ -1642,7 +1659,24 @@ function trimChatBuffer() {
     return count;
 }
 
-function pingMessage(isHighlight) {
+function showMessage(message, nameMentioned) {
+    if(USEROPTS.desktop_notification != "never") {
+		
+		if(USEROPTS.desktop_notification == "always" || 
+		   USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
+			   
+			var notification = new Notification(CHANNEL.name, {
+				body: message
+			});
+
+			notification.onclick = function () {
+				window.focus();
+			};
+		}
+	}
+}
+
+function pingMessage(isHighlight) {   
     if (!FOCUSED) {
         if (!TITLE_BLINK && (USEROPTS.blink_title === "always" ||
             USEROPTS.blink_title === "onlyping" && isHighlight)) {

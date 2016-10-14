@@ -111,6 +111,13 @@ mixin us-chat
             option(value="never") Never
             option(value="onlyping") Only when I am mentioned or PMed
             option(value="always") Always
+      .form-group
+        label.control-label.col-sm-4(for="#us-desktop-notification") Desktop notification on new messages
+        .col-sm-8
+          select#us-desktop-notification.form-control
+            option(value="never") Never
+            option(value="onlyping") Only when I am mentioned or PMed
+            option(value="always") Always            
       +rcheckbox("us-sendbtn", "Add a send button to chat")
       +rcheckbox("us-no-emotes", "Disable chat emotes")
       +rcheckbox("us-strip-image", "Remove images from chat")
