@@ -689,23 +689,41 @@ function saveUserOptions() {
         USEROPTS.modhat      = $("#us-modflair").prop("checked");
         USEROPTS.show_shadowchat = $("#us-shadowchat").prop("checked");
     }
-    
-    //If user wants desktop applications, ask the browser for permission.
-    if(USEROPTS.desktop_notification != "never")
-    {
-        //Ask for permission
-        if (!Notification) 
-        {
-            alert('Desktop notifications are not availble on your system, please update your browser.'); 
-            USEROPTS.desktop_notification = "never"
-        } else if (Notification.permission !== "granted")
-        {
-            Notification.requestPermission();
-        }
-    }
+
+    getNotificationPermission();
 
     storeOpts();
     applyOpts();
+}
+
+function getNotificationPermission() {
+    //Only ask for permission if they desire the permission.
+    if(USEROPTS.desktop_notification != "never")
+    {
+        notificationsAvailable = false;
+        
+        //Check to see if notifications are available.
+        if (!Notification) 
+        {
+            alert('Desktop notifications are not availble on your system, please update your browser.'); 
+            USEROPTS.desktop_notification = "never";
+        } else {
+            //Ask for permission if we don't have it.
+            if (Notification.permission !== "granted")
+            {
+                Notification.requestPermission();
+            }
+            
+            notificationsAvailable = Notification.permission == "granted";
+        }
+        
+        //If we can't get permission or user denied the permission, reset the useroption.
+        if(!notificationsAvailable)
+        {
+            USEROPTS.desktop_notification = "never";
+        }
+    }
+    
 }
 
 function storeOpts() {
@@ -1662,17 +1680,24 @@ function trimChatBuffer() {
 function showMessage(message, nameMentioned) {
     if(USEROPTS.desktop_notification != "never") {
         
-        if(USEROPTS.desktop_notification == "always" || 
-           USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
-               
-            var notification = new Notification(CHANNEL.name, {
-                body: message
-            });
-
-            notification.onclick = function () {
-                window.focus();
-            };
+        //It is possible that the user has revoked the permission to show notifications
+        //since the last time they opened cytube.
+        if(Notification.permission !== "granted") {
+            //If they deny/ignore the permission, the USEROPTS is set back to never.
+            getNotificationPermission();
         }
+
+        if(USEROPTS.desktop_notification == "always" || 
+		   USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
+            
+            var notificationOptions = {
+                body: message,
+                icon: "/favicon.ico"
+            }
+            
+            var n = new Notification(CHANNEL.name, notificationOptions);
+            setTimeout(n.close.bind(n), 5000); 
+		}
     }
 }
 
