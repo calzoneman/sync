@@ -1695,13 +1695,34 @@ function showMessage(message, nameMentioned) {
 
             if(USEROPTS.desktop_notification == "always" || 
                USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
+                   
+               notificationTitle = "/r/" + CHANNEL.name;
+               iconLocation = "/favicon.ico";
+               
+               //There are two ways to send notifications,
+               //service worker only works over HTTPS, so let's try that first.
+               try {
+                    navigator.serviceWorker.register('/sw.js');
+                
+                    navigator.serviceWorker.ready.then(function(registration) {
+                        registration.showNotification(notificationTitle, {
+                            body: message,
+                            icon: iconLocation,
+                        });
+                    });
+                } catch(e) {
+                    
+                    //If we can't use HTTPS then we need to default to the old way.
+                    //This will not work on Chrome Mobile as they are pushing for HTTPS
+                    
+                    var notificationOptions = {
+                        body: notificationTitle,
+                        icon: iconLocation
+                    }
 
-                var notificationOptions = {
-                    body: message,
-                    icon: "/favicon.ico"
+                    var n = new Notification("/r/" + CHANNEL.name, notificationOptions);
                 }
-
-                var n = new Notification("/r/" + CHANNEL.name, notificationOptions);
+                
             }
         }
     }
