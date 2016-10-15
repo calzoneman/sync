@@ -1,30 +1,36 @@
 import { murmurHash1 } from '../util/murmur';
 
 class PartitionDecider {
-    constructor(config) {
+    constructor(config, partitionMap) {
         this.config = config;
+        this.partitionMap = partitionMap;
     }
 
     getPartitionForChannel(channel) {
-        const partitionMap = this.config.getPartitionMap();
-        return partitionMap[this.getPartitionIdentityForChannel(channel)];
+        return this.partitionMap.getPartitions()[this.getPartitionIdentityForChannel(channel)];
     }
 
     getPartitionIdentityForChannel(channel) {
         channel = channel.toLowerCase();
-        const overrideMap = this.config.getOverrideMap();
+        const overrideMap = this.partitionMap.getOverrides();
         if (overrideMap.hasOwnProperty(channel)) {
             return overrideMap[channel];
-        } else {
-            const pool = this.config.getPool();
+        } else if (this.partitionMap.getPool().length > 0) {
+            const pool = this.partitionMap.getPool();
             const i = murmurHash1(channel) % pool.length;
             return pool[i];
+        } else {
+            return { servers: [] };
         }
     }
 
     isChannelOnThisPartition(channel) {
         return this.getPartitionIdentityForChannel(channel) ===
                 this.config.getIdentity();
+    }
+
+    setPartitionMap(newMap) {
+        this.partitionMap = newMap;
     }
 }
 

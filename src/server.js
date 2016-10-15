@@ -333,20 +333,7 @@ Server.prototype.shutdown = function () {
     });
 };
 
-Server.prototype.reloadPartitionMap = function () {
-    if (!Config.get("enable-partition")) {
-        return;
-    }
-
-    var config;
-    try {
-        config = this.initModule.loadPartitionMap();
-    } catch (error) {
-        return;
-    }
-
-    this.initModule.partitionConfig.config = config.config;
-
+Server.prototype.handlePartitionMapChange = function () {
     const channels = Array.prototype.slice.call(this.channels);
     Promise.map(channels, channel => {
         if (channel.dead) {
@@ -374,4 +361,12 @@ Server.prototype.reloadPartitionMap = function () {
     }, { concurrency: 5 }).then(() => {
         Logger.syslog.log("Partition reload complete");
     });
+};
+
+Server.prototype.reloadPartitionMap = function () {
+    if (!Config.get("enable-partitions")) {
+        return;
+    }
+
+    this.initModule.getPartitionMapReloader().reload();
 };
