@@ -364,7 +364,7 @@ Server.prototype.handlePartitionMapChange = function () {
 };
 
 Server.prototype.reloadPartitionMap = function () {
-    if (!Config.get("enable-partitions")) {
+    if (!Config.get("enable-partition")) {
         return;
     }
 
