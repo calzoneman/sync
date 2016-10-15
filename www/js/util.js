@@ -1702,7 +1702,6 @@ function showMessage(message, nameMentioned) {
                 }
 
                 var n = new Notification("/r/" + CHANNEL.name, notificationOptions);
-                setTimeout(n.close.bind(n), 5000);
             }
         }
     }
