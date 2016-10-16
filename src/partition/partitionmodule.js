@@ -15,6 +15,7 @@ const PARTITION_CONFIG_PATH = path.resolve(__dirname, '..', '..', 'conf',
 class PartitionModule {
     constructor() {
         this.initConfig();
+        this.cliMode = false;
     }
 
     onReady() {
@@ -63,7 +64,9 @@ class PartitionModule {
                     reloader.getPartitionMap());
             reloader.on('partitionMapChange', newMap => {
                 this.partitionDecider.setPartitionMap(newMap);
-                require('../server').getServer().handlePartitionMapChange();
+                if (!this.cliMode) {
+                    require('../server').getServer().handlePartitionMapChange();
+                }
             });
         }
 
