@@ -1720,7 +1720,7 @@ function showMessage(message, nameMentioned) {
                         icon: iconLocation
                     }
 
-                    var n = new Notification("/r/" + CHANNEL.name, notificationOptions);
+                    var n = new Notification(notificationTitle, notificationOptions);
                 }
                 
             }
