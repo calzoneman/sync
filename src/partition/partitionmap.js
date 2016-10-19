@@ -49,6 +49,22 @@ class PartitionMap {
     }
 
     static fromJSON(json) {
+        if (json === null) {
+            throw new Error('Cannot construct PartitionMap: input is null');
+        } else if (typeof json !== 'object') {
+            throw new Error(`Cannot construct PartitionMap from input "${json}" of type `
+                    + typeof json);
+        } else if (!json.partitions || typeof json.partitions !== 'object') {
+            throw new Error('Cannot construct PartitionMap: field partitions must be '
+                    + `an object but was "${json.partitions}"`);
+        } else if (!json.overrides || typeof json.overrides !== 'object') {
+            throw new Error('Cannot construct PartitionMap: field overrides must be '
+                    + `an object but was "${json.overrides}"`);
+        } else if (!json.pool || !Array.isArray(json.pool)) {
+            throw new Error('Cannot construct PartitionMap: field pool must be '
+                    + `an array but was "${json.pool}"`);
+        }
+
         return new PartitionMap(json.partitions, json.pool, json.overrides);
     }
 

@@ -10,6 +10,14 @@ class PartitionConfig {
     getRedisConfig() {
         return this.config.redis;
     }
+
+    getPublishChannel() {
+        return this.config.redis.publishChannel;
+    }
+
+    getPartitionMapKey() {
+        return this.config.redis.partitionMapKey;
+    }
 }
 
 export { PartitionConfig };

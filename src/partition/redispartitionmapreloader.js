@@ -3,8 +3,9 @@ import logger from 'cytube-common/lib/logger';
 import { EventEmitter } from 'events';
 
 class RedisPartitionMapReloader extends EventEmitter {
-    constructor(redisClient, subClient) {
+    constructor(config, redisClient, subClient) {
         super();
+        this.config = config;
         this.redisClient = redisClient;
         this.subClient = subClient;
         this.partitionMap = PartitionMap.empty();
@@ -13,20 +14,21 @@ class RedisPartitionMapReloader extends EventEmitter {
     }
 
     subscribe() {
-        this.subClient.subscribe('partitionMap');
+        this.subClient.subscribe(this.config.getPublishChannel());
         this.subClient.on('message', (channel, message) => {
-            if (channel !== 'partitionMap') {
+            if (channel !== this.config.getPublishChannel()) {
                 logger.warn('RedisPartitionMapReloader received unexpected message '
                         + `on redis channel ${channel}`);
                 return;
             }
 
+            logger.info(`Received partition map update message published at ${message}`);
             this.reload();
         });
     }
 
     reload() {
-        this.redisClient.getAsync('partitionMap').then(result => {
+        this.redisClient.getAsync(this.config.getPartitionMapKey()).then(result => {
             var newMap = null;
             try {
                 newMap = PartitionMap.fromJSON(JSON.parse(result));

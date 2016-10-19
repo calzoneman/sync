@@ -53,10 +53,11 @@ function loadPartitionMap(filename) {
     }
 
     const client = partitionModule.getRedisClientProvider().get();
+    const config = partitionModule.partitionConfig;
     client.once('ready', () => {
         client.multi()
-                .set('partitionMap', JSON.stringify(newMap))
-                .publish('partitionMap', new Date().toISOString())
+                .set(config.getPartitionMapKey(), JSON.stringify(newMap))
+                .publish(config.getPublishChannel(), new Date().toISOString())
                 .execAsync()
                 .then(result => {
             console.log(`Result: ${result}`);

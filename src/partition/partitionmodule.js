@@ -50,6 +50,7 @@ class PartitionModule {
         if (!this.partitionMapReloader) {
             const redisProvider = this.getRedisClientProvider();
             this.partitionMapReloader = new RedisPartitionMapReloader(
+                    this.partitionConfig,
                     redisProvider.get(),  // Client for GET partitionMap
                     redisProvider.get()); // Subscribe client
         }
