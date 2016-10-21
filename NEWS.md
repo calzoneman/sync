@@ -1,3 +1,15 @@
+2016-10-20
+==========
+
+Google Drive changed the URL schema for retrieving video metadata, which broke
+CyTube's Google Drive support, even with the userscript.  I have updated the
+userscript source with the new URL, so server administrators will have to
+regenerate the userscript for their site and users will be prompted to install
+the newer version.
+
+Additionally, fixing Drive lookups required an update to the `mediaquery`
+module, so you will have to do an `npm install` to pull that fix in.
+
 2016-08-23
 ==========
 

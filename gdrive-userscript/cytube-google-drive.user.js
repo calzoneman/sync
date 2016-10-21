@@ -7,7 +7,7 @@
 // @grant GM_xmlhttpRequest
 // @connect docs.google.com
 // @run-at document-end
-// @version 1.2.0
+// @version 1.3.0
 // ==/UserScript==
 
 try {
@@ -50,7 +50,10 @@ try {
     };
 
     function getVideoInfo(id, cb) {
-        var url = 'https://docs.google.com/file/d/' + id + '/get_video_info';
+        var url = 'https://docs.google.com/get_video_info?authuser='
+                + '&docid=' + id
+                + '&sle=true'
+                + '&hl=en';
         debug('Fetching ' + url);
 
         GM_xmlhttpRequest({
@@ -201,7 +204,7 @@ try {
 
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
-    unsafeWindow.driveUserscriptVersion = '1.2';
+    unsafeWindow.driveUserscriptVersion = '1.3';
 } catch (error) {
     unsafeWindow.console.error(error);
 }
