@@ -1685,10 +1685,10 @@ function trimChatBuffer() {
 function showMessage(message, nameMentioned) {
     if (!FOCUSED) {
         if(USEROPTS.desktop_notification != "never") {
-            
+                        
             //It is possible that the user has revoked the permission to show notifications
             //since the last time they opened cytube.
-            if(Notification.permission !== "granted") {
+            if(Notification && Notification.permission !== "granted") {
                 //If they deny/ignore the permission, the USEROPTS is set back to never.
                 getNotificationPermission();
             }
@@ -1712,8 +1712,8 @@ function showMessage(message, nameMentioned) {
                     });
                 } catch(e) {
                     
-                    //If we can't use HTTPS then we need to default to the old way.
-                    //This will not work on Chrome Mobile as they are pushing for HTTPS
+                    //If we can't use service worker then we need to default to the old way.
+                    //This will be depricated in the future
                     
                     var notificationOptions = {
                         body: notificationTitle,
