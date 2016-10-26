@@ -3,24 +3,20 @@ class PartitionConfig {
         this.config = config;
     }
 
-    getPartitionMap() {
-        return this.config.partitions;
-    }
-
-    getOverrideMap() {
-        return this.config.overrides;
-    }
-
-    getPool() {
-        return this.config.pool;
-    }
-
     getIdentity() {
         return this.config.identity;
     }
 
     getRedisConfig() {
         return this.config.redis;
+    }
+
+    getPublishChannel() {
+        return this.config.redis.publishChannel;
+    }
+
+    getPartitionMapKey() {
+        return this.config.redis.partitionMapKey;
     }
 }
 

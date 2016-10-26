@@ -7,6 +7,7 @@ import logger from 'cytube-common/lib/logger';
 import LegacyConfig from '../config';
 import path from 'path';
 import { AnnouncementRefresher } from './announcementrefresher';
+import { RedisPartitionMapReloader } from './redispartitionmapreloader';
 
 const PARTITION_CONFIG_PATH = path.resolve(__dirname, '..', '..', 'conf',
                                            'partitions.toml');
@@ -14,6 +15,7 @@ const PARTITION_CONFIG_PATH = path.resolve(__dirname, '..', '..', 'conf',
 class PartitionModule {
     constructor() {
         this.initConfig();
+        this.cliMode = false;
     }
 
     onReady() {
@@ -23,13 +25,13 @@ class PartitionModule {
     initConfig() {
         logger.initialize(null, null, LegacyConfig.get('debug'));
         try {
-            this.partitionConfig = this.loadPartitionMap();
+            this.partitionConfig = this.loadPartitionConfig();
         } catch (error) {
             process.exit(1);
         }
     }
 
-    loadPartitionMap() {
+    loadPartitionConfig() {
         try {
             return loadFromToml(PartitionConfig, PARTITION_CONFIG_PATH);
         } catch (error) {
@@ -44,9 +46,29 @@ class PartitionModule {
         }
     }
 
+    getPartitionMapReloader() {
+        if (!this.partitionMapReloader) {
+            const redisProvider = this.getRedisClientProvider();
+            this.partitionMapReloader = new RedisPartitionMapReloader(
+                    this.partitionConfig,
+                    redisProvider.get(),  // Client for GET partitionMap
+                    redisProvider.get()); // Subscribe client
+        }
+
+        return this.partitionMapReloader;
+    }
+
     getPartitionDecider() {
         if (!this.partitionDecider) {
-            this.partitionDecider = new PartitionDecider(this.partitionConfig);
+            const reloader = this.getPartitionMapReloader();
+            this.partitionDecider = new PartitionDecider(this.partitionConfig,
+                    reloader.getPartitionMap());
+            reloader.on('partitionMapChange', newMap => {
+                this.partitionDecider.setPartitionMap(newMap);
+                if (!this.cliMode) {
+                    require('../server').getServer().handlePartitionMapChange();
+                }
+            });
         }
 
         return this.partitionDecider;
