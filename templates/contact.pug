@@ -20,15 +20,15 @@ html(lang="en")
           .col-md-8.col-md-offset-2
             h1 Contact
             h3 Email
-            each contact in contacts
-              strong= contact.name
-              p.text-muted= contact.title
-              +email(contact.email, contact.emkey)
-              br
-              hr
-            h3 IRC
-            p.
-              The developer and other knowledgeable people are usually available on IRC for quick questions or comments.  Official support can be provided for cytu.be and synchtube.6irc.net at <a href="http://webchat.6irc.net/?channels=cytube">irc.6irc.net#cytube</a>.  These people can also address general questions about the software, but cannot provide technical support for third-party websites using this code.
+            if contacts.length == 0
+              p No contacts listed.
+            else
+              each contact in contacts
+                strong= contact.name
+                p.text-muted= contact.title
+                +email(contact.email, contact.emkey)
+                br
+                hr
     include footer
     +footer()
     script(type="text/javascript").

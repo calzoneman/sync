@@ -90,13 +90,7 @@ var defaults = {
         channels: ["^(.*?[-_])?admin(istrator)?([-_].*)?$", "^(.*?[-_])?owner([-_].*)?$"],
         pagetitles: []
     },
-    "contacts": [
-        {
-            name: "calzoneman",
-            title: "Developer",
-            email: "cyzon@cytu.be"
-        }
-    ],
+    "contacts": [],
     "aggressive-gc": false,
     playlist: {
         "max-items": 4000,
@@ -389,6 +383,11 @@ function preprocessConfig(cfg) {
             "https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup" +
             "for more information on registering a client ID");
     }
+
+    // Remove calzoneman from contact config (old default)
+    cfg.contacts = cfg.contacts.filter(contact => {
+        return contact.name !== 'calzoneman';
+    });
 
     return cfg;
 }

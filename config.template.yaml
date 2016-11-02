@@ -91,7 +91,7 @@ https:
 # Page template values
 # title goes in the upper left corner, description goes in a <meta> tag
 html-template:
-  title: 'CyTube',
+  title: 'Sync',
   description: 'Free, open source synchtube'
 
 # Socket.IO server details
@@ -190,10 +190,12 @@ reserved-names:
   pagetitles: []
 
 # Provide a contact list for the /contact page
-contacts:
-  - name: 'calzoneman'
-    title: 'Developer'
-    email: 'cyzon@cytu.be'
+# Example:
+# contacts:
+#   - name: 'my_name'
+#     title: 'administrator
+#     email: 'me@my.site'
+contacts: []
 
 playlist:
   max-items: 4000
