@@ -1,3 +1,23 @@
+2016-11-02
+==========
+
+After upgrading the dependency on `yamljs`, you may see this error if you didn't
+notice and correct a typo in the config.yaml template:
+
+    Error loading config file config.yaml:
+    { [Error: Unexpected characters near ",".]
+      message: 'Unexpected characters near ",".',
+      parsedLine: 88,
+      snippet: 'title: \'CyTube\',' }
+
+The fix is to edit config.yaml and remove the trailing comma for the `title:`
+property under `html-template`.  If there are other syntax errors that the old
+version didn't detect, you will need to correct those as well.
+
+Longer term, I am looking to move away from using `yamljs` to parse
+configuration because it's a little buggy and the current configuration system
+is confusing.
+
 2016-10-20
 ==========
 
