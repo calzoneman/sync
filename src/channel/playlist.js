@@ -470,6 +470,16 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
                     return lock.release();
                 }
 
+                // YouTube livestreams transition to becoming regular videos,
+                // breaking the cached duration of 0.
+                // In the future, the media cache should be decoupled from
+                // the library and this will no longer be an issue, but for now
+                // treat 0-length yt library entries as non-existent.
+                if (item.type === "yt" && item.seconds === 0) {
+                    data.type = "yt"; // Kludge -- library queue has type: "lib"
+                    item = null;
+                }
+
                 if (item !== null) {
                     /* Don't re-cache data we got from the library */
                     data.shouldAddToLibrary = false;
