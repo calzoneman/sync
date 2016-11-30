@@ -475,7 +475,7 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
                 // In the future, the media cache should be decoupled from
                 // the library and this will no longer be an issue, but for now
                 // treat 0-length yt library entries as non-existent.
-                if (item.type === "yt" && item.seconds === 0) {
+                if (item !== null && item.type === "yt" && item.seconds === 0) {
                     data.type = "yt"; // Kludge -- library queue has type: "lib"
                     item = null;
                 }
