@@ -616,11 +616,6 @@ function rebuildPlaylist() {
 
 /* user settings menu */
 function showUserOptions() {
-    hidePlayer();
-    $("#useroptions").on("hidden.bs.modal", function () {
-        unhidePlayer();
-    });
-
     if (CLIENT.rank < 2) {
         $("a[href='#us-mod']").parent().hide();
     } else {
@@ -2046,21 +2041,6 @@ function waitUntilDefined(obj, key, fn) {
     fn();
 }
 
-function hidePlayer() {
-    /* 2015-09-16
-     * Originally used to hide the player while a modal was open because of
-     * certain flash videos that always rendered on top.  Seems to no longer
-     * be an issue.  Uncomment this if it is.
-    if (!PLAYER) return;
-
-    $("#ytapiplayer").hide();
-    */
-}
-
-function unhidePlayer() {
-    //$("#ytapiplayer").show();
-}
-
 function chatDialog(div) {
     var parent = $("<div/>").addClass("profile-box")
         .css({
@@ -2101,6 +2081,44 @@ function errDialog(err) {
         .css("top", y + "px")
         .css("position", "absolute");
     return div;
+}
+
+/**
+ * 2016-12-08
+ * I *promise* that one day I will actually split this file into submodules
+ * -cal
+ */
+function modalAlert(options) {
+    if (typeof options !== "object" || options === null) {
+        throw new Error("modalAlert() called without required parameter");
+    }
+
+    var modal = makeModal();
+    modal.addClass("cytube-modal-alert");
+    modal.removeClass("fade");
+    modal.find(".modal-dialog").addClass("modal-dialog-nonfluid");
+
+    if (options.title) {
+        $("<h3/>").text(options.title).appendTo(modal.find(".modal-header"));
+    }
+
+    var contentDiv = $("<div/>").addClass("modal-body");
+    if (options.htmlContent) {
+        contentDiv.html(options.htmlContent);
+    } else if (options.textContent) {
+        contentDiv.text(options.textContent);
+    }
+
+    contentDiv.appendTo(modal.find(".modal-content"));
+
+    var footer = $("<div/>").addClass("modal-footer");
+    var okButton = $("<button/>").addClass("btn btn-primary")
+            .attr({ "data-dismiss": "modal"})
+            .text("OK")
+            .appendTo(footer);
+    footer.appendTo(modal.find(".modal-content"));
+    modal.appendTo(document.body);
+    modal.modal();
 }
 
 function queueMessage(data, type) {
@@ -2237,7 +2255,6 @@ function makeModal() {
         .appendTo(head);
 
     wrap.on("hidden.bs.modal", function () {
-        unhidePlayer();
         wrap.remove();
     });
     return wrap;
@@ -3160,11 +3177,6 @@ window.CSEMOTELIST = new CSEmoteList("#cs-emotes");
 window.CSEMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
 function showChannelSettings() {
-    hidePlayer();
-    $("#channeloptions").on("hidden.bs.modal", function () {
-        unhidePlayer();
-    });
-
     $("#channeloptions").modal();
 }
 

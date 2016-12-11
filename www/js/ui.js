@@ -488,7 +488,6 @@ $("#voteskip").click(function() {
 
 $("#getplaylist").click(function() {
     var callback = function(data) {
-        hidePlayer();
         var idx = socket.listeners("errorMsg").indexOf(errCallback);
         if (idx >= 0) {
             socket.listeners("errorMsg").splice(idx);
@@ -523,7 +522,6 @@ $("#getplaylist").click(function() {
         $("<div/>").addClass("modal-footer").appendTo(modal);
         outer.on("hidden.bs.modal", function() {
             outer.remove();
-            unhidePlayer();
         });
         outer.modal();
     };
@@ -862,7 +860,6 @@ applyOpts();
 })();
 
 var EMOTELISTMODAL = $("#emotelist");
-EMOTELISTMODAL.on("hidden.bs.modal", unhidePlayer);
 $("#emotelistbtn").click(function () {
     EMOTELISTMODAL.modal();
 });
