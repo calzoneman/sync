@@ -35,13 +35,42 @@ html(lang="en")
                 input(type="hidden", name="_csrf", value=csrfToken)
                 .form-group
                   label.control-label(for="profileimage") Image
-                  input#profileimage.form-control(type="text", name="image")
+                  input#profileimage.form-control(type="text", name="image", maxlength="255")
                 .form-group
                   label.control-label(for="profiletext") Text
-                  textarea#profiletext.form-control(cols="10", name="text")= profileText
+                  textarea#profiletext.form-control(cols="10", name="text", maxlength="255")= profileText
                 button.btn.btn-primary.btn-block(type="submit") Save
 
     include footer
     +footer()
     script(type="text/javascript").
-      $("#profileimage").val("#{profileImage}");
+      var $profileImage = $("#profileimage");
+      $profileImage.val("#{profileImage}");
+      var hasError = false;
+      function validateImage() {
+        var value = $profileImage.val().trim();
+        $profileImage.val(value);
+        if (!/^$|^https:/.test(value)) {
+          hasError = true;
+          $profileImage.parent().addClass("has-error");
+          var $error = $("#profileimage-error");
+          if ($error.length === 0) {
+            $error = $("<p/>")
+                .attr({ id: "profileimage-error" })
+                .addClass("text-danger")
+                .html("Profile image must be a URL beginning with <code>https://</code>")
+                .insertAfter($profileImage);
+          }
+        } else {
+          hasError = false;
+          $profileImage.parent().removeClass("has-error");
+          $("#profileimage-error").remove();
+        }
+      }
+
+      $("form").submit(function (event) {
+        validateImage();
+        if (hasError) {
+          event.preventDefault();
+        }
+      });

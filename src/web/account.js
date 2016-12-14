@@ -13,6 +13,7 @@ var Config = require("../config");
 var Server = require("../server");
 var session = require("../session");
 var csrf = require("./csrf");
+const url = require("url");
 
 /**
  * Handles a GET request for /account/edit
@@ -396,6 +397,25 @@ function handleAccountProfilePage(req, res) {
     });
 }
 
+function validateProfileImage(image, callback) {
+    var prefix = "Invalid URL for profile image: ";
+    var link = image.trim();
+    if (!link) {
+        process.nextTick(callback, null, link);
+    } else {
+        var data = url.parse(link);
+        if (!data.protocol || data.protocol !== 'https:') {
+            process.nextTick(callback,
+                    new Error(prefix + " URL must begin with 'https://'"));
+        } else if (!data.host) {
+            process.nextTick(callback,
+                    new Error(prefix + "missing hostname"));
+        } else {
+            process.nextTick(callback, null, link);
+        }
+    }
+}
+
 /**
  * Handles a POST request to edit a profile
  */
@@ -410,23 +430,37 @@ function handleAccountProfile(req, res) {
         });
     }
 
-    var image = req.body.image;
-    var text = req.body.text;
+    var rawImage = String(req.body.image).substring(0, 255);
+    var text = String(req.body.text).substring(0, 255);
 
-    db.users.setProfile(req.user.name, { image: image, text: text }, function (err) {
-        if (err) {
-            sendPug(res, "account-profile", {
-                profileImage: "",
-                profileText: "",
-                profileError: err
+    validateProfileImage(rawImage, (error, image) => {
+        if (error) {
+            db.users.getProfile(req.user.name, function (err, profile) {
+                var errorMessage = err || error.message;
+                sendPug(res, "account-profile", {
+                    profileImage: profile ? profile.image : "",
+                    profileText: profile ? profile.text : "",
+                    profileError: errorMessage
+                });
             });
             return;
         }
 
-        sendPug(res, "account-profile", {
-            profileImage: image,
-            profileText: text,
-            profileError: false
+        db.users.setProfile(req.user.name, { image: image, text: text }, function (err) {
+            if (err) {
+                sendPug(res, "account-profile", {
+                    profileImage: "",
+                    profileText: "",
+                    profileError: err
+                });
+                return;
+            }
+
+            sendPug(res, "account-profile", {
+                profileImage: image,
+                profileText: text,
+                profileError: false
+            });
         });
     });
 }
