@@ -176,8 +176,11 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
 
         var link = data.externalcss.substring(0, 255).trim();
         if (!link) {
+            sendUpdate = (this.opts.externalcss !== "");
             this.opts.externalcss = "";
-            sendUpdate = true;
+            user.socket.emit("validationPassed", {
+                target: "#cs-externalcss"
+            });
         } else {
             var data = url.parse(link);
             if (!data.protocol || data.protocol !== 'https:') {
@@ -201,31 +204,41 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     }
 
     if ("externaljs" in data && user.account.effectiveRank >= 3) {
-        var link = (""+data.externaljs).substring(0, 255);
+        var prefix = "Invalid URL for external JS: ";
+        if (typeof data.externaljs !== "string") {
+            user.socket.emit("validationError", {
+                target: "#cs-externaljs",
+                message: prefix + "URL must be a string, not "
+                        + realTypeOf(data.externaljs)
+            });
+        }
+
+        var link = data.externaljs.substring(0, 255).trim();
         if (!link) {
+            sendUpdate = (this.opts.externaljs !== "");
             this.opts.externaljs = "";
-            sendUpdate = true;
+            user.socket.emit("validationPassed", {
+                target: "#cs-externaljs"
+            });
         } else {
-
-            try {
-                var data = url.parse(link);
-                if (!data.protocol || !data.protocol.match(/^(https?|ftp):/)) {
-                    throw "Unacceptable protocol " + data.protocol;
-                } else if (!data.host) {
-                    throw "URL is missing host";
-                } else {
-                    link = data.href;
-                }
-            } catch (e) {
-                user.socket.emit("errorMsg", {
-                    msg: "Invalid URL for external JS: " + e,
-                    alert: true
+            var data = url.parse(link);
+            if (!data.protocol || data.protocol !== 'https:') {
+                user.socket.emit("validationError", {
+                    target: "#cs-externaljs",
+                    message: prefix + " URL must begin with 'https://'"
                 });
-                return;
+            } else if (!data.host) {
+                user.socket.emit("validationError", {
+                    target: "#cs-externaljs",
+                    message: prefix + "missing hostname"
+                });
+            } else {
+                user.socket.emit("validationPassed", {
+                    target: "#cs-externaljs"
+                });
+                this.opts.externaljs = data.href;
+                sendUpdate = true;
             }
-
-            this.opts.externaljs = link;
-            sendUpdate = true;
         }
     }
 
