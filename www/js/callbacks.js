@@ -49,7 +49,6 @@ Callbacks = {
     },
 
     costanza: function (data) {
-        hidePlayer();
         $("#costanza-modal").modal("hide");
         var modal = makeModal();
         modal.attr("id", "costanza-modal")
@@ -61,7 +60,6 @@ Callbacks = {
             .appendTo(body);
 
         $("<strong/>").text(data.msg).appendTo(body);
-        hidePlayer();
         modal.modal();
     },
 
@@ -1052,6 +1050,38 @@ Callbacks = {
         HAS_CONNECTED_BEFORE = false;
         ioServerConnect(socketConfig);
         setupCallbacks();
+    },
+
+    validationError: function (error) {
+        var target = $(error.target);
+        target.parent().find(".text-danger").remove();
+
+        var formGroup = target.parent();
+        while (!formGroup.hasClass("form-group") && formGroup.length > 0) {
+            formGroup = formGroup.parent();
+        }
+
+        if (formGroup.length > 0) {
+            formGroup.addClass("has-error");
+        }
+
+        $("<p/>").addClass("text-danger")
+                .text(error.message)
+                .insertAfter(target);
+    },
+
+    validationPassed: function (data) {
+        var target = $(data.target);
+        target.parent().find(".text-danger").remove();
+
+        var formGroup = target.parent();
+        while (!formGroup.hasClass("form-group") && formGroup.length > 0) {
+            formGroup = formGroup.parent();
+        }
+
+        if (formGroup.length > 0) {
+            formGroup.removeClass("has-error");
+        }
     }
 }
 
