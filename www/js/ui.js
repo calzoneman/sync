@@ -446,7 +446,7 @@ $("#mediaurl").keyup(function(ev) {
         queue("end", "url");
     } else {
         var url = $("#mediaurl").val().split("?")[0];
-        if (url.match(/^https?:\/\/(.*)?\.(flv|mp4|og[gv]|webm|mp3|mov)$/) ||
+        if (url.match(/^https?:\/\/(.*)?\.(flv|mp4|og[gv]|webm|mp3|mov|m4a)$/) ||
                 url.match(/^fi:/)) {
             var title = $("#addfromurl-title");
             if (title.length === 0) {

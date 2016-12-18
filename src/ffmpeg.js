@@ -20,7 +20,8 @@ var acceptedCodecs = {
 
 var acceptedAudioCodecs = {
     "mp3": true,
-    "vorbis": true
+    "vorbis": true,
+    "aac": true
 };
 
 var audioOnlyContainers = {

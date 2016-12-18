@@ -1426,7 +1426,7 @@ function parseMediaLink(url) {
     /* Raw file */
     var tmp = url.split("?")[0];
     if (tmp.match(/^https?:\/\//)) {
-        if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3|mov)$/)) {
+        if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3|mov|m4a)$/)) {
             return {
                 id: url,
                 type: "fi"
@@ -1435,8 +1435,9 @@ function parseMediaLink(url) {
             Callbacks.queueFail({
                 link: url,
                 msg: "The file you are attempting to queue does not match the supported " +
-                     "file extensions mp4, flv, webm, ogg, ogv, mp3, mov."
+                     "file extensions mp4, flv, webm, ogg, ogv, mp3, mov, m4a."
             });
+            // Lol I forgot about this hack
             throw new Error("ERROR_QUEUE_UNSUPPORTED_EXTENSION");
         }
     }

@@ -733,6 +733,8 @@
         return 'audio/mp3';
       case 'vorbis':
         return 'audio/ogg';
+      case 'aac':
+        return 'audio/aac';
       default:
         return 'video/flv';
     }
