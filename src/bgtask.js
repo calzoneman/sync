@@ -66,8 +66,6 @@ function initChannelDumper(Server) {
         Logger.syslog.log(`Saving channels with delay ${wait}`);
         Promise.reduce(Server.channels, (_, chan) => {
             return Promise.delay(wait).then(() => {
-                if (chan.name === 'test')
-                    throw new TypeError('Whoops fucked up there');
                 if (!chan.dead && chan.users && chan.users.length > 0) {
                     return chan.saveState().tap(() => {
                         Logger.syslog.log(`Saved /r/${chan.name}`);
