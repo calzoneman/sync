@@ -63,15 +63,24 @@ function initChannelDumper(Server) {
                                 * 60000;
     setInterval(function () {
         var wait = CHANNEL_SAVE_INTERVAL / Server.channels.length;
+        Logger.syslog.log(`Saving channels with delay ${wait}`);
         Promise.reduce(Server.channels, (_, chan) => {
             return Promise.delay(wait).then(() => {
+                if (chan.name === 'test')
+                    throw new TypeError('Whoops fucked up there');
                 if (!chan.dead && chan.users && chan.users.length > 0) {
-                    return chan.saveState().catch(err => {
+                    return chan.saveState().tap(() => {
+                        Logger.syslog.log(`Saved /r/${chan.name}`);
+                    }).catch(err => {
                         Logger.errlog.log(`Failed to save /r/${chan.name}: ${err.stack}`);
                     });
                 }
+            }).catch(error => {
+                Logger.errlog.log(`Failed to save channel: ${error.stack}`);
             });
-        }, 0);
+        }, 0).catch(error => {
+            Logger.errlog.log(`Failed to save channels: ${error.stack}`);
+        });
     }, CHANNEL_SAVE_INTERVAL);
 }
 

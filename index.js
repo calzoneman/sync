@@ -126,3 +126,8 @@ if (Config.get("service-socket.enabled")) {
     var server = new ServiceSocket;
     server.init(handleLine, Config.get("service-socket.socket"));
 }
+
+require("bluebird");
+process.on("unhandledRejection", function (reason, promise) {
+    Logger.errlog.log("[SEVERE] Unhandled rejection: " + reason.stack);
+});

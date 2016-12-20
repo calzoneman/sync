@@ -319,11 +319,15 @@ Server.prototype.setAnnouncement = function (data) {
 Server.prototype.shutdown = function () {
     Logger.syslog.log("Unloading channels");
     Promise.map(this.channels, channel => {
-        return channel.saveState().tap(() => {
-            Logger.syslog.log(`Saved /r/${channel.name}`);
-        }).catch(err => {
-            Logger.errlog.log(`Failed to save /r/${channel.name}: ${err.stack}`);
-        });
+        try {
+            return channel.saveState().tap(() => {
+                Logger.syslog.log(`Saved /r/${channel.name}`);
+            }).catch(err => {
+                Logger.errlog.log(`Failed to save /r/${channel.name}: ${err.stack}`);
+            });
+        } catch (error) {
+            Logger.errlog.log(`Failed to save channel: ${error.stack}`);
+        }
     }, { concurrency: 5 }).then(() => {
         Logger.syslog.log("Goodbye");
         process.exit(0);
