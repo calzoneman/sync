@@ -77,10 +77,11 @@ export class DatabaseStore {
         }
 
         if (totalSize > SIZE_LIMIT) {
-            throw new ChannelStateSizeError('Channel state size is too large', {
+            return Promise.reject(new ChannelStateSizeError(
+                    'Channel state size is too large', {
                 limit: SIZE_LIMIT,
                 actual: totalSize
-            });
+            }));
         }
 
         return queryAsync(buildUpdateQuery(rowCount), substitutions);
