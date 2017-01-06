@@ -414,3 +414,26 @@ exports.get = function (key) {
 
     return obj[current];
 };
+
+/**
+ * Sets a configuration value with the given key
+ *
+ * Accepts a dot-separated key for nested values, e.g. "http.port"
+ * Throws an error if a nonexistant key is requested
+ */
+exports.set = function (key, value) {
+    var obj = cfg;
+    var keylist = key.split(".");
+    var current = keylist.shift();
+    var path = current;
+    while (keylist.length > 0) {
+        if (!(current in obj)) {
+            throw new Error("Nonexistant config key '" + path + "." + current + "'");
+        }
+        obj = obj[current];
+        current = keylist.shift();
+        path += "." + current;
+    }
+
+    obj[current] = value;
+};

@@ -1426,7 +1426,13 @@ function parseMediaLink(url) {
     /* Raw file */
     var tmp = url.split("?")[0];
     if (tmp.match(/^https?:\/\//)) {
-        if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3|mov|m4a)$/)) {
+        if (tmp.match(/^http:/)) {
+            Callbacks.queueFail({
+                link: url,
+                msg: "Raw files must begin with 'https'.  Plain http is not supported."
+            });
+            throw new Error("ERROR_QUEUE_HTTP");
+        } else if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3|mov|m4a)$/)) {
             return {
                 id: url,
                 type: "fi"

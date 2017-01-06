@@ -44,6 +44,10 @@ function filterEmbed(tag) {
                         "is allowed for <embed> tags.");
     }
 
+    if (!/^https:/.test(tag.attribs.src)) {
+        throw new Error("Invalid embed. Embed source must be HTTPS, plain HTTP is not supported.");
+    }
+
     var meta = {
         embed: {
             tag: "object",
@@ -67,6 +71,10 @@ function filterObject(tag) {
                         "is allowed for <object> tags.");
     }
 
+    if (!/^https:/.test(tag.attribs.data)) {
+        throw new Error("Invalid embed. Embed source must be HTTPS, plain HTTP is not supported.");
+    }
+
     var meta = {
         embed: {
             tag: "object",
@@ -86,6 +94,10 @@ function filterObject(tag) {
 }
 
 function filterIframe(tag) {
+    if (!/^https:/.test(tag.attribs.src)) {
+        throw new Error("Invalid embed. Embed source must be HTTPS, plain HTTP is not supported.");
+    }
+
     var meta = {
         embed: {
             tag: "iframe",
