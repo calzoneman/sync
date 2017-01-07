@@ -68,6 +68,7 @@ var NO_STORAGE = typeof localStorage == "undefined" || localStorage === null;
 var SOCKETIO_CONNECT_ERROR_COUNT = 0;
 var HAS_CONNECTED_BEFORE = false;
 var IMAGE_MATCH = /<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>/gi;
+var CyTube = {};
 
 function getOpt(k) {
     var v = NO_STORAGE ? readCookie(k) : localStorage.getItem(k);
