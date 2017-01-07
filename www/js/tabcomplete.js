@@ -78,5 +78,62 @@ CyTube.tabCompleteMethods['Longest unique prefix'] = function (input, position, 
 // Zsh-style completion.
 // Always complete a full option, and cycle through available options on successive tabs
 CyTube.tabCompleteMethods['Cycle options'] = function (input, position, options, context) {
+    if (typeof context.start !== 'undefined') {
+        var currentCompletion = input.substring(context.start, position - 1);
+        if (currentCompletion === context.matches[context.tabIndex]) {
+            context.tabIndex = (context.tabIndex + 1) % context.matches.length;
+            var completed = context.matches[context.tabIndex];
+            return {
+                text: input.substring(0, context.start) + completed + ' ' + input.substring(position),
+                newPosition: context.start + completed.length + 1
+            };
+        } else {
+            delete context.matches;
+            delete context.tabIndex;
+            delete context.start;
+        }
+    }
 
+    var lower = input.toLowerCase();
+    // First, backtrack to the nearest whitespace to find the
+    // incomplete string that should be completed.
+    var start;
+    var incomplete = '';
+    for (start = position - 1; start >= 0; start--) {
+        if (/\s/.test(lower[start])) {
+            start++;
+            break;
+        }
+
+        incomplete = lower[start] + incomplete;
+    }
+
+    // Nothing to complete
+    if (!incomplete.length) {
+        return {
+            text: input,
+            newPosition: position
+        };
+    }
+
+    var matches = options.filter(function (option) {
+        return option.toLowerCase().indexOf(incomplete) === 0;
+    }).sort(function (a, b) {
+        return a.toLowerCase() > b.toLowerCase();
+    });
+
+    if (matches.length === 0) {
+        return {
+            text: input,
+            newPosition: position
+        };
+    }
+
+    context.start = start;
+    context.matches = matches;
+    context.tabIndex = 0;
+    return {
+        text: input.substring(0, start) + matches[0] + ' ' + input.substring(position),
+        newPosition: start + matches[0].length + 1
+    };
 };
