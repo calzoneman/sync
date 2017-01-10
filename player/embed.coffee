@@ -1,9 +1,7 @@
 DEFAULT_ERROR = 'You are currently connected via HTTPS but the embedded content
     uses non-secure plain HTTP.  Your browser therefore blocks it from
     loading due to mixed content policy.  To fix this, embed the video using a
-    secure link if available (https://...), or load this page over plain HTTP by
-    replacing "https://" with "http://" in the address bar (your websocket will
-    still be secured using HTTPS, but this will permit non-secure content to load).'
+    secure link if available (https://...), or find another source for the content.'
 
 genParam = (name, value) ->
     $('<param/>').attr(
