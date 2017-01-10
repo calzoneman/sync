@@ -2826,15 +2826,30 @@ function formatScriptAccessPrefs() {
 
     var channels = Object.keys(JSPREF).sort();
     channels.forEach(function (channel) {
-        var parts = channel.split("_");
-        if (!parts[1].match(/^(external|embedded)$/)) {
+        var idx = String(channel).lastIndexOf("_");
+        if (idx < 0) {
+            // Invalid
+            console.error("Channel JS pref: invalid key '" + channel + "', deleting it");
+            delete JSPREF[channel];
+            setOpt("channel_js_pref", JSPREF);
+            return;
+        }
+
+        var channelName = channel.substring(0, idx);
+        var prefType = channel.substring(idx + 1);
+        console.log(channelName, prefType);
+        if (prefType !== "external" && prefType !== "embedded") {
+            // Invalid
+            console.error("Channel JS pref: invalid key '" + channel + "', deleting it");
+            delete JSPREF[channel];
+            setOpt("channel_js_pref", JSPREF);
             return;
         }
 
         var pref = JSPREF[channel];
         var tr = $("<tr/>").appendTo(tbl);
-        $("<td/>").text(parts[0]).appendTo(tr);
-        $("<td/>").text(parts[1]).appendTo(tr);
+        $("<td/>").text(channelName).appendTo(tr);
+        $("<td/>").text(prefType).appendTo(tr);
 
         var pref_td = $("<td/>").appendTo(tr);
         var allow_label = $("<label/>").addClass("radio-inline")
