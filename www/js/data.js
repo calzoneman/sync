@@ -123,7 +123,8 @@ var USEROPTS = {
     show_shadowchat      : getOrDefault("show_shadowchat", false),
     emotelist_sort       : getOrDefault("emotelist_sort", true),
     no_emotes            : getOrDefault("no_emotes", false),
-    strip_image          : getOrDefault("strip_image", false)
+    strip_image          : getOrDefault("strip_image", false),
+    chat_tab_method      : getOrDefault("chat_tab_method", "Cycle options")
 };
 
 /* Backwards compatibility check */

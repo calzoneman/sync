@@ -111,7 +111,11 @@ $("#guestname").keydown(function (ev) {
     }
 });
 
-function chatTabComplete() {
+
+/**
+ * TODO: Remove this post-deployment
+ */
+function oldChatTabComplete() {
     var words = $("#chatline").val().split(" ");
     var current = words[words.length - 1].toLowerCase();
     if (!current.match(/^[\w-]{1,20}$/)) {
@@ -186,6 +190,54 @@ function chatTabComplete() {
     $("#chatline").val(words.join(" "));
 }
 
+CyTube.chatTabCompleteData = {
+    context: {}
+};
+
+function chatTabComplete() {
+    if (!CyTube.tabCompleteMethods) {
+        oldChatTabComplete();
+        return;
+    }
+    var chatline = document.getElementById("chatline");
+    var currentText = chatline.value;
+    var currentPosition = chatline.selectionEnd;
+    if (typeof currentPosition !== 'number' || !chatline.setSelectionRange) {
+        // Bail, we're on IE8 or something similarly dysfunctional
+        return;
+    }
+    var firstWord = !/\s/.test(currentText.trim());
+    var options = [];
+    var userlistElems = document.getElementById("userlist").children;
+    for (var i = 0; i < userlistElems.length; i++) {
+        var username = userlistElems[i].children[1].textContent;
+        if (firstWord) {
+            username += ':';
+        }
+        options.push(username);
+    }
+
+    CHANNEL.emotes.forEach(function (emote) {
+        options.push(emote.name);
+    });
+
+    var method = USEROPTS.chat_tab_method;
+    if (!CyTube.tabCompleteMethods[method]) {
+        console.error("Unknown chat tab completion method '" + method + "', using default");
+        method = "Cycle options";
+    }
+
+    var result = CyTube.tabCompleteMethods[method](
+            currentText,
+            currentPosition,
+            options,
+            CyTube.chatTabCompleteData.context
+    );
+
+    chatline.value = result.text;
+    chatline.setSelectionRange(result.newPosition, result.newPosition);
+}
+
 $("#chatline").keydown(function(ev) {
     // Enter/return
     if(ev.keyCode == 13) {
@@ -218,7 +270,11 @@ $("#chatline").keydown(function(ev) {
         return;
     }
     else if(ev.keyCode == 9) { // Tab completion
-        chatTabComplete();
+        try {
+            chatTabComplete();
+        } catch (error) {
+            console.error(error);
+        }
         ev.preventDefault();
         return false;
     }

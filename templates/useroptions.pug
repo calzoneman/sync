@@ -114,6 +114,12 @@ mixin us-chat
       +rcheckbox("us-sendbtn", "Add a send button to chat")
       +rcheckbox("us-no-emotes", "Disable chat emotes")
       +rcheckbox("us-strip-image", "Remove images from chat")
+      .form-group
+        label.control-label.col-sm-4(for="#us-chat-tab-method") Tab completion method
+        .col-sm-8
+          select#us-chat-tab-method.form-control
+            option(value="Cycle options") Cycle options
+            option(value="Longest unique match") Longest unique match
 
 mixin us-mod
   #us-mod.tab-pane

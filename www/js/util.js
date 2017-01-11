@@ -643,6 +643,7 @@ function showUserOptions() {
     $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
     $("#us-no-emotes").prop("checked", USEROPTS.no_emotes);
     $("#us-strip-image").prop("checked", USEROPTS.strip_image);
+    $("#us-chat-tab-method").val(USEROPTS.chat_tab_method);
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-shadowchat").prop("checked", USEROPTS.show_shadowchat);
@@ -677,6 +678,7 @@ function saveUserOptions() {
     USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
     USEROPTS.no_emotes            = $("#us-no-emotes").prop("checked");
     USEROPTS.strip_image          = $("#us-strip-image").prop("checked");
+    USEROPTS.chat_tab_method      = $("#us-chat-tab-method").val();
 
     if (CLIENT.rank >= 2) {
         USEROPTS.modhat      = $("#us-modflair").prop("checked");

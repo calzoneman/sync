@@ -2,7 +2,7 @@ CyTube.tabCompleteMethods = {};
 
 // Bash-style completion
 // Only completes as far as it is possible to maintain uniqueness of the completion.
-CyTube.tabCompleteMethods['Longest unique prefix'] = function (input, position, options, context) {
+CyTube.tabCompleteMethods['Longest unique match'] = function (input, position, options, context) {
     var lower = input.toLowerCase();
     // First, backtrack to the nearest whitespace to find the
     // incomplete string that should be completed.
@@ -10,12 +10,12 @@ CyTube.tabCompleteMethods['Longest unique prefix'] = function (input, position, 
     var incomplete = '';
     for (start = position - 1; start >= 0; start--) {
         if (/\s/.test(lower[start])) {
-            start++;
             break;
         }
 
         incomplete = lower[start] + incomplete;
     }
+    start++;
 
     // Nothing to complete
     if (!incomplete.length) {
@@ -101,12 +101,12 @@ CyTube.tabCompleteMethods['Cycle options'] = function (input, position, options,
     var incomplete = '';
     for (start = position - 1; start >= 0; start--) {
         if (/\s/.test(lower[start])) {
-            start++;
             break;
         }
 
         incomplete = lower[start] + incomplete;
     }
+    start++;
 
     // Nothing to complete
     if (!incomplete.length) {

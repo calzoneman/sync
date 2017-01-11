@@ -4,7 +4,7 @@ require('../../www/js/tabcomplete');
 
 
 describe('CyTube.tabCompletionMethods', () => {
-    describe('"Longest unique prefix"', () => {
+    describe('"Longest unique match"', () => {
         const testcases = [
             {
                 input: 'and his name is j',
@@ -25,6 +25,16 @@ describe('CyTube.tabCompletionMethods', () => {
                     newPosition: 25
                 },
                 description: 'completes a unique match'
+            },
+            {
+                input: 'johnc',
+                position: 5,
+                options: ['johncena', 'johnstamos', 'johto'],
+                output: {
+                    text: 'johncena ',
+                    newPosition: 9
+                },
+                description: 'completes a unique match at the beginning of the string'
             },
             {
                 input: 'and his name is johnc',
@@ -70,7 +80,7 @@ describe('CyTube.tabCompletionMethods', () => {
         testcases.forEach(test => {
             it(test.description, () => {
                 assert.deepEqual(
-                        CyTube.tabCompleteMethods['Longest unique prefix'](
+                        CyTube.tabCompleteMethods['Longest unique match'](
                             test.input,
                             test.position,
                             test.options,
@@ -107,6 +117,30 @@ describe('CyTube.tabCompletionMethods', () => {
                     }
                 ],
                 description: 'cycles through options correctly'
+            },
+            {
+                input: 'c',
+                position: 1,
+                options: ['COBOL', 'Carlos', 'carl', 'john', 'joseph', ''],
+                outputs: [
+                    {
+                        text: 'carl ',
+                        newPosition: 5
+                    },
+                    {
+                        text: 'Carlos ',
+                        newPosition: 7
+                    },
+                    {
+                        text: 'COBOL ',
+                        newPosition: 6
+                    },
+                    {
+                        text: 'carl ',
+                        newPosition: 5
+                    }
+                ],
+                description: 'cycles through options correctly at the beginning of the string'
             },
             {
                 input: 'hey ',
