@@ -50,7 +50,10 @@ html(lang="en")
                 span.input-group-addon Guest login
                 input#guestname.form-control(type="text", placeholder="Name")
             #videowrap.col-lg-7.col-md-7
-              p#currenttitle Nothing Playing
+              p#currenttitle
+                span#resize-video-smaller.glyphicon.glyphicon-minus.pointer(title="Make the video smaller")
+                span#resize-video-larger.glyphicon.glyphicon-plus.pointer(title="Make the video larger")
+                | Nothing Playing
               .embed-responsive.embed-responsive-16by9
                 #ytapiplayer.embed-responsive-item
           #controlsrow.row

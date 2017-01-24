@@ -960,3 +960,19 @@ $("#cs-csstext").bind("input", handleCSSJSTooLarge.bind($("#cs-csstext")[0],
         "#cs-csstext-too-big"));
 $("#cs-jstext").bind("input", handleCSSJSTooLarge.bind($("#cs-jstext")[0],
         "#cs-jstext-too-big"));
+
+$("#resize-video-larger").click(function () {
+    try {
+        CyTube.ui.changeVideoWidth(1);
+    } catch (error) {
+        console.error(error);
+    }
+});
+
+$("#resize-video-smaller").click(function () {
+    try {
+        CyTube.ui.changeVideoWidth(-1);
+    } catch (error) {
+        console.error(error);
+    }
+});
