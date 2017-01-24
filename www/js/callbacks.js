@@ -837,7 +837,7 @@ Callbacks = {
             $("#voteskip").attr("disabled", false);
         }
 
-        $("#currenttitle").text("Currently Playing: " + data.title);
+        $("#currenttitle-text").text("Currently Playing: " + data.title);
     },
 
     mediaUpdate: function(data) {
