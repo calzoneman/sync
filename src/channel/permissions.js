@@ -41,7 +41,8 @@ const DEFAULT_PERMISSIONS = {
     drink: 1.5,               // Use the /d command
     chat: 0,                  // Send chat messages
     chatclear: 2,             // Use the /clear command
-    exceedmaxitems: 2         // Exceed maximum items per user limit
+    exceedmaxitems: 2,        // Exceed maximum items per user limit
+    deletefromchannellib: 2   // Delete channel library items
 };
 
 function PermissionsModule(channel) {
@@ -336,11 +337,7 @@ PermissionsModule.prototype.canSetPermissions = function (actor) {
 };
 
 PermissionsModule.prototype.canUncache = function (actor) {
-    if (actor instanceof User) {
-        actor = actor.account;
-    }
-
-    return actor.effectiveRank >= 2;
+    return this.hasPermission(actor, "deletefromchannellib");
 };
 
 PermissionsModule.prototype.canExceedMaxItemsPerUser = function (actor) {
@@ -379,7 +376,8 @@ PermissionsModule.prototype.loadUnregistered = function () {
         drink: 0,             // Use the /d command
         chat: 0,              // Send chat messages
         chatclear: 2,         // Use the /clear command
-        exceedmaxitems: 2     // Exceed max items per user
+        exceedmaxitems: 2,    // Exceed max items per user
+        deletefromchannellib: 2
     };
 
     for (var key in perms) {

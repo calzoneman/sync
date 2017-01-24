@@ -1121,7 +1121,7 @@ function addLibraryButtons(li, id, source) {
             })
             .appendTo(btns);
     }
-    if(CLIENT.rank >= 2 && source === "library") {
+    if(hasPermission("deletefromchannellib") && source === "library") {
         $("<button/>").addClass("btn btn-xs btn-danger")
             .html("<span class='glyphicon glyphicon-trash'></span>")
             .click(function() {
@@ -1992,6 +1992,7 @@ function genPermissionsEditor() {
     makeOption("Lock/unlock playlist", "playlistlock", modleader, CHANNEL.perms.playlistlock+"");
     makeOption("Shuffle playlist", "playlistshuffle", standard, CHANNEL.perms.playlistshuffle+"");
     makeOption("Clear playlist", "playlistclear", standard, CHANNEL.perms.playlistclear+"");
+    makeOption("Delete from channel library", "deletefromchannellib", standard, CHANNEL.perms.deletefromchannellib+"");
 
     addDivider("Polls");
     makeOption("Open/Close poll", "pollctl", modleader, CHANNEL.perms.pollctl+"");
