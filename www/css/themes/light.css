@@ -14,7 +14,7 @@ body {
     background-color: #000000;
 }
 
-#chatheader, #currenttitle, #userlist, #messagebuffer, #plmeta {
+#chatheader, #videowrap-header, #userlist, #messagebuffer, #plmeta {
     background-color: #ffffff;
 }
 
@@ -51,7 +51,7 @@ footer {
     border: 1px solid #aaaaaa;
 }
 
-#chatheader, #currenttitle {
+#chatheader, #videowrap-header {
     border: 1px solid #cccccc;
     border-bottom-width: 0;
     border-radius: 5px;

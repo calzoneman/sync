@@ -81,7 +81,7 @@ input.form-control[type="email"], textarea.form-control {
   border: 1px solid #aaaaaa;
 }
 
-#chatheader, #currenttitle {
+#chatheader, #videowrap-header {
   border: 1px solid #cccccc;
   border-bottom-width: 0;
   border-radius: 5px;

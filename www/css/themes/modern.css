@@ -120,7 +120,7 @@ input.form-control[type="email"], textarea.form-control {
 
 }
 
-#chatheader, #currenttitle {
+#chatheader, #videowrap-header {
     border: 1px solid #000000;
     height: 30px;
     background-color: rgba(20, 22, 26, 0.7);

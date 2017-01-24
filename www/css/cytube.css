@@ -90,7 +90,7 @@
     font-weight: bold;
 }
 
-#chatheader > p, #currenttitle {
+#chatheader > p, #videowrap-header {
     margin: 0;
 }
 
