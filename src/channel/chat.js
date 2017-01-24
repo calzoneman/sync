@@ -461,7 +461,8 @@ ChatModule.prototype.handleCmdClear = function (user, msg, meta) {
     }
 
     this.buffer = [];
-    this.channel.broadcastAll("clearchat");
+    this.channel.broadcastAll("clearchat", { clearedBy: user.getName() });
+    this.sendModMessage(user.getName() + " cleared chat.", -1);
     this.channel.logger.log("[mod] " + user.getName() + " used /clear");
 };
 
