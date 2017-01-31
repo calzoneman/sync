@@ -75,14 +75,14 @@ VoteskipModule.prototype.update = function () {
         return;
     }
 
+    this.sendVoteskipData(this.channel.users);
+
     var max = this.calcVoteskipMax();
     var need = Math.ceil(max * this.channel.modules.options.get("voteskip_ratio"));
     if (this.poll.counts[0] >= need) {
         this.channel.logger.log("[playlist] Voteskip passed.");
         this.channel.modules.playlist._playNext();
     }
-
-    this.sendVoteskipData(this.channel.users);
 };
 
 VoteskipModule.prototype.sendVoteskipData = function (users) {
