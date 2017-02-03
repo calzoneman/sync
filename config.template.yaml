@@ -9,6 +9,7 @@ mysql:
   database: 'cytube3'
   user: 'cytube3'
   password: ''
+  pool-size: 10
 
 # Define IPs/ports to listen on
 # Each entry MUST define ip and port (ip can be '' to bind all available addresses)

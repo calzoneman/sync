@@ -572,6 +572,29 @@ module.exports = {
     },
 
     /**
+     * Check if a user's name or IP is banned
+     */
+    isBanned: function (chan, ip, name, callback) {
+        if (typeof callback !== "function") {
+            return;
+        }
+
+        if (!valid(chan)) {
+            callback("Invalid channel name", null);
+            return;
+        }
+
+        var range = util.getIPRange(ip);
+        var wrange = util.getWideIPRange(ip);
+
+        db.query("SELECT COUNT(1) AS count FROM `channel_bans` WHERE (ip IN (?, ?, ?) OR name=?) AND channel=?",
+        [ip, range, wrange, name, chan],
+        function (err, rows) {
+            callback(err, err ? false : rows.length > 0 && rows[0].count > 0);
+        });
+    },
+
+    /**
      * Lists all bans
      */
     listBans: function (chan, callback) {

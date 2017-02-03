@@ -12,6 +12,7 @@ var defaults = {
         database: "cytube3",
         user: "cytube3",
         password: "",
+        "pool-size": 10
     },
     listen: [
         {

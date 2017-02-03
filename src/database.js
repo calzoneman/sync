@@ -19,7 +19,8 @@ module.exports.init = function () {
         password: Config.get("mysql.password"),
         database: Config.get("mysql.database"),
         multipleStatements: true,
-        charset: "UTF8MB4_GENERAL_CI" // Needed for emoji and other non-BMP unicode
+        charset: "UTF8MB4_GENERAL_CI", // Needed for emoji and other non-BMP unicode
+        connectionLimit: Config.get("mysql.pool-size")
     });
 
     // Test the connection
@@ -38,6 +39,10 @@ module.exports.init = function () {
             // Refresh global IP bans
             module.exports.listGlobalBans();
         }
+    });
+
+    pool.on("enqueue", function () {
+        Metrics.incCounter("db:queryQueued", 1);
     });
 
     global_ipbans = {};
@@ -66,6 +71,7 @@ module.exports.query = function (query, sub, callback) {
             callback("Database failure", null);
         } else {
             function cback(err, res) {
+                conn.release();
                 if (err) {
                     Logger.errlog.log("! DB query failed: " + query);
                     if (sub) {
@@ -76,7 +82,6 @@ module.exports.query = function (query, sub, callback) {
                 } else {
                     callback(null, res);
                 }
-                conn.release();
                 Metrics.stopTimer(timer);
             }
 
@@ -84,10 +89,16 @@ module.exports.query = function (query, sub, callback) {
                 console.log(query);
             }
 
-            if (sub) {
-                conn.query(query, sub, cback);
-            } else {
-                conn.query(query, cback);
+            try {
+                if (sub) {
+                    conn.query(query, sub, cback);
+                } else {
+                    conn.query(query, cback);
+                }
+            } catch (error) {
+                Logger.errlog.log("Broken query: " + error.stack);
+                callback("Broken query", null);
+                conn.release();
             }
         }
     });
