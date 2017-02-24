@@ -1303,6 +1303,18 @@ function parseMediaLink(url) {
         };
     }
 
+    /**
+     * 2017-02-23
+     * Twitch changed their URL pattern for recorded videos, apparently.
+     * https://github.com/calzoneman/sync/issues/646
+     */
+    if((m = url.match(/twitch\.tv\/videos\/(\d+)/))) {
+        return {
+            id: "v" + m[1],
+            type: "tv"
+        };
+    }
+
     if((m = url.match(/twitch\.tv\/([\w-]+)/))) {
         return {
             id: m[1],
