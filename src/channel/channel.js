@@ -91,10 +91,8 @@ function Channel(name) {
     var self = this;
     db.channels.load(this, function (err) {
         if (err && err !== "Channel is not registered") {
-            self.emit("loadFail", "Failed to load channel data from the database");
-            // Force channel to be unloaded, so that it will load properly when
-            // the database connection comes back
-            self.emit("empty");
+            self.emit("loadFail", "Failed to load channel data from the database.  Please try again later.");
+            self.setFlag(Flags.C_ERROR);
             return;
         } else {
             self.initModules();
@@ -197,14 +195,11 @@ Channel.prototype.loadState = function () {
     }
 
     const self = this;
-    function errorLoad(msg) {
-        if (self.modules.customization) {
-            self.modules.customization.load({
-                motd: msg
-            });
-        }
-
-        self.setFlag(Flags.C_READY | Flags.C_ERROR);
+    function errorLoad(msg, suggestTryAgain = true) {
+        const extra = suggestTryAgain ? "  Please try again later." : "";
+        self.emit("loadFail", "Failed to load channel data from the database: " +
+                msg + extra);
+        self.setFlag(Flags.C_ERROR);
     }
 
     ChannelStore.load(this.id, this.uniqueName).then(data => {
@@ -224,7 +219,7 @@ Channel.prototype.loadState = function () {
                 "for assistance.";
 
         Logger.errlog.log(err.stack);
-        errorLoad(message);
+        errorLoad(message, false);
     }).catch(err => {
         if (err.code === 'ENOENT') {
             Object.keys(this.modules).forEach(m => {
@@ -235,7 +230,7 @@ Channel.prototype.loadState = function () {
         } else {
             const message = "An error occurred when loading this channel's data from " +
                     "disk.  Please contact an administrator for assistance.  " +
-                    `The error was: ${err}`;
+                    `The error was: ${err}.`;
 
             Logger.errlog.log(err.stack);
             errorLoad(message);

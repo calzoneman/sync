@@ -216,6 +216,9 @@ Server.prototype.getChannel = function (name) {
     c.on("empty", function () {
         self.unloadChannel(c);
     });
+    c.waitFlag(Flags.C_ERROR, () => {
+        self.unloadChannel(c, { skipSave: true });
+    });
     self.channels.push(c);
     return c;
 };
