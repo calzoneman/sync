@@ -2649,10 +2649,18 @@ function formatUserPlaylistList() {
 
 function loadEmotes(data) {
     CHANNEL.emotes = [];
+    CHANNEL.emoteMap = {};
+    CHANNEL.badEmotes = [];
     data.forEach(function (e) {
         if (e.image && e.name) {
             e.regex = new RegExp(e.source, "gi");
             CHANNEL.emotes.push(e);
+            if (/\s/g.test(e.name)) {
+                // Emotes with spaces can't be hashmapped
+                CHANNEL.badEmotes.push(e);
+            } else {
+                CHANNEL.emoteMap[e.name] = e.image;
+            }
         } else {
             console.error("Rejecting invalid emote: " + JSON.stringify(e));
         }
@@ -2664,11 +2672,32 @@ function execEmotes(msg) {
         return msg;
     }
 
+    if (CyTube.featureFlag && CyTube.featureFlag.efficientEmotes) {
+        execEmotesEfficient(msg);
+        return;
+    }
+
     CHANNEL.emotes.forEach(function (e) {
         msg = msg.replace(e.regex, '$1<img class="channel-emote" src="' +
                                    e.image + '" title="' + e.name + '">');
     });
 
+    return msg;
+}
+
+function execEmotesEfficient(msg) {
+    CHANNEL.badEmotes.forEach(function (e) {
+        msg = msg.replace(e.regex, '$1<img class="channel-emote" src="' +
+                          e.image + '" title="' + e.name + '">');
+    });
+    msg = msg.replace(/[^\s]+/g, function (m) {
+        if (CHANNEL.emoteMap.hasOwnProperty(m)) {
+            var e = CHANNEL.emoteMap[m];
+            return '<img class="channel-emote" src="' + e.image + '" title="' + e.name + '">';
+        } else {
+            return m;
+        }
+    });
     return msg;
 }
 

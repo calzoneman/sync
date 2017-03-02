@@ -70,6 +70,9 @@ var HAS_CONNECTED_BEFORE = false;
 var IMAGE_MATCH = /<img\s[^>]*?src\s*=\s*['\"]([^'\"]*?)['\"][^>]*?>/gi;
 var CyTube = {};
 CyTube.ui = {};
+CyTube.featureFlag = {
+    efficientEmotes: false
+};
 
 function getOpt(k) {
     var v = NO_STORAGE ? readCookie(k) : localStorage.getItem(k);
