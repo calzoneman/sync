@@ -1271,7 +1271,7 @@
     UstreamPlayer.prototype.load = function(data) {
       data.meta.embed = {
         tag: 'iframe',
-        src: "https://www.ustream.tv/embed/" + data.id + "?html5ui&autoplay=1"
+        src: "/ustream_bypass/embed/" + data.id + "?html5ui&autoplay=1"
       };
       return UstreamPlayer.__super__.load.call(this, data);
     };
