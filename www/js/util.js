@@ -2659,7 +2659,7 @@ function loadEmotes(data) {
                 // Emotes with spaces can't be hashmapped
                 CHANNEL.badEmotes.push(e);
             } else {
-                CHANNEL.emoteMap[e.name] = e.image;
+                CHANNEL.emoteMap[e.name] = e;
             }
         } else {
             console.error("Rejecting invalid emote: " + JSON.stringify(e));
