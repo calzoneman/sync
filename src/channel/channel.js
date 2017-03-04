@@ -333,7 +333,7 @@ Channel.prototype.joinUser = function (user, data) {
                         if (user.inChannel()) {
                             self.broadcastAll("setUserRank", {
                                 name: user.getName(),
-                                rank: rank
+                                rank: user.account.effectiveRank
                             });
                         }
                     }
