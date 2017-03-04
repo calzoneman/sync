@@ -1,3 +1,14 @@
+2017-03-03
+==========
+
+The dependency on `sanitize-html`, which previously pointed to a fork, has now
+been switched back to the upstream module.  XSS filtering has been turned off
+for the chat filter replacement itself (since this provides no additional
+security), and is now only run on the final chat message after filtering.
+Certain chat filters and MOTDs which relied on syntactically incorrect HTML,
+such as unclosed tags, may have different behavior now, since `sanitize-html`
+fixes these.
+
 2016-11-02
 ==========
 

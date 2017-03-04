@@ -1,6 +1,5 @@
 var FilterList = require("cytubefilters");
 var ChannelModule = require("./module");
-var XSS = require("../xss");
 var Logger = require("../logger");
 
 /*
@@ -22,7 +21,6 @@ function validateFilter(f) {
     }
 
     f.replace = fixReplace(f.replace.substring(0, 1000));
-    f.replace = XSS.sanitizeHTML(f.replace);
     f.flags = f.flags.substring(0, 4);
 
     try {
