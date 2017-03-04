@@ -112,9 +112,8 @@ window.promptToInstallDriveUserscript = ->
     alertBox.className = 'alert alert-info'
     alertBox.innerHTML = """
 Due to continual breaking changes making it increasingly difficult to
-maintain Google Drive support, you can now install a userscript that
-simplifies the code and has better compatibility.  In the future, the
-old player will be removed."""
+maintain Google Drive support, Google Drive now requires installing
+a userscript in order to play the video."""
     alertBox.appendChild(document.createElement('br'))
     infoLink = document.createElement('a')
     infoLink.className = 'btn btn-info'
@@ -129,4 +128,4 @@ old player will be removed."""
     closeButton.onclick = ->
         alertBox.parentNode.removeChild(alertBox)
     alertBox.insertBefore(closeButton, alertBox.firstChild)
-    document.getElementById('videowrap').appendChild(alertBox)
+    removeOld($('<div/>').append(alertBox))

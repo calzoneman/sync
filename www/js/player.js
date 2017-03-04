@@ -679,7 +679,7 @@
     }
 
     GoogleDrivePlayer.prototype.load = function(data) {
-      if (!window.hasDriveUserscript && !data.meta.direct) {
+      if (!window.hasDriveUserscript) {
         window.promptToInstallDriveUserscript();
       } else if (window.hasDriveUserscript) {
         window.maybePromptToUpgradeUserscript();
@@ -709,8 +709,6 @@
             });
           };
         })(this), Math.random() * 1000);
-      } else {
-        return GoogleDrivePlayer.__super__.load.call(this, data);
       }
     };
 
@@ -1453,7 +1451,7 @@
     alertBox = document.createElement('div');
     alertBox.id = 'prompt-install-drive-userscript';
     alertBox.className = 'alert alert-info';
-    alertBox.innerHTML = "Due to continual breaking changes making it increasingly difficult to\nmaintain Google Drive support, you can now install a userscript that\nsimplifies the code and has better compatibility.  In the future, the\nold player will be removed.";
+    alertBox.innerHTML = "Due to continual breaking changes making it increasingly difficult to\nmaintain Google Drive support, Google Drive now requires installing\na userscript in order to play the video.";
     alertBox.appendChild(document.createElement('br'));
     infoLink = document.createElement('a');
     infoLink.className = 'btn btn-info';
@@ -1468,7 +1466,7 @@
       return alertBox.parentNode.removeChild(alertBox);
     };
     alertBox.insertBefore(closeButton, alertBox.firstChild);
-    return document.getElementById('videowrap').appendChild(alertBox);
+    return removeOld($('<div/>').append(alertBox));
   };
 
   window.HLSPlayer = HLSPlayer = (function(superClass) {

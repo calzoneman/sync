@@ -6,7 +6,7 @@ window.GoogleDrivePlayer = class GoogleDrivePlayer extends VideoJSPlayer
         super(data)
 
     load: (data) ->
-        if not window.hasDriveUserscript and not data.meta.direct
+        if not window.hasDriveUserscript
             window.promptToInstallDriveUserscript()
         else if window.hasDriveUserscript
             window.maybePromptToUpgradeUserscript()
@@ -31,5 +31,3 @@ window.GoogleDrivePlayer = class GoogleDrivePlayer extends VideoJSPlayer
                     jitter: 500
                 })
             , Math.random() * 1000)
-        else
-            super(data)
