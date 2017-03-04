@@ -2673,8 +2673,7 @@ function execEmotes(msg) {
     }
 
     if (CyTube.featureFlag && CyTube.featureFlag.efficientEmotes) {
-        execEmotesEfficient(msg);
-        return;
+        return execEmotesEfficient(msg);
     }
 
     CHANNEL.emotes.forEach(function (e) {
