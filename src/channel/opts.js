@@ -114,7 +114,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     if ("voteskip_ratio" in data) {
         var ratio = parseFloat(data.voteskip_ratio);
         if (isNaN(ratio) || ratio < 0) {
-            ratio = 0;
+            ratio = 0.5;
         }
         this.opts.voteskip_ratio = ratio;
         sendUpdate = true;
