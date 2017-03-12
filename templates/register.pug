@@ -42,7 +42,9 @@ html(lang="en")
               .form-group
                 label.control-label(for="email") Email (optional)
                 input#email.form-control(type="email", name="email")
-                p Providing an email address is optional and will allow you to recover your account via email if you forget your password.  Your address will not be shared with anyone.
+                p
+                  | Providing an email address is optional and will allow you to recover your account via email if you forget your password.
+                  strong &nbsp;&nbsp;If you do not provide an email address, you will not be able to recover a lost account!
               button#registerbtn.btn.btn-success.btn-block(type="submit") Register
         else
           .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
@@ -56,6 +58,7 @@ html(lang="en")
       function verify() {
         var valid = checkUsername();
         valid = checkPasswords() && valid;
+        valid = checkEmail() && valid;
         return valid;
       }
       function checkUsername() {
@@ -108,4 +111,11 @@ html(lang="en")
               .addClass("has-success");
           }
         }
+      }
+      function checkEmail() {
+        var email = $("#email").val();
+        if (email.trim() === "") {
+          return confirm("Are you sure you want to register without setting a recovery email address?  If you lose the password, or if your account is compromised, you WILL NOT be able to recover it.");
+        }
+        return true;
       }
