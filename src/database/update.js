@@ -1,8 +1,9 @@
 var db = require("../database");
 var Logger = require("../logger");
 var Q = require("q");
+import Promise from 'bluebird';
 
-const DB_VERSION = 7;
+const DB_VERSION = 9;
 var hasUpdates = [];
 
 module.exports.checkVersion = function () {
@@ -58,6 +59,10 @@ function update(version, cb) {
         fixCustomEmbeds(cb);
     } else if (version < 7) {
         fixCustomEmbedsInUserPlaylists(cb);
+    } else if (version < 8) {
+        addUsernameDedupeColumn(cb);
+    } else if (version < 9) {
+        populateUsernameDedupeColumn(cb);
     }
 }
 
@@ -329,4 +334,57 @@ function fixCustomEmbedsInUserPlaylists(cb) {
         }).catch(function (err) {
             Logger.errlog.log(err.stack);
         });
+}
+
+function addUsernameDedupeColumn(cb) {
+    Logger.syslog.log("Adding name_dedupe column on the users table");
+    db.query("ALTER TABLE users ADD COLUMN name_dedupe VARCHAR(20) UNIQUE DEFAULT NULL", (error) => {
+        if (error) {
+            Logger.errlog.log(`Unable to add name_dedupe column: ${error}`);
+        } else {
+            cb();
+        }
+    });
+}
+
+function populateUsernameDedupeColumn(cb) {
+    const dbUsers = require("./accounts");
+    Logger.syslog.log("Populating name_dedupe column on the users table");
+    db.query("SELECT id, name FROM users WHERE name_dedupe IS NULL", (err, rows) => {
+        if (err) {
+            Logger.errlog.log("Unable to perform database upgrade to add dedupe column: " + err);
+            return;
+        }
+
+        Promise.map(rows, row => {
+            return new Promise((resolve, reject) => {
+                db.pool.getConnection((error, conn) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+
+                    const dedupedName = dbUsers.dedupeUsername(row.name);
+                    Logger.syslog.log(`Deduping [${row.name}] as [${dedupedName}]`);
+                    conn.query("UPDATE users SET name_dedupe = ? WHERE id = ?", [dedupedName, row.id], (error, res) => {
+                        conn.release();
+                        if (error) {
+                            if (error.errno === 1062) {
+                                Logger.syslog.log(`WARNING: could not set name_dedupe for [${row.name}] due to an existing row for [${dedupedName}]`);
+                                resolve();
+                            } else {
+                                reject(error);
+                            }
+                        } else {
+                            resolve();
+                        }
+                    });
+                });
+            });
+        }, { concurrency: 10 }).then(() => {
+            cb();
+        }).catch(error => {
+            Logger.errlog.log("Unable to perform database upgrade to add dedupe column: " + (error.stack ? error.stack : error));
+        })
+    });
 }

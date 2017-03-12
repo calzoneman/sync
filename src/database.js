@@ -48,6 +48,7 @@ module.exports.init = function () {
     global_ipbans = {};
     module.exports.users = require("./database/accounts");
     module.exports.channels = require("./database/channels");
+    module.exports.pool = pool;
 };
 
 /**

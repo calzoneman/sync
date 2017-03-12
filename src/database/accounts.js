@@ -7,15 +7,6 @@ var Logger = require("../logger");
 var registrationLock = {};
 var blackHole = function () { };
 
-/**
- * Replaces look-alike characters with "_" (single character wildcard) for
- * use in LIKE queries.  This prevents guests from taking names that look
- * visually identical to existing names in certain fonts.
- */
-function wildcardSimilarChars(name) {
-    return name.replace(/_/g, "\\_").replace(/[Il1oO0]/g, "_");
-}
-
 function parseProfile(data) {
     try {
         var profile = JSON.parse(data.profile);
@@ -32,11 +23,22 @@ module.exports = {
     },
 
     /**
+     * Convert a username for deduplication purposes.
+     * Collapses visibily similar characters into a single character.
+     * @param name
+     */
+    dedupeUsername: function dedupeUsername(name) {
+        return name.replace(/[Il1]/ig, '1')
+            .replace(/[o0]/ig, '0')
+            .replace(/[_-]/g, '_');
+    },
+
+    /**
      * Check if a username is taken
      */
     isUsernameTaken: function (name, callback) {
-        db.query("SELECT name FROM `users` WHERE name LIKE ? ESCAPE '\\\\'",
-                 [wildcardSimilarChars(name)],
+        db.query("SELECT name FROM `users` WHERE name = ? or name_dedupe = ?",
+                 [name, module.exports.dedupeUsername(name)],
         function (err, rows) {
             if (err) {
                 callback(err, true);
@@ -175,10 +177,10 @@ module.exports = {
                     }
 
                     db.query("INSERT INTO `users` " +
-                             "(`name`, `password`, `global_rank`, `email`, `profile`, `ip`, `time`)" +
+                             "(`name`, `password`, `global_rank`, `email`, `profile`, `ip`, `time`, `name_dedupe`)" +
                              " VALUES " +
-                             "(?, ?, ?, ?, '', ?, ?)",
-                             [name, hash, 1, email, ip, Date.now()],
+                             "(?, ?, ?, ?, '', ?, ?, ?)",
+                             [name, hash, 1, email, ip, Date.now(), module.exports.dedupeUsername(name)],
                     function (err, res) {
                         delete registrationLock[lname];
                         if (err) {
