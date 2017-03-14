@@ -1,3 +1,18 @@
+2017-03-11
+==========
+
+Commit f8183bea1b37154d79db741ac2845adf282e7514 modifes the schema of the
+`users` table to include a new column (`name_dedupe`) which has a `UNIQUE`
+constraint.  This column is populated with a modified version of the user's name
+to prevent the registration of usernames which are bitwise distinct but visually
+similar.  'l', 'L', and '1' are all mapped to '1'; 'o', 'O', and '0' are all
+mapped to '0'; '\_' and '-' are mapped to '\_'.  On first startup after
+upgrading, the new column will be added and populated.
+
+This replaces the earlier solution which was put in place to mitigate PR#489 but
+was overly-restrictive since it wildcarded these characters against *any*
+character, not just characters in the same group.
+
 2017-03-03
 ==========
 
