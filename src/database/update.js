@@ -3,7 +3,7 @@ var Logger = require("../logger");
 var Q = require("q");
 import Promise from 'bluebird';
 
-const DB_VERSION = 9;
+const DB_VERSION = 10;
 var hasUpdates = [];
 
 module.exports.checkVersion = function () {
@@ -63,6 +63,8 @@ function update(version, cb) {
         addUsernameDedupeColumn(cb);
     } else if (version < 9) {
         populateUsernameDedupeColumn(cb);
+    } else if (version < 10) {
+        addChannelLastLoadedColumn(cb);
     }
 }
 
@@ -386,5 +388,23 @@ function populateUsernameDedupeColumn(cb) {
         }).catch(error => {
             Logger.errlog.log("Unable to perform database upgrade to add dedupe column: " + (error.stack ? error.stack : error));
         })
+    });
+}
+
+function addChannelLastLoadedColumn(cb) {
+    db.query("ALTER TABLE channels ADD COLUMN last_loaded TIMESTAMP NOT NULL DEFAULT 0", error => {
+        if (error) {
+            Logger.errlog.log(`Failed to add last_loaded column: ${error}`);
+            return;
+        }
+
+        db.query("ALTER TABLE channels ADD INDEX i_last_loaded (last_loaded)", error => {
+            if (error) {
+                Logger.errlog.log(`Failed to add index on last_loaded column: ${error}`);
+                return;
+            }
+
+            cb();
+        });
     });
 }

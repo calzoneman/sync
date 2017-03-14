@@ -147,8 +147,8 @@ module.exports = {
             }
 
             db.query("INSERT INTO `channels` " +
-                     "(`name`, `owner`, `time`) VALUES (?, ?, ?)",
-                     [name, owner, Date.now()],
+                     "(`name`, `owner`, `time`, `last_loaded`) VALUES (?, ?, ?, ?)",
+                     [name, owner, Date.now(), new Date()],
                      function (err, res) {
                 if (err) {
                     callback(err, null);
@@ -641,5 +641,20 @@ module.exports = {
         }
 
         db.query("DELETE FROM `channel_bans` WHERE channel=?", [chan], callback);
+    },
+
+    /**
+     * Updates the `last_loaded` column to be the current timestamp
+     */
+    updateLastLoaded: function updateLastLoaded(channelId) {
+        if (channelId <= 0) {
+            return;
+        }
+
+        db.query("UPDATE channels SET last_loaded = ? WHERE id = ?", [new Date(), channelId], error => {
+            if (error) {
+                Logger.errlog.log(`Failed to update last_loaded column for channel ID ${channelId}: ${error}`);
+            }
+        });
     }
 };

@@ -93,10 +93,10 @@ function Channel(name) {
         if (err && err !== "Channel is not registered") {
             self.emit("loadFail", "Failed to load channel data from the database.  Please try again later.");
             self.setFlag(Flags.C_ERROR);
-            return;
         } else {
             self.initModules();
             self.loadState();
+            db.channels.updateLastLoaded(self.id);
         }
     });
 }
