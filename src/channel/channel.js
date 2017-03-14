@@ -85,10 +85,11 @@ function Channel(name) {
     this.refCounter = new ReferenceCounter(this);
     this.flags = 0;
     this.id = 0;
+    this.ownerName = null;
     this.broadcastUsercount = throttle(() => {
         this.broadcastAll("usercount", this.users.length);
     }, USERCOUNT_THROTTLE);
-    var self = this;
+    const self = this;
     db.channels.load(this, function (err) {
         if (err && err !== "Channel is not registered") {
             self.emit("loadFail", "Failed to load channel data from the database.  Please try again later.");
@@ -397,6 +398,9 @@ Channel.prototype.acceptUser = function (user) {
         loginStr += " (aliases: " + user.account.aliases.join(",") + ")";
         self.logger.log(loginStr);
         self.sendUserJoin(self.users, user);
+        if (user.getName().toLowerCase() === self.ownerName) {
+            db.channels.updateOwnerLastSeen(self.id);
+        }
     });
 
     this.users.push(user);

@@ -3,7 +3,7 @@ var Logger = require("../logger");
 var Q = require("q");
 import Promise from 'bluebird';
 
-const DB_VERSION = 10;
+const DB_VERSION = 11;
 var hasUpdates = [];
 
 module.exports.checkVersion = function () {
@@ -65,6 +65,8 @@ function update(version, cb) {
         populateUsernameDedupeColumn(cb);
     } else if (version < 10) {
         addChannelLastLoadedColumn(cb);
+    } else if (version < 11) {
+        addChannelOwnerLastSeenColumn(cb);
     }
 }
 
@@ -401,6 +403,24 @@ function addChannelLastLoadedColumn(cb) {
         db.query("ALTER TABLE channels ADD INDEX i_last_loaded (last_loaded)", error => {
             if (error) {
                 Logger.errlog.log(`Failed to add index on last_loaded column: ${error}`);
+                return;
+            }
+
+            cb();
+        });
+    });
+}
+
+function addChannelOwnerLastSeenColumn(cb) {
+    db.query("ALTER TABLE channels ADD COLUMN owner_last_seen TIMESTAMP NOT NULL DEFAULT 0", error => {
+        if (error) {
+            Logger.errlog.log(`Failed to add owner_last_seen column: ${error}`);
+            return;
+        }
+
+        db.query("ALTER TABLE channels ADD INDEX i_owner_last_seen (owner_last_seen)", error => {
+            if (error) {
+                Logger.errlog.log(`Failed to add index on owner_last_seen column: ${error}`);
                 return;
             }
 

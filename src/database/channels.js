@@ -274,6 +274,7 @@ module.exports = {
             chan.name = res[0].name;
             chan.uniqueName = chan.name.toLowerCase();
             chan.id = res[0].id;
+            chan.ownerName = typeof res[0].owner === 'string' ? res[0].owner.toLowerCase() : null;
             chan.setFlag(Flags.C_REGISTERED);
             chan.logger.log("[init] Loaded channel from database");
             callback(null, true);
@@ -654,6 +655,21 @@ module.exports = {
         db.query("UPDATE channels SET last_loaded = ? WHERE id = ?", [new Date(), channelId], error => {
             if (error) {
                 Logger.errlog.log(`Failed to update last_loaded column for channel ID ${channelId}: ${error}`);
+            }
+        });
+    },
+
+    /**
+     * Updates the `owner_last_seen` column to be the current timestamp
+     */
+    updateOwnerLastSeen: function updateOwnerLastSeen(channelId) {
+        if (channelId <= 0) {
+            return;
+        }
+
+        db.query("UPDATE channels SET owner_last_seen = ? WHERE id = ?", [new Date(), channelId], error => {
+            if (error) {
+                Logger.errlog.log(`Failed to update owner_last_seen column for channel ID ${channelId}: ${error}`);
             }
         });
     }
