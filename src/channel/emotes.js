@@ -75,7 +75,7 @@ function validateEmote(f) {
     f.image = f.image.substring(0, 1000);
     f.image = XSS.sanitizeText(f.image);
 
-    var s = XSS.sanitizeText(f.name).replace(/([\\\.\?\+\*\$\^\|\(\)\[\]\{\}])/g, "\\$1");
+    var s = XSS.looseSanitizeText(f.name).replace(/([\\\.\?\+\*\$\^\|\(\)\[\]\{\}])/g, "\\$1");
     s = "(^|\\s)" + s + "(?!\\S)";
     f.source = s;
 
