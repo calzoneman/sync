@@ -114,10 +114,17 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     if ("voteskip_ratio" in data) {
         var ratio = parseFloat(data.voteskip_ratio);
         if (isNaN(ratio) || ratio < 0) {
-            ratio = 0.5;
+            user.socket.emit("validationError", {
+                target: "#cs-voteskip_ratio",
+                message: "Input must be a number 0 or greater. 1.0 is 100%."
+            });
+        } else {
+            this.opts.voteskip_ratio = ratio;
+            sendUpdate = true;
+            user.socket.emit("validationPassed", {
+                target: "#cs-voteskip_ratio"
+            });
         }
-        this.opts.voteskip_ratio = ratio;
-        sendUpdate = true;
     }
 
     if ("afk_timeout" in data) {
