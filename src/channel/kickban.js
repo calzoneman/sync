@@ -59,16 +59,22 @@ KickBanModule.prototype.onUserPreJoin = function (user, data, cb) {
         return cb(null, ChannelModule.PASSTHROUGH);
     }
 
-    var cname = this.channel.name;
-    checkBan(cname, user.realip, user.getName(), function (banned) {
+    const cname = this.channel.name;
+    const check = (user.getName() !== '') ? checkBan : checkIPBan;
+    function callback(banned) {
         if (banned) {
             cb(null, ChannelModule.DENY);
             user.kick("You are banned from this channel.");
         } else {
             cb(null, ChannelModule.PASSTHROUGH);
         }
-    });
+    }
 
+    if (user.getName() !== '') {
+        checkBan(cname, user.realip, user.getName(), callback);
+    } else {
+        checkIPBan(cname, user.realip, callback);
+    }
 };
 
 KickBanModule.prototype.onUserPostJoin = function (user) {
