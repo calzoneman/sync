@@ -116,7 +116,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
         if (isNaN(ratio) || ratio < 0) {
             user.socket.emit("validationError", {
                 target: "#cs-voteskip_ratio",
-                message: "Input must be a number 0 or greater. 1.0 is 100%."
+                message: `Input must be a number 0 or greater, not "${data.voteskip_ratio}"`
             });
         } else {
             this.opts.voteskip_ratio = ratio;
