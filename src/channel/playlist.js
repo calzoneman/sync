@@ -224,7 +224,7 @@ PlaylistModule.prototype.onUserPostJoin = function (user) {
         self.sendChangeMedia([user]);
     });
     user.socket.on("requestPlaylist", this.handleRequestPlaylist.bind(this, user));
-    user.on("login", function () {
+    user.waitFlag(Flags.U_HAS_CHANNEL_RANK, function () {
         self.sendPlaylist([user]);
     });
     user.socket.on("clearPlaylist", this.handleClear.bind(this, user));
