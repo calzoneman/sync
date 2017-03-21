@@ -1,3 +1,9 @@
+2017-03-20
+==========
+
+Polls are now more strictly validated, including the number of options.  The
+default limit is 50 options, which you can configure via `poll.max-options`.
+
 2017-03-11
 ==========
 

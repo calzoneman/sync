@@ -789,6 +789,7 @@ function showPollMenu() {
     $("<strong/>").text("Title").appendTo(menu);
 
     var title = $("<input/>").addClass("form-control")
+        .attr("maxlength", "255")
         .attr("type", "text")
         .appendTo(menu);
 
@@ -820,6 +821,7 @@ function showPollMenu() {
     function addOption() {
         $("<input/>").addClass("form-control")
             .attr("type", "text")
+            .attr("maxlength", "255")
             .addClass("poll-menu-option")
             .insertBefore(addbtn);
     }
@@ -859,8 +861,16 @@ function showPollMenu() {
                 opts: opts,
                 obscured: hidden.prop("checked"),
                 timeout: t
+            }, function ack(result) {
+                if (result.error) {
+                    modalAlert({
+                        title: 'Error creating poll',
+                        textContent: result.error.message
+                    });
+                } else {
+                    menu.remove();
+                }
             });
-            menu.remove();
         });
 }
 

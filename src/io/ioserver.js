@@ -133,14 +133,14 @@ function ipLimitReached(sock) {
 
 function addTypecheckedFunctions(sock) {
     sock.typecheckedOn = function (msg, template, cb) {
-        sock.on(msg, function (data) {
+        sock.on(msg, function (data, ack) {
             typecheck(data, template, function (err, data) {
                 if (err) {
                     sock.emit("errorMsg", {
                         msg: "Unexpected error for message " + msg + ": " + err.message
                     });
                 } else {
-                    cb(data);
+                    cb(data, ack);
                 }
             });
         });

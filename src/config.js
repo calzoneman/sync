@@ -119,7 +119,10 @@ var defaults = {
     "google-drive": {
         "html5-hack-enabled": false
     },
-    "twitch-client-id": null
+    "twitch-client-id": null,
+    poll: {
+        "max-options": 50
+    }
 };
 
 /**
