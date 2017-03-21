@@ -91,6 +91,10 @@ describe('PollModule', () => {
         let fakeUser = {
             getName() {
                 return 'testUser';
+            },
+            socket: {
+                emit() {
+                }
             }
         };
         let pollModule = new PollModule(fakeChannel);
@@ -140,6 +144,31 @@ describe('PollModule', () => {
             }, (ackResult) => {
                 assert.equal(ackResult.error.message, 'Polls are limited to a maximum of 50 options.');
             });
+        });
+
+        it('handles a rejection with no ack provided by socket.io', () => {
+            fakeChannel.broadcastToRoom = (event, data, room) => {
+                assert(false, 'Expected no events to be sent');
+            };
+            fakeChannel.broadcastAll = (event) => {
+                assert(false, 'Expected no events to be sent');
+            };
+            let sentErrorMsg = false;
+            fakeUser.socket.emit = (event, data) => {
+                if (event === 'errorMsg') {
+                    sentErrorMsg = true;
+                }
+            };
+            const options = [];
+            for (let i = 0; i < 200; i++) {
+                options.push('option ' + i);
+            }
+            pollModule.handleNewPoll(fakeUser, {
+                title: 'test poll',
+                opts: options,
+                obscured: false
+            });
+            assert(sentErrorMsg, 'Expected to send errorMsg since ack was missing');
         });
     })
 });

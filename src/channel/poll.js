@@ -2,6 +2,7 @@ var ChannelModule = require("./module");
 var Poll = require("../poll").Poll;
 import { ValidationError } from '../errors';
 import Config from '../config';
+import { ackOrErrorMsg } from '../util/ack';
 
 const TYPE_NEW_POLL = {
     title: "string",
@@ -159,6 +160,8 @@ PollModule.prototype.handleNewPoll = function (user, data, ack) {
     if (!this.channel.modules.permissions.canControlPoll(user)) {
         return;
     }
+
+    ack = ackOrErrorMsg(ack, user);
 
     if (typeof data !== 'object' || data === null) {
         ack({
