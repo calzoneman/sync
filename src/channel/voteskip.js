@@ -75,13 +75,14 @@ VoteskipModule.prototype.update = function () {
         return;
     }
 
-    this.sendVoteskipData(this.channel.users);
-
     var max = this.calcVoteskipMax();
     var need = Math.ceil(max * this.channel.modules.options.get("voteskip_ratio"));
     if (this.poll.counts[0] >= need) {
         this.channel.logger.log("[playlist] Voteskip passed.");
+        this.reset();
         this.channel.modules.playlist._playNext();
+    } else {
+        this.sendVoteskipData(this.channel.users);
     }
 };
 
@@ -115,9 +116,13 @@ VoteskipModule.prototype.calcVoteskipMax = function () {
     }, 0);
 };
 
-VoteskipModule.prototype.onMediaChange = function (data) {
+VoteskipModule.prototype.reset = function reset() {
     this.poll = false;
     this.sendVoteskipData(this.channel.users);
+};
+
+VoteskipModule.prototype.onMediaChange = function (data) {
+    this.reset();
 };
 
 module.exports = VoteskipModule;
