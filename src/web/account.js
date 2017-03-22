@@ -325,7 +325,7 @@ function handleDeleteChannel(req, res) {
             return;
         }
 
-        if (channel.owner !== req.user.name && req.user.global_rank < 255) {
+        if ((!channel.owner || channel.owner.toLowerCase() !== req.user.name.toLowerCase()) && req.user.global_rank < 255) {
             db.channels.listUserChannels(req.user.name, function (err2, channels) {
                 sendPug(res, "account-channels", {
                     channels: err2 ? [] : channels,
