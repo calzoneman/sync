@@ -8,6 +8,8 @@ addons:
       - g++-4.8
 env:
   - CXX="g++-4.8"
+before_script:
+  - npm run build-server
 node_js:
   - "7"
   - "6"
