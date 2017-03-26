@@ -1202,12 +1202,13 @@ AsyncQueue.prototype.reset = function () {
 var PL_ACTION_QUEUE = new AsyncQueue();
 
 // Because jQuery UI does weird things
+// 2017-03-26: Does it really though?  I have no idea if this is still needed.
 function playlistFind(uid) {
     var children = document.getElementById("queue").children;
     for(var i in children) {
-        if(typeof children[i].getAttribute != "function")
+        if(typeof children[i].className != "string")
             continue;
-        if(children[i].getAttribute("class").indexOf("pluid-" + uid) != -1)
+        if(children[i].className.split(" ").indexOf("pluid-" + uid) > 0)
             return children[i];
     }
     return false;
