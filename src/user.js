@@ -212,6 +212,7 @@ User.prototype.setAFK = function (afk) {
         this.setFlag(Flags.U_AFK);
         if (this.channel.modules.voteskip) {
             this.channel.modules.voteskip.unvote(this.realip);
+            this.socket.emit("clearVoteskipVote");
         }
     } else {
         this.clearFlag(Flags.U_AFK);

@@ -1102,6 +1102,12 @@ Callbacks = {
         if (formGroup.length > 0) {
             formGroup.removeClass("has-error");
         }
+    },
+
+    clearVoteskipVote: function () {
+        if (CHANNEL.opts.allow_voteskip && hasPermission("voteskip")) {
+            $("#voteskip").attr("disabled", false);
+        }
     }
 }
 
