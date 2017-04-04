@@ -944,24 +944,10 @@ function handleModPermissions() {
     $("#cs-torbanned").prop("checked", CHANNEL.opts.torbanned);
     $("#cs-allow_ascii_control").prop("checked", CHANNEL.opts.allow_ascii_control);
     $("#cs-playlist_max_per_user").val(CHANNEL.opts.playlist_max_per_user || 0);
+    $("#cs-playlist_max_duration_per_user").val(formatTime(CHANNEL.opts.playlist_max_duration_per_user));
     $("#cs-new_user_chat_delay").val(formatTime(CHANNEL.opts.new_user_chat_delay || 0));
     $("#cs-new_user_chat_link_delay").val(formatTime(CHANNEL.opts.new_user_chat_link_delay || 0));
-    (function() {
-        if(typeof CHANNEL.opts.maxlength != "number") {
-            $("#cs-maxlength").val("");
-            return;
-        }
-        var h = parseInt(CHANNEL.opts.maxlength / 3600);
-        h = ""+h;
-        if(h.length < 2) h = "0" + h;
-        var m = parseInt((CHANNEL.opts.maxlength % 3600) / 60);
-        m = ""+m;
-        if(m.length < 2) m = "0" + m;
-        var s = parseInt(CHANNEL.opts.maxlength % 60);
-        s = ""+s;
-        if(s.length < 2) s = "0" + s;
-        $("#cs-maxlength").val(h + ":" + m + ":" + s);
-    })();
+    $("#cs-maxlength").val(formatTime(CHANNEL.opts.maxlength));
     $("#cs-csstext").val(CHANNEL.css);
     $("#cs-jstext").val(CHANNEL.js);
     $("#cs-motdtext").val(CHANNEL.motd);
@@ -2009,6 +1995,7 @@ function genPermissionsEditor() {
     makeOption("Embed custom media", "playlistaddcustom", standard, CHANNEL.perms.playlistaddcustom + "");
     makeOption("Add raw video file", "playlistaddrawfile", standard, CHANNEL.perms.playlistaddrawfile + "");
     makeOption("Exceed maximum media length", "exceedmaxlength", standard, CHANNEL.perms.exceedmaxlength+"");
+    makeOption("Exceed maximum total media length", "exceedmaxdurationperuser", standard, CHANNEL.perms.exceedmaxdurationperuser+"");
     makeOption("Exceed maximum number of videos per user", "exceedmaxitems", standard, CHANNEL.perms.exceedmaxitems+"");
     makeOption("Add nontemporary media", "addnontemp", standard, CHANNEL.perms.addnontemp+"");
     makeOption("Temp/untemp playlist item", "settemp", standard, CHANNEL.perms.settemp+"");

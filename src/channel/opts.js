@@ -31,7 +31,8 @@ function OptionsModule(channel) {
         allow_ascii_control: false,// Allow ASCII control characters (\x00-\x1f)
         playlist_max_per_user: 0,  // Maximum number of playlist items per user
         new_user_chat_delay: 0,      // Minimum account/IP age to chat
-        new_user_chat_link_delay: 0  // Minimum account/IP age to post links
+        new_user_chat_link_delay: 0, // Minimum account/IP age to post links
+        playlist_max_duration_per_user: 0 // Maximum total playlist time per user
     };
 }
 
@@ -169,6 +170,30 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
         }
         this.opts.maxlength = ml;
         sendUpdate = true;
+    }
+
+    if ("playlist_max_duration_per_user" in data) {
+        const rawMax = data.playlist_max_duration_per_user;
+        if (typeof rawMax !== "string" || !rawMax.match(/^(\d+:)*\d+$/)) {
+            user.socket.emit("validationError", {
+                target: "#cs-playlist_max_duration_per_user",
+                message: `Input must be a time in the format HH:MM:SS, not "${rawMax}"`
+            });
+        } else {
+            const max = Utilities.parseTime(rawMax);
+            if (isNaN(max) || max < 0) {
+                user.socket.emit("validationError", {
+                    target: "#cs-playlist_max_duration_per_user",
+                    message: `Input must be a time greater than 0 in the format HH:MM:SS, not "${rawMax}"`
+                });
+            } else {
+                this.opts.playlist_max_duration_per_user = max;
+                sendUpdate = true;
+                user.socket.emit("validationPassed", {
+                    target: "#cs-playlist_max_duration_per_user"
+                });
+            }
+        }
     }
 
     if ("externalcss" in data && user.account.effectiveRank >= 3) {

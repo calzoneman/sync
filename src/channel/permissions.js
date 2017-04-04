@@ -42,7 +42,8 @@ const DEFAULT_PERMISSIONS = {
     chat: 0,                  // Send chat messages
     chatclear: 2,             // Use the /clear command
     exceedmaxitems: 2,        // Exceed maximum items per user limit
-    deletefromchannellib: 2   // Delete channel library items
+    deletefromchannellib: 2,  // Delete channel library items
+    exceedmaxdurationperuser: 2 // Exceed maximum total playlist length per user
 };
 
 function PermissionsModule(channel) {
@@ -222,6 +223,10 @@ PermissionsModule.prototype.canToggleTemporary = function (account) {
 
 PermissionsModule.prototype.canExceedMaxLength = function (account) {
     return this.hasPermission(account, "exceedmaxlength");
+};
+
+PermissionsModule.prototype.canExceedMaxDurationPerUser = function (account) {
+    return this.hasPermission(account, "exceedmaxdurationperuser");
 };
 
 PermissionsModule.prototype.canShufflePlaylist = function (account) {

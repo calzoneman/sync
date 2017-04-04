@@ -922,6 +922,18 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         }
     }
 
+    if (this.channel.modules.options &&
+        this.channel.modules.options.get("playlist_max_duration_per_user") > 0) {
+
+        const limit = this.channel.modules.options.get("playlist_max_duration_per_user");
+        const totalDuration = usersItems.map(item => item.media.seconds).reduce((a, b) => a + b, 0) + media.seconds;
+        if (isNaN(totalDuration)) {
+            Logger.errlog.log("playlist_max_duration_per_user check calculated NaN: " + require('util').inspect(usersItems));
+        } else if (totalDuration >= limit && !this.channel.modules.permissions.canExceedMaxDurationPerUser(user)) {
+            return qfail("Channel limit exceeded: maximum total playlist time per user");
+        }
+    }
+
     /* Warn about blocked countries */
     if (media.meta.restricted) {
         user.socket.emit("queueWarn", {
