@@ -7,7 +7,6 @@
 var pug = require("pug");
 var path = require("path");
 var webserver = require("./webserver");
-var cookieall = webserver.cookieall;
 var sendPug = require("./pug").sendPug;
 var Logger = require("../logger");
 var $util = require("../utilities");
@@ -16,6 +15,9 @@ var Config = require("../config");
 var url = require("url");
 var session = require("../session");
 var csrf = require("./csrf");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('web/auth');
 
 /**
  * Processes a login request.  Sets a cookie upon successful authentication
@@ -37,7 +39,7 @@ function handleLogin(req, res) {
     var host = req.hostname;
     if (host.indexOf(Config.get("http.root-domain")) === -1 &&
             Config.get("http.alt-domains").indexOf(host) === -1) {
-        Logger.syslog.log("WARNING: Attempted login from non-approved domain " + host);
+        LOGGER.warn("Attempted login from non-approved domain " + host);
         return res.sendStatus(403);
     }
 

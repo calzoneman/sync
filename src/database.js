@@ -1,12 +1,13 @@
 var mysql = require("mysql");
 var bcrypt = require("bcrypt");
-var $util = require("./utilities");
-var Logger = require("./logger");
 var Config = require("./config");
 var tables = require("./database/tables");
 var net = require("net");
 var util = require("./utilities");
 import * as Metrics from 'cytube-common/lib/metrics/metrics';
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('database');
 
 var pool = null;
 var global_ipbans = {};
@@ -26,7 +27,7 @@ module.exports.init = function () {
     // Test the connection
     pool.getConnection(function (err, conn) {
         if (err) {
-            Logger.errlog.log("Initial database connection failed: " + err.stack);
+            LOGGER.error("Initial database connection failed: " + err.stack);
             process.exit(1);
         } else {
             tables.init(module.exports.query, function (err) {
@@ -68,17 +69,17 @@ module.exports.query = function (query, sub, callback) {
 
     pool.getConnection(function (err, conn) {
         if (err) {
-            Logger.errlog.log("! DB connection failed: " + err);
+            LOGGER.error("! DB connection failed: " + err);
             callback("Database failure", null);
         } else {
             function cback(err, res) {
                 conn.release();
                 if (err) {
-                    Logger.errlog.log("! DB query failed: " + query);
+                    LOGGER.error("! DB query failed: " + query);
                     if (sub) {
-                        Logger.errlog.log("Substitutions: " + sub);
+                        LOGGER.error("Substitutions: " + sub);
                     }
-                    Logger.errlog.log(err);
+                    LOGGER.error(err);
                     callback("Database failure", null);
                 } else {
                     callback(null, res);
@@ -97,7 +98,7 @@ module.exports.query = function (query, sub, callback) {
                     conn.query(query, cback);
                 }
             } catch (error) {
-                Logger.errlog.log("Broken query: " + error.stack);
+                LOGGER.error("Broken query: " + error.stack);
                 callback("Broken query", null);
                 conn.release();
             }
@@ -344,7 +345,7 @@ module.exports.resetUserPassword = function (name, callback) {
 
     bcrypt.hash(pw, 10, function (err, data) {
         if(err) {
-            Logger.errlog.log("bcrypt error: " + err);
+            LOGGER.error("bcrypt error: " + err);
             callback("Password reset failure", null);
             return;
         }
@@ -588,7 +589,7 @@ module.exports.loadAnnouncement = function () {
         try {
             announcement = JSON.parse(announcement);
         } catch (e) {
-            Logger.errlog.log("Invalid announcement data in database: " +
+            LOGGER.error("Invalid announcement data in database: " +
                               announcement.value);
             module.exports.clearAnnouncement();
             return;

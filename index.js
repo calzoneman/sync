@@ -6,6 +6,7 @@ if (/^v0/.test(process.version)) {
 }
 
 try {
+    require("./lib/logger");
     var Server = require("./lib/server");
 } catch (err) {
     console.error('FATAL: Failed to require() lib/server.js');

@@ -1,9 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import net from 'net';
-import express from 'express';
 import { sendPug } from './pug';
-import Logger from '../logger';
 import Config from '../config';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -13,6 +11,9 @@ import csrf from './csrf';
 import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
 import counters from "../counters";
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('webserver');
 
 function initializeLog(app) {
     const logFormat = ':real-address - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';
@@ -111,7 +112,7 @@ function initializeErrorHandlers(app) {
 
             // Log 5xx (server) errors
             if (Math.floor(status / 100) === 5) {
-                Logger.errlog.log(err.stack);
+                LOGGER.error(err.stack);
             }
 
             res.status(status);
@@ -141,7 +142,7 @@ module.exports = {
             limit: '1kb' // No POST data should ever exceed this size under normal usage
         }));
         if (webConfig.getCookieSecret() === 'change-me') {
-            Logger.errlog.log('WARNING: The configured cookie secret was left as the ' +
+            LOGGER.warn('The configured cookie secret was left as the ' +
                     'default of "change-me".');
         }
         app.use(cookieParser(webConfig.getCookieSecret()));
@@ -154,7 +155,7 @@ module.exports = {
             app.use(require('compression')({
                 threshold: webConfig.getGzipThreshold()
             }));
-            Logger.syslog.log('Enabled gzip compression');
+            LOGGER.info('Enabled gzip compression');
         }
 
         if (webConfig.getEnableMinification()) {
@@ -172,7 +173,7 @@ module.exports = {
             app.use(require('express-minify')({
                 cache: cacheDir
             }));
-            Logger.syslog.log('Enabled express-minify for CSS and JS');
+            LOGGER.info('Enabled express-minify for CSS and JS');
         }
 
         require('./routes/channel')(app, ioConfig);

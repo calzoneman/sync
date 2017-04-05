@@ -1,5 +1,4 @@
 var sio = require("socket.io");
-var Logger = require("../logger");
 var db = require("../database");
 var User = require("../user");
 var Server = require("../server");
@@ -16,8 +15,11 @@ var session = require("../session");
 import counters from '../counters';
 import { verifyIPSessionCookie } from '../web/middleware/ipsessioncookie';
 import Promise from 'bluebird';
+import { LoggerFactory } from '@calzoneman/jsli';
 const verifySession = Promise.promisify(session.verifySession);
 const getAliases = Promise.promisify(db.getAliases);
+
+const LOGGER = LoggerFactory.getLogger('ioserver');
 
 var CONNECT_RATE = {
     burst: 5,
@@ -93,7 +95,7 @@ function throttleIP(sock) {
     }
 
     if (ipThrottle[ip].throttle(CONNECT_RATE)) {
-        Logger.syslog.log("WARN: IP throttled: " + ip);
+        LOGGER.warn("IP throttled: " + ip);
         sock.emit("kick", {
             reason: "Your IP address is connecting too quickly.  Please "+
                     "wait 10 seconds before joining again."
@@ -225,7 +227,7 @@ function handleConnection(sock) {
 
     // Check for global ban on the IP
     if (db.isGlobalIPBanned(ip)) {
-        Logger.syslog.log("Rejecting " + ip + " - global banned");
+        LOGGER.info("Rejecting " + ip + " - global banned");
         sock.emit("kick", { reason: "Your IP is globally banned." });
         sock.disconnect();
         return;
@@ -235,7 +237,7 @@ function handleConnection(sock) {
         return;
     }
 
-    Logger.syslog.log("Accepted socket from " + ip);
+    LOGGER.info("Accepted socket from " + ip);
     counters.add("socket.io:accept", 1);
 
     addTypecheckedFunctions(sock);
@@ -252,7 +254,7 @@ function handleConnection(sock) {
         user.socket.emit("rank", user.account.effectiveRank);
         user.setFlag(Flags.U_LOGGED_IN);
         user.emit("login", user.account);
-        Logger.syslog.log(ip + " logged in as " + user.getName());
+        LOGGER.info(ip + " logged in as " + user.getName());
         user.setFlag(Flags.U_READY);
     } else {
         user.socket.emit("rank", -1);
@@ -280,7 +282,7 @@ module.exports = {
             }
             var id = bind.ip + ":" + bind.port;
             if (id in bound) {
-                Logger.syslog.log("[WARN] Ignoring duplicate listen address " + id);
+                LOGGER.warn("Ignoring duplicate listen address " + id);
                 return;
             }
 

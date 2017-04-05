@@ -6,6 +6,9 @@ var http = require("http");
 var urlparse = require("url");
 var path = require("path");
 require("status-message-polyfill");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('ffmpeg');
 
 var USE_JSON = true;
 var TIMEOUT = 30000;
@@ -244,7 +247,7 @@ exports.ffprobe = function ffprobe(filename, cb) {
     var stdout = "";
     var stderr = "";
     var timer = setTimeout(function () {
-        Logger.errlog.log("Possible runaway ffprobe process for file " + filename);
+        LOGGER.error("Possible runaway ffprobe process for file " + filename);
         fflog("Killing ffprobe for " + filename + " after " + (TIMEOUT/1000) + " seconds");
         childErr = new Error("File query exceeded time limit of " + (TIMEOUT/1000) +
                              " seconds.  To avoid this issue, encode your videos " +
@@ -277,7 +280,7 @@ exports.ffprobe = function ffprobe(filename, cb) {
         fflog("ffprobe exited with code " + code + " for file " + filename);
         if (code !== 0) {
             if (stderr.match(/unrecognized option|json/i) && USE_JSON) {
-                Logger.errlog.log("Warning: ffprobe does not support -of json.  " +
+                LOGGER.warn("ffprobe does not support -of json.  " +
                                   "Assuming it will have old output format.");
                 USE_JSON = false;
                 return ffprobe(filename, cb);
@@ -346,13 +349,13 @@ exports.query = function (filename, cb) {
                     // Ignore ffprobe error messages, they are common and most often
                     // indicate a problem with the remote file, not with this code.
                     if (!/(av|ff)probe/.test(String(err)))
-                        Logger.errlog.log(err.stack || err);
+                        LOGGER.error(err.stack || err);
                     return cb("An unexpected error occurred while trying to process " +
                               "the link.  Contact support for troubleshooting " +
                               "assistance.");
                 } else {
                     if (!/(av|ff)probe/.test(String(err)))
-                        Logger.errlog.log(err.stack || err);
+                        LOGGER.error(err.stack || err);
                     return cb("An unexpected error occurred while trying to process " +
                               "the link.  Contact support for troubleshooting " +
                               "assistance.");
@@ -362,7 +365,7 @@ exports.query = function (filename, cb) {
             try {
                 data = reformatData(data);
             } catch (e) {
-                Logger.errlog.log(e.stack || e);
+                LOGGER.error(e.stack || e);
                 return cb("An unexpected error occurred while trying to process " +
                           "the link.  Contact support for troubleshooting " +
                           "assistance.");

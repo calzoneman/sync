@@ -2,12 +2,13 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.34.10",
+  "version": "3.35.0",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
   "license": "MIT",
   "dependencies": {
+    "@calzoneman/jsli": "^1.0.1",
     "babel-cli": "^6.1.4",
     "babel-core": "^6.1.4",
     "babel-plugin-add-module-exports": "^0.2.1",
@@ -43,6 +44,7 @@
     "socket.io": "^1.4.0",
     "socket.io-redis": "^1.0.0",
     "source-map-support": "^0.4.0",
+    "sprintf-js": "^1.0.3",
     "status-message-polyfill": "git://github.com/calzoneman/status-message-polyfill",
     "toml": "^2.3.0",
     "uuid": "^2.0.1",
@@ -51,6 +53,7 @@
   "scripts": {
     "build-player": "$npm_node_execpath build-player.js",
     "build-server": "babel -D --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/",
+    "flow": "flow",
     "postinstall": "./postinstall.sh",
     "server-dev": "babel -D --watch --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/",
     "generate-userscript": "$npm_node_execpath gdrive-userscript/generate-userscript $@ > www/js/cytube-google-drive.user.js",
@@ -58,7 +61,9 @@
     "integration-test": "mocha --recursive integration_test"
   },
   "devDependencies": {
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "coffee-script": "^1.9.2",
+    "flow-bin": "^0.43.0",
     "mocha": "^3.2.0"
   },
   "babel": {
@@ -72,7 +77,8 @@
           "loose": true
         }
       ],
-      "add-module-exports"
+      "add-module-exports",
+      "transform-flow-strip-types"
     ]
   }
 }

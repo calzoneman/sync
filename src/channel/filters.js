@@ -1,6 +1,8 @@
 var FilterList = require("cytubefilters");
 var ChannelModule = require("./module");
-var Logger = require("../logger");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('filters');
 
 /*
  * Converts JavaScript-style replacements ($1, $2, etc.) with
@@ -76,7 +78,7 @@ ChatFilterModule.prototype.load = function (data) {
         try {
             this.filters = new FilterList(filters);
         } catch (e) {
-            Logger.errlog.log("Filter load failed: " + e + " (channel:" +
+            LOGGER.error("Filter load failed: " + e + " (channel:" +
                 this.channel.name);
             this.channel.logger.log("Failed to load filters: " + e);
         }

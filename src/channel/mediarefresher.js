@@ -2,7 +2,9 @@ var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 var ChannelModule = require("./module");
 var Config = require("../config");
 var InfoGetter = require("../get-info");
-var Logger = require("../logger");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('mediarefresher');
 
 function MediaRefresherModule(channel) {
     ChannelModule.apply(this, arguments);
@@ -55,7 +57,7 @@ MediaRefresherModule.prototype.unload = function () {
         clearInterval(this._interval);
         this._interval = null;
     } catch (error) {
-        Logger.errlog.log(error.stack);
+        LOGGER.error(error.stack);
     }
 };
 
@@ -94,7 +96,7 @@ MediaRefresherModule.prototype.initVimeo = function (data, cb) {
 
         if (cb) cb();
     }).catch(function (err) {
-        Logger.errlog.log("Unexpected vimeo::extract() fail: " + err.stack);
+        LOGGER.error("Unexpected vimeo::extract() fail: " + err.stack);
         if (cb) cb();
     }).finally(() => {
         self.channel.refCounter.unref("MediaRefresherModule::initVimeo");
@@ -145,7 +147,7 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
                 if (err) {
                     self.channel.logger.log("[mediarefresher] Google Docs refresh failed: " +
                         err);
-                    Logger.errlog.log("Google Docs refresh failed for ID " + media.id +
+                    LOGGER.error("Google Docs refresh failed for ID " + media.id +
                         ": " + err);
                     self.channel.refCounter.unref("MediaRefresherModule::refreshGoogleDocs");
                     if (cb) cb();
@@ -204,7 +206,7 @@ MediaRefresherModule.prototype.initGooglePlus = function (media, cb) {
                 if (err) {
                     self.channel.logger.log("[mediarefresher] Google+ refresh failed: " +
                         err);
-                    Logger.errlog.log("Google+ refresh failed for ID " + media.id +
+                    LOGGER.error("Google+ refresh failed for ID " + media.id +
                         ": " + err);
                     self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
                     if (cb) cb();

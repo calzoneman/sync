@@ -1,5 +1,7 @@
-import Logger from '../logger';
 import uuid from 'uuid';
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('announcementrefresher');
 
 var SERVER;
 const SERVER_ANNOUNCEMENTS = 'serverAnnouncements';
@@ -31,7 +33,7 @@ class AnnouncementRefresher {
         try {
             data = JSON.parse(message);
         } catch (error) {
-            Logger.errlog.log('Unable to unmarshal server announcement: ' + error.stack
+            LOGGER.error('Unable to unmarshal server announcement: ' + error.stack
                     + '\nMessage was: ' + message);
             return;
         }

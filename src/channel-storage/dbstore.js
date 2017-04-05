@@ -1,11 +1,11 @@
 import Promise from 'bluebird';
-import { ChannelStateSizeError,
-         ChannelNotFoundError } from '../errors';
+import { ChannelStateSizeError } from '../errors';
 import db from '../database';
-import Logger from '../logger';
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('dbstore');
 
 const SIZE_LIMIT = 1048576;
-const QUERY_CHANNEL_ID_FOR_NAME = 'SELECT id FROM channels WHERE name = ?';
 const QUERY_CHANNEL_DATA = 'SELECT `key`, `value` FROM channel_data WHERE channel_id = ?';
 
 function queryAsync(query, substitutions) {
@@ -46,7 +46,7 @@ export class DatabaseStore {
                 try {
                     data[row.key] = JSON.parse(row.value);
                 } catch (e) {
-                    Logger.errlog.log(`Channel data for channel "${channelName}", ` +
+                    LOGGER.error(`Channel data for channel "${channelName}", ` +
                             `key "${row.key}" is invalid: ${e}`);
                 }
             });

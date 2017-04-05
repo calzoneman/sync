@@ -2,7 +2,9 @@ var https = require("https");
 var path = require("path");
 var fs = require("fs");
 var domain = require("domain");
-var Logger = require("./logger");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('tor');
 
 function retrieveIPs(cb) {
     var options = {
@@ -25,9 +27,9 @@ function retrieveIPs(cb) {
     var d = domain.create();
     d.on("error", function (err) {
         if (err.stack)
-            Logger.errlog.log(err.stack);
+            LOGGER.error(err.stack);
         else
-            Logger.errlog.log(err);
+            LOGGER.error(err);
     });
     
     d.run(function () {
@@ -66,11 +68,11 @@ function getTorIPs(cb) {
 var _ipList = [];
 getTorIPs(function (err, ips) {
     if (err) {
-        Logger.errlog.log(err);
+        LOGGER.error(err);
         return;
     }
 
-    Logger.syslog.log("Loaded Tor IP list");
+    LOGGER.info("Loaded Tor IP list");
     _ipList = ips;
 });
 

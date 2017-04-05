@@ -2,10 +2,12 @@ var db = require("../database");
 var valid = require("../utilities").isValidChannelName;
 var fs = require("fs");
 var path = require("path");
-var Logger = require("../logger");
 var tables = require("./tables");
 var Flags = require("../flags");
 var util = require("../utilities");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('database/channels');
 
 var blackHole = function () { };
 
@@ -193,27 +195,27 @@ module.exports = {
 
             module.exports.deleteBans(name, function (err) {
                 if (err) {
-                    Logger.errlog.log("Failed to delete bans for " + name + ": " + err);
+                    LOGGER.error("Failed to delete bans for " + name + ": " + err);
                 }
             });
 
             module.exports.deleteLibrary(name, function (err) {
                 if (err) {
-                    Logger.errlog.log("Failed to delete library for " + name + ": " + err);
+                    LOGGER.error("Failed to delete library for " + name + ": " + err);
                 }
             });
 
             module.exports.deleteAllRanks(name, function (err) {
                 if (err) {
-                    Logger.errlog.log("Failed to delete ranks for " + name + ": " + err);
+                    LOGGER.error("Failed to delete ranks for " + name + ": " + err);
                 }
             });
 
             fs.unlink(path.join(__dirname, "..", "..", "chandump", name),
                       function (err) {
                 if (err && err.code !== "ENOENT") {
-                    Logger.errlog.log("Deleting chandump failed:");
-                    Logger.errlog.log(err);
+                    LOGGER.error("Deleting chandump failed:");
+                    LOGGER.error(err);
                 }
             });
 
@@ -654,7 +656,7 @@ module.exports = {
 
         db.query("UPDATE channels SET last_loaded = ? WHERE id = ?", [new Date(), channelId], error => {
             if (error) {
-                Logger.errlog.log(`Failed to update last_loaded column for channel ID ${channelId}: ${error}`);
+                LOGGER.error(`Failed to update last_loaded column for channel ID ${channelId}: ${error}`);
             }
         });
     },
@@ -669,7 +671,7 @@ module.exports = {
 
         db.query("UPDATE channels SET owner_last_seen = ? WHERE id = ?", [new Date(), channelId], error => {
             if (error) {
-                Logger.errlog.log(`Failed to update owner_last_seen column for channel ID ${channelId}: ${error}`);
+                LOGGER.error(`Failed to update owner_last_seen column for channel ID ${channelId}: ${error}`);
             }
         });
     }

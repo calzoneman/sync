@@ -1,9 +1,12 @@
 var fs = require("fs");
 var path = require("path");
-var Logger = require("./logger");
 var nodemailer = require("nodemailer");
 var net = require("net");
 var YAML = require("yamljs");
+
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('config');
 
 var defaults = {
     mysql: {
@@ -135,7 +138,7 @@ function merge(obj, def, path) {
                 merge(obj[key], def[key], path + "." + key);
             }
         } else {
-            Logger.syslog.log("[WARNING] Missing config key " + (path + "." + key) +
+            LOGGER.warn("Missing config key " + (path + "." + key) +
                         "; using default: " + JSON.stringify(def[key]));
             obj[key] = def[key];
         }
@@ -152,14 +155,14 @@ exports.load = function (file) {
         cfg = YAML.load(path.join(__dirname, "..", file));
     } catch (e) {
         if (e.code === "ENOENT") {
-            Logger.syslog.log(file + " does not exist, assuming default configuration");
+            LOGGER.info(file + " does not exist, assuming default configuration");
             cfg = defaults;
             return;
         } else {
-            Logger.errlog.log("Error loading config file " + file + ": ");
-            Logger.errlog.log(e);
+            LOGGER.error("Error loading config file " + file + ": ");
+            LOGGER.error(e);
             if (e.stack) {
-                Logger.errlog.log(e.stack);
+                LOGGER.error(e.stack);
             }
             cfg = defaults;
             return;
@@ -167,7 +170,7 @@ exports.load = function (file) {
     }
 
     if (cfg == null) {
-        Logger.syslog.log(file + " is an Invalid configuration file, " +
+        LOGGER.info(file + " is an Invalid configuration file, " +
                           "assuming default configuration");
         cfg = defaults;
         return;
@@ -182,13 +185,14 @@ exports.load = function (file) {
     cfg.mail.config = mailconfig;
 
     preprocessConfig(cfg);
-    Logger.syslog.log("Loaded configuration from " + file);
+    LOGGER.info("Loaded configuration from " + file);
 };
 
+// I'm sorry
 function preprocessConfig(cfg) {
     /* Detect 3.0.0-style config and warng the user about it */
     if ("host" in cfg.http || "port" in cfg.http || "port" in cfg.https) {
-        Logger.syslog.log("[WARN] The method of specifying which IP/port to bind has "+
+        LOGGER.warn("The method of specifying which IP/port to bind has "+
                           "changed.  The config loader will try to handle this "+
                           "automatically, but you should read config.template.yaml "+
                           "and change your config.yaml to the new format.");
@@ -304,21 +308,21 @@ function preprocessConfig(cfg) {
         if (net.isIPv6(srv.ip) || srv.ip === "::") {
             if (srv.https && !cfg.io["ipv6-ssl"]) {
                 if (!srv.url) {
-                    Logger.errlog.log("Config Error: no URL defined for IPv6 " +
+                    LOGGER.error("Config Error: no URL defined for IPv6 " +
                                       "Socket.IO listener!  Ignoring this listener " +
                                       "because the Socket.IO client cannot connect to " +
                                       "a raw IPv6 address.");
-                    Logger.errlog.log("(Listener was: " + JSON.stringify(srv) + ")");
+                    LOGGER.error("(Listener was: " + JSON.stringify(srv) + ")");
                 } else {
                     cfg.io["ipv6-ssl"] = srv.url;
                 }
             } else if (!cfg.io["ipv6-nossl"]) {
                 if (!srv.url) {
-                    Logger.errlog.log("Config Error: no URL defined for IPv6 " +
+                    LOGGER.error("Config Error: no URL defined for IPv6 " +
                                       "Socket.IO listener!  Ignoring this listener " +
                                       "because the Socket.IO client cannot connect to " +
                                       "a raw IPv6 address.");
-                    Logger.errlog.log("(Listener was: " + JSON.stringify(srv) + ")");
+                    LOGGER.error("(Listener was: " + JSON.stringify(srv) + ")");
                 } else {
                     cfg.io["ipv6-nossl"] = srv.url;
                 }
@@ -372,7 +376,7 @@ function preprocessConfig(cfg) {
         require("cytube-mediaquery/lib/provider/youtube").setApiKey(
                 cfg["youtube-v3-key"]);
     } else {
-        Logger.errlog.log("Warning: No YouTube v3 API key set.  YouTube links will " +
+        LOGGER.warn("No YouTube v3 API key set.  YouTube links will " +
             "not work.  See youtube-v3-key in config.template.yaml and " +
             "https://developers.google.com/youtube/registering_an_application for " +
             "information on registering an API key.");
@@ -382,7 +386,7 @@ function preprocessConfig(cfg) {
         require("cytube-mediaquery/lib/provider/twitch-vod").setClientID(
                 cfg["twitch-client-id"]);
     } else {
-        Logger.errlog.log("Warning: No Twitch Client ID set.  Twitch VOD links will " +
+        LOGGER.warn("No Twitch Client ID set.  Twitch VOD links will " +
             "not work.  See twitch-client-id in config.template.yaml and " +
             "https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup" +
             "for more information on registering a client ID");

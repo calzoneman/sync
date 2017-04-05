@@ -5,7 +5,8 @@ var path = require('path');
 var querystring = require('querystring');
 var crypto = require('crypto');
 
-var Logger = require('./logger');
+import { LoggerFactory } from '@calzoneman/jsli';
+const LOGGER = LoggerFactory.getLogger('google2vtt');
 
 function md5(input) {
     var hash = crypto.createHash('md5');
@@ -96,7 +97,7 @@ function handleGetSubtitles(req, res) {
                 fetchSubtitles(id, lang, name, vid, fileAbsolute, function (err) {
                     delete subtitleLock[fileAbsolute];
                     if (err) {
-                        Logger.errlog.log(err.stack);
+                        LOGGER.error(err.stack);
                         return res.sendStatus(500);
                     }
 
@@ -141,7 +142,7 @@ function fetchSubtitles(id, lang, name, vid, file, cb) {
                 if (err) {
                     cb(err);
                 } else {
-                    Logger.syslog.log('Saved subtitle file ' + file);
+                    LOGGER.info('Saved subtitle file ' + file);
                     cb();
                 }
             });
@@ -154,19 +155,19 @@ function fetchSubtitles(id, lang, name, vid, file, cb) {
 function clearOldSubtitles() {
     fs.readdir(subtitleDir, function (err, files) {
         if (err) {
-            Logger.errlog.log(err.stack);
+            LOGGER.error(err.stack);
             return;
         }
 
         files.forEach(function (file) {
             fs.stat(path.join(subtitleDir, file), function (err, stats) {
                 if (err) {
-                    Logger.errlog.log(err.stack);
+                    LOGGER.error(err.stack);
                     return;
                 }
 
                 if (stats.mtime.getTime() < Date.now() - ONE_DAY) {
-                    Logger.syslog.log('Deleting old subtitle file: ' + file);
+                    LOGGER.info('Deleting old subtitle file: ' + file);
                     fs.unlink(path.join(subtitleDir, file));
                 }
             });

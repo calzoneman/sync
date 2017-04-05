@@ -6,9 +6,11 @@ var InfoGetter = require("../get-info");
 var Config = require("../config");
 var Flags = require("../flags");
 var db = require("../database");
-var Logger = require("../logger");
 var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('playlist');
 
 const MAX_ITEMS = Config.get("playlist.max-items");
 // Limit requestPlaylist to once per 60 seconds
@@ -928,7 +930,7 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         const limit = this.channel.modules.options.get("playlist_max_duration_per_user");
         const totalDuration = usersItems.map(item => item.media.seconds).reduce((a, b) => a + b, 0) + media.seconds;
         if (isNaN(totalDuration)) {
-            Logger.errlog.log("playlist_max_duration_per_user check calculated NaN: " + require('util').inspect(usersItems));
+            LOGGER.error("playlist_max_duration_per_user check calculated NaN: " + require('util').inspect(usersItems));
         } else if (totalDuration >= limit && !this.channel.modules.permissions.canExceedMaxDurationPerUser(user)) {
             return qfail("Channel limit exceeded: maximum total playlist time per user");
         }
@@ -1356,9 +1358,9 @@ PlaylistModule.prototype.handleQueuePlaylist = function (user, data) {
                 self._addItem(m, qdata, user);
             });
         } catch (e) {
-            Logger.errlog.log("Loading user playlist failed!");
-            Logger.errlog.log("PL: " + user.getName() + "-" + data.name);
-            Logger.errlog.log(e.stack);
+            LOGGER.error("Loading user playlist failed!");
+            LOGGER.error("PL: " + user.getName() + "-" + data.name);
+            LOGGER.error(e.stack);
             user.socket.emit("queueFail", {
                 msg: "Internal error occurred when loading playlist.",
                 link: null

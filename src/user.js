@@ -1,13 +1,15 @@
-var Logger = require("./logger");
 var Server = require("./server");
 var util = require("./utilities");
 var db = require("./database");
-var InfoGetter = require("./get-info");
 var Config = require("./config");
 var ACP = require("./acp");
 var Account = require("./account");
 var Flags = require("./flags");
 import { EventEmitter } from 'events';
+import { LoggerFactory } from '@calzoneman/jsli';
+import Logger from './logger';
+
+const LOGGER = LoggerFactory.getLogger('user');
 
 function User(socket) {
     var self = this;
@@ -314,7 +316,7 @@ User.prototype.login = function (name, pw) {
             name: user.name
         });
         db.recordVisit(self.realip, self.getName());
-        Logger.syslog.log(self.realip + " logged in as " + user.name);
+        LOGGER.info(self.realip + " logged in as " + user.name);
         self.setFlag(Flags.U_LOGGED_IN);
         self.clearFlag(Flags.U_LOGGING_IN);
         self.emit("login", self.account);
@@ -392,7 +394,7 @@ User.prototype.guestLogin = function (name) {
             guest: true
         });
         db.recordVisit(self.realip, self.getName());
-        Logger.syslog.log(self.realip + " signed in as " + name);
+        LOGGER.info(self.realip + " signed in as " + name);
         self.setFlag(Flags.U_LOGGED_IN);
         self.emit("login", self.account);
     });
@@ -421,7 +423,7 @@ User.prototype.getFirstSeenTime = function getFirstSeenTime() {
     } else if (this.socket.ipSessionFirstSeen) {
         return this.socket.ipSessionFirstSeen.getTime();
     } else {
-        Logger.errlog.log(`User "${this.getName()}" (IP: ${this.realip}) has neither ` +
+        LOGGER.error(`User "${this.getName()}" (IP: ${this.realip}) has neither ` +
                 "an IP sesion first seen time nor a registered account.");
         return Date.now();
     }

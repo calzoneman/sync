@@ -2,7 +2,9 @@ import Promise from 'bluebird';
 import uuid from 'uuid';
 import { runLuaScript } from 'cytube-common/lib/redis/lualoader';
 import path from 'path';
-import Logger from '../logger';
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('partitionchannelindex');
 
 var SERVER = null;
 const CHANNEL_INDEX = 'publicChannelList';
@@ -16,7 +18,7 @@ class PartitionChannelIndex {
         this.uid = uuid.v4();
         this.cachedList = [];
         this.redisClient.on('error', error => {
-            Logger.errlog.log(`Redis error: ${error}`);
+            LOGGER.error(`Redis error: ${error}`);
         });
 
         process.nextTick(() => {
@@ -34,7 +36,7 @@ class PartitionChannelIndex {
         ]).then(result => {
             this.cachedList = JSON.parse(result);
         }).catch(error => {
-            Logger.errlog.log(`Failed to refresh channel list: ${error.stack}`);
+            LOGGER.error(`Failed to refresh channel list: ${error.stack}`);
         });
     }
 
@@ -54,7 +56,7 @@ class PartitionChannelIndex {
         });
 
         this.redisClient.hsetAsync(CHANNEL_INDEX, this.uid, entry).catch(error => {
-            Logger.errlog.log(`Failed to publish local channel list: ${error.stack}`);
+            LOGGER.error(`Failed to publish local channel list: ${error.stack}`);
         });
     }
 

@@ -5,10 +5,12 @@
     running.
 */
 
-var Logger = require("./logger");
 var Config = require("./config");
 var db = require("./database");
 var Promise = require("bluebird");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('bgtask');
 
 var init = null;
 
@@ -39,9 +41,9 @@ function initAliasCleanup(Server) {
 
     setInterval(function () {
         db.cleanOldAliases(CLEAN_EXPIRE, function (err) {
-            Logger.syslog.log("Cleaned old aliases");
+            LOGGER.info("Cleaned old aliases");
             if (err)
-                Logger.errlog.log(err);
+                LOGGER.error(err);
         });
     }, CLEAN_INTERVAL);
 }
@@ -53,7 +55,7 @@ function initPasswordResetCleanup(Server) {
     setInterval(function () {
         db.cleanOldPasswordResets(function (err) {
             if (err)
-                Logger.errlog.log(err);
+                LOGGER.error(err);
         });
     }, CLEAN_INTERVAL);
 }
@@ -63,28 +65,28 @@ function initChannelDumper(Server) {
                                 * 60000;
     setInterval(function () {
         var wait = CHANNEL_SAVE_INTERVAL / Server.channels.length;
-        Logger.syslog.log(`Saving channels with delay ${wait}`);
+        LOGGER.info(`Saving channels with delay ${wait}`);
         Promise.reduce(Server.channels, (_, chan) => {
             return Promise.delay(wait).then(() => {
                 if (!chan.dead && chan.users && chan.users.length > 0) {
                     return chan.saveState().tap(() => {
-                        Logger.syslog.log(`Saved /r/${chan.name}`);
+                        LOGGER.info(`Saved /r/${chan.name}`);
                     }).catch(err => {
-                        Logger.errlog.log(`Failed to save /r/${chan.name}: ${err.stack}`);
+                        LOGGER.error(`Failed to save /r/${chan.name}: ${err.stack}`);
                     });
                 }
             }).catch(error => {
-                Logger.errlog.log(`Failed to save channel: ${error.stack}`);
+                LOGGER.error(`Failed to save channel: ${error.stack}`);
             });
         }, 0).catch(error => {
-            Logger.errlog.log(`Failed to save channels: ${error.stack}`);
+            LOGGER.error(`Failed to save channels: ${error.stack}`);
         });
     }, CHANNEL_SAVE_INTERVAL);
 }
 
 module.exports = function (Server) {
     if (init === Server) {
-        Logger.errlog.log("WARNING: Attempted to re-init background tasks");
+        LOGGER.warn("Attempted to re-init background tasks");
         return;
     }
 

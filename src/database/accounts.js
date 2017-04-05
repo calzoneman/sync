@@ -2,7 +2,9 @@ var $util = require("../utilities");
 var bcrypt = require("bcrypt");
 var db = require("../database");
 var Config = require("../config");
-var Logger = require("../logger");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('database/accounts');
 
 var registrationLock = {};
 var blackHole = function () { };
@@ -450,7 +452,7 @@ module.exports = {
                     userprof.text = profile.text || "";
                     callback(null, userprof);
                 } catch (e) {
-                    Logger.errlog.log("Corrupt profile: " + rows[0].profile +
+                    LOGGER.error("Corrupt profile: " + rows[0].profile +
                         " (user: " + name + ")");
                     callback(null, userprof);
                 }

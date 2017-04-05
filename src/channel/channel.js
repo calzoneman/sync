@@ -1,8 +1,5 @@
-var Logger = require("../logger");
 var ChannelModule = require("./module");
 var Flags = require("../flags");
-var Account = require("../account");
-var util = require("../utilities");
 var fs = require("graceful-fs");
 var path = require("path");
 var sio = require("socket.io");
@@ -12,6 +9,10 @@ import { ChannelStateSizeError } from '../errors';
 import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import { throttle } from '../util/throttle';
+import Logger from '../logger';
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('channel');
 
 const USERCOUNT_THROTTLE = 10000;
 
@@ -43,7 +44,7 @@ class ReferenceCounter {
                     delete this.references[caller];
                 }
             } else {
-                Logger.errlog.log("ReferenceCounter::unref() called by caller [" +
+                LOGGER.error("ReferenceCounter::unref() called by caller [" +
                         caller + "] but this caller had no active references! " +
                         `(channel: ${this.channelName})`);
             }
@@ -56,7 +57,7 @@ class ReferenceCounter {
     checkRefCount() {
         if (this.refCount === 0) {
             if (Object.keys(this.references).length > 0) {
-                Logger.errlog.log("ReferenceCounter::refCount reached 0 but still had " +
+                LOGGER.error("ReferenceCounter::refCount reached 0 but still had " +
                         "active references: " +
                         JSON.stringify(Object.keys(this.references)) +
                         ` (channel: ${this.channelName})`);
@@ -64,7 +65,7 @@ class ReferenceCounter {
                     this.refCount += this.references[caller];
                 }
             } else if (this.channel.users.length > 0) {
-                Logger.errlog.log("ReferenceCounter::refCount reached 0 but still had " +
+                LOGGER.error("ReferenceCounter::refCount reached 0 but still had " +
                         this.channel.users.length + " active users" +
                         ` (channel: ${this.channelName})`);
                 this.refCount = this.channel.users.length;
@@ -208,7 +209,7 @@ Channel.prototype.loadState = function () {
             try {
                 this.modules[m].load(data);
             } catch (e) {
-                Logger.errlog.log("Failed to load module " + m + " for channel " +
+                LOGGER.error("Failed to load module " + m + " for channel " +
                         this.uniqueName);
             }
         });
@@ -219,7 +220,7 @@ Channel.prototype.loadState = function () {
                 "enforced by this server.  Please contact an administrator " +
                 "for assistance.";
 
-        Logger.errlog.log(err.stack);
+        LOGGER.error(err.stack);
         errorLoad(message, false);
     }).catch(err => {
         if (err.code === 'ENOENT') {
@@ -233,7 +234,7 @@ Channel.prototype.loadState = function () {
                     "disk.  Please contact an administrator for assistance.  " +
                     `The error was: ${err}.`;
 
-            Logger.errlog.log(err.stack);
+            LOGGER.error(err.stack);
             errorLoad(message);
         }
     });
@@ -369,7 +370,7 @@ Channel.prototype.acceptUser = function (user) {
     user.autoAFK();
     user.socket.on("readChanLog", this.handleReadLog.bind(this, user));
 
-    Logger.syslog.log(user.realip + " joined " + this.name);
+    LOGGER.info(user.realip + " joined " + this.name);
     if (user.socket._isUsingTor) {
         if (this.modules.options && this.modules.options.get("torbanned")) {
             user.kick("This channel has banned connections from Tor.");
@@ -420,7 +421,7 @@ Channel.prototype.acceptUser = function (user) {
 
 Channel.prototype.partUser = function (user) {
     if (!this.logger) {
-        Logger.errlog.log("partUser called on dead channel");
+        LOGGER.error("partUser called on dead channel");
         return;
     }
 

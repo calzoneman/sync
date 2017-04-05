@@ -1,10 +1,8 @@
 var http = require("http");
 var https = require("https");
 var cheerio = require('cheerio');
-var Logger = require("./logger.js");
 var Media = require("./media");
 var CustomEmbedFilter = require("./customembed").filter;
-var Server = require("./server");
 var Config = require("./config");
 var ffmpeg = require("./ffmpeg");
 var mediaquery = require("cytube-mediaquery");
@@ -14,6 +12,9 @@ var Vidme = require("cytube-mediaquery/lib/provider/vidme");
 var Streamable = require("cytube-mediaquery/lib/provider/streamable");
 var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
+import { LoggerFactory } from '@calzoneman/jsli';
+
+const LOGGER = LoggerFactory.getLogger('get-info');
 
 /*
  * Preference map of quality => youtube formats.
@@ -43,7 +44,7 @@ const CONTENT_TYPES = {
 var urlRetrieve = function (transport, options, callback) {
     var req = transport.request(options, function (res) {
         res.on("error", function (err) {
-            Logger.errlog.log("HTTP response " + options.host + options.path + " failed: "+
+            LOGGER.error("HTTP response " + options.host + options.path + " failed: "+
                 err);
             callback(503, "");
         });
@@ -59,7 +60,7 @@ var urlRetrieve = function (transport, options, callback) {
     });
 
     req.on("error", function (err) {
-        Logger.errlog.log("HTTP request " + options.host + options.path + " failed: " +
+        LOGGER.error("HTTP request " + options.host + options.path + " failed: " +
             err);
         callback(503, "");
     });
@@ -512,7 +513,7 @@ var Getters = {
             if (/invalid embed/i.test(e.message)) {
                 return callback(e.message);
             } else {
-                Logger.errlog.log(e.stack);
+                LOGGER.error(e.stack);
                 return callback("Unknown error processing embed");
             }
         }
