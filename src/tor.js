@@ -48,8 +48,12 @@ function getTorIPs(cb) {
     retrieveIPs(function (err, ips) {
         if (!err) {
             cb(false, ips);
-            fs.writeFile(path.join(__dirname, "..", "torlist"),
-                         ips.join("\n"));
+            const destination = path.join(__dirname, "..", "torlist");
+            fs.writeFile(destination,
+                         ips.join("\n"),
+                         error => {
+                LOGGER.error("Failed to write to %s: %s", destination, error.stack);
+            });
             return;
         }
 
