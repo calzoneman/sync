@@ -215,31 +215,31 @@
     root.formatLink = function (id, type) {
         switch (type) {
             case "yt":
-                return "http://youtu.be/" + id;
+                return "https://youtu.be/" + id;
             case "vi":
-                return "http://vimeo.com/" + id;
+                return "https://vimeo.com/" + id;
             case "dm":
-                return "http://dailymotion.com/video/" + id;
+                return "https://dailymotion.com/video/" + id;
             case "vm":
                 return "https://vid.me/" + id;
             case "sc":
                 return id;
             case "li":
-                return "http://livestream.com/" + id;
+                return "https://livestream.com/" + id;
             case "tw":
-                return "http://twitch.tv/" + id;
+                return "https://twitch.tv/" + id;
             case "rt":
                 return id;
             case "im":
-                return "http://imgur.com/a/" + id;
+                return "https://imgur.com/a/" + id;
             case "us":
-                return "http://ustream.tv/" + id;
+                return "https://ustream.tv/" + id;
             case "gd":
                 return "https://docs.google.com/file/d/" + id;
             case "fi":
                 return id;
             case "hb":
-                return "http://hitbox.tv/" + id;
+                return "https://hitbox.tv/" + id;
             case "hl":
                 return id;
             case "sb":

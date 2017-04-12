@@ -25,31 +25,31 @@ function makeAlert(title, text, klass, textOnly) {
 function formatURL(data) {
     switch(data.type) {
         case "yt":
-            return "http://youtube.com/watch?v=" + data.id;
+            return "https://youtube.com/watch?v=" + data.id;
         case "vi":
-            return "http://vimeo.com/" + data.id;
+            return "https://vimeo.com/" + data.id;
         case "dm":
-            return "http://dailymotion.com/video/" + data.id;
+            return "https://dailymotion.com/video/" + data.id;
         case "vm":
             return "https://vid.me/" + data.id;
         case "sc":
             return data.id;
         case "li":
-            return "http://livestream.com/" + data.id;
+            return "https://livestream.com/" + data.id;
         case "tw":
-            return "http://twitch.tv/" + data.id;
+            return "https://twitch.tv/" + data.id;
         case "rt":
             return data.id;
         case "im":
-            return "http://imgur.com/a/" + data.id;
+            return "https://imgur.com/a/" + data.id;
         case "us":
-            return "http://ustream.tv/" + data.id;
+            return "https://ustream.tv/" + data.id;
         case "gd":
             return "https://docs.google.com/file/d/" + data.id;
         case "fi":
             return data.id;
         case "hb":
-            return "http://hitbox.tv/" + data.id;
+            return "https://hitbox.tv/" + data.id;
         case "hl":
             return data.id;
         case "sb":
