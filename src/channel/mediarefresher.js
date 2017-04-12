@@ -29,12 +29,6 @@ MediaRefresherModule.prototype.onPreMediaChange = function (data, cb) {
                 pl._refreshing = false;
                 cb(null, ChannelModule.PASSTHROUGH);
             });
-        case "gp":
-            pl._refreshing = true;
-            return this.initGooglePlus(data, function () {
-                pl._refreshing = false;
-                cb(null, ChannelModule.PASSTHROUGH);
-            });
         case "vi":
             pl._refreshing = true;
             return this.initVimeo(data, function () {
@@ -165,65 +159,6 @@ MediaRefresherModule.prototype.refreshGoogleDocs = function (media, cb) {
             media.id);
         media.meta = data.meta;
         self.channel.refCounter.unref("MediaRefresherModule::refreshGoogleDocs");
-        if (cb) cb();
-    });
-};
-
-MediaRefresherModule.prototype.initGooglePlus = function (media, cb) {
-    var self = this;
-
-    if (self.dead || self.channel.dead) {
-        self.unload();
-        return;
-    }
-
-    self.channel.refCounter.ref("MediaRefresherModule::initGooglePlus");
-    InfoGetter.getMedia(media.id, "gp", function (err, data) {
-        if (self.dead || self.channel.dead) {
-            return;
-        }
-
-        if (typeof err === "string") {
-            err = err.replace(/Forbidden/, "Access Denied");
-        }
-
-        switch (err) {
-            case "Access Denied":
-            case "Not Found":
-            case "Internal Server Error":
-            case "Service Unavailable":
-            case "The video is still being processed":
-            case "A processing error has occured":
-            case "The video has been processed but is not yet accessible":
-            case ("Unable to retreive video information.  Check that the video exists " +
-                    "and is shared publicly"):
-                self.channel.logger.log("[mediarefresher] Google+ refresh failed: " +
-                    err);
-                self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
-                if (cb) cb();
-                return;
-            default:
-                if (err) {
-                    self.channel.logger.log("[mediarefresher] Google+ refresh failed: " +
-                        err);
-                    LOGGER.error("Google+ refresh failed for ID " + media.id +
-                        ": " + err);
-                    self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
-                    if (cb) cb();
-                    return;
-                }
-        }
-
-        if (media !== self._media) {
-            self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
-            if (cb) cb();
-            return;
-        }
-
-        self.channel.logger.log("[mediarefresher] Refreshed Google+ video with ID " +
-            media.id);
-        media.meta = data.meta;
-        self.channel.refCounter.unref("MediaRefresherModule::initGooglePlus");
         if (cb) cb();
     });
 };

@@ -40,8 +40,6 @@ function formatURL(data) {
             return "http://twitch.tv/" + data.id;
         case "rt":
             return data.id;
-        case "jw":
-            return data.id;
         case "im":
             return "http://imgur.com/a/" + data.id;
         case "us":
@@ -1257,13 +1255,6 @@ function parseMediaLink(url) {
     url = url.trim();
     url = url.replace("feature=player_embedded&", "");
 
-    if(url.indexOf("jw:") == 0) {
-        return {
-            id: url.substring(3),
-            type: "fi"
-        };
-    }
-
     if(url.indexOf("rtmp://") == 0) {
         return {
             id: url,
@@ -1376,13 +1367,6 @@ function parseMediaLink(url) {
         };
     }
 
-    if ((m = url.match(/plus\.google\.com\/(?:u\/\d+\/)?photos\/(\d+)\/albums\/(\d+)\/(\d+)/))) {
-        return {
-            id: m[1] + "_" + m[2] + "_" + m[3],
-            type: "gp"
-        };
-    }
-
     if((m = url.match(/vid\.me\/([\w-]+)/))) {
         return {
             id: m[1],
@@ -1405,13 +1389,6 @@ function parseMediaLink(url) {
     }
 
     /*  Shorthand URIs  */
-    // To catch Google Plus by ID alone
-    if ((m = url.match(/^(?:gp:)?(\d{21}_\d{19}_\d{19})/))) {
-        return {
-            id: m[1],
-            type: "gp"
-        };
-    }
     // So we still trim DailyMotion URLs
     if((m = url.match(/^dm:([^\?&#_]+)/))) {
         return {
@@ -2972,43 +2949,6 @@ function vimeoSimulator2014(data) {
     }
 
     data.url = data.meta.direct[q].url;
-    return data;
-}
-
-function googlePlusSimulator2014(data) {
-    /* Google+ Simulator uses the raw file player */
-    data.type = "fi";
-
-    if (!data.meta.gpdirect) {
-        data.url = "";
-        return data;
-    }
-
-    /* Convert youtube-style quality key to vimeo workaround quality */
-    var q = USEROPTS.default_quality || "auto";
-    if (q === "highres") {
-        q = "hd1080";
-    }
-
-    var fallbacks = ["hd1080", "hd720", "large", "medium", "small"];
-    var i = fallbacks.indexOf(q);
-    if (i < 0) {
-        i = fallbacks.indexOf("medium");
-    }
-
-    while (!(q in data.meta.gpdirect) && i < fallbacks.length) {
-        q = fallbacks[i++];
-    }
-
-    if (i === fallbacks.length) {
-        var hasCodecs = Object.keys(data.meta.gpdirect);
-        if (hasCodecs.length > 0) {
-            q = hasCodecs[0];
-        }
-    }
-
-    data.url = data.meta.gpdirect[q].url;
-    data.contentType = data.meta.gpdirect[q].contentType;
     return data;
 }
 

@@ -126,7 +126,7 @@ PlaylistModule.prototype.load = function (data) {
             } catch (e) {
                 return;
             }
-        } else if (item.media.type === "gd" || item.media.type === "gp") {
+        } else if (item.media.type === "gd") {
             delete item.media.meta.gpdirect;
         }
 
@@ -394,11 +394,6 @@ PlaylistModule.prototype.handleQueue = function (user, data) {
     var queueby = user.getName();
 
     var duration = undefined;
-    /**
-     * Duration can optionally be specified for a livestream.
-     * The UI for it only shows up for jw: queues, but it is
-     * accepted for any live media
-     */
     if (util.isLive(type) && typeof data.duration === "number") {
         duration = !isNaN(data.duration) ? data.duration : undefined;
     }
@@ -821,7 +816,7 @@ PlaylistModule.prototype.handleUpdate = function (user, data) {
     }
 
     var media = this.current.media;
-    if (util.isLive(media.type) && media.type !== "jw") {
+    if (util.isLive(media.type)) {
         return;
     }
 

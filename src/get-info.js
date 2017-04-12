@@ -16,31 +16,6 @@ import { LoggerFactory } from '@calzoneman/jsli';
 
 const LOGGER = LoggerFactory.getLogger('get-info');
 
-/*
- * Preference map of quality => youtube formats.
- * see https://en.wikipedia.org/wiki/Youtube#Quality_and_codecs
- *
- * Prefer WebM over MP4, ignore other codecs (e.g. FLV)
- */
-const GOOGLE_PREFERENCE = {
-    "hd1080": [37, 46],
-    "hd720": [22, 45],
-    "large": [59, 44],
-    "medium": [18, 43, 34] // 34 is 360p FLV as a last-ditch
-};
-
-const CONTENT_TYPES = {
-    43: "webm",
-    44: "webm",
-    45: "webm",
-    46: "webm",
-    18: "mp4",
-    22: "mp4",
-    37: "mp4",
-    59: "mp4",
-    34: "flv"
-};
-
 var urlRetrieve = function (transport, options, callback) {
     var req = transport.request(options, function (res) {
         res.on("error", function (err) {
@@ -466,13 +441,6 @@ var Getters = {
         });
     },
 
-    /* JWPlayer */
-    jw: function (id, callback) {
-        var title = "JWPlayer - " + id;
-        var media = new Media(id, title, "--:--", "jw");
-        callback(false, media);
-    },
-
     /* rtmp stream */
     rt: function (id, callback) {
         var title = "Livestream";
@@ -525,21 +493,6 @@ var Getters = {
         GoogleDrive.setHTML5HackEnabled(Config.get("google-drive.html5-hack-enabled"));
         var data = {
             type: "googledrive",
-            kind: "single",
-            id: id
-        };
-
-        mediaquery.lookup(data).then(function (video) {
-            callback(null, convertMedia(video));
-        }).catch(function (err) {
-            callback(err.message || err);
-        });
-    },
-
-    /* Google+ videos */
-    gp: function (id, callback) {
-        var data = {
-            type: "google+",
             kind: "single",
             id: id
         };

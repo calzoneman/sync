@@ -230,8 +230,6 @@
                 return "http://twitch.tv/" + id;
             case "rt":
                 return id;
-            case "jw":
-                return id;
             case "im":
                 return "http://imgur.com/a/" + id;
             case "us":
@@ -259,7 +257,6 @@
             case "rt":
             case "cu":
             case "im":
-            case "jw":
             case "hb":
             case "hl":
                 return true;
