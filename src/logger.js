@@ -71,7 +71,7 @@ class LegacyLogger extends JsliLogger {
 
     log(level: LogLevel, ...args: any[]) {
         var message: string = "[" + level.name + "] " + this.loggerName + ": ";
-        message += sprintf(args[0], ...args.slice(1));
+        message += sprintf(String(args[0]), ...args.slice(1));
         if (level.shouldLogAtLevel(LogLevel.ERROR)) {
             errlog.log(message);
         } else {
