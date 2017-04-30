@@ -209,7 +209,7 @@ module.exports.cleanOldPasswordResets = function (callback) {
         callback = blackHole;
     }
 
-    var query = "DELETE FROM aliases WHERE time < ?";
+    var query = "DELETE FROM password_reset WHERE expire < ?";
     module.exports.query(query, [Date.now() - 24*60*60*1000], callback);
 };
 
