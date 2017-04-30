@@ -52,7 +52,9 @@ function getTorIPs(cb) {
             fs.writeFile(destination,
                          ips.join("\n"),
                          error => {
-                LOGGER.error("Failed to write to %s: %s", destination, error);
+                if (error) {
+                    LOGGER.error("Failed to write to %s: %s", destination, error);
+                }
             });
             return;
         }
