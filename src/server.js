@@ -107,14 +107,10 @@ var Server = function () {
     // http/https/sio server init -----------------------------------------
     var key = "", cert = "", ca = undefined;
     if (Config.get("https.enabled")) {
-        key = fs.readFileSync(path.resolve(__dirname, "..",
-                                               Config.get("https.keyfile")));
-        cert = fs.readFileSync(path.resolve(__dirname, "..",
-                                                Config.get("https.certfile")));
-        if (Config.get("https.cafile")) {
-            ca = fs.readFileSync(path.resolve(__dirname, "..",
-                                              Config.get("https.cafile")));
-        }
+        const certData = self.loadCertificateData();
+        key = certData.key;
+        cert = certData.cert;
+        ca = certData.ca;
     }
 
     var opts = {
@@ -165,6 +161,40 @@ var Server = function () {
 };
 
 Server.prototype = Object.create(EventEmitter.prototype);
+
+Server.prototype.loadCertificateData = function loadCertificateData() {
+    const data = {
+        key: fs.readFileSync(path.resolve(__dirname, "..",
+                                          Config.get("https.keyfile"))),
+        cert: fs.readFileSync(path.resolve(__dirname, "..",
+                                           Config.get("https.certfile")))
+    };
+
+    if (Config.get("https.cafile")) {
+        data.ca = fs.readFileSync(path.resolve(__dirname, "..",
+                                               Config.get("https.cafile")));
+    }
+
+    return data;
+};
+
+Server.prototype.reloadCertificateData = function reloadCertificateData() {
+    const certData = this.loadCertificateData();
+    Object.keys(this.servers).forEach(key => {
+        const server = this.servers[key];
+        // TODO: Replace with actual node API
+        // once https://github.com/nodejs/node/issues/4464 is implemented.
+        if (server._sharedCreds) {
+            try {
+                server._sharedCreds.context.setCert(certData.cert);
+                server._sharedCreds.context.setKey(certData.key, Config.get("https.passphrase"));
+                LOGGER.info('Reloaded certificate data for %s', key);
+            } catch (error) {
+                LOGGER.error('Failed to reload certificate data for %s: %s', key, error.stack);
+            }
+        }
+    });
+};
 
 Server.prototype.getHTTPIP = function (req) {
     var ip = req.ip;

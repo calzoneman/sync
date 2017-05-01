@@ -117,6 +117,8 @@ function handleLine(line) {
             });
             Logger.eventlog.log("[acp] " + "SYSTEM" + " forced unload of " + name);
         }
+    } else if (line.indexOf("/reloadcert") === 0) {
+        sv.reloadCertificateData();
     }
 }
 
