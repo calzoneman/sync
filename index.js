@@ -130,6 +130,11 @@ if (Config.get("service-socket.enabled")) {
     server.init(handleLine, Config.get("service-socket.socket"));
 }
 
+// Hi I'm Mr POSIX! Look at me!
+process.on('SIGUSR2', () => {
+    sv.reloadCertificateData();
+});
+
 require("bluebird");
 process.on("unhandledRejection", function (reason, promise) {
     Logger.errlog.log("[SEVERE] Unhandled rejection: " + reason.stack);
