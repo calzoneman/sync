@@ -14,6 +14,7 @@ const COMPLETIONS = [
     "/gc",
     "/globalban",
     "/reload",
+    "/reloadcert",
     "/reload-partitions",
     "/switch",
     "/unglobalban",
