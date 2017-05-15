@@ -1367,7 +1367,8 @@ function parseMediaLink(url) {
         };
     }
 
-    if((m = url.match(/vid\.me\/([\w-]+)/))) {
+    if ((m = url.match(/vid\.me\/embedded\/([\w-]+)/)) ||
+        (m = url.match(/vid\.me\/([\w-]+)/))) {
         return {
             id: m[1],
             type: "vm"
