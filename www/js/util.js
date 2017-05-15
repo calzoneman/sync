@@ -43,7 +43,7 @@ function formatURL(data) {
         case "im":
             return "https://imgur.com/a/" + data.id;
         case "us":
-            return "https://ustream.tv/" + data.id;
+            return "https://ustream.tv/channel/" + data.id;
         case "gd":
             return "https://docs.google.com/file/d/" + data.id;
         case "fi":

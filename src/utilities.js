@@ -233,7 +233,7 @@
             case "im":
                 return "https://imgur.com/a/" + id;
             case "us":
-                return "https://ustream.tv/" + id;
+                return "https://ustream.tv/channel/" + id;
             case "gd":
                 return "https://docs.google.com/file/d/" + id;
             case "fi":
