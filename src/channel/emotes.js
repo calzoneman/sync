@@ -20,6 +20,16 @@ EmoteList.prototype = {
         this.emotes = Array.prototype.slice.call(emotes);
     },
 
+    renameEmote: function (emote) {
+        for (var i = 0; i < this.emotes.length; i++) {
+            if (this.emotes[i].name === emote.old) {
+                this.emotes[i] = emote;
+                delete this.emotes[i].old;
+                break;
+            }
+        }
+    },
+
     updateEmote: function (emote) {
         var found = false;
         for (var i = 0; i < this.emotes.length; i++) {
@@ -118,6 +128,7 @@ EmoteModule.prototype.packInfo = function (data, isAdmin) {
 };
 
 EmoteModule.prototype.onUserPostJoin = function (user) {
+    user.socket.on("renameEmote", this.handleRenameEmote.bind(this, user));
     user.socket.on("updateEmote", this.handleUpdateEmote.bind(this, user));
     user.socket.on("importEmotes", this.handleImportEmotes.bind(this, user));
     user.socket.on("moveEmote", this.handleMoveEmote.bind(this, user));
@@ -131,6 +142,38 @@ EmoteModule.prototype.sendEmotes = function (users) {
     users.forEach(function (u) {
         u.socket.emit("emoteList", f);
     });
+};
+
+EmoteModule.prototype.handleRenameEmote = function (user, data) {
+    if (typeof data !== "object") {
+        return;
+    }
+
+    if (!this.channel.modules.permissions.canEditEmotes(user)) {
+        return;
+    }
+
+    var f = validateEmote(data);
+    if (!f) {
+        var message = "Unable to rename emote '" + JSON.stringify(data) + "'.  " +
+                "Please contact an administrator for assistance.";
+        if (!data.image || !data.name) {
+            message = "Emote names and images must not be blank.";
+        }
+
+        user.socket.emit("errorMsg", {
+            msg: message,
+            alert: true
+        });
+        return;
+    }
+
+    var chan = this.channel;
+    chan.broadcastAll("renameEmote", f);
+    chan.logger.log(`[mod] ${user.getName()} renamed emote: ${f.old} -> ${f.name}`);
+
+    // Doing this after the broadcast because this function deletes the "old" prop
+    this.emotes.renameEmote(f);
 };
 
 EmoteModule.prototype.handleUpdateEmote = function (user, data) {

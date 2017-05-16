@@ -1019,6 +1019,54 @@ Callbacks = {
         CSEMOTELIST.handleChange();
     },
 
+    renameEmote: function (data) {
+        var badBefore = /\s/g.test(data.old);
+        var badAfter = /\s/g.test(data.name);
+        var oldName = data.old;
+        delete data.old;
+
+        data.regex = new RegExp(data.source, "gi");
+
+        for (var i = 0; i < CHANNEL.emotes.length; i++) {
+            if (CHANNEL.emotes[i].name === oldName) {
+                CHANNEL.emotes[i] = data;
+                break;
+            }
+        }
+
+        // Now bad
+        if(badAfter){
+            // But wasn't bad before: Add it to bad list
+            if(!badBefore){
+                CHANNEL.badEmotes.push(data);
+            }
+            // Was bad before too: Update
+            else {
+                for (var i = 0; i < CHANNEL.badEmotes.length; i++) {
+                    if (CHANNEL.badEmotes[i].name === oldName) {
+                        CHANNEL.badEmotes[i] = data;
+                        break;
+                    }
+                }
+            }
+        }
+        // Not bad now
+        else {
+            // But was bad before: Drop from list
+            if(badBefore){
+                for (var i = 0; i < CHANNEL.badEmotes.length; i++) {
+                    if (CHANNEL.badEmotes[i].name === oldName) {
+                        CHANNEL.badEmotes.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        EMOTELIST.handleChange();
+        CSEMOTELIST.handleChange();
+    },
+
     removeEmote: function (data) {
         var found = -1;
         for (var i = 0; i < CHANNEL.emotes.length; i++) {
