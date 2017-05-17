@@ -1039,6 +1039,7 @@ Callbacks = {
             // But wasn't bad before: Add it to bad list
             if(!badBefore){
                 CHANNEL.badEmotes.push(data);
+                delete CHANNEL.emoteMap[oldName];
             }
             // Was bad before too: Update
             else {
@@ -1060,7 +1061,10 @@ Callbacks = {
                         break;
                     }
                 }
+            } else {
+                delete CHANNEL.emoteMap[oldName];
             }
+            CHANNEL.emoteMap[data.name] = data;
         }
 
         EMOTELIST.handleChange();

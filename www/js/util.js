@@ -3146,7 +3146,7 @@ CSEmoteList.prototype.loadPage = function (page) {
                     if(val === emote.name){ return }
 
                     // Emote name already exists
-                    if( CHANNEL.emotes.filter((emote)=>{ return emote.name === val }).length ){
+                    if( CHANNEL.emotes.filter(function(emote){ return emote.name === val }).length ){
                         /*
                          * Since we are already in a modal
                          *  and Bootstrap doesn't have supermodals

@@ -168,12 +168,11 @@ EmoteModule.prototype.handleRenameEmote = function (user, data) {
         return;
     }
 
+    this.emotes.renameEmote(Object.assign({}, f));
+
     var chan = this.channel;
     chan.broadcastAll("renameEmote", f);
     chan.logger.log(`[mod] ${user.getName()} renamed emote: ${f.old} -> ${f.name}`);
-
-    // Doing this after the broadcast because this function deletes the "old" prop
-    this.emotes.renameEmote(f);
 };
 
 EmoteModule.prototype.handleUpdateEmote = function (user, data) {
