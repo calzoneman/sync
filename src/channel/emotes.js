@@ -20,14 +20,28 @@ EmoteList.prototype = {
         this.emotes = Array.prototype.slice.call(emotes);
     },
 
+    emoteExists: function (emote){
+        if(this.emotes.filter((item)=>{ return item.name === emote.name }).length){
+            return true;
+        }
+        return false;
+    },
+
     renameEmote: function (emote) {
+        var found = false;
         for (var i = 0; i < this.emotes.length; i++) {
             if (this.emotes[i].name === emote.old) {
+                found = true;
                 this.emotes[i] = emote;
                 delete this.emotes[i].old;
                 break;
             }
         }
+
+        if(found){
+            return true;
+        }
+        return false;
     },
 
     updateEmote: function (emote) {
@@ -149,16 +163,28 @@ EmoteModule.prototype.handleRenameEmote = function (user, data) {
         return;
     }
 
+    /*
+    **  This shouldn't be able to happen,
+    **  but we have idiots that like to send handcrafted frames to fuck with shit
+    */
+    if (typeof data.old !== "string"){
+        return;
+    }
+
     if (!this.channel.modules.permissions.canEditEmotes(user)) {
         return;
     }
 
+    var e = this.emotes.emoteExists(data);
     var f = validateEmote(data);
-    if (!f) {
+    if (!f || e) {
         var message = "Unable to rename emote '" + JSON.stringify(data) + "'.  " +
                 "Please contact an administrator for assistance.";
         if (!data.image || !data.name) {
             message = "Emote names and images must not be blank.";
+        }
+        if (e) {
+            message = "Emote already exists.";
         }
 
         user.socket.emit("errorMsg", {
@@ -168,7 +194,9 @@ EmoteModule.prototype.handleRenameEmote = function (user, data) {
         return;
     }
 
-    this.emotes.renameEmote(Object.assign({}, f));
+    // See comment above
+    var success = this.emotes.renameEmote(Object.assign({}, f));
+    if(!success){ return; }
 
     var chan = this.channel;
     chan.broadcastAll("renameEmote", f);
