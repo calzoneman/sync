@@ -3103,7 +3103,7 @@ CSEmoteList.prototype.loadPage = function (page) {
         var row = document.createElement("tr");
         tbody.appendChild(row);
 
-        (function (emote) {
+        (function (emote, row) {
             // Add delete button
             var tdDelete = document.createElement("td");
             var btnDelete = document.createElement("button");
@@ -3121,12 +3121,66 @@ CSEmoteList.prototype.loadPage = function (page) {
             };
 
             // Add emote name
-            // TODO: editable
             var tdName = document.createElement("td");
             var nameDisplay = document.createElement("code");
             nameDisplay.textContent = emote.name;
             tdName.appendChild(nameDisplay);
             row.appendChild(tdName);
+
+            var $nameDisplay = $(nameDisplay);
+            $nameDisplay.click(function (clickEvent) {
+                $nameDisplay.detach();
+
+                var editInput = document.createElement("input");
+                editInput.className = "form-control";
+                editInput.type = "text";
+                editInput.value = emote.name;
+                tdName.appendChild(editInput);
+                editInput.focus();
+
+                function save() {
+                    var val = editInput.value;
+                    tdName.removeChild(editInput);
+                    tdName.appendChild(nameDisplay);
+
+                    // Nothing was changed
+                    if(val === emote.name){ return }
+
+                    // Emote name already exists
+                    if( CHANNEL.emotes.filter(function(emote){ return emote.name === val }).length ){
+                        /*
+                         * Since we are already in a modal
+                         *  and Bootstrap doesn't have supermodals
+                         *   we will make a self destructing warning
+                         *    as a row in the table
+                         */
+                        var wrow = document.createElement("tr");
+                        var tdBlankDel = document.createElement("td"); wrow.appendChild(tdBlankDel);
+                        var tdWarnMess = document.createElement("td"); wrow.appendChild(tdWarnMess);
+                        var warnSpan = document.createElement("p"); tdWarnMess.appendChild(warnSpan);
+                        warnSpan.className = "text-warning";
+                        warnSpan.textContent = "An emote of that name already exists.";
+                        tdWarnMess.colSpan = "2";
+
+                        row.insertAdjacentElement("beforebegin", wrow)
+                        $(wrow).delay(2500).fadeOut('slow', function(){ $(this).remove() });
+
+                        return;
+                    }
+                    socket.emit("renameEmote", {
+                        old: emote.name,
+                        image: emote.image,
+                        name: val
+                    });
+                }
+
+                editInput.onblur = save;
+                editInput.onkeyup = function (event) {
+                    if (event.keyCode === 13) {
+                        save();
+                    }
+                };
+            });
 
             // Add emote image
             var tdImage = document.createElement("td");
@@ -3173,7 +3227,7 @@ CSEmoteList.prototype.loadPage = function (page) {
                     }
                 };
             });
-        })(this.emotes[i]);
+        })(this.emotes[i], row);
     }
 };
 
