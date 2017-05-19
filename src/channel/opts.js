@@ -173,7 +173,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     }
 
     if ("playlist_max_duration_per_user" in data) {
-        const rawMax = data.playlist_max_duration_per_user;
+        const rawMax = data.playlist_max_duration_per_user+"";
         if (typeof rawMax !== "string" || !rawMax.match(/^(\d+:)*\d+$/)) {
             user.socket.emit("validationError", {
                 target: "#cs-playlist_max_duration_per_user",
