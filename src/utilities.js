@@ -239,7 +239,7 @@
             case "fi":
                 return id;
             case "hb":
-                return "https://hitbox.tv/" + id;
+                return "https://www.smashcast.tv/" + id;
             case "hl":
                 return id;
             case "sb":

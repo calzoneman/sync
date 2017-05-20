@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HLSPlayer, HitboxPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HLSPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SmashcastPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -1234,25 +1234,25 @@
 
   })(VideoJSPlayer);
 
-  window.HitboxPlayer = HitboxPlayer = (function(superClass) {
-    extend(HitboxPlayer, superClass);
+  window.SmashcastPlayer = SmashcastPlayer = (function(superClass) {
+    extend(SmashcastPlayer, superClass);
 
-    function HitboxPlayer(data) {
-      if (!(this instanceof HitboxPlayer)) {
-        return new HitboxPlayer(data);
+    function SmashcastPlayer(data) {
+      if (!(this instanceof SmashcastPlayer)) {
+        return new SmashcastPlayer(data);
       }
       this.load(data);
     }
 
-    HitboxPlayer.prototype.load = function(data) {
+    SmashcastPlayer.prototype.load = function(data) {
       data.meta.embed = {
-        src: "https://www.hitbox.tv/embed/" + data.id,
+        src: "https://www.smashcast.tv/embed/" + data.id,
         tag: 'iframe'
       };
-      return HitboxPlayer.__super__.load.call(this, data);
+      return SmashcastPlayer.__super__.load.call(this, data);
     };
 
-    return HitboxPlayer;
+    return SmashcastPlayer;
 
   })(EmbedPlayer);
 
@@ -1514,7 +1514,7 @@
     tv: TwitchPlayer,
     cu: CustomEmbedPlayer,
     rt: RTMPPlayer,
-    hb: HitboxPlayer,
+    hb: SmashcastPlayer,
     us: UstreamPlayer,
     im: ImgurPlayer,
     vm: VideoJSPlayer,

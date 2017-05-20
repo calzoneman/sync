@@ -16,7 +16,7 @@ var order = [
     'livestream.com.coffee',
     'custom-embed.coffee',
     'rtmp.coffee',
-    'hitbox.coffee',
+    'smashcast.coffee',
     'ustream.coffee',
     'imgur.coffee',
     'gdrive-youtube.coffee',

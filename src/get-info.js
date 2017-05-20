@@ -519,7 +519,7 @@ var Getters = {
         });
     },
 
-    /* hitbox.tv */
+    /* hitbox.tv / smashcast.tv */
     hb: function (id, callback) {
         var m = id.match(/([\w-]+)/);
         if (m) {
@@ -528,7 +528,7 @@ var Getters = {
             callback("Invalid ID", null);
             return;
         }
-        var title = "Hitbox.tv - " + id;
+        var title = "Smashcast - " + id;
         var media = new Media(id, title, "--:--", "hb");
         callback(false, media);
     },

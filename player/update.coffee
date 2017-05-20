@@ -12,7 +12,7 @@ TYPE_MAP =
     tv: TwitchPlayer
     cu: CustomEmbedPlayer
     rt: RTMPPlayer
-    hb: HitboxPlayer
+    hb: SmashcastPlayer
     us: UstreamPlayer
     im: ImgurPlayer
     vm: VideoJSPlayer

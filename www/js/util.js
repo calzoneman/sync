@@ -49,7 +49,7 @@ function formatURL(data) {
         case "fi":
             return data.id;
         case "hb":
-            return "https://hitbox.tv/" + data.id;
+            return "https://www.smashcast.tv/" + data.id;
         case "hl":
             return data.id;
         case "sb":
@@ -1324,7 +1324,7 @@ function parseMediaLink(url) {
         };
     }
 
-    if ((m = url.match(/hitbox\.tv\/([^\?&#]+)/))) {
+    if ((m = url.match(/(?:hitbox|smashcast)\.tv\/([^\?&#]+)/))) {
         return {
             id: m[1],
             type: "hb"
