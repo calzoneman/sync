@@ -173,26 +173,14 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     }
 
     if ("playlist_max_duration_per_user" in data) {
-        const rawMax = data.playlist_max_duration_per_user;
-        if (typeof rawMax !== "string" || !rawMax.match(/^(\d+:)*\d+$/)) {
-            user.socket.emit("validationError", {
-                target: "#cs-playlist_max_duration_per_user",
-                message: `Input must be a time in the format HH:MM:SS, not "${rawMax}"`
+        const max = data.playlist_max_duration_per_user;
+        if (typeof max !== "number" || isNaN(max) || max < 0) {
+            user.socket.emit("errorMsg", {
+                msg: `Expected number for playlist_max_duration_per_user, not "${max}"`
             });
         } else {
-            const max = Utilities.parseTime(rawMax);
-            if (isNaN(max) || max < 0) {
-                user.socket.emit("validationError", {
-                    target: "#cs-playlist_max_duration_per_user",
-                    message: `Input must be a time greater than 0 in the format HH:MM:SS, not "${rawMax}"`
-                });
-            } else {
-                this.opts.playlist_max_duration_per_user = max;
-                sendUpdate = true;
-                user.socket.emit("validationPassed", {
-                    target: "#cs-playlist_max_duration_per_user"
-                });
-            }
+            this.opts.playlist_max_duration_per_user = max;
+            sendUpdate = true;
         }
     }
 
