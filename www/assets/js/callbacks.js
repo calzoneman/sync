@@ -362,7 +362,7 @@ Callbacks = {
                     // Apparently when you check a checkbox, its value is changed
                     // before this callback.  When you uncheck it, its value is not
                     // changed before this callback
-                    // [](/amgic)
+                    // [ ](/amgic)
                     var enabled = active.prop("checked");
                     f.active = (f.active == enabled) ? !enabled : enabled;
                     socket.emit("updateFilter", f);
@@ -1024,7 +1024,7 @@ Callbacks = {
         $("#currenttitle").text("Currently Playing: " + data.title);
 
         if(data.type != "sc" && PLAYER.type == "sc")
-            // [](/goddamnitmango)
+            // [ ](/goddamnitmango)
             fixSoundcloudShit();
 
         if(data.type != "jw" && PLAYER.type == "jw") {
@@ -1062,12 +1062,16 @@ Callbacks = {
         if (data.type != PLAYER.type) {
             loadMediaPlayer(data);
         }
-
-        handleMediaUpdate(data);
+        
+        if ($("#videowrap").length != 0) {
+            handleMediaUpdate(data);
+        }
     },
 
     mediaUpdate: function(data) {
-        handleMediaUpdate(data);
+        if ($("#videowrap").length != 0) {
+            handleMediaUpdate(data);
+        }
     },
 
     setPlaylistLocked: function(data) {
