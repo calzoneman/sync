@@ -51,29 +51,16 @@ module.exports = {
     },
 
     /**
-     * Search for a user by name
+     * Search for a user by any field
      */
-    search: function (name, fields, callback) {
-        /* This bit allows it to accept varargs
-           Function can be called as (name, callback) or
-           (name, fields, callback)
-        */
-        if (typeof callback !== "function") {
-            if (typeof fields === "function") {
-                callback = fields;
-                fields = ["name"];
-            } else {
-                return;
-            }
-        }
-
+    search: function (where, like, fields, callback) {
         // Don't allow search to return password hashes
         if (fields.indexOf("password") !== -1) {
             fields.splice(fields.indexOf("password"));
         }
 
-        db.query("SELECT " + fields.join(",") + " FROM `users` WHERE name LIKE ?",
-                 ["%"+name+"%"],
+        db.query(`SELECT ${fields.join(",")} FROM \`users\` WHERE ${where} LIKE ?`,
+                 ["%"+like+"%"],
         function (err, rows) {
             if (err) {
                 callback(err, true);

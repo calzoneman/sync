@@ -91,14 +91,26 @@ function handleGlobalBanDelete(user, data) {
 }
 
 function handleListUsers(user, data) {
-    var name = data.name;
-    if (typeof name !== "string") {
-        name = "";
+    var query = data.query;
+    if (typeof query !== "string") {
+        query = "";
+    }
+
+    var field = data.field;
+    if (typeof field !== "string") {
+        field = "name";
     }
 
     var fields = ["id", "name", "global_rank", "email", "ip", "time"];
 
-    db.users.search(name, fields, function (err, users) {
+    if(!fields.includes(field)){
+        user.socket.emit("errMessage", {
+            msg: `The field "${field}" doesn't exist or isn't searchable.`
+        });
+        return;
+    }
+
+    db.users.search(field, query, fields, function (err, users) {
         if (err) {
             user.socket.emit("errMessage", {
                 msg: err
