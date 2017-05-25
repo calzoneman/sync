@@ -1845,6 +1845,7 @@ function handleWindowResize() {
     } else {
         handleVideoResize();
     }
+    scrollChat();
 }
 
 function handleVideoResize() {
