@@ -135,7 +135,7 @@ socket.on("acp-gbanlist", function (bans) {
 /* User listing */
 (function () {
     var doSearch = function () {
-        if ($("#acp-ulookup-name").val().trim() === "") {
+        if ($("#acp-ulookup-query").val().trim() === "") {
             if (!confirm("You are about to list the entire users table. " +
                          "This table might be very large and take a long " +
                          "time to query.  Continue?")) {
@@ -143,14 +143,16 @@ socket.on("acp-gbanlist", function (bans) {
             }
         }
         socket.emit("acp-list-users", {
-            name: $("#acp-ulookup-name").val()
+            value: $("#acp-ulookup-query").val(),
+            field: $(this).data()["field"]
         });
     };
 
-    $("#acp-ulookup-btn").click(doSearch);
-    $("#acp-ulookup-name").keyup(function (ev) {
+    $("#acp-ulookup-btn-name").click(doSearch);
+    $("#acp-ulookup-btn-email").click(doSearch);
+    $("#acp-ulookup-query").keyup(function (ev) {
         if (ev.keyCode === 13) {
-            doSearch();
+            $("#acp-ulookup-btn-name").click();
         }
     });
 })();
