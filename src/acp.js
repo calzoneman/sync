@@ -91,15 +91,10 @@ function handleGlobalBanDelete(user, data) {
 }
 
 function handleListUsers(user, data) {
-    var query = data.query;
-    if (typeof query !== "string") {
-        query = "";
-    }
-
+    var value = data.value;
     var field = data.field;
-    if (typeof field !== "string") {
-        field = "name";
-    }
+    value = (typeof value !== 'string') ? '' : value;
+    field = (typeof field !== 'string') ? 'name' : field;
 
     var fields = ["id", "name", "global_rank", "email", "ip", "time"];
 
@@ -110,7 +105,7 @@ function handleListUsers(user, data) {
         return;
     }
 
-    db.users.search(field, query, fields, function (err, users) {
+    db.users.search(field, value, fields, function (err, users) {
         if (err) {
             user.socket.emit("errMessage", {
                 msg: err

@@ -143,7 +143,7 @@ socket.on("acp-gbanlist", function (bans) {
             }
         }
         socket.emit("acp-list-users", {
-            query: $("#acp-ulookup-query").val(),
+            value: $("#acp-ulookup-query").val(),
             field: $(this).data()["field"]
         });
     };
