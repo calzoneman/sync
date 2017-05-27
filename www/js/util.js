@@ -54,6 +54,8 @@ function formatURL(data) {
             return data.id;
         case "sb":
             return "https://streamable.com/" + data.id;
+        case "tc":
+            return "https://clips.twitch.tv/" + data.id;
         default:
             return "#";
     }
@@ -1281,6 +1283,13 @@ function parseMediaLink(url) {
         return {
             id: extractQueryParam(m[1], "list"),
             type: "yp"
+        };
+    }
+
+    if ((m = url.match(/clips\.twitch\.tv\/([A-Za-z]+)/))) {
+        return {
+            id: m[1],
+            type: "tc"
         };
     }
 

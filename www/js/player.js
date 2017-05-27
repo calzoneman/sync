@@ -1519,7 +1519,8 @@
     im: ImgurPlayer,
     vm: VideoJSPlayer,
     hl: HLSPlayer,
-    sb: VideoJSPlayer
+    sb: VideoJSPlayer,
+    tc: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {

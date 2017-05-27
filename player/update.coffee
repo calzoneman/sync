@@ -18,6 +18,7 @@ TYPE_MAP =
     vm: VideoJSPlayer
     hl: HLSPlayer
     sb: VideoJSPlayer
+    tc: VideoJSPlayer
 
 window.loadMediaPlayer = (data) ->
     try

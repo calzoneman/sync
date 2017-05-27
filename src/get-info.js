@@ -12,6 +12,7 @@ var Vidme = require("cytube-mediaquery/lib/provider/vidme");
 var Streamable = require("cytube-mediaquery/lib/provider/streamable");
 var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
+var TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
 import { LoggerFactory } from '@calzoneman/jsli';
 
 const LOGGER = LoggerFactory.getLogger('get-info');
@@ -385,6 +386,25 @@ var Getters = {
         TwitchVOD.lookup(id).then(video => {
             const media = new Media(video.id, video.title, video.duration,
                                     "tv", video.meta);
+            process.nextTick(callback, false, media);
+        }).catch(function (err) {
+            callback(err.message || err, null);
+        });
+    },
+
+    /* twitch clip */
+    tc: function (id, callback) {
+        var m = id.match(/^([A-Za-z]+)$/);
+        if (m) {
+            id = m[1];
+        } else {
+            process.nextTick(callback, "Invalid Twitch VOD ID");
+            return;
+        }
+
+        TwitchClip.lookup(id).then(video => {
+            const media = new Media(video.id, video.title, video.duration,
+                                    "tc", video.meta);
             process.nextTick(callback, false, media);
         }).catch(function (err) {
             callback(err.message || err, null);

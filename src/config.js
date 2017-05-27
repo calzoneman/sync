@@ -385,6 +385,8 @@ function preprocessConfig(cfg) {
     if (cfg["twitch-client-id"]) {
         require("cytube-mediaquery/lib/provider/twitch-vod").setClientID(
                 cfg["twitch-client-id"]);
+        require("cytube-mediaquery/lib/provider/twitch-clip").setClientID(
+                cfg["twitch-client-id"]);
     } else {
         LOGGER.warn("No Twitch Client ID set.  Twitch VOD links will " +
             "not work.  See twitch-client-id in config.template.yaml and " +
