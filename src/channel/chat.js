@@ -6,6 +6,7 @@ var util = require("../utilities");
 var Flags = require("../flags");
 var url = require("url");
 var counters = require("../counters");
+import { transformImgTags } from '../camo';
 
 const SHADOW_TAG = "[shadow]";
 const LINK = /(\w+:\/\/(?:[^:\/\[\]\s]+|\[[0-9a-f:]+\])(?::\d+)?(?:\/[^\/\s]*)*)/ig;
@@ -381,7 +382,17 @@ ChatModule.prototype.filterMessage = function (msg) {
         }
     });
 
-    return XSS.sanitizeHTML(result);
+    let settings = {};
+    const camoConfig = Config.getCamoConfig();
+    if (camoConfig.isEnabled()) {
+        settings = {
+            transformTags: {
+                img: transformImgTags.bind(null, camoConfig)
+            }
+        };
+    }
+
+    return XSS.sanitizeHTML(result, settings);
 };
 
 ChatModule.prototype.sendModMessage = function (msg, minrank) {

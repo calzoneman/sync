@@ -5,6 +5,8 @@ var net = require("net");
 var YAML = require("yamljs");
 
 import { LoggerFactory } from '@calzoneman/jsli';
+import { loadFromToml } from 'cytube-common/lib/configuration/configloader';
+import { CamoConfig } from './configuration/camoconfig';
 
 const LOGGER = LoggerFactory.getLogger('config');
 
@@ -146,6 +148,7 @@ function merge(obj, def, path) {
 }
 
 var cfg = defaults;
+let camoConfig = new CamoConfig();
 
 /**
  * Initializes the configuration from the given YAML file
@@ -186,7 +189,30 @@ exports.load = function (file) {
 
     preprocessConfig(cfg);
     LOGGER.info("Loaded configuration from " + file);
+
+    loadCamoConfig();
 };
+
+function loadCamoConfig() {
+    try {
+        camoConfig = loadFromToml(CamoConfig,
+                                  path.resolve(__dirname, '..', 'conf', 'camo.toml'));
+        const enabled = camoConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
+        LOGGER.info(`Loaded camo configuration from conf/camo.toml.  Camo is ${enabled}`);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            LOGGER.info('No camo configuration found, chat images will not be proxied.');
+            camoConfig = new CamoConfig();
+            return;
+        }
+
+        if (typeof error.line !== 'undefined') {
+            LOGGER.error(`Error in conf/camo.toml: ${error} (line ${error.line})`);
+        } else {
+            LOGGER.error(`Error loading conf/camo.toml: ${error.stack}`);
+        }
+    }
+}
 
 // I'm sorry
 function preprocessConfig(cfg) {
@@ -446,4 +472,8 @@ exports.set = function (key, value) {
     }
 
     obj[current] = value;
+};
+
+exports.getCamoConfig = function getCamoConfig() {
+    return camoConfig;
 };
