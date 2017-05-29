@@ -363,29 +363,15 @@ function populateUsernameDedupeColumn(cb) {
         }
 
         Promise.map(rows, row => {
-            return new Promise((resolve, reject) => {
-                db.pool.getConnection((error, conn) => {
-                    if (error) {
-                        reject(error);
-                        return;
-                    }
-
-                    const dedupedName = dbUsers.dedupeUsername(row.name);
-                    LOGGER.info(`Deduping [${row.name}] as [${dedupedName}]`);
-                    conn.query("UPDATE users SET name_dedupe = ? WHERE id = ?", [dedupedName, row.id], (error, res) => {
-                        conn.release();
-                        if (error) {
-                            if (error.errno === 1062) {
-                                LOGGER.info(`WARNING: could not set name_dedupe for [${row.name}] due to an existing row for [${dedupedName}]`);
-                                resolve();
-                            } else {
-                                reject(error);
-                            }
-                        } else {
-                            resolve();
-                        }
-                    });
-                });
+            const dedupedName = dbUsers.dedupeUsername(row.name);
+            LOGGER.info(`Deduping [${row.name}] as [${dedupedName}]`);
+            return db.getDB().knex.raw("UPDATE users SET name_dedupe = ? WHERE id = ?", [dedupedName, row.id])
+                    .catch(error => {
+                if (error.errno === 1062) {
+                    LOGGER.info(`WARNING: could not set name_dedupe for [${row.name}] due to an existing row for [${dedupedName}]`);
+                } else {
+                    throw error;
+                }
             });
         }, { concurrency: 10 }).then(() => {
             cb();
