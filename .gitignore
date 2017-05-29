@@ -13,3 +13,4 @@ www/cache
 google-drive-subtitles
 lib/
 integration-test-config.json
+conf/*.toml

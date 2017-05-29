@@ -103,8 +103,9 @@ function decodeText(str) {
     return str;
 }
 
-module.exports.sanitizeHTML = function (html) {
-    return sanitizeHTML(html, SETTINGS);
+module.exports.sanitizeHTML = function (html, extraSettings = {}) {
+    const options = Object.assign({}, SETTINGS, extraSettings);
+    return sanitizeHTML(html, options);
 };
 
 module.exports.looseSanitizeText = looseSanitizeText;
