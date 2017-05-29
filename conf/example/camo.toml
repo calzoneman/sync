@@ -1,0 +1,13 @@
+# Configuration for proxying images to a camo (or camo-compatible) proxy server.
+# To use, copy to conf/camo.toml.
+# More info on camo: https://github.com/atmos/camo
+[camo]
+enabled = true
+server = 'https://my-camo-server'
+# The key must match the `CAMO_KEY` environment variable passed to the camo server.
+key = 'ABCDEFGH'
+# Bypass the proxy for domains you trust that already support HTTPS and won't be harmful to users.
+whitelisted-domains = [
+    'i.imgur.com',
+    'i.4cdn.org'
+]
