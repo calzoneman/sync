@@ -14,28 +14,39 @@ var global_ipbans = {};
 let db = null;
 
 class Database {
-    constructor() {
-        const config = {
-            client: 'mysql',
-            connection: {
-                host: Config.get('mysql.server'),
-                port: Config.get('mysql.port'),
-                user: Config.get('mysql.user'),
-                password: Config.get('mysql.password'),
-                database: Config.get('mysql.database'),
-                multipleStatements: true, // Legacy thing
-                charset: 'UTF8MB4_GENERAL_CI'
-            },
-            pool: {
-                min: Config.get('mysql.pool-size'),
-                max: Config.get('mysql.pool-size')
-            },
-            debug: !!process.env.KNEX_DEBUG
-        };
+    constructor(knexConfig = null) {
+        if (knexConfig === null) {
+            knexConfig = {
+                client: 'mysql',
+                connection: {
+                    host: Config.get('mysql.server'),
+                    port: Config.get('mysql.port'),
+                    user: Config.get('mysql.user'),
+                    password: Config.get('mysql.password'),
+                    database: Config.get('mysql.database'),
+                    multipleStatements: true, // Legacy thing
+                    charset: 'UTF8MB4_GENERAL_CI'
+                },
+                pool: {
+                    min: Config.get('mysql.pool-size'),
+                    max: Config.get('mysql.pool-size')
+                },
+                debug: !!process.env.KNEX_DEBUG
+            };
+        }
 
-        this.knex = knex(config);
+        this.knex = knex(knexConfig);
+    }
+
+    runTransaction(fn) {
+        const timer = Metrics.startTimer('db:queryTime');
+        return this.knex.transaction(fn).finally(() => {
+            Metrics.stopTimer(timer);
+        });
     }
 }
+
+module.exports.Database = Database;
 
 module.exports.init = function () {
     db = new Database();
