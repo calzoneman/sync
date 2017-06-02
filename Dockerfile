@@ -12,6 +12,7 @@ ENV MYSQL_PASSWORD nico_best_girl
 ENV MYSQL_ROOT_PASSWORD ruby_best_girl
 ENV SYNC_TITLE Sync
 ENV SYNC_DESCRIPTION Sync Video
+ENV ROOT_URL http://localhost:8080
 
 EXPOSE 8080
 

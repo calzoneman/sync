@@ -47,6 +47,7 @@ http:
   # Even though you may specify multiple ports to listen on for HTTP above,
   # one port must be specified as default for the purposes of generating
   # links with the appropriate port
+  full-address: "${ROOT_URL}"
   default-port: 8080
   domain: 'http://localhost'
   # Specifies the root domain for cookies.  If you have multiple domains
