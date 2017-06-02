@@ -6,9 +6,9 @@
 mysql:
   server: 'localhost'
   port: 3306
-  database: 'cytube3'
-  user: 'cytube3'
-  password: ''
+  database: '${MYSQL_DATABASE}'
+  user: '${MYSQL_USER}'
+  password: '${MYSQL_PASSWORD}'
   pool-size: 10
 
 # Define IPs/ports to listen on
