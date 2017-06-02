@@ -217,7 +217,7 @@ channel-blacklist: []
 # server-synched raw file playback.  This requires the following:
 #   * ffmpeg must be installed on the server
 ffmpeg:
-  enabled: false
+  enabled: true
 # Executable name for ffprobe if it is not "ffprobe".  On Debian and Ubuntu (on which
 # libav is used rather than ffmpeg proper), this is "avprobe"
   ffprobe-exec: 'ffprobe'
