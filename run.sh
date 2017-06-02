@@ -1,5 +1,5 @@
 #!/bin/sh
-
+mysqld_safe &
 while :
 do
     node index.js
