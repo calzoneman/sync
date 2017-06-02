@@ -19,7 +19,7 @@
     "cookie-parser": "^1.4.5",
     "create-error": "^0.3.1",
     "csrf": "^3.1.0",
-    "cytubefilters": "github:calzoneman/cytubefilters#c67b2dab2dc5cc5ed11018819f71273d0f8a1bf5",
+    "cytubefilters": "git://github.com/davidsiaw/cytubefilters",
     "express": "^4.17.1",
     "express-minify": "^1.0.0",
     "json-typecheck": "^0.1.3",
