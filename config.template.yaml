@@ -49,10 +49,10 @@ http:
   # links with the appropriate port
   full-address: "${ROOT_URL}"
   default-port: 8080
-  domain: 'http://localhost'
+  domain: '${ROOT_URL}'
   # Specifies the root domain for cookies.  If you have multiple domains
   # e.g. a.example.com and b.example.com, the root domain is example.com
-  root-domain: 'localhost'
+  root-domain: '${ROOT_DOMAIN}'
   # Specify alternate domains/hosts that are allowed to set the login cookie
   # Leave out the http://
   alt-domains:
@@ -74,12 +74,12 @@ http:
 
 # HTTPS server details
 https:
-  enabled: false
+  enabled: ${HTTPS_ENABLED}
   # Even though you may specify multiple ports to listen on for HTTPS above,
   # one port must be specified as default for the purposes of generating
   # links with the appropriate port
   default-port: 8443
-  domain: 'https://localhost'
+  domain: '${ROOT_URL}'
   keyfile: 'localhost.key'
   passphrase: ''
   certfile: 'localhost.cert'
@@ -103,7 +103,7 @@ io:
   # you will want to set up a passthrough domain for socket.io.
   # If the root of this domain is not the same as the root of your HTTP domain
   # (or HTTPS if SSL is enabled), logins won't work.
-  domain: 'http://localhost'
+  domain: '${ROOT_URL}'
   # Even though you may specify multiple ports to listen on for HTTP above,
   # one port must be specified as default for the purposes of generating
   # links with the appropriate port
@@ -138,7 +138,7 @@ mail:
 #     4. Click "Create new Key" under "Public API access"
 #     5. Click "Server key"
 #     6. Under "APIs & auth" click "YouTube Data API" and then click "Enable API"
-youtube-v3-key: ''
+youtube-v3-key: '${YOUTUBE_KEY}'
 # Minutes between saving channel state to disk
 channel-save-interval: 5
 # Limit for the number of channels a user can register
@@ -250,7 +250,7 @@ service-socket:
 
 # Twitch Client ID for the data API (used for VOD lookups)
 # https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup
-twitch-client-id: null
+twitch-client-id: '${TWITCH_CLIENT_ID}'
 
 poll:
   max-options: 50
