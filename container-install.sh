@@ -19,9 +19,9 @@ else
     echo "[i] MySQL root Password: $MYSQL_ROOT_PASSWORD"
   fi
 
-  MYSQL_DATABASE=${MYSQL_DATABASE:-""}
-  MYSQL_USER=${MYSQL_USER:-""}
-  MYSQL_PASSWORD=${MYSQL_PASSWORD:-""}
+  MYSQL_DATABASE=${MYSQL_DATABASE}
+  MYSQL_USER=${MYSQL_USER}
+  MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
   if [ ! -d "/run/mysqld" ]; then
     mkdir -p /run/mysqld
@@ -54,4 +54,5 @@ EOF
   rm -f $tfile
 fi
 
-envsubst config.template.yaml > config.yaml
+envsubst < config.template.yaml > config.yaml
+

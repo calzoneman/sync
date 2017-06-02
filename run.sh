@@ -1,8 +1,7 @@
 #!/bin/sh
-mysqld_safe &
+mysqld --user=root &
 while :
 do
     node index.js
     sleep 2
-
 done
