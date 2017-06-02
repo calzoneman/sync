@@ -31,7 +31,13 @@ USE mysql;
 FLUSH PRIVILEGES;
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY "$MYSQL_ROOT_PASSWORD" WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
-UPDATE user SET password=PASSWORD("") WHERE user='root' AND host='localhost';
+DROP USER ''@'${HOSTNAME}';
+DROP USER 'root'@'${HOSTNAME}';
+DROP USER 'root'@'localhost';
+DROP USER 'root'@'127.0.0.1';
+DROP USER 'root'@'::1';
+DROP USER ''@'localhost';
+UPDATE user SET password=PASSWORD("${MYSQL_ROOT_PASSWORD}") WHERE user='root' AND host='%';
 EOF
 
   if [ "$MYSQL_DATABASE" != "" ]; then
