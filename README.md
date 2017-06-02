@@ -83,7 +83,7 @@ Installation instructions are available here: https://github.com/calzoneman/sync
 Docker
 ------
 
-`docker pull davidsiaw/sync`
+`docker pull davidsiaw/sync:3.0`
 
 Feedback
 --------
