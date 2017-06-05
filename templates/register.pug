@@ -32,7 +32,7 @@ html(lang="en")
               input(type="hidden", name="_csrf", value=csrfToken)
               .form-group
                 label.control-label(for="username") Username
-                input#username.form-control(type="text", name="name")
+                input#username.form-control(type="text", name="name", onkeyup="checkUsername()", maxlength="20")
               .form-group
                 label.control-label(for="password") Password
                 input#password.form-control(type="password", name="password", onkeyup="checkPasswords()")
@@ -62,52 +62,59 @@ html(lang="en")
         return valid;
       }
       function checkUsername() {
-        var name = $("#username").val();
+        function createError(text, target){
+          target.parent()
+            .addClass("has-error")
+            .removeClass("has-success");
+          $("<p/>").addClass("text-danger")
+            .attr("id", "usernameerror")
+            .text(text)
+            .insertAfter(target);
+        }
+        var target = $("#username");
+        var name = target.val();
         $("#usernameerror").remove();
         if (name === "") {
-          $("#username").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "usernameerror")
-            .text("Username must not be empty")
-            .insertAfter($("#username"));
+          createError('Username must not be empty', target)
           return false;
         } else if (!(/^[-\w\u00c0-\u00ff]{1,20}$/).test(name)) {
-          $("#username").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "usernameerror")
-            .text("Username must consist of 1-20 characters a-Z, A-Z, 0-9 " +
-                  ", -, or _.")
-            .insertAfter($("#username"));
+          createError("Username must consist of 1-20 characters" + 
+                      " a-Z, A-Z, 0-9, -, or _.", target);
           return false;
         } else {
-          $("#username").parent().removeClass("has-error")
+          target.parent().removeClass("has-error")
             .addClass("has-success");
         }
       }
       function checkPasswords() {
-        var pw = $("#password").val();
-        var pwc = $("#password_confirm").val();
+        function createError(text, target, id){
+          target.parent()
+            .addClass("has-error")
+            .removeClass("has-success");
+          $("<p/>").addClass("text-danger")
+            .attr("id", id)
+            .text(text)
+            .insertAfter(target);
+        }
+        var target = $("#password");
+        var target2 = $("#password_confirm");
+        var pw = target.val();
+        var pwc = target2.val();
+
         $("#passwordempty").remove();
         $("#passwordmismatch").remove();
         if (pw === "") {
-          $("#password").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "passwordempty")
-            .text("Password must not be empty")
-            .insertAfter($("#password"));
+          createError('Password must not be empty', target, 'passwordempty')
           return false;
         } else {
-          $("#password").parent().removeClass("has-error")
+          target.parent().removeClass("has-error")
             .addClass("has-success");
           if (pw !== pwc) {
-            $("#password_confirm").parent().addClass("has-error");
-            $("<p/>").addClass("text-danger")
-              .attr("id", "passwordmismatch")
-              .text("Passwords do not match")
-              .insertAfter($("#password_confirm"));
+            createError('Passwords do not match', target2, 'passwordmismatch')
             return false;
           } else {
-            $("#password_confirm").parent().removeClass("has-error")
+            target2.parent()
+              .removeClass("has-error")
               .addClass("has-success");
           }
         }
