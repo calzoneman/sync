@@ -55,9 +55,49 @@ html(lang="en")
                 input(type="hidden", name="_csrf", value=csrfToken)
                 input(type="hidden", name="action", value="new_channel")
                 .form-group
-                  label.control-label(for="channelname") Channel Name
-                  input#channelname.form-control(type="text", name="name")
-                button.btn.btn-primary.btn-block(type="submit") Register
+                  label.control-label(for="channelname") Channel URL
+                  span#validation.pull-right
+                  .input-group
+                    span.input-group-addon #{baseUrl}/r/
+                    input#channelname.form-control(type="text", name="name")
+                button#register.btn.btn-primary.btn-block(type="submit") Register
 
     include footer
     +footer()
+    script( type='text/javascript').
+        function nameIsInvalid(id){
+            if(/\s/.test(id)){
+                return 'Channel URLs may not contain spaces';
+            }
+            if(id.length > 30){
+                return 'Channel URLs may not be longer than 30 characters';
+            }
+            if(id.length < 1){
+                return 'Channel URLs must be at least one character';
+            }
+            if(!/^[\w-]{1,30}$/.test(id)){
+                return 'Channel URLs may only consist of a-z, A-Z, 0-9, - and _';
+            }
+            return false;
+        }
+
+        $("#channelname").keyup(function () {
+            var box = $(this);
+            var value = box.val();
+            var lastkey = Date.now();
+            box.data("lastkey", lastkey);
+
+            setTimeout(function () {
+                if (box.data("lastkey") !== lastkey || box.val() !== value) {
+                    return;
+                }
+                if(nameIsInvalid(value)){
+                    $('#validation').text(nameIsInvalid(value));
+                    $('#register').addClass('disabled');
+                } else {
+                    $('#validation').text('');
+                    $('#register').removeClass('disabled');
+                }
+            }, 200);
+        });
+
