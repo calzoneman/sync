@@ -202,7 +202,6 @@ function handleAccountChannelPage(req, res) {
 
     db.channels.listUserChannels(req.user.name, function (err, channels) {
         sendPug(res, "account-channels", {
-            domain: req.host,
             channels: channels
         });
     });
