@@ -18,6 +18,7 @@ import Promise from 'bluebird';
 import { LoggerFactory } from '@calzoneman/jsli';
 const verifySession = Promise.promisify(session.verifySession);
 const getAliases = Promise.promisify(db.getAliases);
+import { CachingGlobalBanlist } from './globalban';
 
 const LOGGER = LoggerFactory.getLogger('ioserver');
 
@@ -197,6 +198,17 @@ function ipForwardingMiddleware(webConfig) {
     }
 }
 
+let globalIPBanlist = null;
+function isIPGlobalBanned(ip) {
+    if (globalIPBanlist === null) {
+        globalIPBanlist = new CachingGlobalBanlist(db.getGlobalBanDB());
+        globalIPBanlist.refreshCache();
+        globalIPBanlist.startCacheTimer(60 * 1000);
+    }
+
+    return globalIPBanlist.isIPGlobalBanned(ip);
+}
+
 /**
  * Called after a connection is accepted
  */
@@ -226,7 +238,7 @@ function handleConnection(sock) {
     }
 
     // Check for global ban on the IP
-    if (db.isGlobalIPBanned(ip)) {
+    if (isIPGlobalBanned(ip)) {
         LOGGER.info("Rejecting " + ip + " - global banned");
         sock.emit("kick", { reason: "Your IP is globally banned." });
         sock.disconnect();
