@@ -379,7 +379,7 @@ module.exports = {
 
         db.query("INSERT INTO `channel_ranks` VALUES (?, ?, ?) " +
                  "ON DUPLICATE KEY UPDATE rank=?",
-                 [name, rank, chan, rank, chan], callback);
+                 [name, rank, chan, rank], callback);
     },
 
     /**
