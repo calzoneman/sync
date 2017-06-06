@@ -110,6 +110,7 @@ var USEROPTS = {
     show_timestamps      : getOrDefault("show_timestamps", true),
     modhat               : getOrDefault("modhat", false),
     blink_title          : getOrDefault("blink_title", "onlyping"),
+    desktop_notification : getOrDefault("desktop_notification", "never"),
     sync_accuracy        : getOrDefault("sync_accuracy", 2),
     wmode_transparent    : getOrDefault("wmode_transparent", true),
     chatbtn              : getOrDefault("chatbtn", false),

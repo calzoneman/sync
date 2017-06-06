@@ -1,11 +1,12 @@
-/* window focus/blur */
-$(window).focus(function() {
-    FOCUSED = true;
-    clearInterval(TITLE_BLINK);
-    TITLE_BLINK = false;
-    document.title = PAGETITLE;
-}).blur(function() {
-    FOCUSED = false;
+document.addEventListener("visibilitychange", function() {
+    if(document.visibilityState === "visible") {
+        FOCUSED = true;
+        clearInterval(TITLE_BLINK);
+        TITLE_BLINK = false;
+        document.title = PAGETITLE;
+    } else {
+        FOCUSED = false;
+    }
 });
 
 $("#togglemotd").click(function () {

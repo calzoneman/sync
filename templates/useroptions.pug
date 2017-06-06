@@ -96,7 +96,7 @@ mixin us-chat
       +rcheckbox("us-sort-afk", "Sort AFKers to bottom")
       .col-sm-4
       .col-sm-8
-        p.text-info The following 2 options apply to how and when you will be notified if a new chat message is received while CyTube is not the active window.
+        p.text-info The following three options apply to how and when you will be notified if a new chat message is received while CyTube is not the active window.
       .form-group
         label.control-label.col-sm-4(for="#us-blink-title") Blink page title on new messages
         .col-sm-8
@@ -111,6 +111,13 @@ mixin us-chat
             option(value="never") Never
             option(value="onlyping") Only when I am mentioned or PMed
             option(value="always") Always
+      .form-group
+        label.control-label.col-sm-4(for="#us-desktop-notification") Desktop notification on new messages
+        .col-sm-8
+          select#us-desktop-notification.form-control
+            option(value="never") Never
+            option(value="onlyping") Only when I am mentioned or PMed
+            option(value="always") Always            
       +rcheckbox("us-sendbtn", "Add a send button to chat")
       +rcheckbox("us-no-emotes", "Disable chat emotes")
       +rcheckbox("us-strip-image", "Remove images from chat")

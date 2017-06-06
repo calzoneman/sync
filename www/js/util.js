@@ -640,6 +640,7 @@ function showUserOptions() {
     $("#us-sort-afk").prop("checked", USEROPTS.sort_afk);
     $("#us-blink-title").val(USEROPTS.blink_title);
     $("#us-ping-sound").val(USEROPTS.boop);
+    $("#us-desktop-notification").val(USEROPTS.desktop_notification);
     $("#us-sendbtn").prop("checked", USEROPTS.chatbtn);
     $("#us-no-emotes").prop("checked", USEROPTS.no_emotes);
     $("#us-strip-image").prop("checked", USEROPTS.strip_image);
@@ -674,6 +675,7 @@ function saveUserOptions() {
     USEROPTS.sort_rank            = $("#us-sort-rank").prop("checked");
     USEROPTS.sort_afk             = $("#us-sort-afk").prop("checked");
     USEROPTS.blink_title          = $("#us-blink-title").val();
+    USEROPTS.desktop_notification = $("#us-desktop-notification").val();
     USEROPTS.boop                 = $("#us-ping-sound").val();
     USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
     USEROPTS.no_emotes            = $("#us-no-emotes").prop("checked");
@@ -685,8 +687,40 @@ function saveUserOptions() {
         USEROPTS.show_shadowchat = $("#us-shadowchat").prop("checked");
     }
 
+    getNotificationPermission();
+
     storeOpts();
     applyOpts();
+}
+
+function getNotificationPermission() {
+    //Only ask for permission if they desire the permission.
+    if(USEROPTS.desktop_notification != "never")
+    {
+        notificationsAvailable = false;
+        
+        //Check to see if notifications are available.
+        if (!Notification) 
+        {
+            alert('Desktop notifications are not availble on your system, please update your browser.'); 
+            USEROPTS.desktop_notification = "never";
+        } else {
+            //Ask for permission if we don't have it.
+            if (Notification.permission !== "granted")
+            {
+                Notification.requestPermission();
+            }
+            
+            notificationsAvailable = Notification.permission == "granted";
+        }
+        
+        //If we can't get permission or user denied the permission, reset the useroption.
+        if(!notificationsAvailable)
+        {
+            USEROPTS.desktop_notification = "never";
+        }
+    }
+    
 }
 
 function storeOpts() {
@@ -1625,6 +1659,12 @@ function addChatMessage(data) {
     }
 
     pingMessage(isHighlight);
+    
+    //Strip HTML before passing it to the notification
+    var tmp = document.createElement("DIV");
+    tmp.innerHTML = data.msg;
+    
+    showMessage(safeUsername + ": " + tmp.textContent, isHighlight);
 
 }
 
@@ -1642,7 +1682,53 @@ function trimChatBuffer() {
     return count;
 }
 
-function pingMessage(isHighlight) {
+function showMessage(message, nameMentioned) {
+    if (!FOCUSED) {
+        if(USEROPTS.desktop_notification != "never") {
+                        
+            //It is possible that the user has revoked the permission to show notifications
+            //since the last time they opened cytube.
+            if(Notification && Notification.permission !== "granted") {
+                //If they deny/ignore the permission, the USEROPTS is set back to never.
+                getNotificationPermission();
+            }
+
+            if(USEROPTS.desktop_notification == "always" || 
+               USEROPTS.desktop_notification == "onlyping" && nameMentioned) {
+                   
+               notificationTitle = "/r/" + CHANNEL.name;
+               iconLocation = "/favicon.ico";
+               
+               //There are two ways to send notifications,
+               //service worker only works over HTTPS, so let's try that first.
+               try {
+                    navigator.serviceWorker.register('/sw.js');
+                
+                    navigator.serviceWorker.ready.then(function(registration) {
+                        registration.showNotification(notificationTitle, {
+                            body: message,
+                            icon: iconLocation,
+                        });
+                    });
+                } catch(e) {
+                    
+                    //If we can't use service worker then we need to default to the old way.
+                    //This will be depricated in the future
+                    
+                    var notificationOptions = {
+                        body: notificationTitle,
+                        icon: iconLocation
+                    }
+
+                    var n = new Notification(notificationTitle, notificationOptions);
+                }
+                
+            }
+        }
+    }
+}
+
+function pingMessage(isHighlight) {   
     if (!FOCUSED) {
         if (!TITLE_BLINK && (USEROPTS.blink_title === "always" ||
             USEROPTS.blink_title === "onlyping" && isHighlight)) {
