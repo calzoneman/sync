@@ -89,6 +89,10 @@ input.form-control[type="email"], textarea.form-control {
   border-bottom-right-radius: 0;
 }
 
+#logoutform {
+  background-color: transparent;
+}
+
 .queue_entry {
   border-color: #aaaaaa;
   background-color: #272b30;
