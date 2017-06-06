@@ -11,7 +11,6 @@ import { GlobalBanDB } from './db/globalban';
 
 const LOGGER = LoggerFactory.getLogger('database');
 
-var global_ipbans = {};
 let db = null;
 let globalBanDB = null;
 
@@ -64,7 +63,6 @@ module.exports.init = function (newDB) {
                 process.nextTick(legacySetup);
             });
 
-    global_ipbans = {};
     module.exports.users = require("./database/accounts");
     module.exports.channels = require("./database/channels");
 };
@@ -89,8 +87,6 @@ function legacySetup() {
         require("./database/update").checkVersion();
         module.exports.loadAnnouncement();
     });
-    // Refresh global IP bans
-    module.exports.listGlobalBans();
 }
 
 /**
@@ -129,92 +125,6 @@ module.exports.query = function (query, sub, callback) {
 function blackHole() {
 
 }
-
-/* REGION global bans */
-
-/**
- * Check if an IP address is globally banned
- */
-module.exports.isGlobalIPBanned = function (ip, callback) {
-    var range = util.getIPRange(ip);
-    var wrange = util.getWideIPRange(ip);
-    var banned = ip in global_ipbans ||
-    range in global_ipbans ||
-    wrange in global_ipbans;
-
-    if (callback) {
-        callback(null, banned);
-    }
-    return banned;
-};
-
-/**
- * Retrieve all global bans from the database.
- * Cache locally in global_bans
- */
-module.exports.listGlobalBans = function (callback) {
-    if (typeof callback !== "function") {
-        callback = blackHole;
-    }
-
-    module.exports.query("SELECT * FROM global_bans WHERE 1", function (err, res) {
-        if (err) {
-            callback(err, null);
-            return;
-        }
-
-        global_ipbans = {};
-        for (var i = 0; i < res.length; i++) {
-            global_ipbans[res[i].ip] = res[i];
-        }
-
-        callback(null, global_ipbans);
-    });
-};
-
-/**
- * Globally ban by IP
- */
-module.exports.globalBanIP = function (ip, reason, callback) {
-    if (typeof callback !== "function") {
-        callback = blackHole;
-    }
-
-    var query = "INSERT INTO global_bans (ip, reason) VALUES (?, ?)" +
-                " ON DUPLICATE KEY UPDATE reason=?";
-    module.exports.query(query, [ip, reason, reason], function (err, res) {
-        if(err) {
-            callback(err, null);
-            return;
-        }
-
-        module.exports.listGlobalBans();
-        callback(null, res);
-    });
-};
-
-/**
- * Remove a global IP ban
- */
-module.exports.globalUnbanIP = function (ip, callback) {
-    if (typeof callback !== "function") {
-        callback = blackHole;
-    }
-
-
-    var query = "DELETE FROM global_bans WHERE ip=?";
-    module.exports.query(query, [ip], function (err, res) {
-        if(err) {
-            callback(err, null);
-            return;
-        }
-
-        module.exports.listGlobalBans();
-        callback(null, res);
-    });
-};
-
-/* END REGION */
 
 /* password recovery */
 

@@ -278,22 +278,18 @@ function init(user) {
     s.on("acp-force-unload", handleForceUnload.bind(this, user));
     s.on("acp-list-stats", handleListStats.bind(this, user));
 
-    db.listGlobalBans(function (err, bans) {
-        if (err) {
-            user.socket.emit("errMessage", {
-                msg: err
-            });
-            return;
-        }
-
-        var flat = [];
-        for (var ip in bans) {
-            flat.push({
-                ip: ip,
-                note: bans[ip].reason
-            });
-        }
-        user.socket.emit("acp-gbanlist", flat);
+    const globalBanDB = db.getGlobalBanDB();
+    globalBanDB.listGlobalBans().then(bans => {
+        // Why is it called reason in the DB and note in the socket frame?
+        // Who knows...
+        const mappedBans = bans.map(ban => {
+            return { ip: ban.ip, note: ban.reason };
+        });
+        user.socket.emit("acp-gbanlist", mappedBans);
+    }).catch(error => {
+        user.socket.emit("errMessage", {
+            msg: error.message
+        });
     });
     Logger.eventlog.log("[acp] Initialized ACP for " + eventUsername(user));
 }
