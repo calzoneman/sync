@@ -6,6 +6,9 @@ var Poll = function(initiator, title, options, obscured) {
     title = XSS.sanitizeText(title);
     this.title = title.replace(link, "<a href=\"$1\" target=\"_blank\">$1</a>");
     this.options = options;
+    if(this.options.length>100) {
+        return;
+    }
     for (var i = 0; i < this.options.length; i++) {
         this.options[i] = XSS.sanitizeText(this.options[i]);
         this.options[i] = this.options[i].replace(link, "<a href=\"$1\" target=\"_blank\">$1</a>");
