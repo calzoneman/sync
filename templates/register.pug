@@ -32,16 +32,20 @@ html(lang="en")
               input(type="hidden", name="_csrf", value=csrfToken)
               .form-group
                 label.control-label(for="username") Username
-                input#username.form-control(type="text", name="name")
+                input#username.form-control(type="text", name="name", onkeyup="checkUsername()", maxlength="20")
+                p#validate_username.text-danger.pull-right
               .form-group
                 label.control-label(for="password") Password
                 input#password.form-control(type="password", name="password", onkeyup="checkPasswords()")
+                p#validate_password.text-danger.pull-right
               .form-group
                 label.control-label(for="password_confirm") Confirm Password
                 input#password_confirm.form-control(type="password", onkeyup="checkPasswords()")
+                p#validate_confirm.text-danger.pull-right
               .form-group
                 label.control-label(for="email") Email (optional)
                 input#email.form-control(type="email", name="email")
+                p#validate_email.text-danger.pull-right
                 p
                   | Providing an email address is optional and will allow you to recover your account via email if you forget your password.
                   strong &nbsp;&nbsp;If you do not provide an email address, you will not be able to recover a lost account!
@@ -62,52 +66,55 @@ html(lang="en")
         return valid;
       }
       function checkUsername() {
-        var name = $("#username").val();
-        $("#usernameerror").remove();
+        function stateError(text){
+          target.parent()
+            .addClass("has-error")
+            .removeClass("has-success");
+          $("#validate_username").text(text);
+        }
+        var target = $("#username");
+        var name = target.val();
         if (name === "") {
-          $("#username").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "usernameerror")
-            .text("Username must not be empty")
-            .insertAfter($("#username"));
+          stateError('Username must not be empty')
           return false;
         } else if (!(/^[-\w\u00c0-\u00ff]{1,20}$/).test(name)) {
-          $("#username").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "usernameerror")
-            .text("Username must consist of 1-20 characters a-Z, A-Z, 0-9 " +
-                  ", -, or _.")
-            .insertAfter($("#username"));
+          stateError("Username must consist of 1-20 characters" + 
+                      " a-Z, A-Z, 0-9, -, or _.");
           return false;
         } else {
-          $("#username").parent().removeClass("has-error")
+          target.parent()
+            .removeClass("has-error")
             .addClass("has-success");
+          $("#validate_username").text('');
         }
       }
       function checkPasswords() {
-        var pw = $("#password").val();
-        var pwc = $("#password_confirm").val();
-        $("#passwordempty").remove();
-        $("#passwordmismatch").remove();
+        function stateError(text, target, validator){
+          target.parent()
+            .addClass("has-error")
+            .removeClass("has-success");
+          $(`#${validator}`).text(text);
+        }
+        var target = $("#password");
+        var target2 = $("#password_confirm");
+        var pw = target.val();
+        var pwc = target2.val();
+
+        $("#validate_password").text('');
+        $("#validate_confirm").text('');
         if (pw === "") {
-          $("#password").parent().addClass("has-error");
-          $("<p/>").addClass("text-danger")
-            .attr("id", "passwordempty")
-            .text("Password must not be empty")
-            .insertAfter($("#password"));
+          stateError('Password must not be empty', target, 'validate_password')
           return false;
         } else {
-          $("#password").parent().removeClass("has-error")
+          target.parent()
+            .removeClass("has-error")
             .addClass("has-success");
           if (pw !== pwc) {
-            $("#password_confirm").parent().addClass("has-error");
-            $("<p/>").addClass("text-danger")
-              .attr("id", "passwordmismatch")
-              .text("Passwords do not match")
-              .insertAfter($("#password_confirm"));
+            stateError('Passwords do not match', target2, 'validate_confirm')
             return false;
           } else {
-            $("#password_confirm").parent().removeClass("has-error")
+            target2.parent()
+              .removeClass("has-error")
               .addClass("has-success");
           }
         }

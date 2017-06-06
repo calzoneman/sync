@@ -55,9 +55,49 @@ html(lang="en")
                 input(type="hidden", name="_csrf", value=csrfToken)
                 input(type="hidden", name="action", value="new_channel")
                 .form-group
-                  label.control-label(for="channelname") Channel Name
-                  input#channelname.form-control(type="text", name="name")
-                button.btn.btn-primary.btn-block(type="submit") Register
+                  label.control-label(for="channelname") Channel URL
+                  .input-group
+                    span.input-group-addon #{domain}/r/
+                    input#channelname.form-control(type="text", name="name", maxlength="30", onkeyup="checkChannel()")
+                  p#validate_channel.text-danger.pull-right
+                button#register.btn.btn-primary.btn-block(type="submit") Register
 
     include footer
     +footer()
+    script( type='text/javascript').
+        function checkChannel(){
+            function nameIsInvalid(id){
+                if(/\s/.test(id)){
+                    return 'Channel URL may not contain spaces';
+                }
+                if(id === ''){
+                    return 'Channel URL must not be empty';
+                }
+                if(!/^[\w-]{1,30}$/.test(id)){
+                    return 'Channel URL may only consist of a-z, A-Z, 0-9, - and _';
+                }
+                return false;
+            }
+
+            var box = $("#channelname");
+            var value = box.val();
+            var lastkey = Date.now();
+            box.data("lastkey", lastkey);
+
+            setTimeout(function () {
+                if (box.data("lastkey") !== lastkey || box.val() !== value) {
+                    return;
+                }
+                if(nameIsInvalid(value)){
+                    $('#validate_channel').text(nameIsInvalid(value))
+                        .parent().addClass('has-error').removeClass('has-success');
+                    $('#register').addClass('disabled');
+                } else {
+                    $('#validate_channel').text('')
+                        .parent().addClass('has-success').removeClass('has-error');
+                    $('#register').removeClass('disabled');
+                }
+            }, 200);
+
+        }
+
