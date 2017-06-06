@@ -7,11 +7,13 @@ var util = require("./utilities");
 import * as Metrics from 'cytube-common/lib/metrics/metrics';
 import { LoggerFactory } from '@calzoneman/jsli';
 import knex from 'knex';
+import { GlobalBanDB } from './db/globalban';
 
 const LOGGER = LoggerFactory.getLogger('database');
 
 var global_ipbans = {};
 let db = null;
+let globalBanDB = null;
 
 class Database {
     constructor(knexConfig = null) {
@@ -69,6 +71,14 @@ module.exports.init = function (newDB) {
 
 module.exports.getDB = function getDB() {
     return db;
+};
+
+module.exports.getGlobalBanDB = function getGlobalBanDB() {
+    if (globalBanDB === null) {
+        globalBanDB = new GlobalBanDB(db);
+    }
+
+    return globalBanDB;
 };
 
 function legacySetup() {
