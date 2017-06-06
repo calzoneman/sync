@@ -57,7 +57,7 @@ html(lang="en")
                 .form-group
                   label.control-label(for="channelname") Channel URL
                   .input-group
-                    span.input-group-addon #{domain}/r/
+                    span.input-group-addon #{baseUrl}/r/
                     input#channelname.form-control(type="text", name="name", maxlength="30", onkeyup="checkChannel()")
                   p#validate_channel.text-danger.pull-right
                 button#register.btn.btn-primary.btn-block(type="submit") Register
