@@ -1,13 +1,11 @@
 const assert = require('assert');
 const KickbanModule = require('../../lib/channel/kickban');
-const db = require('../../lib/database');
+const database = require('../../lib/database');
 const dbChannels = require('../../lib/database/channels');
 const Promise = require('bluebird');
-const Config = require('../../lib/config');
 const ChannelModule = require('../../lib/channel/module');
 const Flags = require('../../lib/flags');
-const TestConfig = require('../../integration-test-config.json');
-require('../../lib/counters');
+const testDB = require('../testutil/db').testDB;
 
 function randomString(length) {
     const chars = 'abcdefgihkmnpqrstuvwxyz0123456789';
@@ -18,8 +16,7 @@ function randomString(length) {
     return str;
 }
 
-Config.set('mysql.password', TestConfig.mysql.password);
-db.init();
+database.init(testDB);
 
 describe('onPreUserJoin Ban Check', () => {
     const channelName = `test_${randomString(20)}`;

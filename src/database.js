@@ -48,8 +48,12 @@ class Database {
 
 module.exports.Database = Database;
 
-module.exports.init = function () {
-    db = new Database();
+module.exports.init = function (newDB) {
+    if (newDB) {
+        db = newDB;
+    } else {
+        db = new Database();
+    }
     db.knex.raw('select 1 from dual')
             .catch(error => {
                 LOGGER.error('Initial database connection failed: %s', error.stack);
