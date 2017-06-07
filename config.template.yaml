@@ -23,7 +23,7 @@ mysql:
 listen:
 # Default HTTP server - default interface, port 8080
   - ip: ''
-    port: 8080
+    port: ${ROOT_PORT}
     http: true
 # Uncomment below to enable HTTPS/SSL websockets
 # Note that you must also set https->enabled = true in the https definition
@@ -33,7 +33,7 @@ listen:
 #    io: true
 # Default Socket.IO server - default interface, port 1337
   - ip: ''
-    port: 1337
+    port: ${IO_ROOT_PORT}
     io: true
 # Example of how to bind an extra port to HTTP and Socket.IO
 #  - ip: ''
