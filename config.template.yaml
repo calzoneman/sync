@@ -48,7 +48,7 @@ http:
   # one port must be specified as default for the purposes of generating
   # links with the appropriate port
   full-address: "${ROOT_URL}"
-  default-port: 8080
+  default-port: ${ROOT_PORT}
   domain: '${ROOT_URL}'
   # Specifies the root domain for cookies.  If you have multiple domains
   # e.g. a.example.com and b.example.com, the root domain is example.com
@@ -103,11 +103,11 @@ io:
   # you will want to set up a passthrough domain for socket.io.
   # If the root of this domain is not the same as the root of your HTTP domain
   # (or HTTPS if SSL is enabled), logins won't work.
-  domain: '${ROOT_URL}'
+  domain: '${IO_ROOT_URL}'
   # Even though you may specify multiple ports to listen on for HTTP above,
   # one port must be specified as default for the purposes of generating
   # links with the appropriate port
-  default-port: 1337
+  default-port: ${IO_ROOT_PORT}
   # limit the number of concurrent socket connections per IP address
   ip-connection-limit: 10
   # Whether or not to use zlib to compress each socket message (this option is
