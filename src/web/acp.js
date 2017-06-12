@@ -28,7 +28,7 @@ function checkAdmin(cb) {
  */
 function handleAcp(req, res, user) {
     var sio;
-    if (req.secure || req.header("x-forwarded-proto") === "https") {
+    if ( Config.get("https.enabled") && (req.secure || req.header("x-forwarded-proto") === "https") ) {
         sio = Config.get("https.domain") + ":" + Config.get("https.default-port");
     } else {
         sio = Config.get("io.domain") + ":" + Config.get("io.default-port");
