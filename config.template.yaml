@@ -4,8 +4,8 @@
 # user: username to authenticate as
 # password: password for user
 mysql:
-  server: 'localhost'
-  port: 3306
+  server: '${MYSQL_HOST}'
+  port: ${MYSQL_PORT}
   database: '${MYSQL_DATABASE}'
   user: '${MYSQL_USER}'
   password: '${MYSQL_PASSWORD}'

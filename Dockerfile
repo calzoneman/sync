@@ -6,6 +6,8 @@ RUN cd app && sh container-install.sh
 
 WORKDIR /app
 
+ENV MYSQL_HOST localhost
+ENV MYSQL_PORT 3306
 ENV MYSQL_DATABASE cytube
 ENV MYSQL_USER cytube
 ENV MYSQL_PASSWORD nico_best_girl
