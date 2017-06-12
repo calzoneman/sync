@@ -54,7 +54,7 @@ EOF
   rm -f $tfile
 fi
 
-envsubst < config.template.yaml > config.yaml
+envsubst < config.docker.yaml > config.yaml
 
 mysqld --user=root &
 while :

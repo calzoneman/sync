@@ -25,7 +25,7 @@
     "csrf": "^3.0.0",
     "cytube-common": "git://github.com/CyTube/cytube-common",
     "cytube-mediaquery": "git://github.com/CyTube/mediaquery",
-    "cytubefilters": "git://github.com/davidsiaw/cytubefilters",
+    "cytubefilters": "git://github.com/calzoneman/cytubefilters#67c7c69a",
     "express": "^4.13.3",
     "express-minify": "^0.1.6",
     "graceful-fs": "^4.1.2",
