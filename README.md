@@ -80,11 +80,6 @@ Installing
 Installation instructions are available here: https://github.com/calzoneman/sync/wiki/CyTube-3.0-Installation-Guide
 
 
-Docker
-------
-
-`docker pull davidsiaw/sync:3.0`
-
 Feedback
 --------
 

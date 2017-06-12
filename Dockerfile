@@ -2,7 +2,7 @@ FROM alpine:3.6
 
 ADD . /app
 
-RUN cd app && sh container-install.sh
+RUN cd app && sh docker/container-install.sh
 
 WORKDIR /app
 
@@ -27,4 +27,4 @@ EXPOSE 8080
 # EXPOSE 1337
 # EXPOSE 8443
 
-CMD ["sh", "run.sh"]
+CMD ["sh", "docker/docker-run.sh"]
