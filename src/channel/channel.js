@@ -418,8 +418,10 @@ Channel.prototype.acceptUser = function (user) {
         user.socket.emit("channelNotRegistered");
     }
 
-    user.on('afk', function(){
+    user.on('afk', function(afk){
         self.sendUserMeta(self.users, user, -1);
+        // TODO: Drop legacy setAFK frame after a few months
+        self.broadcastAll("setAFK", { name: user.getName(), afk: afk });
     })
 };
 

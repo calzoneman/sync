@@ -507,13 +507,12 @@ Callbacks = {
         div.data("leader", Boolean(data.leader));
         div.data("profile", data.profile);
         div.data("meta", data.meta);
-        div.data("afk", data.meta.afk);
         if (data.meta.muted || data.meta.smuted) {
             div.data("icon", "glyphicon-volume-off");
         } else {
             div.data("icon", false);
         }
-        formatUserlistItem(div, data);
+        formatUserlistItem(div);
         addUserDropdown(div, data);
         div.appendTo($("#userlist"));
         sortUserlist();
@@ -532,9 +531,22 @@ Callbacks = {
             user.data("icon", false);
         }
 
+        /*
+         * 2017-06-15
+         * TODO: Remove this and the empty function below
+         *         after script authors have had ample time to update
+         */
+        socket.listeners('setAFK').forEach(function(listener){
+            listener(data.meta.afk);
+        });
+
         formatUserlistItem(user, data);
         addUserDropdown(user, data);
         sortUserlist();
+    },
+
+    setAFK: function() {
+        return true;
     },
 
     setUserProfile: function (data) {
@@ -625,16 +637,6 @@ Callbacks = {
 
         user.data("icon", data.icon);
         formatUserlistItem(user);
-    },
-
-    setAFK: function (data) {
-        var user = findUserlistItem(data.name);
-        if(user === null)
-            return;
-        user.data("afk", data.afk);
-        formatUserlistItem(user);
-        if(USEROPTS.sort_afk)
-            sortUserlist();
     },
 
     userLeave: function(data) {

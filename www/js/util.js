@@ -87,7 +87,6 @@ function formatUserlistItem(div) {
         profile: div.data("profile") || { image: "", text: ""},
         leader: div.data("leader") || false,
         icon: div.data("icon") || false,
-        afk: div.data("afk") || false
     };
     var name = $(div.children()[1]);
     name.removeClass();
@@ -95,7 +94,7 @@ function formatUserlistItem(div) {
     name.addClass(getNameColor(data.rank));
     div.find(".profile-box").remove();
 
-    if (data.afk) {
+    if (div.data("meta") && div.data().meta.afk) {
         div.addClass("userlist_afk");
     } else {
         div.removeClass("userlist_afk");
@@ -173,7 +172,7 @@ function formatUserlistItem(div) {
     if(data.leader) {
         $("<span/>").addClass("glyphicon glyphicon-star-empty").appendTo(icon);
     }
-    if(data.afk) {
+    if(div.data().meta.afk) {
         name.css("font-style", "italic");
         $("<span/>").addClass("glyphicon glyphicon-time").appendTo(icon);
     }
@@ -398,7 +397,7 @@ function calcUserBreakdown() {
 
         total++;
 
-        if($(item).data("afk"))
+        if($(item).data().meta.afk)
             breakdown["AFK"]++;
     });
 
