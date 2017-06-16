@@ -417,6 +417,10 @@ Channel.prototype.acceptUser = function (user) {
     if (!this.is(Flags.C_REGISTERED)) {
         user.socket.emit("channelNotRegistered");
     }
+
+    user.on('afk', function(){
+        self.sendUserMeta(self.users, user, -1);
+    })
 };
 
 Channel.prototype.partUser = function (user) {

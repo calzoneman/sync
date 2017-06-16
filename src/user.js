@@ -226,10 +226,7 @@ User.prototype.setAFK = function (afk) {
         this.channel.modules.voteskip.update();
     }
 
-    this.channel.broadcastAll("setAFK", {
-        name: this.getName(),
-        afk: afk
-    });
+    this.emit('afk', afk);
 };
 
 /* Automatically tag a user as AFK after a period of inactivity */
@@ -424,7 +421,7 @@ User.prototype.getFirstSeenTime = function getFirstSeenTime() {
         return this.socket.ipSessionFirstSeen.getTime();
     } else {
         LOGGER.error(`User "${this.getName()}" (IP: ${this.realip}) has neither ` +
-                "an IP sesion first seen time nor a registered account.");
+                "an IP session first seen time nor a registered account.");
         return Date.now();
     }
 };
