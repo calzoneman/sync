@@ -19,7 +19,7 @@ var CHANNEL = {
     css: "",
     js: "",
     motd: "",
-    name: false,
+    name: CHANNELNAME,
     usercount: 0,
     emotes: []
 };

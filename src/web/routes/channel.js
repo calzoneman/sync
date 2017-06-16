@@ -4,8 +4,8 @@ import { sendPug } from '../pug';
 import * as HTTPStatus from '../httpstatus';
 import { HTTPError } from '../../errors';
 
-export default function initialize(app, ioConfig) {
-    app.get('/r/:channel', (req, res) => {
+export default function initialize(app, ioConfig, chanPath) {
+    app.get(`/${chanPath}/:channel`, (req, res) => {
         if (!req.params.channel || !CyTubeUtil.isValidChannelName(req.params.channel)) {
             throw new HTTPError(`"${sanitizeText(req.params.channel)}" is not a valid ` +
                     'channel name.', { status: HTTPStatus.NOT_FOUND });

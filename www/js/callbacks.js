@@ -425,23 +425,6 @@ Callbacks = {
 
             if (!CLIENT.guest) {
                 socket.emit("initUserPLCallbacks");
-                if ($("#loginform").length === 0) {
-                    return;
-                }
-                var logoutform = $("<p/>").attr("id", "logoutform")
-                    .addClass("navbar-text pull-right")
-                    .insertAfter($("#loginform"));
-
-                $("<span/>").attr("id", "welcome").text("Welcome, " + CLIENT.name)
-                    .appendTo(logoutform);
-                $("<span/>").html("&nbsp;&middot;&nbsp;").appendTo(logoutform);
-                var domain = $("#loginform").attr("action").replace("/login", "");
-                $("<a/>").attr("id", "logout")
-                    .attr("href", domain + "/logout?redirect=/r/" + CHANNEL.name)
-                    .text("Logout")
-                    .appendTo(logoutform);
-
-                $("#loginform").remove();
             }
         }
     },

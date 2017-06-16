@@ -86,7 +86,7 @@ mixin adminoptions
   #cs-adminoptions.tab-pane
     h4 Admin-Only Settings
     form.form-horizontal(action="javascript:void(0)")
-      - var defname = "CyTube - /r/" + channelName
+      - var defname = `CyTube - /${channelPath}/${channelName}`
       +textbox-auto("cs-pagetitle", "Page title", defname)
       +textbox-auto("cs-password", "Password", "leave blank to disable")
       +textbox-auto("cs-externalcss", "External CSS", "Stylesheet URL")

@@ -11,7 +11,7 @@ html(lang="en")
         include nav
         +navheader()
         #nav-collapsible.collapse.navbar-collapse
-          - var cname = "/r/" + channelName
+          - var cname = `/${channelPath}/${channelName}`
           ul.nav.navbar-nav
             +navdefaultlinks(cname)
             li: a(href="javascript:void(0)", onclick="javascript:showUserOptions()") Options

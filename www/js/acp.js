@@ -453,8 +453,8 @@ console.log(channels[0]);
     channels.forEach(function (c) {
         var tr = $("<tr/>").appendTo(tbl);
         var name = $("<td/>").appendTo(tr);
-        $("<a/>").attr("href", "/r/" + c.name)
-            .text(c.pagetitle + " (/r/" + c.name + ")")
+        $("<a/>").attr("href", `/${CHANNELPATH}/${c.name}`)
+            .text(c.pagetitle + ` (/${CHANNELPATH}/${c.name})`)
             .appendTo(name);
         var usercount = $("<td/>").text(c.usercount).appendTo(tr);
         count += c.usercount;
@@ -475,7 +475,7 @@ console.log(channels[0]);
             .attr("title", "Unload")
             .appendTo(controlInner)
             .click(function () {
-                if (confirm("Are you sure you want to unload /r/" + c.name + "?")) {
+                if (confirm(`Are you sure you want to unload /${CHANNELPATH}/${c.name}?`)) {
                     socket.emit("acp-force-unload", {
                         name: c.name
                     });

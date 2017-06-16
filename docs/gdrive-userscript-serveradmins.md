@@ -21,4 +21,4 @@ example, for cytu.be I use:
 npm run generate-userscript CyTube http://cytu.be/r/* https://cytu.be/r/*
 ```
 
-This will generate `www/js/cytube-google-drive.user.js`.
+This will generate `www/js/cytube-google-drive.user.js`. If you've changed the channel path, be sure to take that into account.

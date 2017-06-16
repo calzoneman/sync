@@ -70,7 +70,12 @@ var defaults = {
         "from-name": "CyTube Services"
     },
     "youtube-v3-key": "",
+    "channel-blacklist": [],
+    "channel-path": "r",
     "channel-save-interval": 5,
+    "channel-storage": {
+        type: "file"
+    },
     "max-channels-per-user": 5,
     "max-accounts-per-ip": 5,
     "guest-login-delay": 60,
@@ -102,7 +107,6 @@ var defaults = {
         "max-items": 4000,
         "update-interval": 5
     },
-    "channel-blacklist": [],
     ffmpeg: {
         enabled: false,
         "ffprobe-exec": "ffprobe"
@@ -113,9 +117,6 @@ var defaults = {
         "group": "users",
         "user": "nobody",
         "timeout": 15
-    },
-    "channel-storage": {
-        type: "file"
     },
     "service-socket": {
         enabled: false,
@@ -389,6 +390,12 @@ function preprocessConfig(cfg) {
         tbl[c.toLowerCase()] = true;
     });
     cfg["channel-blacklist"] = tbl;
+
+    /* Check channel path */
+    if(!/^[-\w]+$/.test(cfg["channel-blacklist"])){
+        LOGGER.error("Channel paths may only use the same characters as usernames and channel names.");
+        process.exit(78); // sysexits.h for bad config
+    }
 
     if (cfg["link-domain-blacklist"].length > 0) {
         cfg["link-domain-blacklist-regex"] = new RegExp(

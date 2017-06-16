@@ -61,6 +61,7 @@ function initPasswordResetCleanup(Server) {
 }
 
 function initChannelDumper(Server) {
+    const chanPath = Config.get('channel-path');
     var CHANNEL_SAVE_INTERVAL = parseInt(Config.get("channel-save-interval"))
                                 * 60000;
     setInterval(function () {
@@ -70,9 +71,9 @@ function initChannelDumper(Server) {
             return Promise.delay(wait).then(() => {
                 if (!chan.dead && chan.users && chan.users.length > 0) {
                     return chan.saveState().tap(() => {
-                        LOGGER.info(`Saved /r/${chan.name}`);
+                        LOGGER.info(`Saved /${chanPath}/${chan.name}`);
                     }).catch(err => {
-                        LOGGER.error(`Failed to save /r/${chan.name}: ${err.stack}`);
+                        LOGGER.error(`Failed to save /${chanPath}/${chan.name}: ${err.stack}`);
                     });
                 }
             }).catch(error => {

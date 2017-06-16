@@ -138,14 +138,30 @@ mail:
 #     5. Click "Server key"
 #     6. Under "APIs & auth" click "YouTube Data API" and then click "Enable API"
 youtube-v3-key: ''
-# Minutes between saving channel state to disk
-channel-save-interval: 5
 # Limit for the number of channels a user can register
 max-channels-per-user: 5
 # Limit for the number of accounts an IP address can register
 max-accounts-per-ip: 5
 # Minimum number of seconds between guest logins from the same IP
 guest-login-delay: 60
+
+# Allows you to customize the path divider. The /r/ in http://localhost/r/yourchannel
+# Acceptable characters are a-z A-Z 0-9 _ and -
+channel-path: 'r'
+# Allows you to blacklist certain channels.  Users will be automatically kicked
+# upon trying to join one.
+channel-blacklist: []
+# Minutes between saving channel state to disk
+channel-save-interval: 5
+# Determines channel data storage mechanism.
+# Defaults to 'file', in which channel data is JSON stringified and saved to a file
+# in the `chandump/` folder.  This is the legacy behavior of CyTube.
+# The other possible option is 'database', in which case each key-value pair of
+# channel data is stored as a row in the `channel_data` database table.
+# To migrate legacy chandump files to the database, shut down CyTube (to prevent
+# concurrent updates), then run `node lib/channel-storage/migrate.js`.
+channel-storage:
+  type: 'file'
 
 # Configure statistics tracking
 stats:
@@ -208,10 +224,6 @@ playlist:
 # The server must be invoked with node --expose-gc index.js for this to have any effect.
 aggressive-gc: false
 
-# Allows you to blacklist certain channels.  Users will be automatically kicked
-# upon trying to join one.
-channel-blacklist: []
-
 # If you have ffmpeg installed, you can query metadata from raw files, allowing
 # server-synched raw file playback.  This requires the following:
 #   * ffmpeg must be installed on the server
@@ -230,16 +242,6 @@ setuid:
   user: 'user'
 # how long to wait in ms before changing uid/gid
   timeout: 15
-
-# Determines channel data storage mechanism.
-# Defaults to 'file', in which channel data is JSON stringified and saved to a file
-# in the `chandump/` folder.  This is the legacy behavior of CyTube.
-# The other possible option is 'database', in which case each key-value pair of
-# channel data is stored as a row in the `channel_data` database table.
-# To migrate legacy chandump files to the database, shut down CyTube (to prevent
-# concurrent updates), then run `node lib/channel-storage/migrate.js`.
-channel-storage:
-  type: 'file'
 
 # Allows for external services to access the system commandline
 # Useful for setups where stdin isn't available such as when using PM2

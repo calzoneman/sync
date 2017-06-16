@@ -11,8 +11,16 @@ mixin head()
   link(href="/css/cytube.css", rel="stylesheet")
   link(id="usertheme", href=DEFAULT_THEME, rel="stylesheet")
 
-  script(type="text/javascript").
-    var DEFAULT_THEME = '#{DEFAULT_THEME}';
+  if channelName
+    script(type="text/javascript").
+      var DEFAULT_THEME = '#{DEFAULT_THEME}';
+      var CHANNELPATH = '#{channelPath}';
+      var CHANNELNAME = '#{channelName}';
+  else
+    script(type="text/javascript").
+      var DEFAULT_THEME = '#{DEFAULT_THEME}';
+      var CHANNELPATH = '#{channelPath}';
+
   script(src="/js/theme.js")
   //[if lt IE 9]
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
