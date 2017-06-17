@@ -119,9 +119,10 @@ RankModule.prototype.handleRankChange = function (user, data) {
             return;
         }
 
+        const oldRank = receiver.account.effectiveRank;
         receiver.account.channelRank = rank;
         receiver.account.effectiveRank = Math.max(receiver.account.globalRank, rank);
-        receiver.emit("effectiveRankChange", receiver.account.effectiveRank);
+        receiver.emit("effectiveRankChange", receiver.account.effectiveRank, oldRank);
         receiver.socket.emit("rank", receiver.account.effectiveRank);
         this.channel.logger.log("[mod] " + user.getName() + " set " + name + "'s rank " +
                                 "to " + rank);

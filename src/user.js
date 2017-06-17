@@ -302,10 +302,11 @@ User.prototype.login = function (name, pw) {
             return;
         }
 
+        const oldRank = self.account.effectiveRank;
         self.account.user = user;
         self.account.update();
         self.socket.emit("rank", self.account.effectiveRank);
-        self.emit("effectiveRankChange", self.account.effectiveRank);
+        self.emit("effectiveRankChange", self.account.effectiveRank, oldRank);
         self.registrationTime = new Date(user.time);
         self.setFlag(Flags.U_REGISTERED);
         self.socket.emit("login", {
@@ -381,10 +382,11 @@ User.prototype.guestLogin = function (name) {
         // Login succeeded
         lastguestlogin[self.realip] = Date.now();
 
+        const oldRank = self.account.effectiveRank;
         self.account.guestName = name;
         self.account.update();
         self.socket.emit("rank", self.account.effectiveRank);
-        self.emit("effectiveRankChange", self.account.effectiveRank);
+        self.emit("effectiveRankChange", self.account.effectiveRank, oldRank);
         self.socket.emit("login", {
             success: true,
             name: name,
@@ -427,12 +429,13 @@ User.prototype.getFirstSeenTime = function getFirstSeenTime() {
 };
 
 User.prototype.setChannelRank = function setRank(rank) {
-    const changed = this.account.effectiveRank !== rank;
+    const oldRank = this.account.effectiveRank;
+    const changed = oldRank !== rank;
     this.account.channelRank = rank;
     this.account.update();
     this.socket.emit("rank", this.account.effectiveRank);
     if (changed) {
-        this.emit("effectiveRankChange", this.account.effectiveRank);
+        this.emit("effectiveRankChange", this.account.effectiveRank, oldRank);
     }
 };
 

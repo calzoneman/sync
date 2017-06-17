@@ -423,6 +423,9 @@ Channel.prototype.acceptUser = function (user) {
         // TODO: Drop legacy setAFK frame after a few months
         self.broadcastAll("setAFK", { name: user.getName(), afk: afk });
     })
+    user.on("effectiveRankChange", (newRank, oldRank) => {
+        this.maybeResendUserlist(user, newRank, oldRank);
+    });
 };
 
 Channel.prototype.partUser = function (user) {
@@ -454,6 +457,15 @@ Channel.prototype.partUser = function (user) {
 
     this.refCounter.unref("Channel::user");
     user.die();
+};
+
+Channel.prototype.maybeResendUserlist = function maybeResendUserlist(user, newRank, oldRank) {
+    if ((newRank >= 2 && oldRank < 2)
+            || (newRank < 2 && oldRank >= 2)
+            || (newRank >= 255 && oldRank < 255)
+            || (newRank < 255 && oldRank >= 255)) {
+        this.sendUserlist([user]);
+    }
 };
 
 Channel.prototype.packUserData = function (user) {
