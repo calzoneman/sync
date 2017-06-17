@@ -412,6 +412,8 @@ Channel.prototype.acceptUser = function (user) {
         self.modules[m].onUserPostJoin(user);
     });
 
+    // For bots who don't use cookies
+    user.socket.on("requestUserlist", this.sendUserlist.bind(this, [user]));
     this.sendUserlist([user]);
     this.broadcastUsercount();
     if (!this.is(Flags.C_REGISTERED)) {
