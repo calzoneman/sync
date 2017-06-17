@@ -615,17 +615,6 @@ $("#shuffleplaylist").click(function() {
     }
 });
 
-/* load channel */
-
-var loc = document.location+"";
-var m = loc.match(/\/r\/([a-zA-Z0-9-_]+)/);
-if(m) {
-    CHANNEL.name = m[1];
-    if (CHANNEL.name.indexOf("#") !== -1) {
-        CHANNEL.name = CHANNEL.name.substring(0, CHANNEL.name.indexOf("#"));
-    }
-}
-
 /* channel ranks stuff */
 function chanrankSubmit(rank) {
     var name = $("#cs-chanranks-name").val();

@@ -114,6 +114,8 @@ function fixOldChandump(data) {
 }
 
 function migrate(src, dest, opts) {
+    const chanPath = Config.get('channel-path');
+
     return src.listChannels().then(names => {
         return Promise.reduce(names, (_, name) => {
             // A long time ago there was a bug where CyTube would save a different
@@ -143,11 +145,11 @@ function migrate(src, dest, opts) {
                 });
                 return dest.save(name, data);
             }).then(() => {
-                console.log(`Migrated /r/${name}`);
+                console.log(`Migrated /${chanPath}/${name}`);
             }).catch(ChannelNotFoundError, err => {
-                console.log(`Skipping /r/${name} (not present in the database)`);
+                console.log(`Skipping /${chanPath}/${name} (not present in the database)`);
             }).catch(err => {
-                console.error(`Failed to migrate /r/${name}: ${err.stack}`);
+                console.error(`Failed to migrate /${chanPath}/${name}: ${err.stack}`);
             });
         }, 0);
     });

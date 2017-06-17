@@ -25,7 +25,7 @@ html(lang="en")
               tbody
                 each chan in channels
                   tr
-                    td: a(href="/r/"+chan.name) #{chan.pagetitle} (#{chan.name})
+                    td: a(href=`/${channelPath}/${chan.name}`) #{chan.pagetitle} (#{chan.name})
                     td= chan.usercount
                     td= chan.mediatitle
           .col-lg-3.col-md-3
@@ -37,6 +37,6 @@ html(lang="en")
     script(type="text/javascript").
       $("#channelname").keydown(function (ev) {
         if (ev.keyCode === 13) {
-          location.href = "/r/" + $("#channelname").val();
+          location.href = "/#{channelPath}/" + $("#channelname").val();
         }
       });

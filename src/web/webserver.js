@@ -132,6 +132,8 @@ module.exports = {
      * Initializes webserver callbacks
      */
     init: function (app, webConfig, ioConfig, clusterClient, channelIndex, session) {
+        const chanPath = Config.get('channel-path');
+
         app.use((req, res, next) => {
             counters.add("http:request", 1);
             next();
@@ -147,7 +149,7 @@ module.exports = {
         }
         app.use(cookieParser(webConfig.getCookieSecret()));
         app.use(csrf.init(webConfig.getCookieDomain()));
-        app.use('/r/:channel', require('./middleware/ipsessioncookie').ipSessionCookieMiddleware);
+        app.use(`/${chanPath}/:channel`, require('./middleware/ipsessioncookie').ipSessionCookieMiddleware);
         initializeLog(app);
         require('./middleware/authorize')(app, session);
 
@@ -176,7 +178,7 @@ module.exports = {
             LOGGER.info('Enabled express-minify for CSS and JS');
         }
 
-        require('./routes/channel')(app, ioConfig);
+        require('./routes/channel')(app, ioConfig, chanPath);
         require('./routes/index')(app, channelIndex, webConfig.getMaxIndexEntries());
         app.get('/sioconfig(.json)?', handleLegacySocketConfig);
         require('./routes/socketconfig')(app, clusterClient);

@@ -62,6 +62,7 @@ var Server = function () {
     self.announcement = null;
     self.infogetter = null;
     self.servers = {};
+    self.chanPath = Config.get('channel-path');
 
     // backend init
     var initModule;
@@ -264,7 +265,7 @@ Server.prototype.unloadChannel = function (chan, options) {
 
     if (!options.skipSave) {
         chan.saveState().catch(error => {
-            LOGGER.error(`Failed to save /r/${chan.name} for unload: ${error.stack}`);
+            LOGGER.error(`Failed to save /${this.chanPath}/${chan.name} for unload: ${error.stack}`);
         });
     }
 
@@ -354,9 +355,9 @@ Server.prototype.shutdown = function () {
     Promise.map(this.channels, channel => {
         try {
             return channel.saveState().tap(() => {
-                LOGGER.info(`Saved /r/${channel.name}`);
+                LOGGER.info(`Saved /${this.chanPath}/${channel.name}`);
             }).catch(err => {
-                LOGGER.error(`Failed to save /r/${channel.name}: ${err.stack}`);
+                LOGGER.error(`Failed to save /${this.chanPath}/${channel.name}: ${err.stack}`);
             });
         } catch (error) {
             LOGGER.error(`Failed to save channel: ${error.stack}`);
@@ -391,7 +392,7 @@ Server.prototype.handlePartitionMapChange = function () {
                 });
                 this.unloadChannel(channel, { skipSave: true });
             }).catch(error => {
-                LOGGER.error(`Failed to unload /r/${channel.name} for ` +
+                LOGGER.error(`Failed to unload /${this.chanPath}/${channel.name} for ` +
                                   `partition map flip: ${error.stack}`);
             });
         }
