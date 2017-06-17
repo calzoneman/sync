@@ -392,7 +392,7 @@ function preprocessConfig(cfg) {
     cfg["channel-blacklist"] = tbl;
 
     /* Check channel path */
-    if(!/^[-\w]+$/.test(cfg["channel-blacklist"])){
+    if(!/^[-\w]+$/.test(cfg["channel-path"])){
         LOGGER.error("Channel paths may only use the same characters as usernames and channel names.");
         process.exit(78); // sysexits.h for bad config
     }
