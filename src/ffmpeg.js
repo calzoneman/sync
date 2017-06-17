@@ -62,6 +62,8 @@ function translateStatusCode(statusCode) {
                 "the file to be downloaded.";
         case 404:
             return "The requested link could not be found (404).";
+        case 410:
+            return "The requested link does not exist (410 Gone).";
         case 500:
         case 503:
             return "The website hosting the audio/video link encountered an error " +
@@ -119,6 +121,7 @@ function testUrl(url, cb, redirCount) {
     });
 
     req.on("error", function (err) {
+        LOGGER.error("Error sending preflight request: %s (link: %s)", err.message, url);
         cb("An unexpected error occurred while trying to process the link.  " +
            "Try again, and contact support for further troubleshooting if the " +
            "problem continues." + (!!err.code ? (" Error code: " + err.code) : ""));
