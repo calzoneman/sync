@@ -382,6 +382,10 @@ Callbacks = {
         if(r >= 255)
             SUPERADMIN = true;
         CLIENT.rank = r;
+        // Request a new userlist since we're a mod now.
+        if(typeof findUserlistItem(CLIENT.name).data().meta.aliases === 'undefined' && 2 <= r){
+            socket.emit('requestUserlist');
+        }
         handlePermissionChange();
         if(SUPERADMIN && $("#setrank").length == 0) {
             var li = $("<li/>").addClass("dropdown")
