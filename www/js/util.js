@@ -94,19 +94,20 @@ function formatUserlistItem(div) {
     name.addClass(getNameColor(data.rank));
     div.find(".profile-box").remove();
 
-    if (div.data("meta") && div.data().meta.afk) {
+    var meta = div.data().meta || {}; // Not sure how this could happen.
+    if (meta.afk) {
         div.addClass("userlist_afk");
     } else {
         div.removeClass("userlist_afk");
     }
 
-    if (div.data("meta") && div.data("meta").muted) {
+    if (meta.muted) {
         div.addClass("userlist_muted");
     } else {
         div.removeClass("userlist_muted");
     }
 
-    if (div.data("meta") && div.data("meta").smuted) {
+    if (meta.smuted) {
         div.addClass("userlist_smuted");
     } else {
         div.removeClass("userlist_smuted");
