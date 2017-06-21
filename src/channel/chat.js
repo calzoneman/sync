@@ -122,6 +122,12 @@ ChatModule.prototype.shadowMutedUsers = function () {
     });
 };
 
+ChatModule.prototype.anonymousUsers = function () {
+    return this.channel.users.filter(function (u) {
+        return u.getName() === "";
+    });
+};
+
 ChatModule.prototype.restrictNewAccount = function restrictNewAccount(user, data) {
     if (user.account.effectiveRank < 2 && this.channel.modules.options) {
         const firstSeen = user.getFirstSeenTime();
@@ -324,6 +330,10 @@ ChatModule.prototype.processChatMsg = function (user, data) {
 
     if (user.is(Flags.U_SMUTED)) {
         this.shadowMutedUsers().forEach(function (u) {
+            u.socket.emit("chatMsg", msgobj);
+        });
+        // This prevents shadowmuted users from easily detecting their state
+        this.anonymousUsers().forEach(function (u) {
             u.socket.emit("chatMsg", msgobj);
         });
         msgobj.meta.shadow = true;
