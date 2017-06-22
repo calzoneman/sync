@@ -184,6 +184,7 @@ function ipForwardingMiddleware(webConfig) {
     }
 
     function isTrustedProxy(ip) {
+        if (Config.get("proxy.trust-all") === true) { return true; }
         return webConfig.getTrustedProxies().indexOf(ip) >= 0;
     }
 

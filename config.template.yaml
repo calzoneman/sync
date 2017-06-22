@@ -255,3 +255,9 @@ twitch-client-id: null
 
 poll:
   max-options: 50
+
+# Proxy trust settings 
+# set trust-all to true if you know anyone who is capable of connecting to your server is
+# trustworthy (for example if you proxy into a private network)
+proxy:
+  trust-all: false
