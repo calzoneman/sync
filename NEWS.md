@@ -1,3 +1,15 @@
+2017-06-20
+==========
+
+The latest commit drops support for node.js versions below 6 (the [current
+LTS](https://github.com/nodejs/LTS#lts-schedule1)).  This is to allow the babel
+preset to avoid generating inefficient code to polyfill ES2015+ features that
+are now implemented in the node.js core.
+
+New versions of node.js can be downloaded from the [node.js
+website](https://nodejs.org/en/download/), if they are not already available in
+your distribution's package manager.
+
 2017-03-20
 ==========
 
