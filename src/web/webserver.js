@@ -138,7 +138,7 @@ module.exports = {
             counters.add("http:request", 1);
             next();
         });
-        require('./middleware/x-forwarded-for')(app, webConfig);
+        require('./middleware/x-forwarded-for').initialize(app, webConfig);
         app.use(bodyParser.urlencoded({
             extended: false,
             limit: '1kb' // No POST data should ever exceed this size under normal usage

@@ -19,6 +19,7 @@ import { LoggerFactory } from '@calzoneman/jsli';
 const verifySession = Promise.promisify(session.verifySession);
 const getAliases = Promise.promisify(db.getAliases);
 import { CachingGlobalBanlist } from './globalban';
+import proxyaddr from 'proxy-addr';
 
 const LOGGER = LoggerFactory.getLogger('ioserver');
 
@@ -165,35 +166,13 @@ function addTypecheckedFunctions(sock) {
 }
 
 function ipForwardingMiddleware(webConfig) {
-    function getForwardedIP(socket) {
-        var req = socket.client.request;
-        const xForwardedFor = req.headers['x-forwarded-for'];
-        if (!xForwardedFor) {
-            return socket.client.conn.remoteAddress;
-        }
-
-        const ipList = xForwardedFor.split(',');
-        for (let i = 0; i < ipList.length; i++) {
-            const ip = ipList[i].trim();
-            if (net.isIP(ip)) {
-                return ip;
-            }
-        }
-
-        return socket.client.conn.remoteAddress;
-    }
-
-    function isTrustedProxy(ip) {
-        return webConfig.getTrustedProxies().indexOf(ip) >= 0;
-    }
+    const trustFn = proxyaddr.compile(webConfig.getTrustedProxies());
 
     return function (socket, accept) {
-        if (isTrustedProxy(socket.client.conn.remoteAddress)) {
-            socket._realip = getForwardedIP(socket);
-        } else {
-            socket._realip = socket.client.conn.remoteAddress;
-        }
-
+        LOGGER.debug('ip = %s', socket.client.request.connection.remoteAddress);
+        //socket.client.request.ip = socket.client.conn.remoteAddress;
+        socket._realip = proxyaddr(socket.client.request, trustFn);
+        LOGGER.debug('socket._realip: %s', socket._realip);
         accept(null, true);
     }
 }

@@ -1,10 +1,5 @@
 import clone from 'clone';
 
-const DEFAULT_TRUSTED_PROXIES = Object.freeze([
-    '127.0.0.1',
-    '::1'
-]);
-
 export default class WebConfiguration {
     constructor(config) {
         this.config = config;
@@ -15,7 +10,7 @@ export default class WebConfiguration {
     }
 
     getTrustedProxies() {
-        return DEFAULT_TRUSTED_PROXIES;
+        return this.config.trustProxies;
     }
 
     getCookieSecret() {
@@ -75,6 +70,8 @@ WebConfiguration.fromOldConfig = function (oldConfig) {
     config.cacheTTL = oldConfig.get('http.max-age');
 
     config.maxIndexEntries = oldConfig.get('http.index.max-entries');
+
+    config.trustProxies = oldConfig.get('http.trust-proxies');
 
     return new WebConfiguration(config);
 };

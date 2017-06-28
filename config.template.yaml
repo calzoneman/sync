@@ -70,6 +70,9 @@ http:
   index:
     # Maximum number of channels to display on the index page public channel list
     max-entries: 50
+  # Configure trusted proxy addresses to map X-Forwarded-For to the client IP.
+  # See also: https://github.com/jshttp/proxy-addr
+  trust-proxies: ['loopback']
 
 # HTTPS server details
 https:

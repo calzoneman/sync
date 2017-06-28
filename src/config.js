@@ -43,7 +43,10 @@ var defaults = {
         "cookie-secret": "change-me",
         index: {
             "max-entries": 50
-        }
+        },
+        "trust-proxies": [
+            "loopback"
+        ]
     },
     https: {
         enabled: false,
