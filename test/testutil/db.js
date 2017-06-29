@@ -14,7 +14,17 @@ function MockTx() {
 
 }
 
-['insert', 'update', 'select', 'del', 'where', 'table'].forEach(method => {
+[
+    'del',
+    'distinct',
+    'insert',
+    'limit',
+    'orderBy',
+    'select',
+    'table',
+    'update',
+    'where',
+].forEach(method => {
     MockTx.prototype[method] = function () {
         return Promise.reject(new Error(`No stub defined for method "${method}"`));
     };
