@@ -419,7 +419,7 @@ Channel.prototype.acceptUser = function (user) {
     }
 
     user.on('afk', function(afk){
-        self.sendUserMeta(self.users, user, -1);
+        self.sendUserMeta(self.users, user);
         // TODO: Drop legacy setAFK frame after a few months
         self.broadcastAll("setAFK", { name: user.getName(), afk: afk });
     })

@@ -520,7 +520,7 @@ Callbacks = {
          *         after script authors have had ample time to update
          */
         socket.listeners('setAFK').forEach(function(listener){
-            listener(data.meta.afk);
+            listener({ name: data.name, afk: data.meta.afk });
         });
 
         formatUserlistItem(user, data);
