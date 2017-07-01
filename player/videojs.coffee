@@ -3,10 +3,10 @@ sortSources = (sources) ->
         console.error('sortSources() called with null source list')
         return []
 
-    qualities = ['1080', '720', '480', '360', '240']
+    qualities = ['2160', '1440', '1080', '720', '540', '480', '360', '240']
     pref = String(USEROPTS.default_quality)
     if USEROPTS.default_quality == 'best'
-        pref = '1080'
+        pref = '2160'
     idx = qualities.indexOf(pref)
     if idx < 0
         idx = 2
@@ -64,7 +64,8 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 $('<source/>').attr(
                     src: source.src
                     type: source.type
-                    'data-quality': source.quality
+                    res: source.quality
+                    label: "#{source.quality}p #{source.type.split('/')[1]}"
                 ).appendTo(video)
             )
 
@@ -82,7 +83,13 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                     ).appendTo(video)
                 )
 
-            @player = videojs(video[0], autoplay: true, controls: true)
+            @player = videojs(video[0],
+                    autoplay: true,
+                    controls: true,
+                    plugins:
+                        videoJsResolutionSwitcher:
+                            default: @sources[0].quality
+            )
             @player.ready(=>
                 @player.on('error', =>
                     err = @player.error()

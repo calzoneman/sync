@@ -526,7 +526,8 @@
             return $('<source/>').attr({
               src: source.src,
               type: source.type,
-              'data-quality': source.quality
+              res: source.quality,
+              label: source.quality + "p " + (source.type.split('/')[1])
             }).appendTo(video);
           });
           if (data.meta.gdrive_subtitles) {
@@ -546,7 +547,12 @@
           }
           _this.player = videojs(video[0], {
             autoplay: true,
-            controls: true
+            controls: true,
+            plugins: {
+              videoJsResolutionSwitcher: {
+                "default": _this.sources[0].quality
+              }
+            }
           });
           return _this.player.ready(function() {
             _this.player.on('error', function() {
