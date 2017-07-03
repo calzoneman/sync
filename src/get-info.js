@@ -510,7 +510,6 @@ var Getters = {
 
     /* google docs */
     gd: function (id, callback) {
-        GoogleDrive.setHTML5HackEnabled(Config.get("google-drive.html5-hack-enabled"));
         var data = {
             type: "googledrive",
             kind: "single",

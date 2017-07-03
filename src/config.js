@@ -125,9 +125,6 @@ var defaults = {
         enabled: false,
         socket: "service.sock"
     },
-    "google-drive": {
-        "html5-hack-enabled": false
-    },
     "twitch-client-id": null,
     poll: {
         "max-options": 50

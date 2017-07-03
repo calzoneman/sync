@@ -38,8 +38,7 @@ Media.prototype = {
                 bitrate: this.meta.bitrate,
                 scuri: this.meta.scuri,
                 embed: this.meta.embed,
-                gdrive_subtitles: this.meta.gdrive_subtitles,
-                html5hack: this.meta.html5hack
+                gdrive_subtitles: this.meta.gdrive_subtitles
             }
         };
     },
