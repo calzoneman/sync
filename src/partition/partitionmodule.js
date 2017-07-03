@@ -3,7 +3,7 @@ import { PartitionConfig } from './partitionconfig';
 import { PartitionDecider } from './partitiondecider';
 import { PartitionClusterClient } from '../io/cluster/partitionclusterclient';
 import RedisClientProvider from 'cytube-common/lib/redis/redisclientprovider';
-import logger from 'cytube-common/lib/logger';
+import { LoggerFactory } from '@calzoneman/jsli';
 import LegacyConfig from '../config';
 import path from 'path';
 import { AnnouncementRefresher } from './announcementrefresher';
@@ -11,6 +11,7 @@ import { RedisPartitionMapReloader } from './redispartitionmapreloader';
 
 const PARTITION_CONFIG_PATH = path.resolve(__dirname, '..', '..', 'conf',
                                            'partitions.toml');
+const logger = LoggerFactory.getLogger('PartitionModule');
 
 class PartitionModule {
     constructor() {

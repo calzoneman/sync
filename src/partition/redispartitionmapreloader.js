@@ -1,6 +1,8 @@
 import { PartitionMap } from './partitionmap';
-import logger from 'cytube-common/lib/logger';
+import { LoggerFactory } from '@calzoneman/jsli';
 import { EventEmitter } from 'events';
+
+const logger = LoggerFactory.getLogger('RedisPartitionMapReloader');
 
 class RedisPartitionMapReloader extends EventEmitter {
     constructor(config, redisClient, subClient) {
