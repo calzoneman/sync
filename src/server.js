@@ -64,15 +64,8 @@ var Server = function () {
     self.servers = {};
     self.chanPath = Config.get('channel-path');
 
-    // backend init
     var initModule;
-    if (Config.get("new-backend")) {
-        if (Config.get("dual-backend")) {
-            Switches.setActive(Switches.DUAL_BACKEND, true);
-        }
-        const BackendModule = require('./backend/backendmodule').BackendModule;
-        initModule = this.initModule = new BackendModule();
-    } else if (Config.get('enable-partition')) {
+    if (Config.get('enable-partition')) {
         initModule = this.initModule = new PartitionModule();
         self.partitionDecider = initModule.getPartitionDecider();
     } else {

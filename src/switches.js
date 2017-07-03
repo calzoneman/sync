@@ -7,5 +7,3 @@ export function isActive(switchName) {
 export function setActive(switchName, active) {
     switches[switchName] = active;
 }
-
-export const DUAL_BACKEND = 'DUAL_BACKEND';
