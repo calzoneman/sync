@@ -11,3 +11,5 @@ whitelisted-domains = [
     'i.imgur.com',
     'i.4cdn.org'
 ]
+# Whether to use URL encoding ("url") or hex encoding ("hex") for the target URL.
+encoding = 'url'

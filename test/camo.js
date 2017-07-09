@@ -7,7 +7,8 @@ describe('Camo', () => {
         camo: {
             server: 'http://localhost:8081',
             key: '9LKC7708ZHOVRCTLOLE3G2YJ0U1T8F96',
-            'whitelisted-domains': ['def.xyz']
+            'whitelisted-domains': ['def.xyz'],
+            encoding: 'hex'
         }
     });
 
@@ -15,6 +16,20 @@ describe('Camo', () => {
         it('constructs a camo url', () => {
             const result = Camo.camoify(config, 'http://abc.xyz/image.jpeg');
             assert.strictEqual(result, 'http://localhost:8081/a9c295dd7d8dcbc8247dec97ac5d9b4ee8baeb31/687474703a2f2f6162632e78797a2f696d6167652e6a706567');
+        });
+
+        it('constructs a camo url using url encoding', () => {
+            const config = new CamoConfig({
+                camo: {
+                    server: 'http://localhost:8081',
+                    key: '9LKC7708ZHOVRCTLOLE3G2YJ0U1T8F96',
+                    'whitelisted-domains': ['def.xyz'],
+                    encoding: 'url'
+                }
+            });
+
+            const result = Camo.camoify(config, 'http://abc.xyz/image.jpeg');
+            assert.strictEqual(result, 'http://localhost:8081/a9c295dd7d8dcbc8247dec97ac5d9b4ee8baeb31?url=http%3A%2F%2Fabc.xyz%2Fimage.jpeg');
         });
 
         it('bypasses camo for whitelisted domains', () => {

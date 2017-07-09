@@ -24,8 +24,14 @@ export function camoify(camoConfig: CamoConfig, url: string): string {
     const hmac = crypto.createHmac('sha1', camoConfig.getKey());
     hmac.update(url);
     const digest = hmac.digest('hex');
-    const hexUrl = Buffer.from(url, 'utf8').toString('hex');
-    return `${camoConfig.getServer()}/${digest}/${hexUrl}`;
+    // https://github.com/atmos/camo#url-formats
+    if (camoConfig.getEncoding() === 'hex') {
+        const hexUrl = Buffer.from(url, 'utf8').toString('hex');
+        return `${camoConfig.getServer()}/${digest}/${hexUrl}`;
+    } else {
+        const encoded = encodeURIComponent(url);
+        return `${camoConfig.getServer()}/${digest}?url=${encoded}`;
+    }
 }
 
 export function transformImgTags(camoConfig: CamoConfig, tagName: string, attribs: Object) {
