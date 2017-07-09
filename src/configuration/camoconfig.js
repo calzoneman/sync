@@ -1,3 +1,5 @@
+const SPECIALCHARS = /([\\\.\?\+\*\$\^\|\(\)\[\]\{\}])/g;
+
 class CamoConfig {
     constructor(config = { camo: { enabled: false } }) {
         this.config = config.camo;
@@ -28,6 +30,17 @@ class CamoConfig {
 
     getWhitelistedDomains() {
         return this.config['whitelisted-domains'] || [];
+    }
+
+    getWhitelistedDomainsRegexp() {
+        const domains = this.getWhitelistedDomains()
+                .map(d => '\\.' + d.replace(SPECIALCHARS, '\\$1') + '$');
+        if (domains.length === 0) {
+            // If no whitelist, match nothing
+            return new RegExp('$^');
+        }
+
+        return new RegExp(domains.join('|'), 'i');
     }
 
     getEncoding() {

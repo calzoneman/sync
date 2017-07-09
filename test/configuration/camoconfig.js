@@ -39,4 +39,18 @@ describe('CamoConfig', () => {
             assert.deepStrictEqual(new CamoConfig().getEncoding(), 'url');
         });
     });
+
+    describe('#getWhitelistedDomainsRegexp', () => {
+        it('generates a regex based on the whitelisted domains', () => {
+            const config = new CamoConfig({
+                camo: {
+                    server: 'localhost:8081',
+                    'whitelisted-domains': ['abc.xyz', 'tii.kzz.qqq']
+                }
+            });
+
+            const re = config.getWhitelistedDomainsRegexp();
+            assert.deepStrictEqual(re, /\.abc\.xyz$|\.tii\.kzz\.qqq$/i);
+        });
+    });
 });

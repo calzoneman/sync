@@ -7,7 +7,7 @@ describe('Camo', () => {
         camo: {
             server: 'http://localhost:8081',
             key: '9LKC7708ZHOVRCTLOLE3G2YJ0U1T8F96',
-            'whitelisted-domains': ['def.xyz'],
+            'whitelisted-domains': ['def.xyz', 'tii.kzz.qqq'],
             encoding: 'hex'
         }
     });
@@ -35,6 +35,28 @@ describe('Camo', () => {
         it('bypasses camo for whitelisted domains', () => {
             const result = Camo.camoify(config, 'http://def.xyz/image.jpeg');
             assert.strictEqual(result, 'https://def.xyz/image.jpeg');
+        });
+
+        it('bypasses camo for whitelisted domains subdomains', () => {
+            const result = Camo.camoify(config, 'http://abc.def.xyz/image.jpeg');
+            assert.strictEqual(result, 'https://abc.def.xyz/image.jpeg');
+        });
+
+        it('does not bypass camo for a non-subdomain match', () => {
+            const result = Camo.camoify(config, 'http://abcdef.xyz/image.jpeg');
+            assert.strictEqual(result, 'http://localhost:8081/19f53f65e8081a064cff54fbd665e8bb08612aa6/687474703a2f2f6162636465662e78797a2f696d6167652e6a706567');
+        });
+
+        it('does not bypass camo when no whitelist is configured', () => {
+            const config = new CamoConfig({
+                camo: {
+                    server: 'http://localhost:8081',
+                    key: '9LKC7708ZHOVRCTLOLE3G2YJ0U1T8F96',
+                    encoding: 'hex'
+                }
+            });
+            const result = Camo.camoify(config, 'http://abcdef.xyz/image.jpeg');
+            assert.strictEqual(result, 'http://localhost:8081/19f53f65e8081a064cff54fbd665e8bb08612aa6/687474703a2f2f6162636465662e78797a2f696d6167652e6a706567');
         });
     });
 

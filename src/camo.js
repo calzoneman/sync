@@ -6,9 +6,9 @@ import { CamoConfig } from './configuration/camoconfig';
 const LOGGER = require('@calzoneman/jsli')('camo');
 
 function isWhitelisted(camoConfig: CamoConfig, url: string): boolean {
-    const whitelistedDomains = camoConfig.getWhitelistedDomains();
+    const whitelistedDomains = camoConfig.getWhitelistedDomainsRegexp();
     const parsed = urlparse.parse(url);
-    return whitelistedDomains.includes(parsed.hostname);
+    return whitelistedDomains.test('.' + parsed.hostname);
 }
 
 export function camoify(camoConfig: CamoConfig, url: string): string {
