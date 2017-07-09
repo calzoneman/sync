@@ -13,9 +13,8 @@ var Streamable = require("cytube-mediaquery/lib/provider/streamable");
 var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
 var TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('get-info');
+const LOGGER = require('@calzoneman/jsli')('get-info');
 
 var urlRetrieve = function (transport, options, callback) {
     var req = transport.request(options, function (res) {

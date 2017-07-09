@@ -5,9 +5,8 @@ var path = require("path");
 var tables = require("./tables");
 var Flags = require("../flags");
 var util = require("../utilities");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('database/channels');
+const LOGGER = require('@calzoneman/jsli')('database/channels');
 
 var blackHole = function () { };
 

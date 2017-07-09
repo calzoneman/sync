@@ -5,8 +5,7 @@ var path = require('path');
 var querystring = require('querystring');
 var crypto = require('crypto');
 
-import { LoggerFactory } from '@calzoneman/jsli';
-const LOGGER = LoggerFactory.getLogger('google2vtt');
+const LOGGER = require('@calzoneman/jsli')('google2vtt');
 
 function md5(input) {
     var hash = crypto.createHash('md5');

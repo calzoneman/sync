@@ -1,8 +1,7 @@
 import { PartitionMap } from './partitionmap';
-import { LoggerFactory } from '@calzoneman/jsli';
 import { EventEmitter } from 'events';
 
-const logger = LoggerFactory.getLogger('RedisPartitionMapReloader');
+const logger = require('@calzoneman/jsli')('RedisPartitionMapReloader');
 
 class RedisPartitionMapReloader extends EventEmitter {
     constructor(config, redisClient, subClient) {

@@ -1,9 +1,8 @@
 var db = require("../database");
 var Q = require("q");
 import Promise from 'bluebird';
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('database/update');
+const LOGGER = require('@calzoneman/jsli')('database/update');
 
 const DB_VERSION = 11;
 var hasUpdates = [];

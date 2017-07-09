@@ -1,8 +1,7 @@
 import CyTubeUtil from '../../utilities';
 import * as HTTPStatus from '../httpstatus';
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('web/routes/socketconfig');
+const LOGGER = require('@calzoneman/jsli')('web/routes/socketconfig');
 
 export default function initialize(app, clusterClient) {
     app.get('/socketconfig/:channel.json', (req, res) => {

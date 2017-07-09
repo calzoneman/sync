@@ -1,12 +1,11 @@
 import https from 'https';
 import path from 'path';
 import fs from 'fs';
-import { LoggerFactory } from '@calzoneman/jsli';
 import Promise from 'bluebird';
 
 Promise.promisifyAll(fs);
 
-const LOGGER = LoggerFactory.getLogger('torlist');
+const LOGGER = require('@calzoneman/jsli')('torlist');
 const TOR_EXIT_LIST_URL = 'https://check.torproject.org/exit-addresses';
 const TOR_EXIT_LIST_FILE = path.join(__dirname, '..', 'tor-exit-list.json');
 const ONE_DAY = 24 * 3600 * 1000;

@@ -2,9 +2,8 @@ var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 var ChannelModule = require("./module");
 var Config = require("../config");
 var InfoGetter = require("../get-info");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('mediarefresher');
+const LOGGER = require('@calzoneman/jsli')('mediarefresher');
 
 function MediaRefresherModule(channel) {
     ChannelModule.apply(this, arguments);

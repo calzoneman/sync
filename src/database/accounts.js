@@ -2,9 +2,8 @@ var $util = require("../utilities");
 var bcrypt = require("bcrypt");
 var db = require("../database");
 var Config = require("../config");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('database/accounts');
+const LOGGER = require('@calzoneman/jsli')('database/accounts');
 
 var registrationLock = {};
 var blackHole = function () { };

@@ -1,7 +1,6 @@
-import { LoggerFactory } from '@calzoneman/jsli';
 import { getIPRange, getWideIPRange } from '../utilities';
 
-const LOGGER = LoggerFactory.getLogger('CachingGlobalBanlist');
+const LOGGER = require('@calzoneman/jsli')('CachingGlobalBanlist');
 
 class CachingGlobalBanlist {
     constructor(globalBanDB) {

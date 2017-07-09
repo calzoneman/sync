@@ -11,9 +11,8 @@ import csrf from './csrf';
 import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
 import counters from "../counters";
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('webserver');
+const LOGGER = require('@calzoneman/jsli')('webserver');
 
 function initializeLog(app) {
     const logFormat = ':real-address - :remote-user [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"';

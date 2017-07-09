@@ -15,13 +15,12 @@ var session = require("../session");
 import counters from '../counters';
 import { verifyIPSessionCookie } from '../web/middleware/ipsessioncookie';
 import Promise from 'bluebird';
-import { LoggerFactory } from '@calzoneman/jsli';
 const verifySession = Promise.promisify(session.verifySession);
 const getAliases = Promise.promisify(db.getAliases);
 import { CachingGlobalBanlist } from './globalban';
 import proxyaddr from 'proxy-addr';
 
-const LOGGER = LoggerFactory.getLogger('ioserver');
+const LOGGER = require('@calzoneman/jsli')('ioserver');
 
 var CONNECT_RATE = {
     burst: 5,

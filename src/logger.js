@@ -2,8 +2,9 @@
 
 var fs = require("graceful-fs");
 var path = require("path");
-import { LoggerFactory, Logger as JsliLogger, LogLevel } from '@calzoneman/jsli';
 import { sprintf } from 'sprintf-js';
+import { Logger as JsliLogger, LogLevel } from '@calzoneman/jsli';
+import jsli from '@calzoneman/jsli';
 
 function getTimeString() {
     var d = new Date();
@@ -65,25 +66,22 @@ exports.syslog = syslog;
 exports.eventlog = eventlog;
 
 class LegacyLogger extends JsliLogger {
-    constructor(level: LogLevel, loggerName: string) {
-        super(level, loggerName);
+    constructor(loggerName: string, level: LogLevel) {
+        super(loggerName, level);
     }
 
-    log(level: LogLevel, ...args: any[]) {
-        var message: string = "[" + level.name + "] " + this.loggerName + ": ";
-        message += sprintf(String(args[0]), ...args.slice(1));
+    emitMessage(level: LogLevel, message: string) {
+        var output: string = `[${level.name}] ${this.loggerName}: ${message}`;
         if (level.shouldLogAtLevel(LogLevel.ERROR)) {
-            errlog.log(message);
+            errlog.log(output);
         } else {
-            syslog.log(message);
+            syslog.log(output);
         }
     }
 }
 
 const level: LogLevel = !!process.env.DEBUG ? LogLevel.DEBUG : LogLevel.INFO;
 
-LoggerFactory.setLoggerImplFactory({
-    getLogger(loggerName: string): LegacyLogger {
-        return new LegacyLogger(level, loggerName);
-    }
+jsli.setLogBackend((loggerName) => {
+    return new LegacyLogger(loggerName, level);
 });

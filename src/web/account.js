@@ -14,9 +14,8 @@ var Server = require("../server");
 var session = require("../session");
 var csrf = require("./csrf");
 const url = require("url");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('database/accounts');
+const LOGGER = require('@calzoneman/jsli')('database/accounts');
 
 /**
  * Handles a GET request for /account/edit

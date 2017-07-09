@@ -6,10 +6,9 @@ var ACP = require("./acp");
 var Account = require("./account");
 var Flags = require("./flags");
 import { EventEmitter } from 'events';
-import { LoggerFactory } from '@calzoneman/jsli';
 import Logger from './logger';
 
-const LOGGER = LoggerFactory.getLogger('user');
+const LOGGER = require('@calzoneman/jsli')('user');
 
 function User(socket) {
     var self = this;

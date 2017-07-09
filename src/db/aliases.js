@@ -1,10 +1,9 @@
 // @flow
 
 import { Database } from '../database';
-import { LoggerFactory } from '@calzoneman/jsli';
 import net from 'net';
 
-const LOGGER = LoggerFactory.getLogger('AliasesDB');
+const LOGGER = require('@calzoneman/jsli')('AliasesDB');
 
 class AliasesDB {
     db: Database;

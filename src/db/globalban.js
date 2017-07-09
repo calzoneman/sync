@@ -1,8 +1,7 @@
-import { LoggerFactory } from '@calzoneman/jsli';
 import util from '../utilities';
 import Promise from 'bluebird';
 
-const LOGGER = LoggerFactory.getLogger('GlobalBanDB');
+const LOGGER = require('@calzoneman/jsli')('GlobalBanDB');
 
 class GlobalBanDB {
     constructor(db) {

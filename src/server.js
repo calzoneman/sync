@@ -4,9 +4,8 @@ var Config = require("./config");
 var Promise = require("bluebird");
 import * as ChannelStore from './channel-storage/channelstore';
 import { EventEmitter } from 'events';
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('server');
+const LOGGER = require('@calzoneman/jsli')('server');
 
 module.exports = {
     init: function () {

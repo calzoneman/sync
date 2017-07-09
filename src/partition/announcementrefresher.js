@@ -1,7 +1,6 @@
 import uuid from 'uuid';
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('announcementrefresher');
+const LOGGER = require('@calzoneman/jsli')('announcementrefresher');
 
 var SERVER;
 const SERVER_ANNOUNCEMENTS = 'serverAnnouncements';

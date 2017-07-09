@@ -10,9 +10,8 @@ import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import { throttle } from '../util/throttle';
 import Logger from '../logger';
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('channel');
+const LOGGER = require('@calzoneman/jsli')('channel');
 
 const USERCOUNT_THROTTLE = 10000;
 

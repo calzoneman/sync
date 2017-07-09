@@ -1,10 +1,8 @@
 import Promise from 'bluebird';
 import { ChannelStateSizeError } from '../errors';
 import db from '../database';
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('dbstore');
-
+const LOGGER = require('@calzoneman/jsli')('dbstore');
 const SIZE_LIMIT = 1048576;
 const QUERY_CHANNEL_DATA = 'SELECT `key`, `value` FROM channel_data WHERE channel_id = ?';
 

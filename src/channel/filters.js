@@ -1,8 +1,7 @@
 var FilterList = require("cytubefilters");
 var ChannelModule = require("./module");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('filters');
+const LOGGER = require('@calzoneman/jsli')('filters');
 
 /*
  * Converts JavaScript-style replacements ($1, $2, etc.) with

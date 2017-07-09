@@ -2,9 +2,8 @@ import io from 'socket.io';
 import Socket from 'socket.io/lib/socket';
 import * as Metrics from 'cytube-common/lib/metrics/metrics';
 import { JSONFileMetricsReporter } from 'cytube-common/lib/metrics/jsonfilemetricsreporter';
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('counters');
+const LOGGER = require('@calzoneman/jsli')('counters');
 
 var counters = {};
 var server = null;

@@ -8,9 +8,8 @@
 var Config = require("./config");
 var db = require("./database");
 var Promise = require("bluebird");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('bgtask');
+const LOGGER = require('@calzoneman/jsli')('bgtask');
 
 var init = null;
 

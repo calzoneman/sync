@@ -8,9 +8,8 @@ var Flags = require("../flags");
 var db = require("../database");
 var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('playlist');
+const LOGGER = require('@calzoneman/jsli')('playlist');
 
 const MAX_ITEMS = Config.get("playlist.max-items");
 // Limit requestPlaylist to once per 60 seconds

@@ -15,9 +15,8 @@ var Config = require("../config");
 var url = require("url");
 var session = require("../session");
 var csrf = require("./csrf");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('web/auth');
+const LOGGER = require('@calzoneman/jsli')('web/auth');
 
 /**
  * Processes a login request.  Sets a cookie upon successful authentication

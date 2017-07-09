@@ -1,10 +1,9 @@
 // @flow
 import crypto from 'crypto';
-import { LoggerFactory } from '@calzoneman/jsli';
 import * as urlparse from 'url';
 import { CamoConfig } from './configuration/camoconfig';
 
-const LOGGER = LoggerFactory.getLogger('camo');
+const LOGGER = require('@calzoneman/jsli')('camo');
 
 function isWhitelisted(camoConfig: CamoConfig, url: string): boolean {
     const whitelistedDomains = camoConfig.getWhitelistedDomains();

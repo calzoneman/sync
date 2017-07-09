@@ -6,9 +6,8 @@ var http = require("http");
 var urlparse = require("url");
 var path = require("path");
 require("status-message-polyfill");
-import { LoggerFactory } from '@calzoneman/jsli';
 
-const LOGGER = LoggerFactory.getLogger('ffmpeg');
+const LOGGER = require('@calzoneman/jsli')('ffmpeg');
 
 var USE_JSON = true;
 var TIMEOUT = 30000;

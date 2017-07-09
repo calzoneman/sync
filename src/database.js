@@ -5,11 +5,10 @@ var tables = require("./database/tables");
 var net = require("net");
 var util = require("./utilities");
 import * as Metrics from 'cytube-common/lib/metrics/metrics';
-import { LoggerFactory } from '@calzoneman/jsli';
 import knex from 'knex';
 import { GlobalBanDB } from './db/globalban';
 
-const LOGGER = LoggerFactory.getLogger('database');
+const LOGGER = require('@calzoneman/jsli')('database');
 
 let db = null;
 let globalBanDB = null;

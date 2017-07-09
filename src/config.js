@@ -4,11 +4,10 @@ var nodemailer = require("nodemailer");
 var net = require("net");
 var YAML = require("yamljs");
 
-import { LoggerFactory } from '@calzoneman/jsli';
 import { loadFromToml } from 'cytube-common/lib/configuration/configloader';
 import { CamoConfig } from './configuration/camoconfig';
 
-const LOGGER = LoggerFactory.getLogger('config');
+const LOGGER = require('@calzoneman/jsli')('config');
 
 var defaults = {
     mysql: {
