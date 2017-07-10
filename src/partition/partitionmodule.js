@@ -23,7 +23,6 @@ class PartitionModule {
     }
 
     initConfig() {
-        logger.initialize(null, null, LegacyConfig.get('debug'));
         try {
             this.partitionConfig = this.loadPartitionConfig();
         } catch (error) {
