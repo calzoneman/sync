@@ -452,10 +452,10 @@
       console.error('sortSources() called with null source list');
       return [];
     }
-    qualities = ['1080', '720', '480', '360', '240'];
+    qualities = ['2160', '1440', '1080', '720', '540', '480', '360', '240'];
     pref = String(USEROPTS.default_quality);
     if (USEROPTS.default_quality === 'best') {
-      pref = '1080';
+      pref = '2160';
     }
     idx = qualities.indexOf(pref);
     if (idx < 0) {
@@ -880,7 +880,7 @@
 
     SoundCloudPlayer.prototype.setVolume = function(volume) {
       if (this.soundcloud && this.soundcloud.ready) {
-        return this.soundcloud.setVolume(volume);
+        return this.soundcloud.setVolume(volume * 100);
       }
     };
 

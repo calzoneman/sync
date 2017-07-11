@@ -91,13 +91,8 @@ window.SoundCloudPlayer = class SoundCloudPlayer extends Player
             @soundcloud.seekTo(time * 1000)
 
     setVolume: (volume) ->
-        # NOTE: SoundCloud's documentation claims that setVolume() accepts
-        # volumes in the range [0, 100], however it *actually* accepts volumes
-        # in the range [0, 1] (anything larger than 1 is treated as 1).  I
-        # emailed them about this 2 years ago and they still haven't fixed
-        # their documentation.
         if @soundcloud and @soundcloud.ready
-            @soundcloud.setVolume(volume)
+            @soundcloud.setVolume(volume * 100)
 
     getTime: (cb) ->
         if @soundcloud and @soundcloud.ready
