@@ -1,3 +1,16 @@
+2017-07-15
+==========
+
+The latest commit upgrades `socket.io` to version 2.0, a major version change
+from 1.4.  This release improves performance by switching to `uws` for the
+websocket transport, and fixes several bugs; you can read about it
+[here](https://github.com/socketio/socket.io/releases/tag/2.0.0).
+
+For browser clients, the upgrade should basically just work with no
+intervention.  For node.js clients, all that is needed is to upgrade
+`socket.io-client` to 2.0.  For other clients, work required may vary depending
+on whether the implementation has compatibility problems with 2.0.
+
 2017-06-20
 ==========
 
