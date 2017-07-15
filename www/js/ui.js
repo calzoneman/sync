@@ -112,91 +112,13 @@ $("#guestname").keydown(function (ev) {
 });
 
 
-/**
- * TODO: Remove this post-deployment
- */
-function oldChatTabComplete() {
-    var words = $("#chatline").val().split(" ");
-    var current = words[words.length - 1].toLowerCase();
-    if (!current.match(/^[\w-]{1,20}$/)) {
-        return;
-    }
-
-    var __slice = Array.prototype.slice;
-    var usersWithCap = __slice.call($("#userlist").children()).map(function (elem) {
-        return elem.children[1].innerHTML;
-    });
-    var users = __slice.call(usersWithCap).map(function (user) {
-        return user.toLowerCase();
-    }).filter(function (name) {
-        return name.indexOf(current) === 0;
-    });
-
-    // users now contains a list of names that start with current word
-
-    if (users.length === 0) {
-        return;
-    }
-
-    // trim possible names to the shortest possible completion
-    var min = Math.min.apply(Math, users.map(function (name) {
-        return name.length;
-    }));
-    users = users.map(function (name) {
-        return name.substring(0, min);
-    });
-
-    // continually trim off letters until all prefixes are the same
-    var changed = true;
-    var iter = 21;
-    while (changed) {
-        changed = false;
-        var first = users[0];
-        for (var i = 1; i < users.length; i++) {
-            if (users[i] !== first) {
-                changed = true;
-                break;
-            }
-        }
-
-        if (changed) {
-            users = users.map(function (name) {
-                return name.substring(0, name.length - 1);
-            });
-        }
-
-        // In the event something above doesn't generate a break condition, limit
-        // the maximum number of repetitions
-        if (--iter < 0) {
-            break;
-        }
-    }
-
-    current = users[0].substring(0, min);
-    for (var i = 0; i < usersWithCap.length; i++) {
-        if (usersWithCap[i].toLowerCase() === current) {
-            current = usersWithCap[i];
-            break;
-        }
-    }
-
-    if (users.length === 1) {
-        if (words.length === 1) {
-            current += ":";
-        }
-        current += " ";
-    }
-    words[words.length - 1] = current;
-    $("#chatline").val(words.join(" "));
-}
-
 CyTube.chatTabCompleteData = {
     context: {}
 };
 
 function chatTabComplete() {
     if (!CyTube.tabCompleteMethods) {
-        oldChatTabComplete();
+        console.error('Missing CyTube.tabCompleteMethods!');
         return;
     }
     var chatline = document.getElementById("chatline");
