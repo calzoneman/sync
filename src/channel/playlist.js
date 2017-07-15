@@ -151,13 +151,7 @@ PlaylistModule.prototype.load = function (data) {
 };
 
 PlaylistModule.prototype.save = function (data) {
-    var arr = this.items.toArray().map(function (item) {
-        /* Clear Google Docs/Google+ and Vimeo meta */
-        if (item.media && item.media.meta) {
-            delete item.media.meta.direct;
-        }
-        return item;
-    });
+    var arr = this.items.toArray();
     var pos = 0;
     for (var i = 0; i < arr.length; i++) {
         if (this.current && arr[i].uid == this.current.uid) {
