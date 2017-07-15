@@ -431,7 +431,8 @@ module.exports = {
             bitrate: media.meta.bitrate,
             codec: media.meta.codec,
             scuri: media.meta.scuri,
-            embed: media.meta.embed
+            embed: media.meta.embed,
+            direct: media.meta.direct
         });
 
         db.query("INSERT INTO `channel_libraries` " +

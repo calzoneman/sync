@@ -879,7 +879,7 @@ Callbacks = {
             generator: function (item, page, index) {
                 var li = makeSearchEntry(item, false);
                 if(hasPermission("playlistadd") || hasPermission("deletefromchannellib")) {
-                    addLibraryButtons(li, item.id, data.source);
+                    addLibraryButtons(li, item, data.source);
                 }
                 $(li).appendTo($("#library"));
             },

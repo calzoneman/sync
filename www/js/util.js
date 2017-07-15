@@ -1084,12 +1084,13 @@ function clearSearchResults() {
     }
 }
 
-function addLibraryButtons(li, id, source) {
+function addLibraryButtons(li, item, source) {
     var btns = $("<div/>").addClass("btn-group")
         .addClass("pull-left")
         .prependTo(li);
 
-    var type = (source === "library") ? "lib" : source;
+    var id = item.id;
+    var type = item.type;
 
     if(hasPermission("playlistadd")) {
         if(hasPermission("playlistnext")) {

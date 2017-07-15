@@ -8,6 +8,7 @@ var Flags = require("../flags");
 var db = require("../database");
 var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
+import counters from '../counters';
 
 const LOGGER = require('@calzoneman/jsli')('playlist');
 
@@ -328,6 +329,10 @@ PlaylistModule.prototype.handleQueue = function (user, data) {
 
     var id = data.id;
     var type = data.type;
+    if (type === "lib") {
+        LOGGER.warn("Outdated client: IP %s emitting queue with type=lib",
+                user.realip);
+    }
 
     if (data.pos !== "next" && data.pos !== "end") {
         return;
@@ -450,36 +455,25 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
 
     const self = this;
     this.channel.refCounter.ref("PlaylistModule::queueStandard");
+    counters.add("playlist:queue:count", 1);
     this.semaphore.queue(function (lock) {
         var lib = self.channel.modules.library;
         if (lib && self.channel.is(Flags.C_REGISTERED) && !util.isLive(data.type)) {
+            // TODO: remove this check entirely once metrics are collected.
             lib.getItem(data.id, function (err, item) {
                 if (err && err !== "Item not in library") {
-                    error(err+"");
-                    self.channel.refCounter.unref("PlaylistModule::queueStandard");
-                    return lock.release();
-                }
-
-                // YouTube livestreams transition to becoming regular videos,
-                // breaking the cached duration of 0.
-                // In the future, the media cache should be decoupled from
-                // the library and this will no longer be an issue, but for now
-                // treat 0-length yt library entries as non-existent.
-                if (item !== null && item.type === "yt" && item.seconds === 0) {
-                    data.type = "yt"; // Kludge -- library queue has type: "lib"
-                    item = null;
-                }
-
-                if (item !== null) {
-                    /* Don't re-cache data we got from the library */
-                    data.shouldAddToLibrary = false;
-                    self._addItem(item, data, user, function () {
-                        lock.release();
-                        self.channel.refCounter.unref("PlaylistModule::queueStandard");
-                    });
+                    LOGGER.error("Failed to query for library item: %s", String(err));
+                } else if (err === "Item not in library") {
+                    counters.add("playlist:queue:library:miss", 1);
                 } else {
-                    handleLookup();
+                    // temp hack until all clients are updated.
+                    // previously, library search results would queue with
+                    // type "lib"; this has now been changed.
+                    data.type = item.type;
+                    counters.add("playlist:queue:library:hit", 1);
                 }
+
+                handleLookup();
             });
         } else {
             handleLookup();
