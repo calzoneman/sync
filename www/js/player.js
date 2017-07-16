@@ -1230,7 +1230,8 @@
       return data.meta.direct = {
         480: [
           {
-            link: data.id
+            link: data.id,
+            contentType: 'video/flv'
           }
         ]
       };
