@@ -588,6 +588,7 @@ module.exports = {
     Getters: Getters,
     getMedia: function (id, type, callback) {
         if(type in this.Getters) {
+            LOGGER.info("Looking up %s:%s", type, id);
             this.Getters[type](id, callback);
         } else {
             callback("Unknown media type '" + type + "'", null);

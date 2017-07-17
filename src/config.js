@@ -6,6 +6,7 @@ var YAML = require("yamljs");
 
 import { loadFromToml } from 'cytube-common/lib/configuration/configloader';
 import { CamoConfig } from './configuration/camoconfig';
+import { PrometheusConfig } from './configuration/prometheusconfig';
 
 const LOGGER = require('@calzoneman/jsli')('config');
 
@@ -149,6 +150,7 @@ function merge(obj, def, path) {
 
 var cfg = defaults;
 let camoConfig = new CamoConfig();
+let prometheusConfig = new PrometheusConfig();
 
 /**
  * Initializes the configuration from the given YAML file
@@ -191,6 +193,7 @@ exports.load = function (file) {
     LOGGER.info("Loaded configuration from " + file);
 
     loadCamoConfig();
+    loadPrometheusConfig();
 };
 
 function loadCamoConfig() {
@@ -210,6 +213,28 @@ function loadCamoConfig() {
             LOGGER.error(`Error in conf/camo.toml: ${error} (line ${error.line})`);
         } else {
             LOGGER.error(`Error loading conf/camo.toml: ${error.stack}`);
+        }
+    }
+}
+
+function loadPrometheusConfig() {
+    try {
+        prometheusConfig = loadFromToml(PrometheusConfig,
+                path.resolve(__dirname, '..', 'conf', 'prometheus.toml'));
+        const enabled = prometheusConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
+        LOGGER.info('Loaded prometheus configuration from conf/prometheus.toml.  '
+                + `Prometheus listener is ${enabled}`);
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            LOGGER.info('No prometheus configuration found, defaulting to disabled');
+            prometheusConfig = new PrometheusConfig();
+            return;
+        }
+
+        if (typeof error.line !== 'undefined') {
+            LOGGER.error(`Error in conf/prometheus.toml: ${error} (line ${error.line})`);
+        } else {
+            LOGGER.error(`Error loading conf/prometheus.toml: ${error.stack}`);
         }
     }
 }
@@ -482,4 +507,8 @@ exports.set = function (key, value) {
 
 exports.getCamoConfig = function getCamoConfig() {
     return camoConfig;
+};
+
+exports.getPrometheusConfig = function getPrometheusConfig() {
+    return prometheusConfig;
 };

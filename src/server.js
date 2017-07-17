@@ -147,6 +147,12 @@ var Server = function () {
     // background tasks init ----------------------------------------------
     require("./bgtask")(self);
 
+    // prometheus server
+    const prometheusConfig = Config.getPrometheusConfig();
+    if (prometheusConfig.isEnabled()) {
+        require("./prometheus-server").init(prometheusConfig);
+    }
+
     // setuid
     require("./setuid");
 

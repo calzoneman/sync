@@ -1,0 +1,14 @@
+# Configuration for binding an HTTP server to export prometheus metrics.
+# See https://prometheus.io/ and https://github.com/siimon/prom-client
+# for more details.
+[prometheus]
+enabled = true
+# Host, port to bind.  This is separate from the main CyTube HTTP server
+# because it may be desirable to bind a different IP/port for monitoring
+# purposes.  Default: localhost port 19820 (arbitrary port chosen not to
+# conflict with existing prometheus exporters).
+host = '127.0.0.1'
+port = 19820
+# Request path to serve metrics.  All other paths are rejected with
+# 400 Bad Request.
+path = '/metrics'

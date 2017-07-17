@@ -10,7 +10,8 @@ import morgan from 'morgan';
 import csrf from './csrf';
 import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
-import counters from "../counters";
+import counters from '../counters';
+import { Summary } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('webserver');
 
@@ -25,6 +26,29 @@ function initializeLog(app) {
     app.use(morgan(logFormat, {
         stream: outputStream
     }));
+}
+
+function initPrometheus(app) {
+    const latency = new Summary({
+        name: 'cytube_http_req_latency',
+        help: 'HTTP Request latency from execution of the first middleware '
+                + 'until the "finish" event on the response object.',
+        labelNames: ['method', 'statusCode']
+    });
+
+    app.use((req, res, next) => {
+        const startTime = process.hrtime();
+        res.on('finish', () => {
+            try {
+                const diff = process.hrtime(startTime);
+                const diffMs = diff[0]*1e3 + diff[1]*1e-6;
+                latency.labels(req.method, res.statusCode).observe(diffMs);
+            } catch (error) {
+                LOGGER.error('Failed to record HTTP Prometheus metrics: %s', error.stack);
+            }
+        });
+        next();
+    });
 }
 
 /**
@@ -133,6 +157,7 @@ module.exports = {
     init: function (app, webConfig, ioConfig, clusterClient, channelIndex, session) {
         const chanPath = Config.get('channel-path');
 
+        initPrometheus(app);
         app.use((req, res, next) => {
             counters.add("http:request", 1);
             next();
