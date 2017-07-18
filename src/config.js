@@ -82,10 +82,6 @@ var defaults = {
     "max-channels-per-user": 5,
     "max-accounts-per-ip": 5,
     "guest-login-delay": 60,
-    stats: {
-        interval: 3600000,
-        "max-age": 86400000
-    },
     aliases: {
         "purge-interval": 3600000,
         "max-age": 2592000000

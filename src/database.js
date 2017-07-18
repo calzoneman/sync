@@ -360,37 +360,6 @@ module.exports.getIPs = function (name, callback) {
 
 /* END REGION */
 
-/* REGION stats */
-
-module.exports.addStatPoint = function (time, ucount, ccount, mem, callback) {
-    if (typeof callback !== "function") {
-        callback = blackHole;
-    }
-
-    var query = "INSERT INTO stats VALUES (?, ?, ?, ?)";
-    module.exports.query(query, [time, ucount, ccount, mem], callback);
-};
-
-module.exports.pruneStats = function (before, callback) {
-    if (typeof callback !== "function") {
-        callback = blackHole;
-    }
-
-    var query = "DELETE FROM stats WHERE time < ?";
-    module.exports.query(query, [before], callback);
-};
-
-module.exports.listStats = function (callback) {
-    if (typeof callback !== "function") {
-        return;
-    }
-
-    var query = "SELECT * FROM stats ORDER BY time ASC";
-    module.exports.query(query, callback);
-};
-
-/* END REGION */
-
 /* Misc */
 module.exports.loadAnnouncement = function () {
     var query = "SELECT * FROM `meta` WHERE `key`='announcement'";

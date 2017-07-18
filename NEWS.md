@@ -1,3 +1,24 @@
+2017-07-17
+==========
+
+The `stats` database table and associated ACP subpage have been removed in favor
+of integration with [Prometheus](https://prometheus.io/).  You can enable
+Prometheus reporting by copying `conf/example/prometheus.toml` to
+`conf/prometheus.toml` and editing it to your liking.  I recommend integrating
+Prometheus with [Grafana](https://grafana.com/) for dashboarding needs.
+
+The particular metrics that were saved in the `stats` table are reported by the
+following Prometheus metrics:
+
+  * Channel count: `cytube_channels_num_active` gauge.
+  * User count: `cytube_sockets_num_connected` gauge (labeled by socket.io
+    transport).
+  * CPU/Memory: default metrics emitted by the
+    [`prom-client`](https://github.com/siimon/prom-client) module.
+
+More Prometheus metrics will be added in the future to make CyTube easier to
+monitor :)
+
 2017-07-15
 ==========
 

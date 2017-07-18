@@ -51,6 +51,7 @@ import session from './session';
 import { LegacyModule } from './legacymodule';
 import { PartitionModule } from './partition/partitionmodule';
 import * as Switches from './switches';
+import { Gauge } from 'prom-client';
 
 var Server = function () {
     var self = this;
@@ -226,6 +227,10 @@ Server.prototype.isChannelLoaded = function (name) {
     return false;
 };
 
+const promActiveChannels = new Gauge({
+    name: 'cytube_channels_num_active',
+    help: 'Number of channels currently active'
+});
 Server.prototype.getChannel = function (name) {
     var cname = name.toLowerCase();
     if (this.partitionDecider &&
@@ -242,6 +247,7 @@ Server.prototype.getChannel = function (name) {
     }
 
     var c = new Channel(name);
+    promActiveChannels.inc();
     c.on("empty", function () {
         self.unloadChannel(c);
     });
@@ -310,6 +316,7 @@ Server.prototype.unloadChannel = function (chan, options) {
         }
     }
     chan.dead = true;
+    promActiveChannels.dec();
 };
 
 Server.prototype.packChannelList = function (publicOnly, isAdmin) {

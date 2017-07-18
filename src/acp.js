@@ -257,12 +257,6 @@ function handleForceUnload(user, data) {
     Logger.eventlog.log("[acp] " + eventUsername(user) + " forced unload of " + name);
 }
 
-function handleListStats(user) {
-    db.listStats(function (err, rows) {
-        user.socket.emit("acp-list-stats", rows);
-    });
-}
-
 function init(user) {
     var s = user.socket;
     s.on("acp-announce", handleAnnounce.bind(this, user));
@@ -276,7 +270,6 @@ function init(user) {
     s.on("acp-delete-channel", handleDeleteChannel.bind(this, user));
     s.on("acp-list-activechannels", handleListActiveChannels.bind(this, user));
     s.on("acp-force-unload", handleForceUnload.bind(this, user));
-    s.on("acp-list-stats", handleListStats.bind(this, user));
 
     const globalBanDB = db.getGlobalBanDB();
     globalBanDB.listGlobalBans().then(bans => {

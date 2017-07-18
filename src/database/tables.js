@@ -65,15 +65,6 @@ const TBL_ALIASES = "" +
         "PRIMARY KEY (`visit_id`), INDEX (`ip`)" +
     ")";
 
-const TBL_STATS = "" +
-    "CREATE TABLE IF NOT EXISTS `stats` (" +
-        "`time` BIGINT NOT NULL," +
-        "`usercount` INT NOT NULL," +
-        "`chancount` INT NOT NULL," +
-        "`mem` INT NOT NULL," +
-        "PRIMARY KEY (`time`))" +
-    "CHARACTER SET utf8";
-
 const TBL_META = "" +
     "CREATE TABLE IF NOT EXISTS `meta` (" +
         "`key` VARCHAR(255) NOT NULL," +
@@ -132,7 +123,6 @@ module.exports.init = function (queryfn, cb) {
         password_reset: TBL_PASSWORD_RESET,
         user_playlists: TBL_USER_PLAYLISTS,
         aliases: TBL_ALIASES,
-        stats: TBL_STATS,
         meta: TBL_META,
         channel_data: TBL_CHANNEL_DATA
     };

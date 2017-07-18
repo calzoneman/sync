@@ -19,6 +19,7 @@ const verifySession = Promise.promisify(session.verifySession);
 const getAliases = Promise.promisify(db.getAliases);
 import { CachingGlobalBanlist } from './globalban';
 import proxyaddr from 'proxy-addr';
+import { Counter, Gauge } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('ioserver');
 
@@ -187,6 +188,54 @@ function isIPGlobalBanned(ip) {
     return globalIPBanlist.isIPGlobalBanned(ip);
 }
 
+const promSocketCount = new Gauge({
+    name: 'cytube_sockets_num_connected',
+    help: 'Gauge of connected socket.io clients',
+    labelNames: ['transport']
+});
+const promSocketAccept = new Counter({
+    name: 'cytube_sockets_accept_count',
+    help: 'Counter for number of connections accepted.  Excludes rejected connections.'
+});
+const promSocketDisconnect = new Counter({
+    name: 'cytube_sockets_disconnect_count',
+    help: 'Counter for number of connections disconnected.'
+});
+function emitMetrics(sock) {
+    try {
+        let transportName = sock.client.conn.transport.name;
+        promSocketCount.inc({ transport: transportName });
+        promSocketAccept.inc(1, new Date());
+
+        sock.client.conn.on('upgrade', newTransport => {
+            try {
+                // Sanity check
+                if (newTransport !== transportName) {
+                    promSocketCount.dec({ transport: transportName });
+                    transportName = newTransport.name;
+                    promSocketCount.inc({ transport: transportName });
+                }
+            } catch (error) {
+                LOGGER.error('Error emitting transport upgrade metrics for socket (ip=%s): %s',
+                        sock._realip, error.stack);
+            }
+        });
+
+        sock.on('disconnect', () => {
+            try {
+                promSocketCount.dec({ transport: transportName });
+                promSocketDisconnect.inc(1, new Date());
+            } catch (error) {
+                LOGGER.error('Error emitting disconnect metrics for socket (ip=%s): %s',
+                        sock._realip, error.stack);
+            }
+        });
+    } catch (error) {
+        LOGGER.error('Error emitting metrics for socket (ip=%s): %s',
+                sock._realip, error.stack);
+    }
+}
+
 /**
  * Called after a connection is accepted
  */
@@ -226,6 +275,8 @@ function handleConnection(sock) {
     if (ipLimitReached(sock)) {
         return;
     }
+
+    emitMetrics(sock);
 
     LOGGER.info("Accepted socket from " + ip);
     counters.add("socket.io:accept", 1);

@@ -166,13 +166,6 @@ channel-save-interval: 5
 channel-storage:
   type: 'file'
 
-# Configure statistics tracking
-stats:
-  # Interval (in milliseconds) between data points - default 1h
-  interval: 3600000
-  # Maximum age of a datapoint (ms) before it is deleted - default 24h
-  max-age: 86400000
-
 # Configure periodic clearing of old alias data
 aliases:
   # Interval (in milliseconds) between subsequent runs of clearing

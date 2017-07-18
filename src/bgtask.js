@@ -13,26 +13,6 @@ const LOGGER = require('@calzoneman/jsli')('bgtask');
 
 var init = null;
 
-/* Stats */
-function initStats(Server) {
-    var STAT_INTERVAL = parseInt(Config.get("stats.interval"));
-    var STAT_EXPIRE = parseInt(Config.get("stats.max-age"));
-
-    setInterval(function () {
-        var chancount = Server.channels.length;
-        var usercount = 0;
-        Server.channels.forEach(function (chan) {
-            usercount += chan.users.length;
-        });
-
-        var mem = process.memoryUsage().rss;
-
-        db.addStatPoint(Date.now(), usercount, chancount, mem, function () {
-            db.pruneStats(Date.now() - STAT_EXPIRE);
-        });
-    }, STAT_INTERVAL);
-}
-
 /* Alias cleanup */
 function initAliasCleanup(Server) {
     var CLEAN_INTERVAL = parseInt(Config.get("aliases.purge-interval"));
@@ -91,7 +71,6 @@ module.exports = function (Server) {
     }
 
     init = Server;
-    initStats(Server);
     initAliasCleanup(Server);
     initChannelDumper(Server);
     initPasswordResetCleanup(Server);

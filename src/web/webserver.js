@@ -11,7 +11,7 @@ import csrf from './csrf';
 import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
 import counters from '../counters';
-import { Summary } from 'prom-client';
+import { Summary, Counter } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('webserver');
 
@@ -35,6 +35,11 @@ function initPrometheus(app) {
                 + 'until the "finish" event on the response object.',
         labelNames: ['method', 'statusCode']
     });
+    const requests = new Counter({
+        name: 'cytube_http_req_count',
+        help: 'HTTP Request count',
+        labelNames: ['method', 'statusCode']
+    });
 
     app.use((req, res, next) => {
         const startTime = process.hrtime();
@@ -43,6 +48,7 @@ function initPrometheus(app) {
                 const diff = process.hrtime(startTime);
                 const diffMs = diff[0]*1e3 + diff[1]*1e-6;
                 latency.labels(req.method, res.statusCode).observe(diffMs);
+                requests.labels(req.method, res.statusCode).inc(1, new Date());
             } catch (error) {
                 LOGGER.error('Failed to record HTTP Prometheus metrics: %s', error.stack);
             }

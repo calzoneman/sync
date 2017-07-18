@@ -1,10 +1,11 @@
 import http from 'http';
-import { register } from 'prom-client';
+import { register, collectDefaultMetrics } from 'prom-client';
 import { parse as parseURL } from 'url';
 
 const LOGGER = require('@calzoneman/jsli')('prometheus-server');
 
 let server = null;
+let defaultMetricsTimer = null;
 
 export function init(prometheusConfig) {
     if (server !== null) {
@@ -12,6 +13,8 @@ export function init(prometheusConfig) {
                 new Error().stack);
         return;
     }
+
+    defaultMetricsTimer = collectDefaultMetrics();
 
     server = http.createServer((req, res) => {
         if (req.method !== 'GET'
@@ -44,4 +47,6 @@ export function init(prometheusConfig) {
 export function shutdown() {
     server.close();
     server = null;
+    clearInterval(defaultMetricsTimer);
+    defaultMetricsTimer = null;
 }
