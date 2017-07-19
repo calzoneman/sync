@@ -1845,6 +1845,23 @@ function chatOnly() {
     handleWindowResize();
 }
 
+function videoOnly()
+{
+    var video = $("#videowrap").detach();
+    video.prependTo($("body"));
+    $("#wrap").remove();
+    $("#videowrap-header").remove();
+    $("footer").remove();
+    $("#chatwrap").remove();
+    video.css({
+        "min-height": "100%",
+        "min-width": "100%",
+        margin: "0",
+        padding: "0"
+    });
+    
+    handleWindowResize();
+}
 function handleWindowResize() {
     if ($("body").hasClass("chatOnly")) {
         var h = $("body").outerHeight() - $("#chatline").outerHeight() -
