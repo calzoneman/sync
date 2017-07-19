@@ -1845,8 +1845,7 @@ function chatOnly() {
     handleWindowResize();
 }
 
-function videoOnly()
-{
+function videoOnly() {
     var video = $("#videowrap").detach();
     video.prependTo($("body"));
     $("#wrap").remove();
@@ -1862,6 +1861,7 @@ function videoOnly()
     
     handleWindowResize();
 }
+
 function handleWindowResize() {
     if ($("body").hasClass("chatOnly")) {
         var h = $("body").outerHeight() - $("#chatline").outerHeight() -
