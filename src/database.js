@@ -4,7 +4,7 @@ var Config = require("./config");
 var tables = require("./database/tables");
 var net = require("net");
 var util = require("./utilities");
-import * as Metrics from 'cytube-common/lib/metrics/metrics';
+import * as Metrics from './metrics/metrics';
 import knex from 'knex';
 import { GlobalBanDB } from './db/globalban';
 

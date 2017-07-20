@@ -1,6 +1,6 @@
 import Promise from 'bluebird';
 import uuid from 'uuid';
-import { runLuaScript } from 'cytube-common/lib/redis/lualoader';
+import { runLuaScript } from '../redis/lualoader';
 import path from 'path';
 
 const LOGGER = require('@calzoneman/jsli')('partitionchannelindex');

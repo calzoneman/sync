@@ -1,7 +1,7 @@
 import io from 'socket.io';
 import Socket from 'socket.io/lib/socket';
-import * as Metrics from 'cytube-common/lib/metrics/metrics';
-import { JSONFileMetricsReporter } from 'cytube-common/lib/metrics/jsonfilemetricsreporter';
+import * as Metrics from './metrics/metrics';
+import { JSONFileMetricsReporter } from './metrics/jsonfilemetricsreporter';
 
 const LOGGER = require('@calzoneman/jsli')('counters');
 

@@ -18,7 +18,6 @@
     "cookie-parser": "^1.4.0",
     "create-error": "^0.3.1",
     "csrf": "^3.0.0",
-    "cytube-common": "git://github.com/CyTube/cytube-common",
     "cytube-mediaquery": "git://github.com/CyTube/mediaquery",
     "cytubefilters": "git://github.com/calzoneman/cytubefilters#67c7c69a",
     "express": "^4.13.3",

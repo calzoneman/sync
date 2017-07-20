@@ -1,4 +1,4 @@
-const loadFromToml = require('cytube-common/lib/configuration/configloader').loadFromToml;
+const loadFromToml = require('../../lib/configuration/configloader').loadFromToml;
 const path = require('path');
 
 class IntegrationTestConfig {

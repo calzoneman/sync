@@ -4,7 +4,7 @@ var nodemailer = require("nodemailer");
 var net = require("net");
 var YAML = require("yamljs");
 
-import { loadFromToml } from 'cytube-common/lib/configuration/configloader';
+import { loadFromToml } from './configuration/configloader';
 import { CamoConfig } from './configuration/camoconfig';
 import { PrometheusConfig } from './configuration/prometheusconfig';
 
