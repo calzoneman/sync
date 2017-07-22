@@ -926,28 +926,6 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         });
     }
 
-    /* Warn about high bitrate for raw files */
-    if (media.type === "fi" && media.meta.bitrate > 1000) {
-        user.socket.emit("queueWarn", {
-            msg: "This video has a bitrate over 1000kbps.  Clients with slow " +
-                 "connections may experience lots of buffering.",
-            link: data.link
-        });
-    }
-
-    /* Warn about possibly unsupported formats */
-    if (media.type === "fi" && media.meta.codec &&
-                               media.meta.codec.indexOf("/") !== -1 &&
-                               media.meta.codec !== "mov/h264" &&
-                               media.meta.codec !== "flv/h264") {
-        user.socket.emit("queueWarn", {
-            msg: "The codec <code>" + media.meta.codec + "</code> is not supported " +
-                 "by all browsers, and is not supported by the flash fallback layer.  " +
-                 "This video may not play for some users.",
-            link: data.link
-        });
-    }
-
     var item = new PlaylistItem(media, {
         uid: self._nextuid++,
         temp: data.temp,
