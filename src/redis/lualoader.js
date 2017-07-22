@@ -1,6 +1,6 @@
 import fs from 'fs';
-import logger from '../logger';
 
+const logger = require('@calzoneman/jsli')('redis/lualoader');
 const CACHE = {};
 const EVALSHA_CACHE = {};
 
