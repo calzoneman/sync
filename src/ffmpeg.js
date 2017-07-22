@@ -119,6 +119,12 @@ function testUrl(url, cb, redirCount) {
     });
 
     req.on("error", function (err) {
+        if (/hostname\/ip doesn't match/i.test(err.message)) {
+            cb("The remote server provided an invalid SSL certificate.  Details: "
+                    + err.reason);
+            return;
+        }
+
         LOGGER.error("Error sending preflight request: %s (link: %s)", err.message, url);
         cb("An unexpected error occurred while trying to process the link.  " +
            "Try again, and contact support for further troubleshooting if the " +
