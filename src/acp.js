@@ -4,6 +4,7 @@ var db = require("./database");
 var util = require("./utilities");
 var Config = require("./config");
 var Server = require("./server");
+import { v4 as uuidv4 } from 'uuid';
 
 function eventUsername(user) {
     return user.getName() + "@" + user.realip;
@@ -13,6 +14,7 @@ function handleAnnounce(user, data) {
     var sv = Server.getServer();
 
     sv.announce({
+        id: uuidv4(),
         title: data.title,
         text: data.content,
         from: user.getName()

@@ -64,10 +64,21 @@ Callbacks = {
     },
 
     announcement: function(data) {
+        // Suppress this announcement for people who have already closed it
+        if (data.id && CyTube.ui.suppressedAnnouncementId
+                && data.id === CyTube.ui.suppressedAnnouncementId) {
+            return;
+        }
         $("#announcements").html("");
         var signature = "<br>\u2014" + data.from;
         var announcement = makeAlert(data.title, data.text + signature)
             .appendTo($("#announcements"));
+        if (data.id) {
+            announcement.find(".close").click(function suppressThisAnnouncement() {
+                CyTube.ui.suppressedAnnouncementId = data.id;
+                setOpt("suppressed_announcement_id", data.id);
+            });
+        }
     },
 
     kick: function(data) {
