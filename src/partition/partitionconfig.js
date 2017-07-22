@@ -18,6 +18,10 @@ class PartitionConfig {
     getPartitionMapKey() {
         return this.config.redis.partitionMapKey;
     }
+
+    getAnnouncementChannel() {
+        return this.config.redis.announcementChannel || 'serverAnnouncements';
+    }
 }
 
 export { PartitionConfig };

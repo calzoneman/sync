@@ -3,12 +3,12 @@ import uuid from 'uuid';
 const LOGGER = require('@calzoneman/jsli')('announcementrefresher');
 
 var SERVER;
-const SERVER_ANNOUNCEMENTS = 'serverAnnouncements';
 
 class AnnouncementRefresher {
-    constructor(pubClient, subClient) {
+    constructor(pubClient, subClient, channel) {
         this.pubClient = pubClient;
         this.subClient = subClient;
+        this.channel = channel;
         this.uuid = uuid.v4();
         process.nextTick(this.init.bind(this));
     }
@@ -19,12 +19,13 @@ class AnnouncementRefresher {
 
         this.subClient.once('ready', () => {
             this.subClient.on('message', this.handleMessage.bind(this));
-            this.subClient.subscribe(SERVER_ANNOUNCEMENTS);
+            this.subClient.subscribe(this.channel);
         });
     }
 
     handleMessage(channel, message) {
-        if (channel !== SERVER_ANNOUNCEMENTS) {
+        if (channel !== this.channel) {
+            LOGGER.warn('Unexpected message from channel "%s"', channel);
             return;
         }
 
@@ -49,7 +50,7 @@ class AnnouncementRefresher {
             data: data,
             partitionID: this.uuid
         });
-        this.pubClient.publish(SERVER_ANNOUNCEMENTS, message);
+        this.pubClient.publish(this.channel, message);
     }
 }
 

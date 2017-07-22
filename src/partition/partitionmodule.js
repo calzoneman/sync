@@ -97,7 +97,8 @@ class PartitionModule {
             const provider = this.getRedisClientProvider();
             this.announcementRefresher = new AnnouncementRefresher(
                     provider.get(),
-                    provider.get()
+                    provider.get(),
+                    this.partitionConfig.getAnnouncementChannel()
             );
         }
 
