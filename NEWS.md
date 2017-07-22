@@ -1,3 +1,15 @@
+2017-07-22
+==========
+
+Support for the old version of Vimeo's OAuth API (the `vimeo-oauth`
+configuration block) has been dropped.  It's unlikely anyone was using this,
+since you haven't been able to register new API keys for it in years (it was
+superseded by a newer OAuth API, which CyTube does not support), and in fact I
+lost my credentials for this API and no longer have a way to test it.
+
+Vimeo videos can still be added -- the metadata will be queried from the
+anonymous API which has been the default since the beginning.
+
 2017-07-17
 ==========
 

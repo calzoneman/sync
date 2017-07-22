@@ -135,59 +135,11 @@ var Getters = {
             return;
         }
 
-        if (Config.get("vimeo-oauth.enabled")) {
-            return Getters.vi_oauth(id, callback);
-        }
-
         Vimeo.lookup(id).then(video => {
             video = new Media(video.id, video.title, video.duration, "vi");
             callback(null, video);
         }).catch(error => {
             callback(error.message);
-        });
-    },
-
-    vi_oauth: function (id, callback) {
-        var OAuth = require("oauth");
-        var oa = new OAuth.OAuth(
-            "https://vimeo.com/oauth/request_token",
-            "https://vimeo.com/oauth/access_token",
-            Config.get("vimeo-oauth.consumer-key"),
-            Config.get("vimeo-oauth.secret"),
-            "1.0",
-            null,
-            "HMAC-SHA1"
-        );
-
-        oa.get("https://vimeo.com/api/rest/v2?format=json" +
-               "&method=vimeo.videos.getInfo&video_id=" + id,
-            null,
-            null,
-        function (err, data, res) {
-            if (err) {
-                return callback(err, null);
-            }
-
-            try {
-                data = JSON.parse(data);
-
-                if (data.stat !== "ok") {
-                    return callback(data.err.msg, null);
-                }
-
-                var video = data.video[0];
-
-                if (video.embed_privacy !== "anywhere") {
-                    return callback("Embedding disabled", null);
-                }
-
-                var id = video.id;
-                var seconds = parseInt(video.duration);
-                var title = video.title;
-                callback(null, new Media(id, title, seconds, "vi"));
-            } catch (e) {
-                callback("Error handling Vimeo response", null);
-            }
         });
     },
 

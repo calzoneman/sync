@@ -87,11 +87,6 @@ var defaults = {
         "max-age": 2592000000
     },
     "vimeo-workaround": false,
-    "vimeo-oauth": {
-        enabled: false,
-        "consumer-key": "",
-        secret: ""
-    },
     "html-template": {
         title: "CyTube Beta", description: "Free, open source synchtube"
     },
