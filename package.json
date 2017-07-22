@@ -41,7 +41,6 @@
     "socket.io": "^2.0.3",
     "source-map-support": "^0.4.0",
     "sprintf-js": "^1.0.3",
-    "status-message-polyfill": "git://github.com/calzoneman/status-message-polyfill",
     "toml": "^2.3.0",
     "uuid": "^2.0.1",
     "yamljs": "^0.2.8"

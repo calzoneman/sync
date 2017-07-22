@@ -5,7 +5,6 @@ var https = require("https");
 var http = require("http");
 var urlparse = require("url");
 var path = require("path");
-require("status-message-polyfill");
 
 const LOGGER = require('@calzoneman/jsli')('ffmpeg');
 
