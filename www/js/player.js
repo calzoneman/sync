@@ -1231,7 +1231,7 @@
         480: [
           {
             link: data.id,
-            contentType: 'video/flv'
+            contentType: 'rtmp/flv'
           }
         ]
       };

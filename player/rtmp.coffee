@@ -18,6 +18,6 @@ window.RTMPPlayer = class RTMPPlayer extends VideoJSPlayer
             480: [
                 {
                     link: data.id
-                    contentType: 'video/flv'
+                    contentType: 'rtmp/flv'
                 }
             ]
