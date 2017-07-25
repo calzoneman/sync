@@ -139,7 +139,7 @@ function handleSetRank(user, data) {
     });
 }
 
-function handleResetPassword(user, data) {
+function handleResetPassword(user, data, ack) {
     var name = data.name;
     var email = data.email;
     if (typeof name !== "string" || typeof email !== "string") {
@@ -164,19 +164,14 @@ function handleResetPassword(user, data) {
             expire: expire
         }, function (err) {
             if (err) {
-                user.socket.emit("errMessage", {
-                    msg: err
-                });
+                ack && ack({ error: err });
                 return;
             }
 
             Logger.eventlog.log("[acp] " + eventUsername(user) + " initialized a " +
                                 "password recovery for " + name);
 
-            user.socket.emit("errMessage", {
-                msg: "Reset link: " + Config.get("http.domain") +
-                     "/account/passwordrecover/" + hash
-            });
+            ack && ack({ hash });
         });
     });
 }

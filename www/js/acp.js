@@ -229,6 +229,20 @@ socket.on("acp-list-users", function (users) {
                     socket.emit("acp-reset-password", {
                         name: u.name,
                         email: u.email
+                    }, function (result) {
+                        if (result.error) {
+                            modalAlert({
+                                title: "Error",
+                                textContent: result.error
+                            });
+                        } else {
+                            var link = new URL("/account/passwordrecover/" + result.hash,
+                                    new URL(location));
+                            modalAlert({
+                                title: "Reset Link",
+                                textContent: link
+                            });
+                        }
                     });
                 }).appendTo(reset);
         }

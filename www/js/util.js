@@ -2097,6 +2097,11 @@ function errDialog(err) {
  * I *promise* that one day I will actually split this file into submodules
  * -cal
  */
+
+/**
+ * modalAlert accepts options { title, textContent, htmlContent }
+ * All are optional
+ */
 function modalAlert(options) {
     if (typeof options !== "object" || options === null) {
         throw new Error("modalAlert() called without required parameter");
