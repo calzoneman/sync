@@ -20,6 +20,7 @@ const getAliases = Promise.promisify(db.getAliases);
 import { CachingGlobalBanlist } from './globalban';
 import proxyaddr from 'proxy-addr';
 import { Counter, Gauge } from 'prom-client';
+import Socket from 'socket.io/lib/socket';
 
 const LOGGER = require('@calzoneman/jsli')('ioserver');
 
@@ -135,12 +136,13 @@ function ipLimitReached(sock) {
     }
 }
 
-function addTypecheckedFunctions(sock) {
-    sock.typecheckedOn = function (msg, template, cb) {
-        sock.on(msg, function (data, ack) {
-            typecheck(data, template, function (err, data) {
+/* TODO: remove this crap */
+function patchTypecheckedFunctions() {
+    Socket.prototype.typecheckedOn = function typecheckedOn(msg, template, cb) {
+        this.on(msg, (data, ack) => {
+            typecheck(data, template, (err, data) => {
                 if (err) {
-                    sock.emit("errorMsg", {
+                    this.emit("errorMsg", {
                         msg: "Unexpected error for message " + msg + ": " + err.message
                     });
                 } else {
@@ -150,11 +152,11 @@ function addTypecheckedFunctions(sock) {
         });
     };
 
-    sock.typecheckedOnce = function (msg, template, cb) {
-        sock.once(msg, function (data) {
-            typecheck(data, template, function (err, data) {
+    Socket.prototype.typecheckedOnce = function typecheckedOnce(msg, template, cb) {
+        this.once(msg, data => {
+            typecheck(data, template, (err, data) => {
                 if (err) {
-                    sock.emit("errorMsg", {
+                    this.emit("errorMsg", {
                         msg: "Unexpected error for message " + msg + ": " + err.message
                     });
                 } else {
@@ -252,7 +254,6 @@ function handleConnection(sock) {
         ip = util.expandIPv6(ip);
         sock._realip = ip;
     }
-    sock._displayip = $util.cloakIP(ip);
 
     if (isTorExit(ip)) {
         sock._isUsingTor = true;
@@ -281,30 +282,21 @@ function handleConnection(sock) {
     LOGGER.info("Accepted socket from " + ip);
     counters.add("socket.io:accept", 1);
 
-    addTypecheckedFunctions(sock);
-
-    var user = new User(sock);
+    const user = new User(sock, ip, sock.user);
     if (sock.user) {
-        user.setFlag(Flags.U_REGISTERED);
-        user.socket.emit("login", {
-            success: true,
-            name: user.getName(),
-            guest: false
-        });
         db.recordVisit(ip, user.getName());
-        user.socket.emit("rank", user.account.effectiveRank);
-        user.setFlag(Flags.U_LOGGED_IN);
-        user.emit("login", user.account);
-        LOGGER.info(ip + " logged in as " + user.getName());
-        user.setFlag(Flags.U_READY);
-    } else {
-        user.socket.emit("rank", -1);
-        user.setFlag(Flags.U_READY);
     }
+
+    const announcement = srv.announcement;
+    if (announcement != null) {
+        sock.emit("announcement", announcement);
+    }
+
 }
 
 module.exports = {
     init: function (srv, webConfig) {
+        patchTypecheckedFunctions();
         var bound = {};
         const ioOptions = {
             perMessageDeflate: Config.get("io.per-message-deflate")

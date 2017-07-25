@@ -10,128 +10,143 @@ import Logger from './logger';
 
 const LOGGER = require('@calzoneman/jsli')('user');
 
-function User(socket) {
-    var self = this;
-    self.flags = 0;
-    self.socket = socket;
-    self.realip = socket._realip;
-    self.displayip = socket._displayip;
-    self.hostmask = socket._hostmask;
-    self.channel = null;
-    self.queueLimiter = util.newRateLimiter();
-    self.chatLimiter = util.newRateLimiter();
-    self.reqPlaylistLimiter = util.newRateLimiter();
-    self.awaytimer = false;
-    if (socket.user) {
-        self.account = new Account.Account(self.realip, socket.user, socket.aliases);
-        self.registrationTime = new Date(self.account.user.time);
+function User(socket, ip, loginInfo) {
+    this.flags = 0;
+    this.socket = socket;
+    this.realip = ip;
+    this.displayip = util.cloakIP(ip);
+    this.channel = null;
+    this.queueLimiter = util.newRateLimiter();
+    this.chatLimiter = util.newRateLimiter();
+    this.reqPlaylistLimiter = util.newRateLimiter();
+    this.awaytimer = false;
+
+    if (loginInfo) {
+        this.account = new Account.Account(this.realip, loginInfo, socket.aliases);
+        this.registrationTime = new Date(this.account.user.time);
+        this.setFlag(Flags.U_REGISTERED | Flags.U_LOGGED_IN | Flags.U_READY);
+        socket.emit("login", {
+            success: true,
+            name: this.getName(),
+            guest: false
+        });
+        socket.emit("rank", this.account.effectiveRank);
+        LOGGER.info(ip + " logged in as " + this.getName());
     } else {
-        self.account = new Account.Account(self.realip, null, socket.aliases);
+        this.account = new Account.Account(this.realip, null, socket.aliases);
+        socket.emit("rank", -1);
+        this.setFlag(Flags.U_READY);
     }
 
-    var announcement = Server.getServer().announcement;
-    if (announcement != null) {
-        self.socket.emit("announcement", announcement);
-    }
-
-    self.socket.once("joinChannel", function (data) {
-        if (typeof data !== "object" || typeof data.name !== "string") {
-            return;
-        }
-
-        if (self.inChannel()) {
-            return;
-        }
-
-        if (!util.isValidChannelName(data.name)) {
-            self.socket.emit("errorMsg", {
-                msg: "Invalid channel name.  Channel names may consist of 1-30 " +
-                     "characters in the set a-z, A-Z, 0-9, -, and _"
-            });
-            self.kick("Invalid channel name");
-            return;
-        }
-
-        data.name = data.name.toLowerCase();
-        if (data.name in Config.get("channel-blacklist")) {
-            self.kick("This channel is blacklisted.");
-            return;
-        }
-
-        self.waitFlag(Flags.U_READY, function () {
-            var chan;
-            try {
-                chan = Server.getServer().getChannel(data.name);
-            } catch (error) {
-                if (error.code !== 'EWRONGPART') {
-                    throw error;
-                }
-
-                self.socket.emit("errorMsg", {
-                    msg: "Channel '" + data.name + "' is hosted on another server.  " +
-                         "Try refreshing the page to update the connection URL."
-                });
-                return;
-            }
-
-            if (!chan.is(Flags.C_READY)) {
-                chan.once("loadFail", reason => {
-                    self.socket.emit("errorMsg", {
-                        msg: reason,
-                        alert: true
-                    });
-                    self.kick(`Channel could not be loaded: ${reason}`);
-                });
-            }
-            chan.joinUser(self, data);
-        });
-    });
-
-    self.socket.once("initACP", function () {
-        self.waitFlag(Flags.U_LOGGED_IN, function () {
-            if (self.account.globalRank >= 255) {
-                ACP.init(self);
-            } else {
-                self.kick("Attempted initACP from non privileged user.  This incident " +
-                          "will be reported.");
-                Logger.eventlog.log("[acp] Attempted initACP from socket client " +
-                                    self.getName() + "@" + self.realip);
-            }
-        });
-    });
-
-    self.socket.on("login", function (data) {
-        data = (typeof data === "object") ? data : {};
-
-        var name = data.name;
-        if (typeof name !== "string") {
-            return;
-        }
-
-        var pw = data.pw || "";
-        if (typeof pw !== "string") {
-            pw = "";
-        }
-
-        if (self.is(Flags.U_LOGGING_IN) || self.is(Flags.U_LOGGED_IN)) {
-            return;
-        }
-
-        if (!pw) {
-            self.guestLogin(name);
-        } else {
-            self.login(name, pw);
-        }
-    });
-
-    self.on("login", function (account) {
+    socket.once("joinChannel", data => this.handleJoinChannel(data));
+    socket.once("initACP", () => this.handleInitACP());
+    socket.on("login", data => this.handleLogin(data));
+    this.once("login", account => {
         if (account.globalRank >= 255) {
-            self.initAdminCallbacks();
+            this.initAdminCallbacks();
         }
     });
 }
 
 User.prototype = Object.create(EventEmitter.prototype);
+
+User.prototype.handleJoinChannel = function handleJoinChannel(data) {
+    if (typeof data !== "object" || typeof data.name !== "string") {
+        return;
+    }
+
+    if (this.inChannel()) {
+        return;
+    }
+
+    if (!util.isValidChannelName(data.name)) {
+        this.socket.emit("errorMsg", {
+            msg: "Invalid channel name.  Channel names may consist of 1-30 " +
+                 "characters in the set a-z, A-Z, 0-9, -, and _"
+        });
+        this.kick("Invalid channel name");
+        return;
+    }
+
+    data.name = data.name.toLowerCase();
+    if (data.name in Config.get("channel-blacklist")) {
+        this.kick("This channel is blacklisted.");
+        return;
+    }
+
+    this.waitFlag(Flags.U_READY, () => {
+        var chan;
+        try {
+            chan = Server.getServer().getChannel(data.name);
+        } catch (error) {
+            if (error.code === 'EWRONGPART') {
+                this.socket.emit("errorMsg", {
+                    msg: "Channel '" + data.name + "' is hosted on another server.  " +
+                         "Try refreshing the page to update the connection URL."
+                });
+            } else {
+                LOGGER.error("Unexpected error from getChannel(): %s", error.stack);
+                this.socket.emit("errorMsg", {
+                    msg: "Unable to join channel due to an internal error"
+                });
+            }
+            return;
+        }
+
+        if (!chan.is(Flags.C_READY)) {
+            chan.once("loadFail", reason => {
+                this.socket.emit("errorMsg", {
+                    msg: reason,
+                    alert: true
+                });
+                this.kick(`Channel could not be loaded: ${reason}`);
+            });
+        }
+        chan.joinUser(this, data);
+    });
+};
+
+User.prototype.handleInitACP = function handleInitACP() {
+    this.waitFlag(Flags.U_LOGGED_IN, () => {
+        if (this.account.globalRank >= 255) {
+            ACP.init(this);
+        } else {
+            this.kick("Attempted initACP from non privileged user.  This incident " +
+                      "will be reported.");
+            Logger.eventlog.log("[acp] Attempted initACP from socket client " +
+                                this.getName() + "@" + this.realip);
+        }
+    });
+};
+
+User.prototype.handleLogin = function handleLogin(data) {
+    if (typeof data !== "object") {
+        this.socket.emit("errorMsg", {
+            msg: "Invalid login frame"
+        });
+        return;
+    }
+
+    var name = data.name;
+    if (typeof name !== "string") {
+        return;
+    }
+
+    var pw = data.pw || "";
+    if (typeof pw !== "string") {
+        pw = "";
+    }
+
+    if (this.is(Flags.U_LOGGING_IN) || this.is(Flags.U_LOGGED_IN)) {
+        return;
+    }
+
+    if (!pw) {
+        this.guestLogin(name);
+    } else {
+        this.login(name, pw);
+    }
+};
 
 User.prototype.die = function () {
     for (var key in this.socket._events) {
