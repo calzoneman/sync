@@ -660,7 +660,6 @@ function saveUserOptions() {
     USEROPTS.layout               = $("#us-layout").val();
     USEROPTS.ignore_channelcss    = $("#us-no-channelcss").prop("checked");
     USEROPTS.ignore_channeljs     = $("#us-no-channeljs").prop("checked");
-    USEROPTS.secure_connection    = $("#us-ssl").prop("checked");
 
     USEROPTS.synch                = $("#us-synch").prop("checked");
     USEROPTS.sync_accuracy        = parseFloat($("#us-synch-accuracy").val()) || 2;
