@@ -29,7 +29,8 @@ class Database {
                 },
                 pool: {
                     min: Config.get('mysql.pool-size'),
-                    max: Config.get('mysql.pool-size')
+                    max: Config.get('mysql.pool-size'),
+                    refreshIdle: false
                 },
                 debug: !!process.env.KNEX_DEBUG
             };
