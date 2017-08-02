@@ -370,7 +370,7 @@ Channel.prototype.acceptUser = function (user) {
     user.socket.on("readChanLog", this.handleReadLog.bind(this, user));
 
     LOGGER.info(user.realip + " joined " + this.name);
-    if (user.socket._isUsingTor) {
+    if (user.socket.context.torConnection) {
         if (this.modules.options && this.modules.options.get("torbanned")) {
             user.kick("This channel has banned connections from Tor.");
             this.logger.log("[login] Blocked connection from Tor exit at " +

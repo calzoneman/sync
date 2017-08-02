@@ -196,28 +196,6 @@ Server.prototype.reloadCertificateData = function reloadCertificateData() {
     });
 };
 
-Server.prototype.getHTTPIP = function (req) {
-    var ip = req.ip;
-    if (ip === "127.0.0.1" || ip === "::1") {
-        var fwd = req.header("x-forwarded-for");
-        if (fwd && typeof fwd === "string") {
-            return fwd;
-        }
-    }
-    return ip;
-};
-
-Server.prototype.getSocketIP = function (socket) {
-    var raw = socket.handshake.address.address;
-    if (raw === "127.0.0.1" || raw === "::1") {
-        var fwd = socket.handshake.headers["x-forwarded-for"];
-        if (fwd && typeof fwd === "string") {
-            return fwd;
-        }
-    }
-    return raw;
-};
-
 Server.prototype.isChannelLoaded = function (name) {
     name = name.toLowerCase();
     for (var i = 0; i < this.channels.length; i++) {

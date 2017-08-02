@@ -40,6 +40,14 @@ Callbacks = {
         scrollChat();
     },
 
+    // Socket.IO error callback
+    error: function (msg) {
+        $("<div/>")
+            .addClass("server-msg-disconnect")
+            .text("Unable to connect: " + msg)
+            .appendTo($("#messagebuffer"));
+    },
+
     errorMsg: function(data) {
         if (data.alert) {
             alert(data.msg);

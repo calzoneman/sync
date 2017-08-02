@@ -104,6 +104,10 @@ export function addReportHook(hook) {
     reportHooks.push(hook);
 }
 
+export function clearReportHooks() {
+    reportHooks = [];
+}
+
 /**
  * Force metrics to be reported right now.
  */

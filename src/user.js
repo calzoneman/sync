@@ -7,14 +7,17 @@ var Account = require("./account");
 var Flags = require("./flags");
 import { EventEmitter } from 'events';
 import Logger from './logger';
+import net from 'net';
 
 const LOGGER = require('@calzoneman/jsli')('user');
 
 function User(socket, ip, loginInfo) {
     this.flags = 0;
     this.socket = socket;
-    this.realip = ip;
-    this.displayip = util.cloakIP(ip);
+    // Expanding IPv6 addresses shouldn't really be necessary
+    // At some point, the IPv6 related stuff should be revisited
+    this.realip = net.isIPv6(ip) ? util.expandIPv6(ip) : ip;
+    this.displayip = util.cloakIP(this.realip);
     this.channel = null;
     this.queueLimiter = util.newRateLimiter();
     this.chatLimiter = util.newRateLimiter();
@@ -22,7 +25,7 @@ function User(socket, ip, loginInfo) {
     this.awaytimer = false;
 
     if (loginInfo) {
-        this.account = new Account.Account(this.realip, loginInfo, socket.aliases);
+        this.account = new Account.Account(this.realip, loginInfo, socket.context.aliases);
         this.registrationTime = new Date(this.account.user.time);
         this.setFlag(Flags.U_REGISTERED | Flags.U_LOGGED_IN | Flags.U_READY);
         socket.emit("login", {
@@ -33,7 +36,7 @@ function User(socket, ip, loginInfo) {
         socket.emit("rank", this.account.effectiveRank);
         LOGGER.info(ip + " logged in as " + this.getName());
     } else {
-        this.account = new Account.Account(this.realip, null, socket.aliases);
+        this.account = new Account.Account(this.realip, null, socket.context.aliases);
         socket.emit("rank", -1);
         this.setFlag(Flags.U_READY);
     }
@@ -429,12 +432,15 @@ setInterval(function () {
 }, 5 * 60 * 1000);
 
 User.prototype.getFirstSeenTime = function getFirstSeenTime() {
-    if (this.registrationTime && this.socket.ipSessionFirstSeen) {
-        return Math.min(this.registrationTime.getTime(), this.socket.ipSessionFirstSeen.getTime());
+    if (this.registrationTime && this.socket.context.ipSessionFirstSeen) {
+        return Math.min(
+            this.registrationTime.getTime(),
+            this.socket.context.ipSessionFirstSeen.getTime()
+        );
     } else if (this.registrationTime) {
         return this.registrationTime.getTime();
-    } else if (this.socket.ipSessionFirstSeen) {
-        return this.socket.ipSessionFirstSeen.getTime();
+    } else if (this.socket.context.ipSessionFirstSeen) {
+        return this.socket.context.ipSessionFirstSeen.getTime();
     } else {
         LOGGER.error(`User "${this.getName()}" (IP: ${this.realip}) has neither ` +
                 "an IP session first seen time nor a registered account.");

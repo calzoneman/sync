@@ -6,6 +6,10 @@ var fs = require('fs');
 var path = require('path');
 
 describe('JSONFileMetricsReporter', function () {
+    before(() => {
+        Metrics.clearReportHooks();
+    });
+
     describe('#report', function () {
         it('reports metrics to file', function (done) {
             const outfile = path.resolve(os.tmpdir(),
