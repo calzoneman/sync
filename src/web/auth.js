@@ -73,28 +73,16 @@ function handleLogin(req, res) {
                 return;
             }
 
-            if (req.hostname.indexOf(Config.get("http.root-domain")) >= 0) {
-                // Prevent non-root cookie from screwing things up
-                res.clearCookie("auth");
-                res.cookie("auth", auth, {
-                    domain: Config.get("http.root-domain-dotted"),
-                    expires: expiration,
-                    httpOnly: true,
-                    signed: true
-                });
-            } else {
-                res.cookie("auth", auth, {
-                    expires: expiration,
-                    httpOnly: true,
-                    signed: true
-                });
-            }
+            webserver.setAuthCookie(req, res, expiration, auth);
 
             if (dest) {
                 res.redirect(dest);
             } else {
-                res.user = user;
-                sendPug(res, "login", {});
+                sendPug(res, "login", {
+                    loggedIn: true,
+                    loginName: user.name,
+                    superadmin: user.global_rank >= 255
+                });
             }
         });
     });
@@ -108,7 +96,7 @@ function handleLoginPage(req, res) {
         return;
     }
 
-    if (req.user) {
+    if (res.locals.loggedIn) {
         return sendPug(res, "login", {
             wasAlreadyLoggedIn: true
         });
@@ -130,7 +118,7 @@ function handleLogout(req, res) {
     csrf.verify(req);
 
     res.clearCookie("auth");
-    req.user = res.user = null;
+    res.locals.loggedIn = res.locals.loginName = res.locals.superadmin = false;
     // Try to find an appropriate redirect
     var dest = req.body.dest || req.header("referer");
     dest = dest && dest.match(/login|logout|account/) ? null : dest;
@@ -155,7 +143,7 @@ function handleRegisterPage(req, res) {
         return;
     }
 
-    if (req.user) {
+    if (res.locals.loggedIn) {
         sendPug(res, "register", {});
         return;
     }

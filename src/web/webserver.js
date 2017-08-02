@@ -12,6 +12,8 @@ import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
 import counters from '../counters';
 import { Summary, Counter } from 'prom-client';
+import session from '../session';
+const verifySessionAsync = require('bluebird').promisify(session.verifySession);
 
 const LOGGER = require('@calzoneman/jsli')('webserver');
 
@@ -227,5 +229,36 @@ module.exports = {
         initializeErrorHandlers(app);
     },
 
-    redirectHttps: redirectHttps
+    redirectHttps: redirectHttps,
+
+    authorize: async function authorize(req) {
+        if (!req.signedCookies || !req.signedCookies.auth) {
+            return false;
+        }
+
+        try {
+            return await verifySessionAsync(req.signedCookies.auth);
+        } catch (error) {
+            return false;
+        }
+    },
+
+    setAuthCookie: function setAuthCookie(req, res, expiration, auth) {
+        if (req.hostname.indexOf(Config.get("http.root-domain")) >= 0) {
+            // Prevent non-root cookie from screwing things up
+            res.clearCookie("auth");
+            res.cookie("auth", auth, {
+                domain: Config.get("http.root-domain-dotted"),
+                expires: expiration,
+                httpOnly: true,
+                signed: true
+            });
+        } else {
+            res.cookie("auth", auth, {
+                expires: expiration,
+                httpOnly: true,
+                signed: true
+            });
+        }
+    }
 };

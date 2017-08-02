@@ -7,19 +7,20 @@ var db = require("../database");
 var Config = require("../config");
 
 function checkAdmin(cb) {
-    return function (req, res) {
-        if (!req.user) {
+    return async function (req, res) {
+        const user = await webserver.authorize(req);
+        if (!user) {
             return res.send(403);
         }
 
-        if (req.user.global_rank < 255) {
+        if (user.global_rank < 255) {
             res.send(403);
             Logger.eventlog.log("[acp] Attempted GET "+req.path+" from non-admin " +
                                 user.name + "@" + req.realIP);
             return;
         }
 
-        cb(req, res, req.user);
+        cb(req, res, user);
     };
 }
 

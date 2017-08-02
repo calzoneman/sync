@@ -17,36 +17,34 @@ exports.genSession = function (account, expiration, cb) {
     var hashInput = [account.name, account.password, expiration, salt].join(":");
     var hash = sha256(hashInput);
 
-    cb(null, [account.name, expiration, salt, hash].join(":"));
+    cb(null, [account.name, expiration, salt, hash, account.global_rank].join(":"));
 };
 
 exports.verifySession = function (input, cb) {
     if (typeof input !== "string") {
-        return cb("Invalid auth string");
+        return cb(new Error("Invalid auth string"));
     }
 
     var parts = input.split(":");
-    if (parts.length !== 4) {
-        return cb("Invalid auth string");
+    if (parts.length !== 4 && parts.length !== 5) {
+        return cb(new Error("Invalid auth string"));
     }
 
-    var name = parts[0];
-    var expiration = parts[1];
-    var salt = parts[2];
-    var hash = parts[3];
+    const [name, expiration, salt, hash, global_rank] = parts;
 
-    if (Date.now() > parseInt(expiration)) {
-        return cb("Session expired");
+    if (Date.now() > parseInt(expiration, 10)) {
+        return cb(new Error("Session expired"));
     }
 
     dbAccounts.getUser(name, function (err, account) {
         if (err) {
+            if (!(err instanceof Error)) err = new Error(err);
             return cb(err);
         }
 
         var hashInput = [account.name, account.password, expiration, salt].join(":");
         if (sha256(hashInput) !== hash) {
-            return cb("Invalid auth string");
+            return cb(new Error("Invalid auth string"));
         }
 
         cb(null, account);
