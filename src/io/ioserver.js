@@ -169,6 +169,7 @@ class IOServer {
     }
 
     initSocketIO() {
+        patchSocketMetrics();
         patchTypecheckedFunctions();
 
         const io = this.io = sio.instance = sio();
@@ -192,6 +193,29 @@ class IOServer {
             this.io.attach(server);
         });
     }
+}
+
+const incomingEventCount = new Counter({
+    name: 'cytube_socketio_incoming_events',
+    help: 'Number of received socket.io events from clients'
+});
+const outgoingPacketCount = new Counter({
+    name: 'cytube_socketio_outgoing_packets',
+    help: 'Number of outgoing socket.io packets to clients'
+});
+function patchSocketMetrics() {
+    const onevent = Socket.prototype.onevent;
+    const packet = Socket.prototype.packet;
+
+    Socket.prototype.onevent = function patchedOnevent() {
+        onevent.apply(this, arguments);
+        incomingEventCount.inc();
+    };
+
+    Socket.prototype.packet = function patchedPacket() {
+        packet.apply(this, arguments);
+        outgoingPacketCount.inc();
+    };
 }
 
 /* TODO: remove this crap */

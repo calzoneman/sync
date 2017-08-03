@@ -7,8 +7,17 @@ var util = require("./utilities");
 import * as Metrics from './metrics/metrics';
 import knex from 'knex';
 import { GlobalBanDB } from './db/globalban';
+import { Summary, Counter } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('database');
+const queryLatency = new Summary({
+    name: 'cytube_db_query_latency',
+    help: 'DB query latency (including time spent acquiring connections)'
+});
+const queryCount = new Counter({
+    name: 'cytube_db_query_count',
+    help: 'DB query count'
+});
 
 let db = null;
 let globalBanDB = null;
@@ -41,8 +50,11 @@ class Database {
 
     runTransaction(fn) {
         const timer = Metrics.startTimer('db:queryTime');
+        const end = queryLatency.startTimer();
         return this.knex.transaction(fn).finally(() => {
+            end();
             Metrics.stopTimer(timer);
+            queryCount.inc();
         });
     }
 }

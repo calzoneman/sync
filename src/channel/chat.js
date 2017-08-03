@@ -7,6 +7,7 @@ var Flags = require("../flags");
 var url = require("url");
 var counters = require("../counters");
 import { transformImgTags } from '../camo';
+import { Counter } from 'prom-client';
 
 const SHADOW_TAG = "[shadow]";
 const LINK = /(\w+:\/\/(?:[^:\/\[\]\s]+|\[[0-9a-f:]+\])(?::\d+)?(?:\/[^\/\s]*)*)/ig;
@@ -149,9 +150,14 @@ ChatModule.prototype.restrictNewAccount = function restrictNewAccount(user, data
     return false;
 };
 
+const chatIncomingCount = new Counter({
+    name: 'cytube_chat_incoming_count',
+    help: 'Number of incoming chatMsg frames'
+});
 ChatModule.prototype.handleChatMsg = function (user, data) {
     var self = this;
     counters.add("chat:incoming");
+    chatIncomingCount.inc();
 
     if (!this.channel || !this.channel.modules.permissions.canChat(user)) {
         return;
@@ -281,6 +287,10 @@ ChatModule.prototype.handlePm = function (user, data) {
     user.socket.emit("pm", msgobj);
 };
 
+const chatSentCount = new Counter({
+    name: 'cytube_chat_sent_count',
+    help: 'Number of broadcast chat messages'
+});
 ChatModule.prototype.processChatMsg = function (user, data) {
     if (data.msg.match(Config.get("link-domain-blacklist-regex"))) {
         this.channel.logger.log(user.displayip + " (" + user.getName() + ") was kicked for " +
@@ -350,6 +360,7 @@ ChatModule.prototype.processChatMsg = function (user, data) {
     }
     this.sendMessage(msgobj);
     counters.add("chat:sent");
+    chatSentCount.inc();
 };
 
 ChatModule.prototype.formatMessage = function (username, data) {

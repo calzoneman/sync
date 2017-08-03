@@ -13,8 +13,14 @@ var Streamable = require("cytube-mediaquery/lib/provider/streamable");
 var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
 var TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
+import { Counter } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('get-info');
+const lookupCounter = new Counter({
+    name: 'cytube_media_lookup_count',
+    help: 'Count of media lookups',
+    labelNames: ['shortCode']
+});
 
 var urlRetrieve = function (transport, options, callback) {
     var req = transport.request(options, function (res) {
@@ -541,6 +547,7 @@ module.exports = {
     getMedia: function (id, type, callback) {
         if(type in this.Getters) {
             LOGGER.info("Looking up %s:%s", type, id);
+            lookupCounter.labels(type).inc();
             this.Getters[type](id, callback);
         } else {
             callback("Unknown media type '" + type + "'", null);
