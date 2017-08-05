@@ -2639,6 +2639,14 @@ function formatUserPlaylistList() {
 }
 
 function loadEmotes(data) {
+    function sanitizeText(str) {
+        str = str.replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;");
+        return str;
+    }
+
     CHANNEL.emotes = [];
     CHANNEL.emoteMap = {};
     CHANNEL.badEmotes = [];
@@ -2650,7 +2658,7 @@ function loadEmotes(data) {
                 // Emotes with spaces can't be hashmapped
                 CHANNEL.badEmotes.push(e);
             } else {
-                CHANNEL.emoteMap[e.name] = e;
+                CHANNEL.emoteMap[sanitizeText(e.name)] = e;
             }
         } else {
             console.error("Rejecting invalid emote: " + JSON.stringify(e));

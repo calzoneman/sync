@@ -73,7 +73,7 @@ CyTube.ui = {
     suppressedAnnouncementId: getOpt("suppressed_announcement_id")
 };
 CyTube.featureFlag = {
-    efficientEmotes: false
+    efficientEmotes: true
 };
 
 function getOpt(k) {
