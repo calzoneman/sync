@@ -9,6 +9,7 @@ var db = require("../database");
 var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
 import counters from '../counters';
+import { Counter } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('playlist');
 
@@ -281,6 +282,11 @@ PlaylistModule.prototype.sendPlaylist = function (users) {
     });
 };
 
+const changeMediaCounter = new Counter({
+    name: 'cytube_playlist_played_count',
+    help: 'Counter for number of playlist items played',
+    labelNames: ['shortCode']
+});
 PlaylistModule.prototype.sendChangeMedia = function (users) {
     if (!this.current || !this.current.media || this._refreshing) {
         return;
@@ -295,6 +301,7 @@ PlaylistModule.prototype.sendChangeMedia = function (users) {
         var m = this.current.media;
         this.channel.logger.log("[playlist] Now playing: " + m.title +
                                 " (" + m.type + ":" + m.id + ")");
+        changeMediaCounter.labels(m.type).inc();
     } else {
         users.forEach(function (u) {
             u.socket.emit("setCurrent", uid);
