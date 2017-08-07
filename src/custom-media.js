@@ -1,5 +1,5 @@
 import { ValidationError } from './errors';
-import { URL } from 'url';
+import { parse as parseURL } from 'url';
 import net from 'net';
 
 const SOURCE_QUALITIES = new Set([
@@ -105,7 +105,12 @@ function validateTextTracks(textTracks) {
 function validateURL(urlstring) {
     let url;
     try {
-        url = new URL(urlstring);
+        url = parseURL(urlstring);
+
+        // legacy url.parse doesn't check this
+        if (url.protocol == null || url.host == null) {
+            throw new Error();
+        }
     } catch (error) {
         throw new ValidationError(`invalid URL "${urlstring}"`);
     }
