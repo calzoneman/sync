@@ -34,21 +34,25 @@ function User(socket, ip, loginInfo) {
             guest: false
         });
         socket.emit("rank", this.account.effectiveRank);
+        if (this.account.globalRank >= 255) {
+            this.initAdminCallbacks();
+        }
+        this.emit("login", this.account);
         LOGGER.info(ip + " logged in as " + this.getName());
     } else {
         this.account = new Account.Account(this.realip, null, socket.context.aliases);
         socket.emit("rank", -1);
         this.setFlag(Flags.U_READY);
+        this.once("login", account => {
+            if (account.globalRank >= 255) {
+                this.initAdminCallbacks();
+            }
+        });
     }
 
     socket.once("joinChannel", data => this.handleJoinChannel(data));
     socket.once("initACP", () => this.handleInitACP());
     socket.on("login", data => this.handleLogin(data));
-    this.once("login", account => {
-        if (account.globalRank >= 255) {
-            this.initAdminCallbacks();
-        }
-    });
 }
 
 User.prototype = Object.create(EventEmitter.prototype);
