@@ -103,6 +103,6 @@ window.SoundCloudPlayer = class SoundCloudPlayer extends Player
 
     getVolume: (cb) ->
         if @soundcloud and @soundcloud.ready
-            @soundcloud.getVolume(cb)
+            @soundcloud.getVolume((vol) -> cb(vol / 100))
         else
             cb(VOLUME)

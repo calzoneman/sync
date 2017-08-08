@@ -896,7 +896,9 @@
 
     SoundCloudPlayer.prototype.getVolume = function(cb) {
       if (this.soundcloud && this.soundcloud.ready) {
-        return this.soundcloud.getVolume(cb);
+        return this.soundcloud.getVolume(function(vol) {
+          return cb(vol / 100);
+        });
       } else {
         return cb(VOLUME);
       }
