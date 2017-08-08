@@ -1,8 +1,9 @@
 import { ValidationError } from './errors';
-import { parse as parseURL } from 'url';
+import { parse as urlParse } from 'url';
 import net from 'net';
 import Media from './media';
 import { hash } from './util/hash';
+import { get as httpGet } from 'http';
 
 const SOURCE_QUALITIES = new Set([
     240,
@@ -24,6 +25,73 @@ const SOURCE_CONTENT_TYPES = new Set([
     'video/ogg',
     'video/webm'
 ]);
+
+export function lookup(url, opts) {
+    if (!opts) opts = {};
+    if (!opts.hasOwnProperty('timeout')) opts.timeout = 10000;
+
+    return new Promise((resolve, reject) => {
+        const options = {
+            headers: {
+                'Accept': 'application/json'
+            }
+        };
+
+        Object.assign(options, parseURL(url));
+
+        const req = httpGet(options);
+
+        req.setTimeout(opts.timeout, () => {
+            const error = new Error('Request timed out');
+            error.code = 'ETIMEDOUT';
+            reject(error);
+        });
+
+        req.on('error', error => {
+            reject(error);
+        });
+
+        req.on('response', res => {
+            if (res.statusCode !== 200) {
+                req.abort();
+
+                reject(new Error(
+                    `Expected HTTP 200 OK, not ${res.statusCode} ${res.statusMessage}`
+                ));
+
+                return;
+            }
+
+            if (!/^application\/json/.test(res.headers['content-type'])) {
+                req.abort();
+
+                reject(new Error(
+                    `Expected content-type application/json, not ${res.headers['content-type']}`
+                ));
+
+                return;
+            }
+
+            let buffer = '';
+            res.setEncoding('utf8');
+
+            res.on('data', data => {
+                buffer += data;
+
+                if (buffer.length > 100 * 1024) {
+                    req.abort();
+                    reject(new Error('Response size exceeds 100KB'));
+                }
+            });
+
+            res.on('end', () => {
+                resolve(buffer);
+            });
+        });
+    }).then(body => {
+        return convert(JSON.parse(body));
+    });
+}
 
 export function convert(data) {
     validate(data);
@@ -138,15 +206,21 @@ function validateTextTracks(textTracks) {
     }
 }
 
+function parseURL(urlstring) {
+    const url = urlParse(urlstring);
+
+    // legacy url.parse doesn't check this
+    if (url.protocol == null || url.host == null) {
+        throw new Error(`Invalid URL "${urlstring}"`);
+    }
+
+    return url;
+}
+
 function validateURL(urlstring) {
     let url;
     try {
         url = parseURL(urlstring);
-
-        // legacy url.parse doesn't check this
-        if (url.protocol == null || url.host == null) {
-            throw new Error();
-        }
     } catch (error) {
         throw new ValidationError(`invalid URL "${urlstring}"`);
     }

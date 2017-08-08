@@ -1,5 +1,6 @@
 const assert = require('assert');
-const { validate, convert } = require('../lib/custom-media');
+const { validate, convert, lookup } = require('../lib/custom-media');
+const http = require('http');
 
 describe('custom-media', () => {
     let valid, invalid;
@@ -268,6 +269,150 @@ describe('custom-media', () => {
             const actual = cleanForComparison(media);
 
             assert.deepStrictEqual(actual, expected);
+        });
+    });
+
+    describe('#lookup', () => {
+        let server;
+        let serveFunc;
+
+        beforeEach(() => {
+            serveFunc = function (req, res) {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(valid, null, 2));
+                res.end();
+            };
+
+            server = http.createServer((req, res) => serveFunc(req, res));
+            server.listen(10111);
+        });
+
+        afterEach(done => {
+            server.close(() => done());
+        });
+
+        it('retrieves metadata', () => {
+            function cleanForComparison(actual) {
+                actual = actual.pack();
+                delete actual.id;
+
+                // Strip out extraneous undefineds
+                for (let key in actual.meta) {
+                    if (actual.meta[key] === undefined) delete actual.meta[key];
+                }
+
+                return actual;
+            }
+
+            const expected = {
+                title: 'Test Video',
+                seconds: 10,
+                duration: '00:10',
+                type: 'cm',
+                meta: {
+                    direct: {
+                        1080: [
+                            {
+                                link: 'https://example.com/video.mp4',
+                                contentType: 'video/mp4',
+                                quality: 1080
+                            }
+                        ]
+                    },
+                    textTracks: [
+                        {
+                            url: 'https://example.com/subtitles.vtt',
+                            contentType: 'text/vtt',
+                            name: 'English Subtitles'
+                        }
+                    ]
+                }
+            };
+
+            return lookup('http://127.0.0.1:10111/').then(result => {
+                assert.deepStrictEqual(cleanForComparison(result), expected);
+            });
+        });
+
+        it('rejects the wrong content-type', () => {
+            serveFunc = (req, res) => {
+                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                res.write(JSON.stringify(valid, null, 2));
+                res.end();
+            };
+
+            return lookup('http://127.0.0.1:10111/').then(() => {
+                throw new Error('Expected failure due to wrong content-type');
+            }).catch(error => {
+                assert.strictEqual(
+                    error.message,
+                    'Expected content-type application/json, not text/plain'
+                );
+            });
+        });
+
+        it('rejects non-200 status codes', () => {
+            serveFunc = (req, res) => {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(valid, null, 2));
+                res.end();
+            };
+
+            return lookup('http://127.0.0.1:10111/').then(() => {
+                throw new Error('Expected failure due to 404');
+            }).catch(error => {
+                assert.strictEqual(
+                    error.message,
+                    'Expected HTTP 200 OK, not 404 Not Found'
+                );
+            });
+        });
+
+        it('rejects responses >100KB', () => {
+            serveFunc = (req, res) => {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(Buffer.alloc(200 * 1024));
+                res.end();
+            };
+
+            return lookup('http://127.0.0.1:10111/').then(() => {
+                throw new Error('Expected failure due to response size');
+            }).catch(error => {
+                assert.strictEqual(
+                    error.message,
+                    'Response size exceeds 100KB'
+                );
+            });
+        });
+
+        it('times out', () => {
+            serveFunc = (req, res) => {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(JSON.stringify(valid, null, 2));
+
+                setTimeout(() => res.end(), 100);
+            };
+
+            return lookup('http://127.0.0.1:10111/', { timeout: 1 }).then(() => {
+                throw new Error('Expected failure due to request timeout');
+            }).catch(error => {
+                assert.strictEqual(
+                    error.message,
+                    'Request timed out'
+                );
+                assert.strictEqual(error.code, 'ETIMEDOUT');
+            });
+        });
+
+        it('rejects invalid URLs', () => {
+            return lookup('not valid').then(() => {
+                throw new Error('Expected failure due to invalid URL');
+            }).catch(error => {
+                assert.strictEqual(
+                    error.message,
+                    'Invalid URL "not valid"'
+                );
+            });
         });
     });
 });
