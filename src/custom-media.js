@@ -1,6 +1,8 @@
 import { ValidationError } from './errors';
 import { parse as parseURL } from 'url';
 import net from 'net';
+import Media from './media';
+import { hash } from './util/hash';
 
 const SOURCE_QUALITIES = new Set([
     240,
@@ -22,6 +24,40 @@ const SOURCE_CONTENT_TYPES = new Set([
     'video/ogg',
     'video/webm'
 ]);
+
+export function convert(data) {
+    validate(data);
+
+    if (data.live) data.duration = 0;
+
+    const sources = {};
+
+    for (let source of data.sources) {
+        if (!sources.hasOwnProperty(source.quality))
+            sources[source.quality] = [];
+
+        sources[source.quality].push({
+            link: source.url,
+            contentType: source.contentType,
+            quality: source.quality
+        });
+    }
+
+    const meta = {
+        direct: sources,
+        textTracks: data.textTracks,
+        thumbnail: data.thumbnail, // Currently ignored by Media
+        live: !!data.live          // Currently ignored by Media
+    };
+
+    const id = hash('sha256', JSON.stringify([
+        data.title,
+        data.duration,
+        meta
+    ]), 'base64');
+
+    return new Media(id, data.title, data.duration, 'cm', meta);
+}
 
 export function validate(data) {
     if (typeof data.title !== 'string')

@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { validate } = require('../lib/custom-media');
+const { validate, convert } = require('../lib/custom-media');
 
 describe('custom-media', () => {
     let valid, invalid;
@@ -201,6 +201,73 @@ describe('custom-media', () => {
             invalid.sources[0].url = 'https://0.0.0.0/thumb.jpg';
 
             assert.throws(() => validate(invalid), /URL hostname must be a domain name/);
+        });
+    });
+
+    describe('#convert', () => {
+        let expected;
+
+        beforeEach(() => {
+            expected = {
+                title: 'Test Video',
+                seconds: 10,
+                duration: '00:10',
+                type: 'cm',
+                meta: {
+                    direct: {
+                        1080: [
+                            {
+                                link: 'https://example.com/video.mp4',
+                                contentType: 'video/mp4',
+                                quality: 1080
+                            }
+                        ]
+                    },
+                    textTracks: [
+                        {
+                            url: 'https://example.com/subtitles.vtt',
+                            contentType: 'text/vtt',
+                            name: 'English Subtitles'
+                        }
+                    ]
+                }
+            };
+        });
+
+        function cleanForComparison(actual) {
+            actual = actual.pack();
+            delete actual.id;
+
+            // Strip out extraneous undefineds
+            for (let key in actual.meta) {
+                if (actual.meta[key] === undefined) delete actual.meta[key];
+            }
+
+            return actual;
+        }
+
+        it('converts custom metadata to a CyTube Media object', () => {
+            const media = convert(valid);
+
+            assert(media.id != null, 'should have generated id');
+
+            const actual = cleanForComparison(media);
+
+            assert.deepStrictEqual(actual, expected);
+        });
+
+        it('sets duration to 0 if live = true', () => {
+            valid.live = true;
+            expected.duration = '00:00';
+            expected.seconds = 0;
+
+            const media = convert(valid);
+
+            assert(media.id != null, 'should have generated id');
+
+            const actual = cleanForComparison(media);
+
+            assert.deepStrictEqual(actual, expected);
         });
     });
 });
