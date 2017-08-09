@@ -19,6 +19,7 @@ TYPE_MAP =
     hl: HLSPlayer
     sb: VideoJSPlayer
     tc: VideoJSPlayer
+    cm: VideoJSPlayer
 
 window.loadMediaPlayer = (data) ->
     try

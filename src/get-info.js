@@ -14,6 +14,7 @@ var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
 var TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
 import { Counter } from 'prom-client';
+import { lookup as lookupCustomMetadata } from './custom-media';
 
 const LOGGER = require('@calzoneman/jsli')('get-info');
 const lookupCounter = new Counter({
@@ -539,6 +540,16 @@ var Getters = {
         }).catch(function (err) {
             callback(err.message || err, null);
         });
+    },
+
+    /* custom media - https://github.com/calzoneman/sync/issues/655 */
+    cm: async function (id, callback) {
+        try {
+            const media = await lookupCustomMetadata(id);
+            process.nextTick(callback, false, media);
+        } catch (error) {
+            process.nextTick(callback, error.message);
+        }
     }
 };
 

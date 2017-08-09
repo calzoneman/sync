@@ -545,6 +545,18 @@
               }).appendTo(video);
             });
           }
+          if (data.meta.textTracks) {
+            data.meta.textTracks.forEach(function(track) {
+              var label;
+              label = track.name;
+              return $('<track/>').attr({
+                src: track.url,
+                kind: 'subtitles',
+                type: track.type,
+                label: label
+              }).appendTo(video);
+            });
+          }
           _this.player = videojs(video[0], {
             autoplay: true,
             controls: true,
@@ -1529,7 +1541,8 @@
     vm: VideoJSPlayer,
     hl: HLSPlayer,
     sb: VideoJSPlayer,
-    tc: VideoJSPlayer
+    tc: VideoJSPlayer,
+    cm: VideoJSPlayer
   };
 
   window.loadMediaPlayer = function(data) {

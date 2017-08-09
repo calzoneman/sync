@@ -4,6 +4,9 @@ import net from 'net';
 import Media from './media';
 import { hash } from './util/hash';
 import { get as httpGet } from 'http';
+import { get as httpsGet } from 'https';
+
+const LOGGER = require('@calzoneman/jsli')('custom-media');
 
 const SOURCE_QUALITIES = new Set([
     240,
@@ -39,7 +42,20 @@ export function lookup(url, opts) {
 
         Object.assign(options, parseURL(url));
 
-        const req = httpGet(options);
+        if (!/^https?:$/.test(options.protocol)) {
+            reject(new ValidationError(
+                `Unacceptable protocol "${options.protocol}".  Custom metadata must be`
+                    + ' retrieved by HTTP or HTTPS'
+            ));
+
+            return;
+        }
+
+        LOGGER.info('Looking up %s', url);
+
+        // this is fucking stupid
+        const get = options.protocol === 'https:' ? httpsGet : httpGet;
+        const req = get(options);
 
         req.setTimeout(opts.timeout, () => {
             const error = new Error('Request timed out');
@@ -48,6 +64,7 @@ export function lookup(url, opts) {
         });
 
         req.on('error', error => {
+            LOGGER.warn('Request for %s failed: %s', url, error);
             reject(error);
         });
 
@@ -89,11 +106,11 @@ export function lookup(url, opts) {
             });
         });
     }).then(body => {
-        return convert(JSON.parse(body));
+        return convert(url, JSON.parse(body));
     });
 }
 
-export function convert(data) {
+export function convert(id, data) {
     validate(data);
 
     if (data.live) data.duration = 0;
@@ -117,12 +134,6 @@ export function convert(data) {
         thumbnail: data.thumbnail, // Currently ignored by Media
         live: !!data.live          // Currently ignored by Media
     };
-
-    const id = hash('sha256', JSON.stringify([
-        data.title,
-        data.duration,
-        meta
-    ]), 'base64');
 
     return new Media(id, data.title, data.duration, 'cm', meta);
 }

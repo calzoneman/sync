@@ -207,9 +207,11 @@ describe('custom-media', () => {
 
     describe('#convert', () => {
         let expected;
+        let id = 'testing';
 
         beforeEach(() => {
             expected = {
+                id: 'testing',
                 title: 'Test Video',
                 seconds: 10,
                 duration: '00:10',
@@ -237,7 +239,6 @@ describe('custom-media', () => {
 
         function cleanForComparison(actual) {
             actual = actual.pack();
-            delete actual.id;
 
             // Strip out extraneous undefineds
             for (let key in actual.meta) {
@@ -248,10 +249,7 @@ describe('custom-media', () => {
         }
 
         it('converts custom metadata to a CyTube Media object', () => {
-            const media = convert(valid);
-
-            assert(media.id != null, 'should have generated id');
-
+            const media = convert(id, valid);
             const actual = cleanForComparison(media);
 
             assert.deepStrictEqual(actual, expected);
@@ -262,10 +260,7 @@ describe('custom-media', () => {
             expected.duration = '00:00';
             expected.seconds = 0;
 
-            const media = convert(valid);
-
-            assert(media.id != null, 'should have generated id');
-
+            const media = convert(id, valid);
             const actual = cleanForComparison(media);
 
             assert.deepStrictEqual(actual, expected);
@@ -401,6 +396,18 @@ describe('custom-media', () => {
                     'Request timed out'
                 );
                 assert.strictEqual(error.code, 'ETIMEDOUT');
+            });
+        });
+
+        it('rejects URLs with non-http(s) protocols', () => {
+            return lookup('ftp://127.0.0.1:10111/').then(() => {
+                throw new Error('Expected failure due to unacceptable URL protocol');
+            }).catch(error => {
+                assert.strictEqual(
+                    error.message,
+                    'Unacceptable protocol "ftp:".  Custom metadata must be retrieved'
+                            + ' by HTTP or HTTPS'
+                );
             });
         });
 

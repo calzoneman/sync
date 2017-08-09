@@ -69,6 +69,9 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 ).appendTo(video)
             )
 
+            # TODO: Refactor VideoJSPlayer to use a preLoad()/load()/postLoad() pattern
+            # VideoJSPlayer should provide the core functionality and logic for specific
+            # dependent player types (gdrive) should be an extension
             if data.meta.gdrive_subtitles
                 data.meta.gdrive_subtitles.available.forEach((subt) ->
                     label = subt.lang_original
@@ -79,6 +82,17 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                                 vid=#{data.meta.gdrive_subtitles.vid}"
                         kind: 'subtitles'
                         srclang: subt.lang
+                        label: label
+                    ).appendTo(video)
+                )
+
+            if data.meta.textTracks
+                data.meta.textTracks.forEach((track) ->
+                    label = track.name
+                    $('<track/>').attr(
+                        src: track.url
+                        kind: 'subtitles'
+                        type: track.type
                         label: label
                     ).appendTo(video)
                 )

@@ -386,7 +386,7 @@ PlaylistModule.prototype.handleQueue = function (user, data) {
             id: id
         });
         return;
-    } else if (type === "fi" && !perms.canAddRawFile(user)) {
+    } else if ((type === "fi" || type === "cm") && !perms.canAddRawFile(user)) {
         user.socket.emit("queueFail", {
             msg: "You don't have permission to add raw video files",
             link: link,

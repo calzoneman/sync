@@ -56,6 +56,8 @@ function formatURL(data) {
             return "https://streamable.com/" + data.id;
         case "tc":
             return "https://clips.twitch.tv/" + data.id;
+        case "cm":
+            return data.id;
         default:
             return "#";
     }
@@ -1413,6 +1415,12 @@ function parseMediaLink(url) {
             type: "fi"
         };
     }
+    if ((m = url.match(/^cm:(.*)/))) {
+        return {
+            id: m[1],
+            type: "cm"
+        };
+    }
     // Generic for the rest.
     if ((m = url.match(/^([a-z]{2}):([^\?&#]+)/))) {
         return {
@@ -1430,6 +1438,11 @@ function parseMediaLink(url) {
                 msg: "Raw files must begin with 'https'.  Plain http is not supported."
             });
             throw new Error("ERROR_QUEUE_HTTP");
+        } else if (tmp.match(/\.json$/)) {
+            return {
+                id: url,
+                type: "cm"
+            };
         } else if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3|mov|m4a)$/)) {
             return {
                 id: url,

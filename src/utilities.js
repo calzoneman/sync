@@ -246,6 +246,8 @@
                 return "https://streamable.com/" + id;
             case "tc":
                 return "https://clips.twitch.tv/" + id;
+            case "cm":
+                return id;
             default:
                 return "";
         }
