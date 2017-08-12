@@ -123,6 +123,12 @@ function testUrl(url, cb, redirCount) {
             cb("The remote server provided an invalid SSL certificate.  Details: "
                     + err.reason);
             return;
+        } else if (err.code === 'ENOTFOUND') {
+            cb(`Unknown host "${err.hostname}".  Please check that the link is correct.`);
+            return;
+        } else if (err.code === 'ECONNREFUSED') {
+            cb("The remote server refused the connection.  Please check that the link is correct.");
+            return;
         }
 
         LOGGER.error("Error sending preflight request: %s (link: %s)", err.message, url);
