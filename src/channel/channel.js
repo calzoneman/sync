@@ -276,6 +276,8 @@ Channel.prototype.checkModules = function (fn, args, cb) {
     const self = this;
     const refCaller = `Channel::checkModules/${fn}`;
     this.waitFlag(Flags.C_READY, function () {
+        if (self.dead) return;
+
         self.refCounter.ref(refCaller);
         var keys = Object.keys(self.modules);
         var next = function (err, result) {
@@ -306,6 +308,7 @@ Channel.prototype.checkModules = function (fn, args, cb) {
 Channel.prototype.notifyModules = function (fn, args) {
     var self = this;
     this.waitFlag(Flags.C_READY, function () {
+        if (self.dead) return;
         var keys = Object.keys(self.modules);
         keys.forEach(function (k) {
             self.modules[k][fn].apply(self.modules[k], args);
@@ -318,6 +321,7 @@ Channel.prototype.joinUser = function (user, data) {
 
     self.refCounter.ref("Channel::user");
     self.waitFlag(Flags.C_READY, function () {
+
         /* User closed the connection before the channel finished loading */
         if (user.socket.disconnected) {
             self.refCounter.unref("Channel::user");
