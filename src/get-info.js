@@ -18,7 +18,7 @@ import { lookup as lookupCustomMetadata } from './custom-media';
 
 const LOGGER = require('@calzoneman/jsli')('get-info');
 const lookupCounter = new Counter({
-    name: 'cytube_media_lookup_count',
+    name: 'cytube_media_lookups_total',
     help: 'Count of media lookups',
     labelNames: ['shortCode']
 });
@@ -558,7 +558,7 @@ module.exports = {
     getMedia: function (id, type, callback) {
         if(type in this.Getters) {
             LOGGER.info("Looking up %s:%s", type, id);
-            lookupCounter.labels(type).inc();
+            lookupCounter.labels(type).inc(1, new Date());
             this.Getters[type](id, callback);
         } else {
             callback("Unknown media type '" + type + "'", null);

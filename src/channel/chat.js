@@ -151,13 +151,13 @@ ChatModule.prototype.restrictNewAccount = function restrictNewAccount(user, data
 };
 
 const chatIncomingCount = new Counter({
-    name: 'cytube_chat_incoming_count',
+    name: 'cytube_chat_incoming_total',
     help: 'Number of incoming chatMsg frames'
 });
 ChatModule.prototype.handleChatMsg = function (user, data) {
     var self = this;
     counters.add("chat:incoming");
-    chatIncomingCount.inc();
+    chatIncomingCount.inc(1, new Date());
 
     if (!this.channel || !this.channel.modules.permissions.canChat(user)) {
         return;
@@ -288,7 +288,7 @@ ChatModule.prototype.handlePm = function (user, data) {
 };
 
 const chatSentCount = new Counter({
-    name: 'cytube_chat_sent_count',
+    name: 'cytube_chat_sent_total',
     help: 'Number of broadcast chat messages'
 });
 ChatModule.prototype.processChatMsg = function (user, data) {
@@ -360,7 +360,7 @@ ChatModule.prototype.processChatMsg = function (user, data) {
     }
     this.sendMessage(msgobj);
     counters.add("chat:sent");
-    chatSentCount.inc();
+    chatSentCount.inc(1, new Date());
 };
 
 ChatModule.prototype.formatMessage = function (username, data) {

@@ -32,13 +32,13 @@ function initializeLog(app) {
 
 function initPrometheus(app) {
     const latency = new Summary({
-        name: 'cytube_http_req_latency',
+        name: 'cytube_http_req_duration_seconds',
         help: 'HTTP Request latency from execution of the first middleware '
                 + 'until the "finish" event on the response object.',
         labelNames: ['method', 'statusCode']
     });
     const requests = new Counter({
-        name: 'cytube_http_req_count',
+        name: 'cytube_http_req_total',
         help: 'HTTP Request count',
         labelNames: ['method', 'statusCode']
     });
@@ -48,8 +48,8 @@ function initPrometheus(app) {
         res.on('finish', () => {
             try {
                 const diff = process.hrtime(startTime);
-                const diffMs = diff[0]*1e3 + diff[1]*1e-6;
-                latency.labels(req.method, res.statusCode).observe(diffMs);
+                const diffSec = diff[0] + diff[1]*1e-9;
+                latency.labels(req.method, res.statusCode).observe(diffSec);
                 requests.labels(req.method, res.statusCode).inc(1, new Date());
             } catch (error) {
                 LOGGER.error('Failed to record HTTP Prometheus metrics: %s', error.stack);

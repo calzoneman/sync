@@ -196,11 +196,11 @@ class IOServer {
 }
 
 const incomingEventCount = new Counter({
-    name: 'cytube_socketio_incoming_events',
+    name: 'cytube_socketio_incoming_events_total',
     help: 'Number of received socket.io events from clients'
 });
 const outgoingPacketCount = new Counter({
-    name: 'cytube_socketio_outgoing_packets',
+    name: 'cytube_socketio_outgoing_packets_total',
     help: 'Number of outgoing socket.io packets to clients'
 });
 function patchSocketMetrics() {
@@ -209,12 +209,12 @@ function patchSocketMetrics() {
 
     Socket.prototype.onevent = function patchedOnevent() {
         onevent.apply(this, arguments);
-        incomingEventCount.inc();
+        incomingEventCount.inc(1, new Date());
     };
 
     Socket.prototype.packet = function patchedPacket() {
         packet.apply(this, arguments);
-        outgoingPacketCount.inc();
+        outgoingPacketCount.inc(1, new Date());
     };
 }
 
@@ -266,11 +266,11 @@ const promSocketCount = new Gauge({
     labelNames: ['transport']
 });
 const promSocketAccept = new Counter({
-    name: 'cytube_sockets_accept_count',
+    name: 'cytube_sockets_accepts_total',
     help: 'Counter for number of connections accepted.  Excludes rejected connections.'
 });
 const promSocketDisconnect = new Counter({
-    name: 'cytube_sockets_disconnect_count',
+    name: 'cytube_sockets_disconnects_total',
     help: 'Counter for number of connections disconnected.'
 });
 function emitMetrics(sock) {

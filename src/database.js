@@ -11,11 +11,11 @@ import { Summary, Counter } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('database');
 const queryLatency = new Summary({
-    name: 'cytube_db_query_latency',
+    name: 'cytube_db_query_duration_seconds',
     help: 'DB query latency (including time spent acquiring connections)'
 });
 const queryCount = new Counter({
-    name: 'cytube_db_query_count',
+    name: 'cytube_db_queries_total',
     help: 'DB query count'
 });
 
@@ -54,7 +54,7 @@ class Database {
         return this.knex.transaction(fn).finally(() => {
             end();
             Metrics.stopTimer(timer);
-            queryCount.inc();
+            queryCount.inc(1, new Date());
         });
     }
 }

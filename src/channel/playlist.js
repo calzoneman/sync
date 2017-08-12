@@ -283,7 +283,7 @@ PlaylistModule.prototype.sendPlaylist = function (users) {
 };
 
 const changeMediaCounter = new Counter({
-    name: 'cytube_playlist_played_count',
+    name: 'cytube_playlist_plays_total',
     help: 'Counter for number of playlist items played',
     labelNames: ['shortCode']
 });
@@ -301,7 +301,7 @@ PlaylistModule.prototype.sendChangeMedia = function (users) {
         var m = this.current.media;
         this.channel.logger.log("[playlist] Now playing: " + m.title +
                                 " (" + m.type + ":" + m.id + ")");
-        changeMediaCounter.labels(m.type).inc();
+        changeMediaCounter.labels(m.type).inc(1, new Date());
     } else {
         users.forEach(function (u) {
             u.socket.emit("setCurrent", uid);
