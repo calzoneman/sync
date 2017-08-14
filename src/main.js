@@ -28,19 +28,6 @@ function handleLine(line) {
     if (line === '/reload') {
         LOGGER.info('Reloading config');
         Config.load('config.yaml');
-    } else if (line === '/gc') {
-        if (global && global.gc) {
-            LOGGER.info('Running GC');
-            global.gc();
-        } else {
-            LOGGER.info('Failed to invoke GC: node started without --expose-gc');
-        }
-    } else if (line === '/delete_old_tables') {
-        require('./database/update').deleteOldChannelTables(function (err) {
-            if (!err) {
-                LOGGER.info('Deleted old channel tables');
-            }
-        });
     } else if (line.indexOf('/switch') === 0) {
         const args = line.split(' ');
         args.shift();
