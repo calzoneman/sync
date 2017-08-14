@@ -9,7 +9,7 @@ sortSources = (sources) ->
         pref = '2160'
     idx = qualities.indexOf(pref)
     if idx < 0
-        idx = 2
+        idx = 5 # 480p
 
     qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx).reverse())
     sourceOrder = []

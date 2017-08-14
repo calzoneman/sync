@@ -459,7 +459,7 @@
     }
     idx = qualities.indexOf(pref);
     if (idx < 0) {
-      idx = 2;
+      idx = 5;
     }
     qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx).reverse());
     sourceOrder = [];
