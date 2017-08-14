@@ -1,9 +1,4 @@
 Callbacks = {
-
-    error: function (reason) {
-        window.SOCKET_ERROR_REASON = reason;
-    },
-
     /* fired when socket connection completes */
     connect: function() {
         HAS_CONNECTED_BEFORE = true;
@@ -42,6 +37,7 @@ Callbacks = {
 
     // Socket.IO error callback
     error: function (msg) {
+        window.SOCKET_ERROR_REASON = reason;
         $("<div/>")
             .addClass("server-msg-disconnect")
             .text("Unable to connect: " + msg)
@@ -629,16 +625,6 @@ Callbacks = {
         if (USEROPTS.sort_rank) {
             sortUserlist();
         }
-    },
-
-    setUserIcon: function (data) {
-        var user = findUserlistItem(data.name);
-        if (user === null) {
-            return;
-        }
-
-        user.data("icon", data.icon);
-        formatUserlistItem(user);
     },
 
     userLeave: function(data) {

@@ -1898,9 +1898,6 @@ handleWindowResize();
 function removeVideo(event) {
     try {
         PLAYER.setVolume(0);
-        if (PLAYER.type === "rv") {
-            killVideoUntilItIsDead($(PLAYER.player));
-        }
     } catch (e) {
     }
 
@@ -2785,32 +2782,6 @@ function initPm(user) {
     return pm;
 }
 
-function killVideoUntilItIsDead(video) {
-    try {
-        video[0].volume = 0;
-        video[0].muted = true;
-        video.attr("src", "");
-        video.remove();
-    } catch (e) {
-    }
-}
-
-function fallbackRaw(data) {
-    $("<div/>").insertBefore($("#ytapiplayer")).attr("id", "ytapiplayer");
-    $("video").each(function () {
-        killVideoUntilItIsDead($(this));
-    });
-    $("audio").each(function () {
-        killVideoUntilItIsDead($(this));
-    });
-    data.type = "fl";
-    data.url = data.direct.sd.url;
-    PLAYER.player = undefined;
-    PLAYER = new FlashPlayer(data);
-
-    handleMediaUpdate(data);
-}
-
 function checkScriptAccess(source, type, cb) {
     var pref = JSPREF[CHANNEL.name.toLowerCase() + "_" + type];
     if (pref === "ALLOW") {
@@ -2942,51 +2913,6 @@ function formatScriptAccessPrefs() {
                 tr.remove();
             });
     });
-}
-
-/*
-    VIMEO SIMULATOR 2014
-
-    Vimeo decided to block my domain.  After repeated emails, they refused to
-    unblock it.  Rather than give in to their demands, there is a serverside
-    option which extracts direct links to the h264 encoded MP4 video files.
-    These files can be loaded in a custom player to allow Vimeo playback without
-    triggering their dumb API domain block.
-
-    It's a little bit hacky, but my only other option is to keep buying new
-    domains every time one gets blocked.  No thanks to Vimeo, who were of no help
-    and unwilling to compromise on the issue.
-*/
-function vimeoSimulator2014(data) {
-    /* Vimeo Simulator uses the raw file player */
-    data.type = "fi";
-
-    /* Convert youtube-style quality key to vimeo workaround quality */
-    var q = {
-        small: "mobile",
-        medium: "sd",
-        large: "sd",
-        hd720: "hd",
-        hd1080:"hd",
-        highres: "hd"
-    }[USEROPTS.default_quality] || "sd";
-
-    var fallback = {
-        hd: "sd",
-        sd: "mobile",
-        mobile: false
-    };
-
-    /* Pick highest quality less than or equal to user's preference from the options */
-    while (!(q in data.meta.direct) && q != false) {
-        q = fallback[q];
-    }
-    if (!q) {
-        q = "sd";
-    }
-
-    data.url = data.meta.direct[q].url;
-    return data;
 }
 
 function EmoteList(selector, emoteClickCallback) {
