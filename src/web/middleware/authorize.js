@@ -19,12 +19,16 @@ export default function initialize(app, session) {
 
             let rank;
             if (!global_rank) {
-                rank = await backfillRankIntoAuthCookie(
-                    session,
-                    new Date(parseInt(expiration, 10)),
-                    req,
-                    res
-                );
+                try {
+                    rank = await backfillRankIntoAuthCookie(
+                        session,
+                        new Date(parseInt(expiration, 10)),
+                        req,
+                        res
+                    );
+                } catch (error) {
+                    return next();
+                }
             } else {
                 rank = parseInt(global_rank, 10);
             }
