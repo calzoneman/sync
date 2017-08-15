@@ -293,7 +293,7 @@ function emitMetrics(sock) {
             }
         });
 
-        sock.on('disconnect', () => {
+        sock.once('disconnect', () => {
             try {
                 promSocketCount.dec({ transport: transportName });
                 promSocketDisconnect.inc(1, new Date());
