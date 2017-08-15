@@ -106,5 +106,5 @@ process.on('SIGUSR2', () => {
 
 require('bluebird');
 process.on('unhandledRejection', function (reason, promise) {
-    LOGGER.fatal('Unhandled rejection: %s', reason.stack);
+    LOGGER.error('Unhandled rejection: %s', reason.stack);
 });
