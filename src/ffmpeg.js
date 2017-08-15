@@ -129,6 +129,9 @@ function testUrl(url, cb, redirCount) {
         } else if (err.code === 'ECONNREFUSED') {
             cb("The remote server refused the connection.  Please check that the link is correct.");
             return;
+        } else if (err.code === 'ETIMEDOUT') {
+            cb("The connection to the remote server timed out.  Please check that the link is correct.");
+            return;
         }
 
         LOGGER.error("Error sending preflight request: %s (link: %s)", err.message, url);
