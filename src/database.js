@@ -120,6 +120,7 @@ module.exports.query = function (query, sub, callback) {
         console.log(query);
     }
 
+    const end = queryLatency.startTimer();
     db.knex.raw(query, sub)
         .then(res => {
             process.nextTick(callback, null, res[0]);
@@ -127,7 +128,9 @@ module.exports.query = function (query, sub, callback) {
             LOGGER.error('Legacy DB query failed.  Query: %s, Substitutions: %j, Error: %s', query, sub, error);
             process.nextTick(callback, 'Database failure', null);
         }).finally(() => {
+            end();
             Metrics.stopTimer(timer);
+            queryCount.inc(1, new Date());
         });
 };
 
