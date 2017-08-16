@@ -74,6 +74,8 @@ var Server = function () {
 
     const globalMessageBus = this.initModule.getGlobalMessageBus();
     globalMessageBus.on('UserProfileChanged', this.handleUserProfileChange.bind(this));
+    globalMessageBus.on('ChannelDeleted', this.handleChannelDelete.bind(this));
+    globalMessageBus.on('ChannelRegistered', this.handleChannelRegister.bind(this));
 
     // database init ------------------------------------------------------
     var Database = require("./database");
@@ -426,5 +428,59 @@ Server.prototype.handleUserProfileChange = function (event) {
         });
     } catch (error) {
         LOGGER.error('handleUserProfileChange failed: %s', error);
+    }
+};
+
+Server.prototype.handleChannelDelete = function (event) {
+    try {
+        const lname = event.channel.toLowerCase();
+
+        this.channels.forEach(channel => {
+            if (channel.dead) return;
+
+            if (channel.uniqueName === lname) {
+                channel.clearFlag(Flags.C_REGISTERED);
+
+                const users = Array.prototype.slice.call(channel.users);
+                users.forEach(u => {
+                    u.kick('Channel deleted');
+                });
+
+                if (!channel.dead) {
+                    channel.emit('empty');
+                }
+
+                LOGGER.info('Processed deleted channel %s', lname);
+            }
+        });
+    } catch (error) {
+        LOGGER.error('handleChannelDelete failed: %s', error);
+    }
+};
+
+Server.prototype.handleChannelRegister = function (event) {
+    try {
+        const lname = event.channel.toLowerCase();
+
+        this.channels.forEach(channel => {
+            if (channel.dead) return;
+
+            if (channel.uniqueName === lname) {
+                channel.clearFlag(Flags.C_REGISTERED);
+
+                const users = Array.prototype.slice.call(channel.users);
+                users.forEach(u => {
+                    u.kick('Channel reloading');
+                });
+
+                if (!channel.dead) {
+                    channel.emit('empty');
+                }
+
+                LOGGER.info('Processed registered channel %s', lname);
+            }
+        });
+    } catch (error) {
+        LOGGER.error('handleChannelRegister failed: %s', error);
     }
 };

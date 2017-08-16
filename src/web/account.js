@@ -268,18 +268,10 @@ async function handleNewChannel(req, res) {
                 Logger.eventlog.log("[channel] " + user.name + "@" +
                                     req.realIP +
                                     " registered channel " + name);
-                var sv = Server.getServer();
-                if (sv.isChannelLoaded(name)) {
-                    var chan = sv.getChannel(name);
-                    var users = Array.prototype.slice.call(chan.users);
-                    users.forEach(function (u) {
-                        u.kick("Channel reloading");
-                    });
+                globalMessageBus.emit('ChannelRegistered', {
+                    channel: name
+                });
 
-                    if (!chan.dead) {
-                        chan.emit("empty");
-                    }
-                }
                 channels.push({
                     name: name
                 });
@@ -338,19 +330,11 @@ async function handleDeleteChannel(req, res) {
                                     req.realIP + " deleted channel " +
                                     name);
             }
-            var sv = Server.getServer();
-            if (sv.isChannelLoaded(name)) {
-                var chan = sv.getChannel(name);
-                chan.clearFlag(require("../flags").C_REGISTERED);
-                var users = Array.prototype.slice.call(chan.users);
-                users.forEach(function (u) {
-                    u.kick("Channel reloading");
-                });
 
-                if (!chan.dead) {
-                    chan.emit("empty");
-                }
-            }
+            globalMessageBus.emit('ChannelDeleted', {
+                channel: name
+            });
+
             db.channels.listUserChannels(user.name, function (err2, channels) {
                 sendPug(res, "account-channels", {
                     channels: err2 ? [] : channels,
