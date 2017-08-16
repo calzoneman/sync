@@ -1,6 +1,7 @@
 import NullClusterClient from './io/cluster/nullclusterclient';
 import Config from './config';
 import IOConfiguration from './configuration/ioconfig';
+import { EventEmitter } from 'events';
 
 class LegacyModule {
     getIOConfig() {
@@ -13,6 +14,10 @@ class LegacyModule {
 
     getClusterClient() {
         return new NullClusterClient(this.getIOConfig());
+    }
+
+    getGlobalMessageBus() {
+        return new EventEmitter();
     }
 
     onReady() {

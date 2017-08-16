@@ -7,6 +7,7 @@ import LegacyConfig from '../config';
 import path from 'path';
 import { AnnouncementRefresher } from './announcementrefresher';
 import { RedisPartitionMapReloader } from './redispartitionmapreloader';
+import { RedisMessageBus } from '../pubsub/redis';
 
 const PARTITION_CONFIG_PATH = path.resolve(__dirname, '..', '..', 'conf',
                                            'partitions.toml');
@@ -103,6 +104,19 @@ class PartitionModule {
         }
 
         return this.announcementRefresher;
+    }
+
+    getGlobalMessageBus() {
+        if (!this.globalMessageBus) {
+            const provider = this.getRedisClientProvider();
+            this.globalMessageBus = new RedisMessageBus(
+                provider.get(),
+                provider.get(),
+                this.partitionConfig.getGlobalMessageBusChannel()
+            );
+        }
+
+        return this.globalMessageBus;
     }
 }
 

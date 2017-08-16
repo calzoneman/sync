@@ -22,6 +22,10 @@ class PartitionConfig {
     getAnnouncementChannel() {
         return this.config.redis.announcementChannel || 'serverAnnouncements';
     }
+
+    getGlobalMessageBusChannel() {
+        return this.config.redis.globalMessageBusChannel || 'globalMessages';
+    }
 }
 
 export { PartitionConfig };

@@ -17,6 +17,8 @@ const url = require("url");
 
 const LOGGER = require('@calzoneman/jsli')('database/accounts');
 
+let globalMessageBus;
+
 /**
  * Handles a GET request for /account/edit
  */
@@ -455,6 +457,14 @@ async function handleAccountProfile(req, res) {
                 return;
             }
 
+            globalMessageBus.emit('UserProfileChanged', {
+                user: user.name,
+                profile: {
+                    image,
+                    text
+                }
+            });
+
             sendPug(res, "account-profile", {
                 profileImage: image,
                 profileText: text,
@@ -661,7 +671,9 @@ module.exports = {
     /**
      * Initialize the module
      */
-    init: function (app) {
+    init: function (app, _globalMessageBus) {
+        globalMessageBus = _globalMessageBus;
+
         app.get("/account/edit", handleAccountEditPage);
         app.post("/account/edit", handleAccountEdit);
         app.get("/account/channels", handleAccountChannelPage);

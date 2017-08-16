@@ -162,7 +162,15 @@ module.exports = {
     /**
      * Initializes webserver callbacks
      */
-    init: function (app, webConfig, ioConfig, clusterClient, channelIndex, session) {
+    init: function (
+        app,
+        webConfig,
+        ioConfig,
+        clusterClient,
+        channelIndex,
+        session,
+        globalMessageBus
+    ) {
         const chanPath = Config.get('channel-path');
 
         initPrometheus(app);
@@ -217,7 +225,7 @@ module.exports = {
         app.get('/useragreement', handleUserAgreement);
         require('./routes/contact')(app, webConfig);
         require('./auth').init(app);
-        require('./account').init(app);
+        require('./account').init(app, globalMessageBus);
         require('./acp').init(app);
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);

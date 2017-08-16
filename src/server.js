@@ -72,6 +72,9 @@ var Server = function () {
         initModule = this.initModule = new LegacyModule();
     }
 
+    const globalMessageBus = this.initModule.getGlobalMessageBus();
+    globalMessageBus.on('UserProfileChanged', this.handleUserProfileChange.bind(this));
+
     // database init ------------------------------------------------------
     var Database = require("./database");
     self.db = Database;
@@ -96,7 +99,8 @@ var Server = function () {
             ioConfig,
             clusterClient,
             channelIndex,
-            session);
+            session,
+            globalMessageBus);
 
     // http/https/sio server init -----------------------------------------
     var key = "", cert = "", ca = undefined;
@@ -390,4 +394,37 @@ Server.prototype.reloadPartitionMap = function () {
     }
 
     this.initModule.getPartitionMapReloader().reload();
+};
+
+Server.prototype.handleUserProfileChange = function (event) {
+    try {
+        const lname = event.user.toLowerCase();
+
+        // Probably not the most efficient thing in the world, but w/e
+        // profile changes are not high volume
+        this.channels.forEach(channel => {
+            if (channel.dead) return;
+
+            channel.users.forEach(user => {
+                if (user.getLowerName() === lname && user.account.user) {
+                    user.account.user.profile = {
+                        image: event.profile.image,
+                        text: event.profile.text
+                    };
+
+                    user.account.update();
+
+                    channel.sendUserProfile(channel.users, user);
+
+                    LOGGER.info(
+                            'Updated profile for user %s in channel %s',
+                            lname,
+                            channel.name
+                    );
+                }
+            });
+        });
+    } catch (error) {
+        LOGGER.error('handleUserProfileChange failed: %s', error);
+    }
 };
