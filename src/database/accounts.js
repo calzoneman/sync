@@ -484,22 +484,6 @@ module.exports = {
         });
     },
 
-    generatePasswordReset: function (ip, name, email, callback) {
-        if (typeof callback !== "function") {
-            return;
-        }
-
-        callback("generatePasswordReset is not implemented", null);
-    },
-
-    recoverPassword: function (hash, callback) {
-        if (typeof callback !== "function") {
-            return;
-        }
-
-        callback("recoverPassword is not implemented", null);
-    },
-
     /**
      * Retrieve a list of channels owned by a user
      */
