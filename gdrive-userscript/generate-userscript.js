@@ -8,12 +8,30 @@ var includes = process.argv.slice(3).map(function (include) {
 
 var lines = String(fs.readFileSync(
         path.resolve(__dirname, 'cytube-google-drive.user.js'))).split('\n');
+
+var userscriptOutput = '';
+var metaOutput = '';
 lines.forEach(function (line) {
     if (line.match(/\{INCLUDE_BLOCK\}/)) {
-        console.log(includes);
+        userscriptOutput += includes + '\n';
     } else if (line.match(/\{SITENAME\}/)) {
-        console.log(line.replace(/\{SITENAME\}/, sitename));
+        line = line.replace(/\{SITENAME\}/, sitename) + '\n';
+        userscriptOutput += line;
+        metaOutput += line;
     } else {
-        console.log(line);
+        if (line.match(/==\/?UserScript|@name|@version/)) {
+            metaOutput += line + '\n';
+        }
+
+        userscriptOutput += line + '\n';
     }
 });
+
+fs.writeFileSync(
+    path.join(__dirname, '..', 'www', 'js', 'cytube-google-drive.user.js'),
+    userscriptOutput
+);
+fs.writeFileSync(
+    path.join(__dirname, '..', 'www', 'js', 'cytube-google-drive.meta.js'),
+    metaOutput
+);

@@ -14,3 +14,5 @@ google-drive-subtitles
 lib/
 integration-test-config.json
 conf/*.toml
+www/js/cytube-google-drive.user.js
+www/js/cytube-google-drive.meta.js
