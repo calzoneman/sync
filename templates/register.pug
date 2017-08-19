@@ -56,8 +56,7 @@ html(lang="en")
               strong Registration Successful
               p Thanks for registering, #{registerName}!  Now you can <a href="/login">Login</a> to use your account.
     include footer
-    +footer() 
-    script(src="/js/jquery.js")
+    +footer()
     script(type="text/javascript").
       function verify() {
         var valid = checkUsername();
@@ -78,7 +77,7 @@ html(lang="en")
           stateError('Username must not be empty')
           return false;
         } else if (!(/^[-\w\u00c0-\u00ff]{1,20}$/).test(name)) {
-          stateError("Username must consist of 1-20 characters" + 
+          stateError("Username must consist of 1-20 characters" +
                       " a-Z, A-Z, 0-9, -, or _.");
           return false;
         } else {
