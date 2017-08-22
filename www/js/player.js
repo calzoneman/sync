@@ -509,11 +509,15 @@
     VideoJSPlayer.prototype.loadPlayer = function(data) {
       return waitUntilDefined(window, 'videojs', (function(_this) {
         return function() {
-          var video;
-          video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item').attr({
+          var attrs, video;
+          attrs = {
             width: '100%',
             height: '100%'
-          });
+          };
+          if (_this.mediaType === 'cm' && data.meta.textTracks) {
+            attrs.crossorigin = 'anonymous';
+          }
+          video = $('<video/>').addClass('video-js vjs-default-skin embed-responsive-item').attr(attrs);
           removeOld(video);
           _this.sources = sortSources(data.meta.direct);
           if (_this.sources.length === 0) {

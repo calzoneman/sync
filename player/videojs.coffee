@@ -47,9 +47,16 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
 
     loadPlayer: (data) ->
         waitUntilDefined(window, 'videojs', =>
+            attrs =
+                width: '100%'
+                height: '100%'
+
+            if @mediaType == 'cm' and data.meta.textTracks
+                attrs.crossorigin = 'anonymous'
+
             video = $('<video/>')
                 .addClass('video-js vjs-default-skin embed-responsive-item')
-                .attr(width: '100%', height: '100%')
+                .attr(attrs)
             removeOld(video)
 
             @sources = sortSources(data.meta.direct)
