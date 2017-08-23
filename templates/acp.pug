@@ -11,12 +11,12 @@ html(lang="en")
         +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            +navdefaultlinks("/acp")
+            +navdefaultlinks()
             li#nav-acp-section.dropdown
               a#nav-acp-dd-toggle.dropdown-toggle(data-toggle="dropdown", href="javascript:void(0)") Menu
                 span.caret
               ul.dropdown-menu
-          +navloginlogout("/acp")
+          +navloginlogout()
       section#mainpage
         .container
           .row

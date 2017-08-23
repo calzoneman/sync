@@ -12,9 +12,8 @@ html(lang="en")
         include nav
         +navheader()
         #nav-collapsible.collapse.navbar-collapse
-          - var cname = `/${channelPath}/${channelName}`
           ul.nav.navbar-nav
-            +navdefaultlinks(cname)
+            +navdefaultlinks()
             li: a(href="javascript:void(0)", onclick="javascript:showUserOptions()") Options
             li: a#showchansettings(href="javascript:void(0)", onclick="javascript:showChannelSettings()") Channel Settings
             li.dropdown
@@ -24,7 +23,7 @@ html(lang="en")
                 li: a(href="#" onclick="javascript:chatOnly()") Chat Only
                 li: a(href="#" onclick="javascript:removeVideo(event)") Remove Video
             +navsuperadmin(true)
-          +navloginlogout(cname)
+          +navloginlogout()
       section#mainpage
         .container
           #motdrow.row

@@ -1,13 +1,3 @@
-- var links = { "/": "Home" };
-
-mixin navlink(page, title, active)
-  if active
-    li.active
-      a(href=page)= title
-  else
-    li
-      a(href=page)= title
-
 mixin navheader()
   .navbar-header
     button.navbar-toggle(type="button", data-toggle="collapse", data-target="#nav-collapsible")
@@ -16,12 +6,9 @@ mixin navheader()
       span.icon-bar
     a.navbar-brand(href="/")= siteTitle
 
-mixin navdefaultlinks(page)
-  each t, p in links
-    if p == page
-      +navlink(p, t, true)
-    else
-      +navlink(p, t, false)
+mixin navdefaultlinks()
+  li
+    a(href="/") Home
   li.dropdown
     a.dropdown-toggle(href="#", data-toggle="dropdown") Account
       b.caret
@@ -43,13 +30,13 @@ mixin navsuperadmin(newTab)
     else
       li: a(href="/acp") ACP
 
-mixin navloginlogout(redirect)
+mixin navloginlogout()
   if loggedIn
-    +navlogoutform(redirect)
+    +navlogoutform()
   else
-    +navloginform(redirect)
+    +navloginform()
 
-mixin navloginform(redirect)
+mixin navloginform()
   if loginDomain == null
     - loginDomain = ""
   .visible-lg
@@ -72,7 +59,7 @@ mixin navloginform(redirect)
       a#register.navbar-link(href="/register") Register
 
 
-mixin navlogoutform(redirect)
+mixin navlogoutform()
   form#logoutform.navbar-text.pull-right(action="/logout", method="post")
     input(type="hidden", name="_csrf", value=csrfToken)
     span#welcome Welcome, #{loginName}

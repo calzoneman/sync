@@ -10,8 +10,8 @@ html(lang="en")
         +navheader()
         #nav-collapsible.collapse.navbar-collapse
           ul.nav.navbar-nav
-            +navdefaultlinks("/account/edit")
-          +navloginlogout("/account/edit")
+            +navdefaultlinks()
+          +navloginlogout()
       section#mainpage
         .container
           if !loggedIn
