@@ -33,7 +33,7 @@ mixin navdefaultlinks(page)
         li: a(href=loginDomain+"/account/profile") Profile
         li: a(href=loginDomain+"/account/edit") Change Password/Email
       else
-        li: a(href=loginDomain+"/login?dest=" + encodeURIComponent(baseUrl + page)) Login
+        li: a(href=loginDomain+"/login") Login
         li: a(href=loginDomain+"/register") Register
 
 mixin navsuperadmin(newTab)
@@ -55,7 +55,6 @@ mixin navloginform(redirect)
   .visible-lg
     form#loginform.navbar-form.navbar-right(action=loginDomain+"/login", method="post")
       input(type="hidden", name="_csrf", value=csrfToken)
-      input(type="hidden", name="dest", value=baseUrl + redirect)
       .form-group
         input#username.form-control(type="text", name="name", placeholder="Username")
       .form-group
@@ -68,14 +67,13 @@ mixin navloginform(redirect)
       button#login.btn.btn-default(type="submit") Login
   .visible-md
     p#loginform.navbar-text.pull-right
-      a#login.navbar-link(href=loginDomain+"/login?dest="+encodeURIComponent(baseUrl+redirect)) Log in
+      a#login.navbar-link(href=loginDomain+"/login") Log in
       span &nbsp;&middot;&nbsp;
       a#register.navbar-link(href="/register") Register
 
 
 mixin navlogoutform(redirect)
   form#logoutform.navbar-text.pull-right(action="/logout", method="post")
-    input(type="hidden", name="dest", value=baseUrl + redirect)
     input(type="hidden", name="_csrf", value=csrfToken)
     span#welcome Welcome, #{loginName}
     span &nbsp;&middot;&nbsp;
