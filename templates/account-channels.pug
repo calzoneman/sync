@@ -1,103 +1,88 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    +head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        +navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            +navdefaultlinks()
-          +navloginlogout()
-      section#mainpage
-        .container
-          if !loggedIn
-            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-              .alert.alert-danger.messagebox.center
-                strong Authorization Required
-                p You must be <a href="/login">logged in</a> to view this page.
-          else
-            .col-lg-6.col-md-6
-              h3 My Channels
-              if deleteChannelError
-                .alert.alert-danger.center.messagebox
-                  strong Channel Deletion Failed
-                  p= deleteChannelError
-              if channels.length == 0
-                .center
-                  strong You haven't registered any channels
-              else
-                table.table.table-bordered
-                  thead
-                    tr
-                      th Channel
-                  tbody
-                    for c in channels
-                      tr
-                        th
-                          form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete " +c.name+ "?  This cannot be undone');")
-                            input(type="hidden", name="_csrf", value=csrfToken)
-                            input(type="hidden", name="action", value="delete_channel")
-                            input(type="hidden", name="name", value=c.name)
-                            button.btn.btn-xs.btn-danger(type="submit") Delete
-                              span.glyphicon.glyphicon-trash
-                          a(href=`/${channelPath}/${c.name}`, style="margin-left: 5px")= c.name
-            .col-lg-6.col-md-6
-              h3 Register a new channel
-              if newChannelError
-                .alert.alert-danger.messagebox.center
-                  strong Channel Registration Failed
-                  p= newChannelError
-              form(action="/account/channels", method="post")
-                input(type="hidden", name="_csrf", value=csrfToken)
-                input(type="hidden", name="action", value="new_channel")
-                .form-group
-                  label.control-label(for="channelname") Channel URL
-                  .input-group
-                    span.input-group-addon #{baseUrl}/#{channelPath}/
-                    input#channelname.form-control(type="text", name="name", maxlength="30", onkeyup="checkChannel()")
-                  p#validate_channel.text-danger.pull-right
-                button#register.btn.btn-primary.btn-block(type="submit") Register
+extends layout.pug
 
-    include footer
-    +footer()
-    script( type='text/javascript').
-        function checkChannel(){
-            function nameIsInvalid(id){
-                if(/\s/.test(id)){
-                    return 'Channel URL may not contain spaces';
-                }
-                if(id === ''){
-                    return 'Channel URL must not be empty';
-                }
-                if(!/^[\w-]{1,30}$/.test(id)){
-                    return 'Channel URL may only consist of a-z, A-Z, 0-9, - and _';
-                }
-                return false;
+block content
+  if !loggedIn
+    .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+      .alert.alert-danger.messagebox.center
+        strong Authorization Required
+        p You must be <a href="/login">logged in</a> to view this page.
+  else
+    .col-lg-6.col-md-6
+      h3 My Channels
+      if deleteChannelError
+        .alert.alert-danger.center.messagebox
+          strong Channel Deletion Failed
+          p= deleteChannelError
+      if channels.length == 0
+        .center
+          strong You haven't registered any channels
+      else
+        table.table.table-bordered
+          thead
+            tr
+              th Channel
+          tbody
+            for c in channels
+              tr
+                th
+                  form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete " +c.name+ "?  This cannot be undone');")
+                    input(type="hidden", name="_csrf", value=csrfToken)
+                    input(type="hidden", name="action", value="delete_channel")
+                    input(type="hidden", name="name", value=c.name)
+                    button.btn.btn-xs.btn-danger(type="submit") Delete
+                      span.glyphicon.glyphicon-trash
+                  a(href=`/${channelPath}/${c.name}`, style="margin-left: 5px")= c.name
+    .col-lg-6.col-md-6
+      h3 Register a new channel
+      if newChannelError
+        .alert.alert-danger.messagebox.center
+          strong Channel Registration Failed
+          p= newChannelError
+      form(action="/account/channels", method="post")
+        input(type="hidden", name="_csrf", value=csrfToken)
+        input(type="hidden", name="action", value="new_channel")
+        .form-group
+          label.control-label(for="channelname") Channel URL
+          .input-group
+            span.input-group-addon #{baseUrl}/#{channelPath}/
+            input#channelname.form-control(type="text", name="name", maxlength="30", onkeyup="checkChannel()")
+          p#validate_channel.text-danger.pull-right
+        button#register.btn.btn-primary.btn-block(type="submit") Register
+
+append footer
+  script(type='text/javascript').
+    function checkChannel(){
+        function nameIsInvalid(id){
+            if(/\s/.test(id)){
+                return 'Channel URL may not contain spaces';
             }
-
-            var box = $("#channelname");
-            var value = box.val();
-            var lastkey = Date.now();
-            box.data("lastkey", lastkey);
-
-            setTimeout(function () {
-                if (box.data("lastkey") !== lastkey || box.val() !== value) {
-                    return;
-                }
-                if(nameIsInvalid(value)){
-                    $('#validate_channel').text(nameIsInvalid(value))
-                        .parent().addClass('has-error').removeClass('has-success');
-                    $('#register').addClass('disabled');
-                } else {
-                    $('#validate_channel').text('')
-                        .parent().addClass('has-success').removeClass('has-error');
-                    $('#register').removeClass('disabled');
-                }
-            }, 200);
-
+            if(id === ''){
+                return 'Channel URL must not be empty';
+            }
+            if(!/^[\w-]{1,30}$/.test(id)){
+                return 'Channel URL may only consist of a-z, A-Z, 0-9, - and _';
+            }
+            return false;
         }
 
+        var box = $("#channelname");
+        var value = box.val();
+        var lastkey = Date.now();
+        box.data("lastkey", lastkey);
+
+        setTimeout(function () {
+            if (box.data("lastkey") !== lastkey || box.val() !== value) {
+                return;
+            }
+            if(nameIsInvalid(value)){
+                $('#validate_channel').text(nameIsInvalid(value))
+                    .parent().addClass('has-error').removeClass('has-success');
+                $('#register').addClass('disabled');
+            } else {
+                $('#validate_channel').text('')
+                    .parent().addClass('has-success').removeClass('has-error');
+                $('#register').removeClass('disabled');
+            }
+        }, 200);
+
+    }

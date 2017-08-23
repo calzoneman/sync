@@ -1,0 +1,22 @@
+doctype html
+html(lang="en")
+  head
+    block head
+      include head
+      +head()
+  body
+    #wrap
+      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+        include nav
+        +navheader()
+        #nav-collapsible.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            +navdefaultlinks()
+            +navsuperadmin(false)
+          +navloginlogout()
+      section#mainpage
+        .container
+          block content
+    block footer
+      include footer
+      +footer()

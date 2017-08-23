@@ -1,76 +1,62 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    +head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        +navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            +navdefaultlinks()
-          +navloginlogout()
-      section#mainpage
-        .container
-          if !loggedIn
-            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-              .alert.alert-danger.messagebox.center
-                strong Authorization Required
-                p You must be <a href="/login">logged in</a> to view this page.
-          else
-            .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-              h3 Profile
-              if profileError
-                .alert.alert-danger.center.messagebox
-                  strong Profile Error
-                  p= profileError
-              .profile-box.linewrap(style="position: inherit; z-index: auto;")
-                img.profile-image(src=profileImage)
-                strong= loginName
-                p= profileText
-              h3 Edit Profile
-              form(action="/account/profile", method="post", role="form")
-                input(type="hidden", name="_csrf", value=csrfToken)
-                .form-group
-                  label.control-label(for="profileimage") Image
-                  input#profileimage.form-control(type="text", name="image", maxlength="255")
-                .form-group
-                  label.control-label(for="profiletext") Text
-                  textarea#profiletext.form-control(cols="10", name="text", maxlength="255")= profileText
-                button.btn.btn-primary.btn-block(type="submit") Save
+extends layout.pug
 
-    include footer
-    +footer()
-    script(type="text/javascript").
-      var $profileImage = $("#profileimage");
-      $profileImage.val("#{profileImage}");
-      var hasError = false;
-      function validateImage() {
-        var value = $profileImage.val().trim();
-        $profileImage.val(value);
-        if (!/^$|^https:/.test(value)) {
-          hasError = true;
-          $profileImage.parent().addClass("has-error");
-          var $error = $("#profileimage-error");
-          if ($error.length === 0) {
-            $error = $("<p/>")
-                .attr({ id: "profileimage-error" })
-                .addClass("text-danger")
-                .html("Profile image must be a URL beginning with <code>https://</code>")
-                .insertAfter($profileImage);
-          }
-        } else {
-          hasError = false;
-          $profileImage.parent().removeClass("has-error");
-          $("#profileimage-error").remove();
+block content
+  if !loggedIn
+    .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+      .alert.alert-danger.messagebox.center
+        strong Authorization Required
+        p You must be <a href="/login">logged in</a> to view this page.
+  else
+    .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+      h3 Profile
+      if profileError
+        .alert.alert-danger.center.messagebox
+          strong Profile Error
+          p= profileError
+      .profile-box.linewrap(style="position: inherit; z-index: auto;")
+        img.profile-image(src=profileImage)
+        strong= loginName
+        p= profileText
+      h3 Edit Profile
+      form(action="/account/profile", method="post", role="form")
+        input(type="hidden", name="_csrf", value=csrfToken)
+        .form-group
+          label.control-label(for="profileimage") Image
+          input#profileimage.form-control(type="text", name="image", maxlength="255")
+        .form-group
+          label.control-label(for="profiletext") Text
+          textarea#profiletext.form-control(cols="10", name="text", maxlength="255")= profileText
+        button.btn.btn-primary.btn-block(type="submit") Save
+
+append footer
+  script(type="text/javascript").
+    var $profileImage = $("#profileimage");
+    $profileImage.val("#{profileImage}");
+    var hasError = false;
+    function validateImage() {
+      var value = $profileImage.val().trim();
+      $profileImage.val(value);
+      if (!/^$|^https:/.test(value)) {
+        hasError = true;
+        $profileImage.parent().addClass("has-error");
+        var $error = $("#profileimage-error");
+        if ($error.length === 0) {
+          $error = $("<p/>")
+              .attr({ id: "profileimage-error" })
+              .addClass("text-danger")
+              .html("Profile image must be a URL beginning with <code>https://</code>")
+              .insertAfter($profileImage);
         }
+      } else {
+        hasError = false;
+        $profileImage.parent().removeClass("has-error");
+        $("#profileimage-error").remove();
       }
+    }
 
-      $("form").submit(function (event) {
-        validateImage();
-        if (hasError) {
-          event.preventDefault();
-        }
-      });
+    $("form").submit(function (event) {
+      validateImage();
+      if (hasError) {
+        event.preventDefault();
+      }
+    });

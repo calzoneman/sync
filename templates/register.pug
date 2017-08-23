@@ -1,127 +1,114 @@
-doctype html
-html(lang="en")
-  head
-    include head
-    +head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        +navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            +navdefaultlinks()
-          if loggedIn
-            +navlogoutform()
-      section#mainpage.container
-        if loggedIn
-          .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-            .alert.alert-danger.messagebox.center
-              strong Already logged in
-              p.
-                You are already logged in.  If you intend to register a new account, please <a href="/logout?redirect=/register">Logout</a> first.
-              // TODO Link to My Account page
-        else if !registered
-          .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-            if registerError
-              .alert.alert-danger.messagebox.center
-                strong Registration Failed
-                p= registerError
-            h2 Register
-            form(role="form", action="/register", method="post", onsubmit="return verify()")
-              input(type="hidden", name="_csrf", value=csrfToken)
-              .form-group
-                label.control-label(for="username") Username
-                input#username.form-control(type="text", name="name", onkeyup="checkUsername()", maxlength="20")
-                p#validate_username.text-danger.pull-right
-              .form-group
-                label.control-label(for="password") Password
-                input#password.form-control(type="password", name="password", onkeyup="checkPasswords()")
-                p#validate_password.text-danger.pull-right
-              .form-group
-                label.control-label(for="password_confirm") Confirm Password
-                input#password_confirm.form-control(type="password", onkeyup="checkPasswords()")
-                p#validate_confirm.text-danger.pull-right
-              .form-group
-                label.control-label(for="email") Email (optional)
-                input#email.form-control(type="email", name="email")
-                p#validate_email.text-danger.pull-right
-                p
-                  | Providing an email address is optional and will allow you to recover your account via email if you forget your password.
-                  strong &nbsp;&nbsp;If you do not provide an email address, you will not be able to recover a lost account!
-              button#registerbtn.btn.btn-success.btn-block(type="submit") Register
-        else
-          .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
-            .alert.alert-success.messagebox.center
-              strong Registration Successful
-              p Thanks for registering, #{registerName}!  Now you can <a href="/login">Login</a> to use your account.
-    include footer
-    +footer()
-    script(type="text/javascript").
-      function verify() {
-        var valid = checkUsername();
-        valid = checkPasswords() && valid;
-        valid = checkEmail() && valid;
-        return valid;
-      }
-      function checkUsername() {
-        function stateError(text){
-          target.parent()
-            .addClass("has-error")
-            .removeClass("has-success");
-          $("#validate_username").text(text);
-        }
-        var target = $("#username");
-        var name = target.val();
-        if (name === "") {
-          stateError('Username must not be empty')
-          return false;
-        } else if (!(/^[-\w\u00c0-\u00ff]{1,20}$/).test(name)) {
-          stateError("Username must consist of 1-20 characters" +
-                      " a-Z, A-Z, 0-9, -, or _.");
-          return false;
-        } else {
-          target.parent()
-            .removeClass("has-error")
-            .addClass("has-success");
-          $("#validate_username").text('');
-        }
-      }
-      function checkPasswords() {
-        function stateError(text, target, validator){
-          target.parent()
-            .addClass("has-error")
-            .removeClass("has-success");
-          $(`#${validator}`).text(text);
-        }
-        var target = $("#password");
-        var target2 = $("#password_confirm");
-        var pw = target.val();
-        var pwc = target2.val();
+extends layout.pug
 
-        $("#validate_password").text('');
-        $("#validate_confirm").text('');
-        if (pw === "") {
-          stateError('Password must not be empty', target, 'validate_password')
+block content
+  if loggedIn
+    .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+      .alert.alert-danger.messagebox.center
+        strong Already logged in
+        p.
+          You are already logged in.  If you intend to register a new account, please <a href="/logout?redirect=/register">Logout</a> first.
+        // TODO Link to My Account page
+  else if !registered
+    .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+      if registerError
+        .alert.alert-danger.messagebox.center
+          strong Registration Failed
+          p= registerError
+      h2 Register
+      form(role="form", action="/register", method="post", onsubmit="return verify()")
+        input(type="hidden", name="_csrf", value=csrfToken)
+        .form-group
+          label.control-label(for="username") Username
+          input#register-username.form-control(type="text", name="name", onkeyup="checkUsername()", maxlength="20")
+          p#validate_username.text-danger.pull-right
+        .form-group
+          label.control-label(for="password") Password
+          input#register-password.form-control(type="password", name="password", onkeyup="checkPasswords()")
+          p#validate_password.text-danger.pull-right
+        .form-group
+          label.control-label(for="password_confirm") Confirm Password
+          input#register-password-confirm.form-control(type="password", onkeyup="checkPasswords()")
+          p#validate_confirm.text-danger.pull-right
+        .form-group
+          label.control-label(for="email") Email (optional)
+          input#register-email.form-control(type="email", name="email")
+          p#validate_email.text-danger.pull-right
+          p
+            | Providing an email address is optional and will allow you to recover your account via email if you forget your password.
+            strong &nbsp;&nbsp;If you do not provide an email address, you will not be able to recover a lost account!
+        button#registerbtn.btn.btn-success.btn-block(type="submit") Register
+  else
+    .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+      .alert.alert-success.messagebox.center
+        strong Registration Successful
+        p Thanks for registering, #{registerName}!  Now you can <a href="/login">Login</a> to use your account.
+
+append footer
+  script(type="text/javascript").
+    function verify() {
+      var valid = checkUsername();
+      valid = checkPasswords() && valid;
+      valid = checkEmail() && valid;
+      return valid;
+    }
+    function checkUsername() {
+      function stateError(text){
+        target.parent()
+          .addClass("has-error")
+          .removeClass("has-success");
+        $("#validate_username").text(text);
+      }
+      var target = $("#register-username");
+      var name = target.val();
+      if (name === "") {
+        stateError('Username must not be empty')
+        return false;
+      } else if (!(/^[-\w\u00c0-\u00ff]{1,20}$/).test(name)) {
+        stateError("Username must consist of 1-20 characters" +
+                    " a-Z, A-Z, 0-9, -, or _.");
+        return false;
+      } else {
+        target.parent()
+          .removeClass("has-error")
+          .addClass("has-success");
+        $("#validate_username").text('');
+      }
+    }
+    function checkPasswords() {
+      function stateError(text, target, validator){
+        target.parent()
+          .addClass("has-error")
+          .removeClass("has-success");
+        $(`#${validator}`).text(text);
+      }
+      var target = $("#register-password");
+      var target2 = $("#register-password-confirm");
+      var pw = target.val();
+      var pwc = target2.val();
+
+      $("#validate_password").text('');
+      $("#validate_confirm").text('');
+      if (pw === "") {
+        stateError('Password must not be empty', target, 'validate_password')
+        return false;
+      } else {
+        target.parent()
+          .removeClass("has-error")
+          .addClass("has-success");
+        if (pw !== pwc) {
+          stateError('Passwords do not match', target2, 'validate_confirm')
           return false;
         } else {
-          target.parent()
+          target2.parent()
             .removeClass("has-error")
             .addClass("has-success");
-          if (pw !== pwc) {
-            stateError('Passwords do not match', target2, 'validate_confirm')
-            return false;
-          } else {
-            target2.parent()
-              .removeClass("has-error")
-              .addClass("has-success");
-          }
         }
       }
-      function checkEmail() {
-        var email = $("#email").val();
-        if (email.trim() === "") {
-          return confirm("Are you sure you want to register without setting a recovery email address?  If you lose the password, or if your account is compromised, you WILL NOT be able to recover it.");
-        }
-        return true;
+    }
+    function checkEmail() {
+      var email = $("#register-email").val();
+      if (email.trim() === "") {
+        return confirm("Are you sure you want to register without setting a recovery email address?  If you lose the password, or if your account is compromised, you WILL NOT be able to recover it.");
       }
+      return true;
+    }

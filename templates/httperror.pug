@@ -1,3 +1,5 @@
+extends layout.pug
+
 mixin notfound()
   h1 Not Found
   p The page you were looking for doesn't seem to exist.  Please check that you typed the URL correctly.
@@ -9,30 +11,13 @@ mixin forbidden()
 mixin genericerror()
   h1 Oops
   p Your request could not be processed.  Status code: <code>#{status}</code>, message: <code>#{message}</code>
-doctype html
-html(lang="en")
-  head
-    include head
-    +head()
-  body
-    #wrap
-      nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
-        include nav
-        +navheader()
-        #nav-collapsible.collapse.navbar-collapse
-          ul.nav.navbar-nav
-            +navdefaultlinks()
-          +navloginlogout()
 
-      section#mainpage.container
-        .col-md-12
-          .alert.alert-danger
-            if status == 404
-              +notfound()
-            else if status == 403
-              +forbidden()
-            else
-              +genericerror()
-
-    include footer
-    +footer()
+block content
+  .col-md-12
+    .alert.alert-danger
+      if status == 404
+        +notfound()
+      else if status == 403
+        +forbidden()
+      else
+        +genericerror()
