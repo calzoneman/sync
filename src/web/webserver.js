@@ -121,6 +121,28 @@ function initializeErrorHandlers(app) {
     });
 }
 
+function patchExpressToHandleAsync() {
+    const Layer = require('express/lib/router/layer');
+    // https://github.com/expressjs/express/blob/4.x/lib/router/layer.js#L86
+    Layer.prototype.handle_request = function handle(req, res, next) {
+        const fn = this.handle;
+
+        if (fn.length > 3) {
+            next();
+        }
+
+        try {
+            const result = fn(req, res, next);
+
+            if (result && result.catch) {
+                result.catch(error => next(error));
+            }
+        } catch (error) {
+            next(error);
+        }
+    };
+}
+
 module.exports = {
     /**
      * Initializes webserver callbacks
@@ -134,6 +156,7 @@ module.exports = {
         session,
         globalMessageBus
     ) {
+        patchExpressToHandleAsync();
         const chanPath = Config.get('channel-path');
 
         initPrometheus(app);
