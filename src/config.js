@@ -375,6 +375,20 @@ function preprocessConfig(cfg) {
     cfg.io["ipv4-default"] = cfg.io["ipv4-ssl"] || cfg.io["ipv4-nossl"];
     cfg.io["ipv6-default"] = cfg.io["ipv6-ssl"] || cfg.io["ipv6-nossl"];
 
+    // sioconfig
+    // TODO this whole thing is messy, need to redo how the socket address is sent
+    var sioconfigjson = {
+        "ipv4-nossl": cfg.io["ipv4-nossl"],
+        "ipv4-ssl": cfg.io["ipv4-ssl"],
+        "ipv6-nossl": cfg.io["ipv6-nossl"],
+        "ipv6-ssl": cfg.io["ipv6-ssl"]
+    };
+
+    var sioconfig = JSON.stringify(sioconfigjson);
+    sioconfig = "var IO_URLS=" + sioconfig + ";";
+    cfg.sioconfigjson = sioconfigjson;
+    cfg.sioconfig = sioconfig;
+
     // Generate RegExps for reserved names
     var reserved = cfg["reserved-names"];
     for (var key in reserved) {
