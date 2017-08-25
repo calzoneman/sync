@@ -20,6 +20,11 @@ const LOGGER = require('@calzoneman/jsli')('web/auth');
 
 function getSafeReferrer(req) {
     const referrer = req.header('referer');
+
+    if (!referrer) {
+        return null;
+    }
+
     const { hostname } = url.parse(referrer);
 
     // TODO: come back to this when refactoring http alt domains
