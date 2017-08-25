@@ -18,6 +18,8 @@ block content
     h3 Enter Channel
     input#channelname.form-control(type="text", placeholder="Channel Name")
     p.text-muted New channels can be registered from the <a href="/account/channels">My Channels</a> page.
+
+append footer
   script(type="text/javascript").
     $("#channelname").keydown(function (ev) {
       if (ev.keyCode === 13) {
