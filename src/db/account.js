@@ -7,30 +7,27 @@ class AccountDB {
 
     getByName(name) {
         return this.db.runTransaction(async tx => {
-            const rows = await tx.table('users').where({ name }).select();
+            const user = await tx.table('users').where({ name }).first();
 
-            if (rows.length === 0) {
-                return null;
-            }
+            if (!user) return null;
 
-            return this.mapUser(rows[0]);
+            return this.mapUser(user);
         });
     }
 
     updateByName(name, changedFields) {
-        return this.db.runTransaction(tx => {
+        return this.db.runTransaction(async tx => {
             if (changedFields.profile) {
                 changedFields.profile = JSON.stringify(changedFields.profile);
             }
 
-            return tx.table('users')
+            const rowsUpdated = await tx.table('users')
                     .update(changedFields)
-                    .where({ name })
-                    .then(rowsUpdated => {
-                if (rowsUpdated === 0) {
-                    throw new Error(`Cannot update: name "${name}" does not exist`);
-                }
-            });
+                    .where({ name });
+
+            if (rowsUpdated === 0) {
+                throw new Error(`Cannot update: name "${name}" does not exist`);
+            }
         });
     }
 
