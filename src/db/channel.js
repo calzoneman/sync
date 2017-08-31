@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import Promise from 'bluebird';
+import { InvalidRequestError } from '../errors';
 
 const unlinkAsync = Promise.promisify(fs.unlink);
 
@@ -41,7 +42,9 @@ class ChannelDB {
                     .first();
 
             if (existing) {
-                throw new Error(`Channel "${name}" is already registered.`);
+                throw new InvalidRequestError(
+                    `Channel "${name}" is already registered.`
+                );
             }
 
             await tx.table('channels')

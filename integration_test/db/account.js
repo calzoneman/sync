@@ -1,6 +1,7 @@
 const assert = require('assert');
 const AccountDB = require('../../lib/db/account').AccountDB;
 const testDB = require('../testutil/db').testDB;
+const { InvalidRequestError } = require('../../lib/errors');
 
 const accountDB = new AccountDB(testDB);
 
@@ -142,6 +143,10 @@ describe('AccountDB', () => {
             ).then(() => {
                 throw new Error('Expected failure due to missing user');
             }).catch(error => {
+                assert(
+                    error instanceof InvalidRequestError,
+                    'Expected InvalidRequestError'
+                );
                 assert.strictEqual(
                     error.message,
                     'Cannot update: name "test" does not exist'

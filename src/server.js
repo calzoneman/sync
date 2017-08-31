@@ -52,6 +52,8 @@ import { LegacyModule } from './legacymodule';
 import { PartitionModule } from './partition/partitionmodule';
 import * as Switches from './switches';
 import { Gauge } from 'prom-client';
+import { AccountDB } from './db/account';
+import { ChannelDB } from './db/channel';
 
 var Server = function () {
     var self = this;
@@ -83,6 +85,9 @@ var Server = function () {
     self.db.init();
     ChannelStore.init();
 
+    const accountDB = new AccountDB(db.getDB());
+    const channelDB = new ChannelDB(db.getDB());
+
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
     const webConfig = WebConfiguration.fromOldConfig(Config);
@@ -102,7 +107,9 @@ var Server = function () {
             clusterClient,
             channelIndex,
             session,
-            globalMessageBus);
+            globalMessageBus,
+            accountDB,
+            channelDB);
 
     // http/https/sio server init -----------------------------------------
     var key = "", cert = "", ca = undefined;

@@ -191,7 +191,9 @@ module.exports = {
         clusterClient,
         channelIndex,
         session,
-        globalMessageBus
+        globalMessageBus,
+        accountDB,
+        channelDB
     ) {
         patchExpressToHandleAsync();
         const chanPath = Config.get('channel-path');
@@ -253,6 +255,15 @@ module.exports = {
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);
         require('./routes/ustream_bypass')(app);
+
+        /*
+        const { AccountDataRoute } = require('./routes/account/data');
+        require('@calzoneman/express-babel-decorators').bind(
+            app,
+            new AccountDataRoute(accountDB, channelDB)
+        );
+        */
+
         app.use(serveStatic(path.join(__dirname, '..', '..', 'www'), {
             maxAge: webConfig.getCacheTTL()
         }));

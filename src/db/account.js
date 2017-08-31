@@ -1,3 +1,5 @@
+import { InvalidRequestError } from '../errors';
+
 const LOGGER = require('@calzoneman/jsli')('AccountDB');
 
 class AccountDB {
@@ -26,7 +28,9 @@ class AccountDB {
                     .where({ name });
 
             if (rowsUpdated === 0) {
-                throw new Error(`Cannot update: name "${name}" does not exist`);
+                throw new InvalidRequestError(
+                    `Cannot update: name "${name}" does not exist`
+                );
             }
         });
     }

@@ -1,6 +1,7 @@
 const assert = require('assert');
 const ChannelDB = require('../../lib/db/channel').ChannelDB;
 const testDB = require('../testutil/db').testDB;
+const { InvalidRequestError } = require('../../lib/errors');
 
 const channelDB = new ChannelDB(testDB);
 
@@ -130,6 +131,10 @@ describe('ChannelDB', () => {
             }).then(() => {
                 throw new Error('Expected error due to already existing channel');
             }).catch(error => {
+                assert(
+                    error instanceof InvalidRequestError,
+                    'Expected InvalidRequestError'
+                );
                 assert.strictEqual(
                     error.message,
                     'Channel "i_test" is already registered.'

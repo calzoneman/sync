@@ -1,0 +1,141 @@
+import { GET, POST, PATCH, DELETE } from '@calzoneman/express-babel-decorators';
+import { CSRFError, InvalidRequestError } from '../../../errors';
+import { verify as csrfVerify } from '../../csrf';
+
+const LOGGER = require('@calzoneman/jsli')('AccountDataRoute');
+
+function checkAcceptsJSON(req, res) {
+    if (!req.accepts('application/json')) {
+        res.status(406).send('Not Acceptable');
+
+        return false;
+    }
+
+    return true;
+}
+
+async function authorize(req, res) {
+    if (!req.signedCookies || !req.signedCookies.auth) {
+        res.status(401).json({
+            error: 'Authorization required'
+        });
+
+        return false;
+    }
+
+    try {
+        csrfVerify(req);
+    } catch (error) {
+        if (error instanceof CSRFError) {
+            res.status(403).json({
+                error: 'Invalid CSRF token'
+            });
+        } else {
+            LOGGER.error('CSRF check failed: %s', error.stack);
+            res.status(503).json({ error: 'Internal error' });
+        }
+
+        return false;
+    }
+
+    // TODO: verify session
+
+    return true;
+}
+
+function reportError(req, res, error) {
+    if (error instanceof InvalidRequestError) {
+        res.status(400).json({ error: error.message });
+    } else {
+        LOGGER.error(
+            '%s %s: %s',
+            req.method,
+            req.originalUrl,
+            error.stack
+        );
+        res.status(503).json({ error: 'Internal error' });
+    }
+
+}
+
+class AccountDataRoute {
+    constructor(accountDB, channelDB) {
+        this.accountDB = accountDB;
+        this.channelDB = channelDB;
+    }
+
+    @GET('/account/data/:user')
+    async getAccount(req, res) {
+        if (!checkAcceptsJSON(req, res)) return;
+        if (!await authorize(req, res)) return;
+
+        try {
+            const user = await this.accountDB.getByName(req.params.user);
+
+            if (user) {
+                // Whitelist fields to expose, to avoid accidental
+                // information leaks when new fields are added.
+                const result = {
+                    name: user.name,
+                    email: user.email,
+                    profile: user.profile,
+                    time: user.time
+                };
+
+                res.status(200).json({ result });
+            } else {
+                res.status(404).json({ result: null });
+            }
+        } catch (error) {
+            reportError(req, res, error);
+        }
+    }
+
+    @PATCH('/account/data/:user')
+    async updateAccount(req, res) {
+        if (!checkAcceptsJSON(req, res)) return;
+        if (!await authorize(req, res)) return;
+
+        res.status(501).json({ error: 'Not implemented' });
+    }
+
+    @GET('/account/data/:user/channels')
+    async listChannels(req, res) {
+        if (!checkAcceptsJSON(req, res)) return;
+        if (!await authorize(req, res)) return;
+
+        try {
+            const channels = await this.channelDB.listByOwner(req.params.user).map(
+                channel => ({
+                    name: channel.name,
+                    owner: channel.owner,
+                    time: channel.time,
+                    last_loaded: channel.last_loaded,
+                    owner_last_seen: channel.owner_last_seen
+                })
+            );
+
+            res.status(200).json({ result: channels });
+        } catch (error) {
+            reportError(req, res, error);
+        }
+    }
+
+    @POST('/account/data/:user/channels/:name')
+    async createChannel(req, res) {
+        if (!checkAcceptsJSON(req, res)) return;
+        if (!await authorize(req, res)) return;
+
+        res.status(501).json({ error: 'Not implemented' });
+    }
+
+    @DELETE('/account/data/:user/channels/:name')
+    async deleteChannel(req, res) {
+        if (!checkAcceptsJSON(req, res)) return;
+        if (!await authorize(req, res)) return;
+
+        res.status(501).json({ error: 'Not implemented' });
+    }
+}
+
+export { AccountDataRoute };
