@@ -13,6 +13,7 @@ import { CSRFError, HTTPError } from '../errors';
 import counters from '../counters';
 import { Summary, Counter } from 'prom-client';
 import session from '../session';
+import { verify as csrfVerify } from './csrf';
 const verifySessionAsync = require('bluebird').promisify(session.verifySession);
 
 const LOGGER = require('@calzoneman/jsli')('webserver');
@@ -256,13 +257,11 @@ module.exports = {
         require('./routes/google_drive_userscript')(app);
         require('./routes/ustream_bypass')(app);
 
-        /*
         const { AccountDataRoute } = require('./routes/account/data');
         require('@calzoneman/express-babel-decorators').bind(
             app,
-            new AccountDataRoute(accountDB, channelDB)
+            new AccountDataRoute(accountDB, channelDB, csrfVerify, verifySessionAsync)
         );
-        */
 
         app.use(serveStatic(path.join(__dirname, '..', '..', 'www'), {
             maxAge: webConfig.getCacheTTL()

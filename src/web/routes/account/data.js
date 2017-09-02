@@ -1,6 +1,6 @@
 import { GET, POST, PATCH, DELETE } from '@calzoneman/express-babel-decorators';
 import { CSRFError, InvalidRequestError } from '../../../errors';
-import { verify as csrfVerify } from '../../csrf';
+import Promise from 'bluebird';
 
 const LOGGER = require('@calzoneman/jsli')('AccountDataRoute');
 
@@ -14,7 +14,7 @@ function checkAcceptsJSON(req, res) {
     return true;
 }
 
-async function authorize(req, res) {
+async function authorize(req, res, csrfVerify, verifySessionAsync) {
     if (!req.signedCookies || !req.signedCookies.auth) {
         res.status(401).json({
             error: 'Authorization required'
@@ -38,7 +38,23 @@ async function authorize(req, res) {
         return false;
     }
 
-    // TODO: verify session
+    try {
+        const user = await verifySessionAsync(req.signedCookies.auth);
+
+        if (user.name !== req.params.user) {
+            res.status(403).json({
+                error: 'Session username does not match'
+            });
+
+            return false;
+        }
+    } catch (error) {
+        res.status(403).json({
+            error: error.message
+        });
+
+        return false;
+    }
 
     return true;
 }
@@ -59,15 +75,17 @@ function reportError(req, res, error) {
 }
 
 class AccountDataRoute {
-    constructor(accountDB, channelDB) {
+    constructor(accountDB, channelDB, csrfVerify, verifySessionAsync) {
         this.accountDB = accountDB;
         this.channelDB = channelDB;
+        this.csrfVerify = csrfVerify;
+        this.verifySessionAsync = verifySessionAsync;
     }
 
     @GET('/account/data/:user')
     async getAccount(req, res) {
         if (!checkAcceptsJSON(req, res)) return;
-        if (!await authorize(req, res)) return;
+        if (!await authorize(req, res, this.csrfVerify, this.verifySessionAsync)) return;
 
         try {
             const user = await this.accountDB.getByName(req.params.user);
@@ -94,7 +112,7 @@ class AccountDataRoute {
     @PATCH('/account/data/:user')
     async updateAccount(req, res) {
         if (!checkAcceptsJSON(req, res)) return;
-        if (!await authorize(req, res)) return;
+        if (!await authorize(req, res, this.csrfVerify, this.verifySessionAsync)) return;
 
         res.status(501).json({ error: 'Not implemented' });
     }
@@ -102,7 +120,7 @@ class AccountDataRoute {
     @GET('/account/data/:user/channels')
     async listChannels(req, res) {
         if (!checkAcceptsJSON(req, res)) return;
-        if (!await authorize(req, res)) return;
+        if (!await authorize(req, res, this.csrfVerify, this.verifySessionAsync)) return;
 
         try {
             const channels = await this.channelDB.listByOwner(req.params.user).map(
@@ -124,7 +142,7 @@ class AccountDataRoute {
     @POST('/account/data/:user/channels/:name')
     async createChannel(req, res) {
         if (!checkAcceptsJSON(req, res)) return;
-        if (!await authorize(req, res)) return;
+        if (!await authorize(req, res, this.csrfVerify, this.verifySessionAsync)) return;
 
         res.status(501).json({ error: 'Not implemented' });
     }
@@ -132,7 +150,7 @@ class AccountDataRoute {
     @DELETE('/account/data/:user/channels/:name')
     async deleteChannel(req, res) {
         if (!checkAcceptsJSON(req, res)) return;
-        if (!await authorize(req, res)) return;
+        if (!await authorize(req, res, this.csrfVerify, this.verifySessionAsync)) return;
 
         res.status(501).json({ error: 'Not implemented' });
     }
