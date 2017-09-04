@@ -12,6 +12,7 @@ sortSources = (sources) ->
         idx = 5 # 480p
 
     qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx).reverse())
+    qualityOrder.unshift('auto')
     sourceOrder = []
     flvOrder = []
     for quality in qualityOrder
@@ -33,6 +34,12 @@ sortSources = (sources) ->
         src: source.link
         quality: source.quality
     )
+
+getSourceLabel = (source) ->
+    if source.quality is 'auto'
+        return 'auto'
+    else
+        return "#{source.quality}p #{source.type.split('/')[1]}"
 
 waitUntilDefined(window, 'videojs', =>
     videojs.options.flash.swf = '/video-js.swf'
@@ -72,7 +79,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                     src: source.src
                     type: source.type
                     res: source.quality
-                    label: "#{source.quality}p #{source.type.split('/')[1]}"
+                    label: getSourceLabel(source)
                 ).appendTo(video)
             )
 

@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HLSPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SmashcastPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HLSPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SmashcastPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, getSourceLabel, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -462,6 +462,7 @@
       idx = 5;
     }
     qualityOrder = qualities.slice(idx).concat(qualities.slice(0, idx).reverse());
+    qualityOrder.unshift('auto');
     sourceOrder = [];
     flvOrder = [];
     for (j = 0, len = qualityOrder.length; j < len; j++) {
@@ -488,6 +489,14 @@
         quality: source.quality
       };
     });
+  };
+
+  getSourceLabel = function(source) {
+    if (source.quality === 'auto') {
+      return 'auto';
+    } else {
+      return source.quality + "p " + (source.type.split('/')[1]);
+    }
   };
 
   waitUntilDefined(window, 'videojs', (function(_this) {
@@ -531,7 +540,7 @@
               src: source.src,
               type: source.type,
               res: source.quality,
-              label: source.quality + "p " + (source.type.split('/')[1])
+              label: getSourceLabel(source)
             }).appendTo(video);
           });
           if (data.meta.gdrive_subtitles) {
