@@ -257,11 +257,13 @@ module.exports = {
         require('./routes/google_drive_userscript')(app);
         require('./routes/ustream_bypass')(app);
 
-        const { AccountDataRoute } = require('./routes/account/data');
-        require('@calzoneman/express-babel-decorators').bind(
-            app,
-            new AccountDataRoute(accountDB, channelDB, csrfVerify, verifySessionAsync)
-        );
+        if (process.env.UNFINISHED_FEATURE) {
+            const { AccountDataRoute } = require('./routes/account/data');
+            require('@calzoneman/express-babel-decorators').bind(
+                app,
+                new AccountDataRoute(accountDB, channelDB, csrfVerify, verifySessionAsync)
+            );
+        }
 
         app.use(serveStatic(path.join(__dirname, '..', '..', 'www'), {
             maxAge: webConfig.getCacheTTL()
