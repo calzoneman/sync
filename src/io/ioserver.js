@@ -282,7 +282,7 @@ function emitMetrics(sock) {
         sock.client.conn.on('upgrade', newTransport => {
             try {
                 // Sanity check
-                if (newTransport !== transportName) {
+                if (newTransport.name !== transportName) {
                     promSocketCount.dec({ transport: transportName });
                     transportName = newTransport.name;
                     promSocketCount.inc({ transport: transportName });
