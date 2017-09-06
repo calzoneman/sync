@@ -19,6 +19,19 @@ const URL_BASE = `http://localhost:${TEST_PORT}`;
 function request(method, url, additionalOptions) {
     if (!additionalOptions) additionalOptions = {};
 
+    const { body } = additionalOptions;
+    if (body) {
+        delete additionalOptions.body;
+
+        if (!additionalOptions.headers) {
+            additionalOptions.headers = {
+                'Accept': 'application/json'
+            };
+        }
+
+        additionalOptions.headers['Content-Type'] = 'application/json';
+    }
+
     return new Promise((resolve, reject) => {
         const options = {
             headers: {
@@ -41,11 +54,6 @@ function request(method, url, additionalOptions) {
 
             res.on('data', data => {
                 buffer += data;
-
-                if (buffer.length > 100 * 1024) {
-                    req.abort();
-                    reject(new Error('Response size exceeds 100KB'));
-                }
             });
 
             res.on('end', () => {
@@ -53,6 +61,10 @@ function request(method, url, additionalOptions) {
                 resolve(res);
             });
         });
+
+        if (body) {
+            req.write(JSON.stringify(body));
+        }
 
         req.end();
     });
@@ -85,8 +97,7 @@ describe('AccountDataRoute', () => {
             req.signedCookies = signedCookies;
             next();
         });
-        app.use(bodyParser.urlencoded({
-            extended: false,
+        app.use(bodyParser.json({
             limit: '1kb'
         }));
 
@@ -232,6 +243,7 @@ describe('AccountDataRoute', () => {
                 );
                 assert(verifySessionAsync.calledWith(signedCookies.auth));
                 assert(csrfVerify.called);
+                accountDB.verify();
             });
         });
 
@@ -239,6 +251,132 @@ describe('AccountDataRoute', () => {
     });
 
     describe('#updateAccount', () => {
+        it('updates email', () => {
+            accountDB.expects('getByName').withArgs('test').returns({
+                name: 'test',
+                password: '$2a$10$c26sbtkVlYlFUBdSxzQGhenZvdPBI2fvTPOmVRyrBuaD.8j7iyoNm',
+                email: 'test@example.com',
+                profile: { text: 'blah', image: 'image.jpeg' },
+                time: new Date('2017-09-01T00:00:00.000Z')
+            });
+            accountDB.expects('updateByName').withArgs(
+                'test',
+                { email: 'test_new@example.com' }
+            );
+
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    password: 'test',
+                    updates: {
+                        email: 'test_new@example.com'
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 204);
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects invalid email address', () => {
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    password: 'test',
+                    updates: {
+                        email: 'not!!valid'
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Invalid email address'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects request to change email with no password', () => {
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        email: 'test_new@example.com'
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Password required'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects invalid password', () => {
+            accountDB.expects('getByName').withArgs('test').returns({
+                name: 'test',
+                password: '$2a$10$c26sbtkVlYlFUBdSxzQGhenZvdPBI2fvTPOmVRyrBuaD.8j7iyoNm',
+                email: 'test@example.com',
+                profile: { text: 'blah', image: 'image.jpeg' },
+                time: new Date('2017-09-01T00:00:00.000Z')
+            });
+
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    password: 'wrong',
+                    updates: {
+                        email: 'test_new@example.com'
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Invalid password'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects non-existing user', () => {
+            accountDB.expects('getByName').withArgs('test').returns(null);
+
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    password: 'test',
+                    updates: {
+                        email: 'test_new@example.com'
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'User does not exist'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects invalid input', () => {
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: ['not correct']
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Malformed input'
+                );
+
+                accountDB.verify();
+            });
+        });
+
         checkDefaults('/account/data/test', 'PATCH');
     });
 
@@ -281,6 +419,7 @@ describe('AccountDataRoute', () => {
                 );
                 assert(verifySessionAsync.calledWith(signedCookies.auth));
                 assert(csrfVerify.called);
+                channelDB.verify();
             });
         });
 

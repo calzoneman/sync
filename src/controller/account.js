@@ -49,7 +49,7 @@ class AccountController {
                 throw new InvalidRequestError('Password required');
             }
 
-            const user = await this.accountDB.getUserByName(name);
+            const user = await this.accountDB.getByName(name);
 
             if (!user) {
                 throw new InvalidRequestError('User does not exist');

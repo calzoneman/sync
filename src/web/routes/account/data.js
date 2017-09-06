@@ -104,7 +104,11 @@ class AccountDataRoute {
         const { password, updates } = req.body;
 
         try {
-            this.accountController.updateAccount(req.user, updates, password);
+            await this.accountController.updateAccount(
+                req.params.user,
+                updates,
+                password
+            );
             res.status(204).send();
         } catch (error) {
             reportError(req, res, error);
