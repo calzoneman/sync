@@ -75,8 +75,8 @@ function reportError(req, res, error) {
 }
 
 class AccountDataRoute {
-    constructor(accountDB, channelDB, csrfVerify, verifySessionAsync) {
-        this.accountDB = accountDB;
+    constructor(accountController, channelDB, csrfVerify, verifySessionAsync) {
+        this.accountController = accountController;
         this.channelDB = channelDB;
         this.csrfVerify = csrfVerify;
         this.verifySessionAsync = verifySessionAsync;
@@ -88,22 +88,9 @@ class AccountDataRoute {
         if (!await authorize(req, res, this.csrfVerify, this.verifySessionAsync)) return;
 
         try {
-            const user = await this.accountDB.getByName(req.params.user);
+            const user = await this.accountController.getAccount(req.params.user);
 
-            if (user) {
-                // Whitelist fields to expose, to avoid accidental
-                // information leaks when new fields are added.
-                const result = {
-                    name: user.name,
-                    email: user.email,
-                    profile: user.profile,
-                    time: user.time
-                };
-
-                res.status(200).json({ result });
-            } else {
-                res.status(404).json({ result: null });
-            }
+            res.status(user === null ? 404 : 200).json({ result: user });
         } catch (error) {
             reportError(req, res, error);
         }
@@ -114,7 +101,14 @@ class AccountDataRoute {
         if (!checkAcceptsJSON(req, res)) return;
         if (!await authorize(req, res, this.csrfVerify, this.verifySessionAsync)) return;
 
-        res.status(501).json({ error: 'Not implemented' });
+        const { password, updates } = req.body;
+
+        try {
+            this.accountController.updateAccount(req.user, updates, password);
+            res.status(204).send();
+        } catch (error) {
+            reportError(req, res, error);
+        }
     }
 
     @GET('/account/data/:user/channels')

@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const express = require('express');
 const { AccountDB } = require('../../../../lib/db/account');
 const { ChannelDB } = require('../../../../lib/db/channel');
+const { AccountController } = require('../../../../lib/controller/account');
 const { AccountDataRoute } = require('../../../../lib/web/routes/account/data');
 const http = require('http');
 const expressBabelDecorators = require('@calzoneman/express-babel-decorators');
@@ -10,6 +11,7 @@ const nodeurl = require('url');
 const Promise = require('bluebird');
 const bodyParser = require('body-parser');
 const { CSRFError } = require('../../../../lib/errors');
+const { EventEmitter } = require('events');
 
 const TEST_PORT = 10111;
 const URL_BASE = `http://localhost:${TEST_PORT}`;
@@ -89,7 +91,7 @@ describe('AccountDataRoute', () => {
         }));
 
         accountDataRoute = new AccountDataRoute(
-            realAccountDB,
+            new AccountController(realAccountDB, new EventEmitter()),
             realChannelDB,
             csrfVerify,
             verifySessionAsync

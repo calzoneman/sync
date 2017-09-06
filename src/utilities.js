@@ -53,6 +53,10 @@
     },
 
     root.isValidEmail = function (email) {
+        if (typeof email !== "string") {
+            return false;
+        }
+
         if (email.length > 255) {
             return false;
         }

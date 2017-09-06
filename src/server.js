@@ -54,6 +54,7 @@ import * as Switches from './switches';
 import { Gauge } from 'prom-client';
 import { AccountDB } from './db/account';
 import { ChannelDB } from './db/channel';
+import { AccountController } from './controller/account';
 
 var Server = function () {
     var self = this;
@@ -88,6 +89,8 @@ var Server = function () {
     const accountDB = new AccountDB(db.getDB());
     const channelDB = new ChannelDB(db.getDB());
 
+    const accountController = new AccountController(accountDB, globalMessageBus);
+
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
     const webConfig = WebConfiguration.fromOldConfig(Config);
@@ -108,7 +111,7 @@ var Server = function () {
             channelIndex,
             session,
             globalMessageBus,
-            accountDB,
+            accountController,
             channelDB);
 
     // http/https/sio server init -----------------------------------------

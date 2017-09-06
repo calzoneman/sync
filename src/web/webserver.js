@@ -193,7 +193,7 @@ module.exports = {
         channelIndex,
         session,
         globalMessageBus,
-        accountDB,
+        accountController,
         channelDB
     ) {
         patchExpressToHandleAsync();
@@ -208,6 +208,9 @@ module.exports = {
         app.use(bodyParser.urlencoded({
             extended: false,
             limit: '1kb' // No POST data should ever exceed this size under normal usage
+        }));
+        app.use(bodyParser.json({
+            limit: '1kb'
         }));
         if (webConfig.getCookieSecret() === 'change-me') {
             LOGGER.warn('The configured cookie secret was left as the ' +
@@ -261,7 +264,12 @@ module.exports = {
             const { AccountDataRoute } = require('./routes/account/data');
             require('@calzoneman/express-babel-decorators').bind(
                 app,
-                new AccountDataRoute(accountDB, channelDB, csrfVerify, verifySessionAsync)
+                new AccountDataRoute(
+                    accountController,
+                    channelDB,
+                    csrfVerify,
+                    verifySessionAsync
+                )
             );
         }
 
