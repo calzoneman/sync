@@ -278,6 +278,33 @@ describe('AccountDataRoute', () => {
             });
         });
 
+        it('updates profile', () => {
+            accountDB.expects('updateByName').withArgs(
+                'test',
+                {
+                    profile: {
+                        text: 'testing',
+                        image: 'https://example.com/image.jpg'
+                    }
+                }
+            );
+
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        profile: {
+                            text: 'testing',
+                            image: 'https://example.com/image.jpg'
+                        }
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 204);
+
+                accountDB.verify();
+            });
+        });
+
         it('rejects invalid email address', () => {
             return request('PATCH', `${URL_BASE}/account/data/test`, {
                 body: {
@@ -371,6 +398,133 @@ describe('AccountDataRoute', () => {
                 assert.strictEqual(
                     JSON.parse(res.body).error,
                     'Malformed input'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects invalid profile', () => {
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        profile: 'not valid'
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Invalid profile'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects wrongly typed profile text', () => {
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        profile: {
+                            text: ['wrong'],
+                            image: 'https://example.com'
+                        }
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Invalid profile'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects too long profile text', () => {
+            let longText = ''; for (let i = 0; i < 256; i++) longText += 'a';
+
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        profile: {
+                            text: longText,
+                            image: 'https://example.com'
+                        }
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Profile text must not exceed 255 characters'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects wrongly typed profile image', () => {
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        profile: {
+                            text: 'test',
+                            image: 42
+                        }
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Invalid profile'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects too long profile image', () => {
+            let longText = 'https://'; for (let i = 0; i < 256; i++) longText += 'a';
+
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        profile: {
+                            text: 'test',
+                            image: longText
+                        }
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Profile image URL must not exceed 255 characters'
+                );
+
+                accountDB.verify();
+            });
+        });
+
+        it('rejects non-https profile image', () => {
+            return request('PATCH', `${URL_BASE}/account/data/test`, {
+                body: {
+                    updates: {
+                        profile: {
+                            text: 'test',
+                            image: 'http://example.com/image.jpg'
+                        }
+                    }
+                }
+            }).then(res => {
+                assert.strictEqual(res.statusCode, 400);
+                assert.strictEqual(
+                    JSON.parse(res.body).error,
+                    'Profile image URL must start with "https:"'
                 );
 
                 accountDB.verify();

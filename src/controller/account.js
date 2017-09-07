@@ -44,6 +44,15 @@ class AccountController {
             requirePassword = true;
         }
 
+        if (updates.profile) {
+            validateProfile(updates.profile);
+
+            fields.profile = {
+                image: updates.profile.image.trim(),
+                text: updates.profile.text
+            };
+        }
+
         if (requirePassword) {
             if (!password) {
                 throw new InvalidRequestError('Password required');
@@ -65,6 +74,30 @@ class AccountController {
 
         await this.accountDB.updateByName(name, fields);
     }
+}
+
+function validateProfile(profile) {
+    // TODO: replace all of these errors with a standard errorcode + field checker
+    if (profile.toString() !== '[object Object]')
+        throw new InvalidRequestError('Invalid profile');
+    if (typeof profile.text !== 'string')
+        throw new InvalidRequestError('Invalid profile');
+    if (typeof profile.image !== 'string')
+        throw new InvalidRequestError('Invalid profile');
+    if (profile.text.length > 255)
+        throw new InvalidRequestError('Profile text must not exceed 255 characters');
+    if (profile.image.length > 255)
+        throw new InvalidRequestError('Profile image URL must not exceed 255 characters');
+
+    if (profile.image.trim() === '') return true;
+
+    const url = parseURL(profile.image);
+    if (!url.host)
+        throw new InvalidRequestError('Invalid profile image URL');
+    if (url.protocol !== 'https:')
+        throw new InvalidRequestError('Profile image URL must start with "https:"');
+
+    return true;
 }
 
 export { AccountController };
