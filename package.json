@@ -85,5 +85,8 @@
       "transform-flow-strip-types",
       "transform-decorators-legacy"
     ]
+  },
+  "optionalDependencies": {
+    "v8-profiler": "^5.7.0"
   }
 }

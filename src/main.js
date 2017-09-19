@@ -21,6 +21,8 @@ if (!Config.get('debug')) {
     });
 }
 
+let profileName = null;
+
 // TODO: this can probably just be part of servsock.js
 // servsock should also be refactored to send replies instead of
 // relying solely on tailing logs
@@ -78,6 +80,40 @@ function handleLine(line) {
         }
     } else if (line.indexOf('/reloadcert') === 0) {
         sv.reloadCertificateData();
+    } else if (line.indexOf('/profile') === 0) {
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const profiler = require('v8-profiler');
+
+            if (profileName !== null) {
+                const filename = path.resolve(
+                    __dirname,
+                    '..',
+                    `${profileName}.cpuprofile`
+                );
+                const profile = profiler.stopProfiling(profileName);
+                profileName = null;
+
+                const stream = profile.export();
+                stream.on('error', error => {
+                    LOGGER.error('Error exporting profile: %s', error);
+                    profile.delete();
+                });
+                stream.on('finish', () => {
+                    LOGGER.info('Exported profile to %s', filename);
+                    profile.delete();
+                });
+
+                stream.pipe(fs.createWriteStream(filename));
+            } else {
+                profileName = `prof_${Date.now()}`;
+                profiler.startProfiling(profileName, true);
+                LOGGER.info('Started CPU profile');
+            }
+        } catch (error) {
+            LOGGER.error('Unable to record CPU profile: %s', error);
+        }
     }
 }
 

@@ -34,7 +34,7 @@ const SOCKETFILE = Config.get("service-socket.socket");
 // Wipe the TTY
 process.stdout.write('\x1Bc');
 
-var commandline, eventlog, syslog;
+var commandline, eventlog, syslog, errorlog;
 var client = net.createConnection(SOCKETFILE).on('connect', () => {
         commandline = readline.createInterface({
             input: process.stdin,
@@ -77,6 +77,11 @@ var client = net.createConnection(SOCKETFILE).on('connect', () => {
         syslog = spawn('tail', ['-f', 'sys.log']);
         syslog.stdout.on('data', function (data) {
             console.log(data.toString().replace(/^(.+)$/mg, 'sys:    $1'));
+        });
+
+        errorlog = spawn('tail', ['-f', 'error.log']);
+        errorlog.stdout.on('data', function (data) {
+            console.log(data.toString().replace(/^(.+)$/mg, 'error:    $1'));
         });
 
     }).on('data', (msg) => {
