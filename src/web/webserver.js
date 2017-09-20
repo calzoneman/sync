@@ -91,12 +91,6 @@ function handleLegacySocketConfig(req, res) {
     res.send(sioconfig);
 }
 
-function handleUserAgreement(req, res) {
-    sendPug(res, 'tos', {
-        domain: Config.get('http.domain')
-    });
-}
-
 function initializeErrorHandlers(app) {
     app.use((req, res, next) => {
         return next(new HTTPError(`No route for ${req.path}`, {
@@ -234,7 +228,6 @@ module.exports = {
         require('./routes/index')(app, channelIndex, webConfig.getMaxIndexEntries());
         app.get('/sioconfig(.json)?', handleLegacySocketConfig);
         require('./routes/socketconfig')(app, clusterClient);
-        app.get('/useragreement', handleUserAgreement);
         require('./routes/contact')(app, webConfig);
         require('./auth').init(app);
         require('./account').init(app, globalMessageBus);

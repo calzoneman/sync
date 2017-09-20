@@ -1,6 +1,12 @@
 2017-09-19
 ==========
 
+The `/useragreement` default page has been removed.  Server administrators can
+substitute their own terms of service page by editing `templates/footer.pug`
+
+2017-09-19
+==========
+
 This commit removes an old kludge that redirected users to HTTPS (when enabled)
 specifically for the account authorization pages (e.g., `/login`).  The code for
 doing this was to work around limitations that no longer exist, and does not
