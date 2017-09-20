@@ -275,6 +275,7 @@ const promSocketDisconnect = new Counter({
 });
 function emitMetrics(sock) {
     try {
+        let closed = false;
         let transportName = sock.client.conn.transport.name;
         promSocketCount.inc({ transport: transportName });
         promSocketAccept.inc(1, new Date());
@@ -282,7 +283,7 @@ function emitMetrics(sock) {
         sock.client.conn.on('upgrade', newTransport => {
             try {
                 // Sanity check
-                if (newTransport.name !== transportName) {
+                if (!closed && newTransport.name !== transportName) {
                     promSocketCount.dec({ transport: transportName });
                     transportName = newTransport.name;
                     promSocketCount.inc({ transport: transportName });
@@ -295,6 +296,7 @@ function emitMetrics(sock) {
 
         sock.once('disconnect', () => {
             try {
+                closed = true;
                 promSocketCount.dec({ transport: transportName });
                 promSocketDisconnect.inc(1, new Date());
             } catch (error) {
