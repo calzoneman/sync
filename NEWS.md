@@ -1,3 +1,19 @@
+2017-09-19
+==========
+
+This commit removes an old kludge that redirected users to HTTPS (when enabled)
+specifically for the account authorization pages (e.g., `/login`).  The code for
+doing this was to work around limitations that no longer exist, and does not
+represent current security best practices.
+
+The recommended solution to ensure that users are logged in securely (assuming
+you've configured support for HTTPS) is to use
+[Strict-Transport-Security](https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security)
+to direct browsers to access the HTTPS version of the website at all times.  You
+can enable this by configuring a reverse proxy (e.g. nginx) in front of CyTube
+to intercept HTTP traffic and redirect it to HTTPS, and add the
+`Strict-Transport-Security` header when returning the response from CyTube.
+
 2017-07-22
 ==========
 

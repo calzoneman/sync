@@ -13,8 +13,6 @@ function merge(locals, res) {
         siteTitle: Config.get("html-template.title"),
         siteDescription: Config.get("html-template.description"),
         siteAuthor: "Calvin 'calzoneman' 'cyzon' Montgomery",
-        loginDomain: Config.get("https.enabled") ? Config.get("https.full-address")
-                                                 : Config.get("http.full-address"),
         csrfToken: typeof res.req.csrfToken === 'function' ? res.req.csrfToken() : '',
         baseUrl: getBaseUrl(res),
         channelPath: Config.get("channel-path"),

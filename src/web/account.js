@@ -23,10 +23,6 @@ let globalMessageBus;
  * Handles a GET request for /account/edit
  */
 function handleAccountEditPage(req, res) {
-    if (webserver.redirectHttps(req, res)) {
-        return;
-    }
-
     sendPug(res, "account-edit", {});
 }
 
@@ -178,10 +174,6 @@ function handleChangeEmail(req, res) {
  * Handles a GET request for /account/channels
  */
 async function handleAccountChannelPage(req, res) {
-    if (webserver.redirectHttps(req, res)) {
-        return;
-    }
-
     const user = await webserver.authorize(req);
     // TODO: error message
     if (!user) {
@@ -349,10 +341,6 @@ async function handleDeleteChannel(req, res) {
  * Handles a GET request for /account/profile
  */
 async function handleAccountProfilePage(req, res) {
-    if (webserver.redirectHttps(req, res)) {
-        return;
-    }
-
     const user = await webserver.authorize(req);
     // TODO: error message
     if (!user) {
@@ -462,10 +450,6 @@ async function handleAccountProfile(req, res) {
  * Handles a GET request for /account/passwordreset
  */
 function handlePasswordResetPage(req, res) {
-    if (webserver.redirectHttps(req, res)) {
-        return;
-    }
-
     sendPug(res, "account-passwordreset", {
         reset: false,
         resetEmail: "",

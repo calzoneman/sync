@@ -16,12 +16,12 @@ mixin navdefaultlinks()
       if loggedIn
         li: a(href="javascript:$('#logoutform').submit();") Log out
         li.divider
-        li: a(href=loginDomain+"/account/channels") Channels
-        li: a(href=loginDomain+"/account/profile") Profile
-        li: a(href=loginDomain+"/account/edit") Change Password/Email
+        li: a(href="/account/channels") Channels
+        li: a(href="/account/profile") Profile
+        li: a(href="/account/edit") Change Password/Email
       else
-        li: a(href=loginDomain+"/login") Login
-        li: a(href=loginDomain+"/register") Register
+        li: a(href="/login") Login
+        li: a(href="/register") Register
 
 mixin navsuperadmin(newTab)
   if superadmin
@@ -37,10 +37,8 @@ mixin navloginlogout()
     +navloginform()
 
 mixin navloginform()
-  if loginDomain == null
-    - loginDomain = ""
   .visible-lg
-    form#loginform.navbar-form.navbar-right(action=loginDomain+"/login", method="post")
+    form#loginform.navbar-form.navbar-right(action="/login", method="post")
       input(type="hidden", name="_csrf", value=csrfToken)
       .form-group
         input#username.form-control(type="text", name="name", placeholder="Username")
@@ -54,7 +52,7 @@ mixin navloginform()
       button#login.btn.btn-default(type="submit") Login
   .visible-md
     p#loginform.navbar-text.pull-right
-      a#login.navbar-link(href=loginDomain+"/login") Log in
+      a#login.navbar-link(href="/login") Log in
       span &nbsp;&middot;&nbsp;
       a#register.navbar-link(href="/register") Register
 

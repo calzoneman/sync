@@ -56,8 +56,7 @@ var defaults = {
         passphrase: "",
         certfile: "localhost.cert",
         cafile: "",
-        ciphers: "HIGH:!DSS:!aNULL@STRENGTH",
-        redirect: true
+        ciphers: "HIGH:!DSS:!aNULL@STRENGTH"
     },
     io: {
         domain: "http://localhost",

@@ -111,10 +111,6 @@ function handleLogin(req, res) {
  * Handles a GET request for /login
  */
 function handleLoginPage(req, res) {
-    if (webserver.redirectHttps(req, res)) {
-        return;
-    }
-
     if (res.locals.loggedIn) {
         return sendPug(res, "login", {
             wasAlreadyLoggedIn: true
@@ -158,10 +154,6 @@ function handleLogout(req, res) {
  * Handles a GET request for /register
  */
 function handleRegisterPage(req, res) {
-    if (webserver.redirectHttps(req, res)) {
-        return;
-    }
-
     if (res.locals.loggedIn) {
         sendPug(res, "register", {});
         return;

@@ -61,23 +61,6 @@ function initPrometheus(app) {
 }
 
 /**
- * Redirects a request to HTTPS if the server supports it
- */
-function redirectHttps(req, res) {
-    if (req.realProtocol !== 'https' && Config.get('https.enabled') &&
-            Config.get('https.redirect')) {
-        var ssldomain = Config.get('https.full-address');
-        if (ssldomain.indexOf(req.hostname) < 0) {
-            return false;
-        }
-
-        res.redirect(ssldomain + req.path);
-        return true;
-    }
-    return false;
-}
-
-/**
  * Legacy socket.io configuration endpoint.  This is being migrated to
  * /socketconfig/<channel name>.json (see ./routes/socketconfig.js)
  */
@@ -279,8 +262,6 @@ module.exports = {
 
         initializeErrorHandlers(app);
     },
-
-    redirectHttps: redirectHttps,
 
     authorize: async function authorize(req) {
         if (!req.signedCookies || !req.signedCookies.auth) {
