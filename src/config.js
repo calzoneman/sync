@@ -231,40 +231,6 @@ function loadPrometheusConfig() {
 
 // I'm sorry
 function preprocessConfig(cfg) {
-    /* Detect 3.0.0-style config and warng the user about it */
-    if ("host" in cfg.http || "port" in cfg.http || "port" in cfg.https) {
-        LOGGER.warn("The method of specifying which IP/port to bind has "+
-                          "changed.  The config loader will try to handle this "+
-                          "automatically, but you should read config.template.yaml "+
-                          "and change your config.yaml to the new format.");
-        cfg.listen = [
-            {
-                ip: cfg.http.host || "0.0.0.0",
-                port: cfg.http.port,
-                http: true
-            },
-            {
-                ip: cfg.http.host || "0.0.0.0",
-                port: cfg.io.port,
-                io: true
-            }
-        ];
-
-        if (cfg.https.enabled) {
-            cfg.listen.push(
-                {
-                    ip: cfg.http.host || "0.0.0.0",
-                    port: cfg.https.port,
-                    https: true,
-                    io: true
-                }
-            );
-        }
-
-        cfg.http["default-port"] = cfg.http.port;
-        cfg.https["default-port"] = cfg.https.port;
-        cfg.io["default-port"] = cfg.io.port;
-    }
     // Root domain should start with a . for cookies
     var root = cfg.http["root-domain"];
     root = root.replace(/^\.*/, "");
@@ -289,24 +255,6 @@ function preprocessConfig(cfg) {
     // Strip trailing slashes from domains
     cfg.http.domain = cfg.http.domain.replace(/\/*$/, "");
     cfg.https.domain = cfg.https.domain.replace(/\/*$/, "");
-
-    // HTTP/HTTPS domains with port numbers
-    if (!cfg.http["full-address"]) {
-        var httpfa = cfg.http.domain;
-        if (cfg.http["default-port"] !== 80) {
-            httpfa += ":" + cfg.http["default-port"];
-        }
-        cfg.http["full-address"] = httpfa;
-    }
-
-    if (!cfg.https["full-address"]) {
-        var httpsfa = cfg.https.domain;
-        if (cfg.https["default-port"] !== 443) {
-            httpsfa += ":" + cfg.https["default-port"];
-        }
-        cfg.https["full-address"] = httpsfa;
-    }
-
 
     // Socket.IO URLs
     cfg.io["ipv4-nossl"] = "";
