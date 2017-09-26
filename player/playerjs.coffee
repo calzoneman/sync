@@ -52,6 +52,9 @@ window.PlayerJSPlayer = class PlayerJSPlayer extends Player
 
                 @player.setVolume(VOLUME * 100)
 
+                if not @paused
+                    @player.play()
+
                 @ready = true
             )
         )

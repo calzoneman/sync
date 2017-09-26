@@ -757,6 +757,9 @@
               }
             });
             _this.player.setVolume(VOLUME * 100);
+            if (!_this.paused) {
+              _this.player.play();
+            }
             return _this.ready = true;
           });
         };
