@@ -1,5 +1,5 @@
 (function() {
-  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HLSPlayer, ImgurPlayer, LivestreamPlayer, Player, RTMPPlayer, SmashcastPlayer, SoundCloudPlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, getSourceLabel, sortSources,
+  var CUSTOM_EMBED_WARNING, CustomEmbedPlayer, DEFAULT_ERROR, DailymotionPlayer, EmbedPlayer, FilePlayer, GoogleDrivePlayer, GoogleDriveYouTubePlayer, HLSPlayer, ImgurPlayer, LivestreamPlayer, Player, PlayerJSPlayer, RTMPPlayer, SmashcastPlayer, SoundCloudPlayer, StreamablePlayer, TYPE_MAP, TwitchPlayer, UstreamPlayer, VideoJSPlayer, VimeoPlayer, YouTubePlayer, codecToMimeType, genParam, getSourceLabel, sortSources,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -698,6 +698,139 @@
     return VideoJSPlayer;
 
   })(Player);
+
+  window.PlayerJSPlayer = PlayerJSPlayer = (function(superClass) {
+    extend(PlayerJSPlayer, superClass);
+
+    function PlayerJSPlayer(data) {
+      if (!(this instanceof PlayerJSPlayer)) {
+        return new PlayerJSPlayer(data);
+      }
+      this.load(data);
+    }
+
+    PlayerJSPlayer.prototype.load = function(data) {
+      this.setMediaProperties(data);
+      this.ready = false;
+      this.finishing = false;
+      if (!data.meta.playerjs) {
+        throw new Error('Invalid input: missing meta.playerjs');
+      }
+      return waitUntilDefined(window, 'playerjs', (function(_this) {
+        return function() {
+          var iframe;
+          iframe = $('<iframe/>').attr({
+            src: data.meta.playerjs.src
+          });
+          removeOld(iframe);
+          _this.player = new playerjs.Player(iframe[0]);
+          return _this.player.on('ready', function() {
+            _this.player.on('error', function(error) {
+              return console.error('PlayerJS error', error.stack);
+            });
+            _this.player.on('ended', function() {
+              if (CLIENT.leader) {
+                return socket.emit('playNext');
+              }
+            });
+            _this.player.on('timeupdate', function(time) {
+              if (time.duration - time.seconds < 1 && !_this.finishing) {
+                setTimeout(function() {
+                  if (CLIENT.leader) {
+                    socket.emit('playNext');
+                  }
+                  return _this.pause();
+                }, (time.duration - time.seconds) * 1000);
+                return _this.finishing = true;
+              }
+            });
+            _this.player.on('play', function() {
+              this.paused = false;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            _this.player.on('pause', function() {
+              this.paused = true;
+              if (CLIENT.leader) {
+                return sendVideoUpdate();
+              }
+            });
+            _this.player.setVolume(VOLUME * 100);
+            return _this.ready = true;
+          });
+        };
+      })(this));
+    };
+
+    PlayerJSPlayer.prototype.play = function() {
+      this.paused = false;
+      if (this.player && this.ready) {
+        return this.player.play();
+      }
+    };
+
+    PlayerJSPlayer.prototype.pause = function() {
+      this.paused = true;
+      if (this.player && this.ready) {
+        return this.player.pause();
+      }
+    };
+
+    PlayerJSPlayer.prototype.seekTo = function(time) {
+      if (this.player && this.ready) {
+        return this.player.setCurrentTime(time);
+      }
+    };
+
+    PlayerJSPlayer.prototype.setVolume = function(volume) {
+      if (this.player && this.ready) {
+        return this.player.setVolume(volume * 100);
+      }
+    };
+
+    PlayerJSPlayer.prototype.getTime = function(cb) {
+      if (this.player && this.ready) {
+        return this.player.getCurrentTime(cb);
+      } else {
+        return cb(0);
+      }
+    };
+
+    PlayerJSPlayer.prototype.getVolume = function(cb) {
+      if (this.player && this.ready) {
+        return this.player.getVolume(function(volume) {
+          return cb(volume / 100);
+        });
+      } else {
+        return cb(VOLUME);
+      }
+    };
+
+    return PlayerJSPlayer;
+
+  })(Player);
+
+  window.StreamablePlayer = StreamablePlayer = (function(superClass) {
+    extend(StreamablePlayer, superClass);
+
+    function StreamablePlayer(data) {
+      if (!(this instanceof StreamablePlayer)) {
+        return new StreamablePlayer(data);
+      }
+      StreamablePlayer.__super__.constructor.call(this, data);
+    }
+
+    StreamablePlayer.prototype.load = function(data) {
+      data.meta.playerjs = {
+        src: "https://streamable.com/e/" + data.id
+      };
+      return StreamablePlayer.__super__.load.call(this, data);
+    };
+
+    return StreamablePlayer;
+
+  })(PlayerJSPlayer);
 
   window.GoogleDrivePlayer = GoogleDrivePlayer = (function(superClass) {
     extend(GoogleDrivePlayer, superClass);
@@ -1553,7 +1686,7 @@
     im: ImgurPlayer,
     vm: VideoJSPlayer,
     hl: HLSPlayer,
-    sb: VideoJSPlayer,
+    sb: StreamablePlayer,
     tc: VideoJSPlayer,
     cm: VideoJSPlayer
   };
@@ -1568,7 +1701,7 @@
       error = error1;
       console.error(error);
     }
-    if (data.meta.direct && data.type !== 'gd') {
+    if (data.meta.direct && data.type === 'vi') {
       try {
         return window.PLAYER = new VideoJSPlayer(data);
       } catch (error1) {
