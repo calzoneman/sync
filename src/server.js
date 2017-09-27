@@ -55,6 +55,7 @@ import { Gauge } from 'prom-client';
 import { AccountDB } from './db/account';
 import { ChannelDB } from './db/channel';
 import { AccountController } from './controller/account';
+import { EmailController } from './controller/email';
 
 var Server = function () {
     var self = this;
@@ -89,7 +90,33 @@ var Server = function () {
     const accountDB = new AccountDB(db.getDB());
     const channelDB = new ChannelDB(db.getDB());
 
+    // controllers
     const accountController = new AccountController(accountDB, globalMessageBus);
+
+    let emailTransport;
+    if (Config.getEmailConfig().getPasswordReset().isEnabled()) {
+        const smtpConfig = Config.getEmailConfig().getSmtp();
+        emailTransport = require("nodemailer").createTransport({
+            host: smtpConfig.getHost(),
+            port: smtpConfig.getPort(),
+            secure: smtpConfig.isSecure(),
+            auth: {
+                user: smtpConfig.getUser(),
+                pass: smtpConfig.getPassword()
+            }
+        });
+    } else {
+        emailTransport = {
+            sendMail() {
+                throw new Error('Email is not enabled on this server')
+            }
+        };
+    }
+
+    const emailController = new EmailController(
+        emailTransport,
+        Config.getEmailConfig()
+    );
 
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
@@ -104,7 +131,8 @@ var Server = function () {
         channelIndex = new LocalChannelIndex();
     }
     self.express = express();
-    require("./web/webserver").init(self.express,
+    require("./web/webserver").init(
+            self.express,
             webConfig,
             ioConfig,
             clusterClient,
@@ -112,7 +140,10 @@ var Server = function () {
             session,
             globalMessageBus,
             accountController,
-            channelDB);
+            channelDB,
+            Config.getEmailConfig(),
+            emailController
+    );
 
     // http/https/sio server init -----------------------------------------
     var key = "", cert = "", ca = undefined;

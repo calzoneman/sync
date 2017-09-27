@@ -18,6 +18,8 @@ const url = require("url");
 const LOGGER = require('@calzoneman/jsli')('database/accounts');
 
 let globalMessageBus;
+let emailConfig;
+let emailController;
 
 /**
  * Handles a GET request for /account/edit
@@ -531,7 +533,7 @@ function handlePasswordReset(req, res) {
             Logger.eventlog.log("[account] " + ip + " requested password recovery for " +
                                 name + " <" + email + ">");
 
-            if (!Config.get("mail.enabled")) {
+            if (!emailConfig.getPasswordReset().isEnabled()) {
                 sendPug(res, "account-passwordreset", {
                     reset: false,
                     resetEmail: email,
@@ -541,37 +543,26 @@ function handlePasswordReset(req, res) {
                 return;
             }
 
-            var msg = "A password reset request was issued for your " +
-                      "account `"+ name + "` on " + Config.get("http.domain") +
-                      ".  This request is valid for 24 hours.  If you did "+
-                      "not initiate this, there is no need to take action."+
-                      "  To reset your password, copy and paste the " +
-                      "following link into your browser: " +
-                      Config.get("http.domain") + "/account/passwordrecover/"+hash;
+            const baseUrl = `${req.realProtocol}://${req.header("host")}`;
 
-            var mail = {
-                from: Config.get("mail.from-name") + " <" + Config.get("mail.from-address") + ">",
-                to: email,
-                subject: "Password reset request",
-                text: msg
-            };
-
-            Config.get("mail.nodemailer").sendMail(mail, function (err, response) {
-                if (err) {
-                    LOGGER.error("mail fail: " + err);
-                    sendPug(res, "account-passwordreset", {
-                        reset: false,
-                        resetEmail: email,
-                        resetErr: "Sending reset email failed.  Please contact an " +
-                                  "administrator for assistance."
-                    });
-                } else {
-                    sendPug(res, "account-passwordreset", {
-                        reset: true,
-                        resetEmail: email,
-                        resetErr: false
-                    });
-                }
+            emailController.sendPasswordReset({
+                username: name,
+                address: email,
+                url: `${baseUrl}/account/passwordrecover/${hash}`
+            }).then(result => {
+                sendPug(res, "account-passwordreset", {
+                    reset: true,
+                    resetEmail: email,
+                    resetErr: false
+                });
+            }).catch(error => {
+                LOGGER.error("Sending password reset email failed: %s", error);
+                sendPug(res, "account-passwordreset", {
+                    reset: false,
+                    resetEmail: email,
+                    resetErr: "Sending reset email failed.  Please contact an " +
+                              "administrator for assistance."
+                });
             });
         });
     });
@@ -639,8 +630,10 @@ module.exports = {
     /**
      * Initialize the module
      */
-    init: function (app, _globalMessageBus) {
+    init: function (app, _globalMessageBus, _emailConfig, _emailController) {
         globalMessageBus = _globalMessageBus;
+        emailConfig = _emailConfig;
+        emailController = _emailController;
 
         app.get("/account/edit", handleAccountEditPage);
         app.post("/account/edit", handleAccountEdit);

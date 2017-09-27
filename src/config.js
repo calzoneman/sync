@@ -1,12 +1,12 @@
 var fs = require("fs");
 var path = require("path");
-var nodemailer = require("nodemailer");
 var net = require("net");
 var YAML = require("yamljs");
 
 import { loadFromToml } from './configuration/configloader';
 import { CamoConfig } from './configuration/camoconfig';
 import { PrometheusConfig } from './configuration/prometheusconfig';
+import { EmailConfig } from './configuration/emailconfig';
 
 const LOGGER = require('@calzoneman/jsli')('config');
 
@@ -63,13 +63,6 @@ var defaults = {
         "default-port": 1337,
         "ip-connection-limit": 10,
         "per-message-deflate": false
-    },
-    mail: {
-        enabled: false,
-        /* the key "config" is omitted because the format depends on the
-           service the owner is configuring for nodemailer */
-        "from-address": "some.user@gmail.com",
-        "from-name": "CyTube Services"
     },
     "youtube-v3-key": "",
     "channel-blacklist": [],
@@ -141,6 +134,7 @@ function merge(obj, def, path) {
 var cfg = defaults;
 let camoConfig = new CamoConfig();
 let prometheusConfig = new PrometheusConfig();
+let emailConfig = new EmailConfig();
 
 /**
  * Initializes the configuration from the given YAML file
@@ -171,61 +165,82 @@ exports.load = function (file) {
         return;
     }
 
-    var mailconfig = {};
-    if (cfg.mail && cfg.mail.config) {
-        mailconfig = cfg.mail.config;
-        delete cfg.mail.config;
+    if (cfg.mail) {
+        LOGGER.error(
+            'Old style mail configuration found in config.yaml.  ' +
+            'Email will not be delivered unless you copy conf/example/email.toml ' +
+            'to conf/email.toml and edit it to your liking.  ' +
+            'To remove this warning, delete the "mail:" block in config.yaml.'
+        );
     }
+
     merge(cfg, defaults, "config");
-    cfg.mail.config = mailconfig;
 
     preprocessConfig(cfg);
     LOGGER.info("Loaded configuration from " + file);
 
     loadCamoConfig();
     loadPrometheusConfig();
+    loadEmailConfig();
 };
 
-function loadCamoConfig() {
+function checkLoadConfig(configClass, filename) {
     try {
-        camoConfig = loadFromToml(CamoConfig,
-                                  path.resolve(__dirname, '..', 'conf', 'camo.toml'));
-        const enabled = camoConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
-        LOGGER.info(`Loaded camo configuration from conf/camo.toml.  Camo is ${enabled}`);
+        return loadFromToml(
+            configClass,
+            path.resolve(__dirname, '..', 'conf', filename)
+        );
     } catch (error) {
         if (error.code === 'ENOENT') {
-            LOGGER.info('No camo configuration found, chat images will not be proxied.');
-            camoConfig = new CamoConfig();
-            return;
+            return null;
         }
 
         if (typeof error.line !== 'undefined') {
-            LOGGER.error(`Error in conf/camo.toml: ${error} (line ${error.line})`);
+            LOGGER.error(`Error in conf/${fileanme}: ${error} (line ${error.line})`);
         } else {
-            LOGGER.error(`Error loading conf/camo.toml: ${error.stack}`);
+            LOGGER.error(`Error loading conf/${filename}: ${error.stack}`);
         }
     }
 }
 
-function loadPrometheusConfig() {
-    try {
-        prometheusConfig = loadFromToml(PrometheusConfig,
-                path.resolve(__dirname, '..', 'conf', 'prometheus.toml'));
-        const enabled = prometheusConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
-        LOGGER.info('Loaded prometheus configuration from conf/prometheus.toml.  '
-                + `Prometheus listener is ${enabled}`);
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            LOGGER.info('No prometheus configuration found, defaulting to disabled');
-            prometheusConfig = new PrometheusConfig();
-            return;
-        }
+function loadCamoConfig() {
+    const conf = checkLoadConfig(CamoConfig, 'camo.toml');
 
-        if (typeof error.line !== 'undefined') {
-            LOGGER.error(`Error in conf/prometheus.toml: ${error} (line ${error.line})`);
-        } else {
-            LOGGER.error(`Error loading conf/prometheus.toml: ${error.stack}`);
-        }
+    if (conf === null) {
+        LOGGER.info('No camo configuration found, chat images will not be proxied.');
+        camoConfig = new CamoConfig();
+    } else {
+        camoConfig = conf;
+        const enabled = camoConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
+        LOGGER.info(`Loaded camo configuration from conf/camo.toml.  Camo is ${enabled}`);
+    }
+}
+
+function loadPrometheusConfig() {
+    const conf = checkLoadConfig(PrometheusConfig, 'prometheus.toml');
+
+    if (conf === null) {
+        LOGGER.info('No prometheus configuration found, defaulting to disabled');
+        prometheusConfig = new PrometheusConfig();
+    } else {
+        prometheusConfig = conf;
+        const enabled = prometheusConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
+        LOGGER.info(
+            'Loaded prometheus configuration from conf/prometheus.toml.  ' +
+            `Prometheus listener is ${enabled}`
+        );
+    }
+}
+
+function loadEmailConfig() {
+    const conf = checkLoadConfig(EmailConfig, 'email.toml');
+
+    if (conf === null) {
+        LOGGER.info('No email configuration found, defaulting to disabled');
+        emailConfig = new EmailConfig();
+    } else {
+        emailConfig = conf;
+        LOGGER.info('Loaded email configuration from conf/email.toml.');
     }
 }
 
@@ -239,11 +254,6 @@ function preprocessConfig(cfg) {
         root = "." + root;
     }
     cfg.http["root-domain-dotted"] = root;
-
-    // Setup nodemailer
-    cfg.mail.nodemailer = nodemailer.createTransport(
-        cfg.mail.config
-    );
 
     // Debug
     if (process.env.DEBUG === "1" || process.env.DEBUG === "true") {
@@ -449,4 +459,8 @@ exports.getCamoConfig = function getCamoConfig() {
 
 exports.getPrometheusConfig = function getPrometheusConfig() {
     return prometheusConfig;
+};
+
+exports.getEmailConfig = function getEmailConfig() {
+    return emailConfig;
 };

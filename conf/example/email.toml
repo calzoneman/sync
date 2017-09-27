@@ -1,0 +1,41 @@
+# SMTP configuration for sending mail
+[smtp]
+host = 'smtp.gmail.com'
+port = 465
+secure = true
+user = 'some-user@example.com'
+password = 'secretpassword'
+
+# Email configuration for password reset emails
+# Be sure to update both html-template AND text-template
+# nodemailer will send both and the email client will render whichever one is supported
+[password-reset]
+enabled = true
+
+# Template to use for HTML-formatted emails
+# $user$ will be replaced by the username for which the reset was requested
+# $url$ will be replaced by the password reset confirmation link
+html-template = """
+Hi $user$,<br>
+<br>
+A password reset was requested for your account on CHANGE ME.  You can complete the reset by opening the following link in your browser: <a href="$url$">$url$</a><br>
+<br>
+This link will expire in 24 hours.<br>
+<br>
+This email address is not monitored for replies.  For assistance with password resets, please <a href="http://example.com/contact">contact an administrator</a>.
+"""
+
+# Template to use for plaintext emails
+# Same substitutions as the HTML template
+text-template = """
+Hi $user$,
+
+A password reset was requested for your account on CHANGE ME.  You can complete the reset by opening the following link in your browser: $url$
+
+This link will expire in 24 hours.
+
+This email address is not monitored for replies.  For assistance with password resets, please contact an administrator.  See http://example.com/contact for contact information.
+"""
+
+from = "Example Website <website@example.com>"
+subject = "Password reset request"

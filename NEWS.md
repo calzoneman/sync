@@ -1,3 +1,20 @@
+2017-09-26
+==========
+
+**Breaking change:** the `nodemailer` dependency has been upgraded to version
+4.x.  I also took this opportunity to make some modifications to the email
+configuration and move it out of `config.yaml` to `conf/email.toml`.
+
+To upgrade:
+
+  * Run `npm upgrade` (or `rm -rf node_modules; npm install`)
+  * Copy `conf/example/email.toml` to `conf/email.toml`
+  * Edit `conf/email.toml` to your liking
+  * Remove the `mail:` block from `config.yaml`
+
+This feature only supports sending via SMTP for now.  If there is demand for
+other transports, feel free to open an issue or submit a pull request.
+
 2017-09-19
 ==========
 

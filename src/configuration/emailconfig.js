@@ -1,12 +1,36 @@
 class EmailConfig {
-    constructor(config) {
+    constructor(config = { 'password-reset': { enabled: false }, smtp: {} }) {
         this.config = config;
-    }
 
-    getPasswordReset() {
-        const reset = this.config['password-reset'];
+        const smtp = config.smtp;
+        this._smtp = {
+            getHost() {
+                return smtp.host;
+            },
 
-        return {
+            getPort() {
+                return smtp.port;
+            },
+
+            isSecure() {
+                return smtp.secure;
+            },
+
+            getUser() {
+                return smtp.user;
+            },
+
+            getPassword() {
+                return smtp.password;
+            }
+        }
+
+        const reset = config['password-reset'];
+        this._reset = {
+            isEnabled() {
+                return reset.enabled;
+            },
+
             getHTML() {
                 return reset['html-template'];
             },
@@ -16,13 +40,21 @@ class EmailConfig {
             },
 
             getFrom() {
-                return reset['from'];
+                return reset.from;
             },
 
             getSubject() {
-                return reset['subject'];
+                return reset.subject;
             }
         };
+    }
+
+    getSmtp() {
+        return this._smtp;
+    }
+
+    getPasswordReset() {
+        return this._reset;
     }
 }
 
