@@ -32,7 +32,6 @@ var defaults = {
         }
     ],
     http: {
-        domain: "http://localhost",
         "default-port": 8080,
         "root-domain": "localhost",
         "alt-domains": ["127.0.0.1"],
@@ -263,7 +262,6 @@ function preprocessConfig(cfg) {
     }
 
     // Strip trailing slashes from domains
-    cfg.http.domain = cfg.http.domain.replace(/\/*$/, "");
     cfg.https.domain = cfg.https.domain.replace(/\/*$/, "");
 
     // Socket.IO URLs

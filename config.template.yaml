@@ -48,7 +48,6 @@ http:
   # one port must be specified as default for the purposes of generating
   # links with the appropriate port
   default-port: 8080
-  domain: 'http://localhost'
   # Specifies the root domain for cookies.  If you have multiple domains
   # e.g. a.example.com and b.example.com, the root domain is example.com
   root-domain: 'localhost'
