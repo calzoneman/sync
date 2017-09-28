@@ -58,6 +58,10 @@ function initPrometheus(app) {
         });
         next();
     });
+
+    setInterval(() => {
+        latency.reset();
+    }, 5 * 60 * 1000).unref();
 }
 
 /**

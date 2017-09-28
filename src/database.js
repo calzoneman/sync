@@ -19,6 +19,10 @@ const queryCount = new Counter({
     help: 'DB query count'
 });
 
+setInterval(() => {
+    queryLatency.reset();
+}, 5 * 60 * 1000).unref();
+
 let db = null;
 let globalBanDB = null;
 
