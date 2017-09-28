@@ -2,7 +2,7 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.49.0",
+  "version": "3.50.0",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
@@ -30,7 +30,7 @@
     "lodash": "^4.13.1",
     "morgan": "^1.6.1",
     "mysql": "^2.9.0",
-    "nodemailer": "^1.4.0",
+    "nodemailer": "^4.1.1",
     "prom-client": "^10.0.2",
     "proxy-addr": "^1.1.4",
     "pug": "^2.0.0-beta3",

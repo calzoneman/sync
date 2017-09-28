@@ -114,18 +114,6 @@ io:
   # more CPU and will bottleneck pretty quickly under heavy load.
   per-message-deflate: false
 
-# Mailer details (used for sending password reset links)
-# see https://github.com/andris9/Nodemailer
-mail:
-  enabled: false
-  config:
-    service: 'Gmail'
-    auth:
-      user: 'some.user@gmail.com'
-      pass: 'supersecretpassword'
-  from-address: 'some.user@gmail.com'
-  from-name: 'CyTube Services'
-
 # YouTube v3 API key
 # See https://developers.google.com/youtube/registering_an_application
 # YouTube links will not work without this!

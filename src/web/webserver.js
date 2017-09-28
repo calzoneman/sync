@@ -171,7 +171,9 @@ module.exports = {
         session,
         globalMessageBus,
         accountController,
-        channelDB
+        channelDB,
+        emailConfig,
+        emailController
     ) {
         patchExpressToHandleAsync();
         const chanPath = Config.get('channel-path');
@@ -230,7 +232,7 @@ module.exports = {
         require('./routes/socketconfig')(app, clusterClient);
         require('./routes/contact')(app, webConfig);
         require('./auth').init(app);
-        require('./account').init(app, globalMessageBus);
+        require('./account').init(app, globalMessageBus, emailConfig, emailController);
         require('./acp').init(app);
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);
