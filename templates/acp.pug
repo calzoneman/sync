@@ -118,18 +118,12 @@ html(lang="en")
               select#acp-eventlog-filter.form-control(multiple="multiple", style="max-width: 25%")
               button#acp-eventlog-refresh.btn.btn-default Refresh
               pre#acp-eventlog-text
-            #acp-stats.acp-panel.col-md-12(style="display: none")
-              h3 User Count
-              canvas#stat_users(width="1140", height="400")
-              h3 Channel Count
-              canvas#stat_channels(width="1140", height="400")
-              h3 Memory Usage
-              canvas#stat_mem(width="1140", height="400")
 
     include footer
     +footer()
     script(src=sioSource)
-    script(src="/sioconfig")
+    script(type="text/javascript").
+      window.IO_SERVERS = !{ioServers};
     script(src="/js/util.js")
     script(src="/js/paginator.js")
     script(src="/js/acp.js")

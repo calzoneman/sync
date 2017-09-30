@@ -64,37 +64,6 @@ function initPrometheus(app) {
     }, 5 * 60 * 1000).unref();
 }
 
-/**
- * Legacy socket.io configuration endpoint.  This is being migrated to
- * /socketconfig/<channel name>.json (see ./routes/socketconfig.js)
- */
-function handleLegacySocketConfig(req, res) {
-    if (/\.json$/.test(req.path)) {
-        res.json(Config.get('sioconfigjson'));
-        return;
-    }
-
-    res.type('application/javascript');
-
-    var sioconfig = Config.get('sioconfig');
-    var iourl;
-    var ip = req.realIP;
-    var ipv6 = false;
-
-    if (net.isIPv6(ip)) {
-        iourl = Config.get('io.ipv6-default');
-        ipv6 = true;
-    }
-
-    if (!iourl) {
-        iourl = Config.get('io.ipv4-default');
-    }
-
-    sioconfig += 'var IO_URL=\'' + iourl + '\';';
-    sioconfig += 'var IO_V6=' + ipv6 + ';';
-    res.send(sioconfig);
-}
-
 function initializeErrorHandlers(app) {
     app.use((req, res, next) => {
         return next(new HTTPError(`No route for ${req.path}`, {
@@ -232,12 +201,11 @@ module.exports = {
 
         require('./routes/channel')(app, ioConfig, chanPath);
         require('./routes/index')(app, channelIndex, webConfig.getMaxIndexEntries());
-        app.get('/sioconfig(.json)?', handleLegacySocketConfig);
         require('./routes/socketconfig')(app, clusterClient);
         require('./routes/contact')(app, webConfig);
         require('./auth').init(app);
         require('./account').init(app, globalMessageBus, emailConfig, emailController);
-        require('./acp').init(app);
+        require('./acp').init(app, ioConfig);
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);
         require('./routes/ustream_bypass')(app);

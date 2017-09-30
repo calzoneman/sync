@@ -1,9 +1,12 @@
 (function () {
-    var opts = {};
-    if (location.protocol === "https:") {
-        opts.secure = true;
-    }
-    window.socket = io.connect(IO_URL, opts);
+    var chosenServer = IO_SERVERS[0]; // Is the array even necessary for the ACP?
+
+    var opts = {
+        secure: chosenServer.secure
+    };
+
+    window.socket = io.connect(chosenServer.url, opts);
+
     window.socket.on("connect", function () {
         window.socket.emit("initACP");
         window.socket.emit("acp-list-activechannels");
