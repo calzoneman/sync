@@ -64,13 +64,13 @@
 
     VimeoPlayer.prototype.load = function(data) {
       this.setMediaProperties(data);
-      return waitUntilDefined(window, '$f', (function(_this) {
+      return waitUntilDefined(window, 'Vimeo', (function(_this) {
         return function() {
           var video;
           video = $('<iframe/>');
           removeOld(video);
           video.attr({
-            src: "https://player.vimeo.com/video/" + data.id + "?api=1&player_id=ytapiplayer",
+            src: "https://player.vimeo.com/video/" + data.id,
             webkitallowfullscreen: true,
             mozallowfullscreen: true,
             allowfullscreen: true
@@ -78,28 +78,26 @@
           if (USEROPTS.wmode_transparent) {
             video.attr('wmode', 'transparent');
           }
-          return $f(video[0]).addEvent('ready', function() {
-            _this.vimeo = $f(video[0]);
-            _this.play();
-            _this.vimeo.addEvent('finish', function() {
-              if (CLIENT.leader) {
-                return socket.emit('playNext');
-              }
-            });
-            _this.vimeo.addEvent('pause', function() {
-              _this.paused = true;
-              if (CLIENT.leader) {
-                return sendVideoUpdate();
-              }
-            });
-            _this.vimeo.addEvent('play', function() {
-              _this.paused = false;
-              if (CLIENT.leader) {
-                return sendVideoUpdate();
-              }
-            });
-            return _this.setVolume(VOLUME);
+          _this.vimeo = new Vimeo.Player(video[0]);
+          _this.vimeo.on('ended', function() {
+            if (CLIENT.leader) {
+              return socket.emit('playNext');
+            }
           });
+          _this.vimeo.on('pause', function() {
+            _this.paused = true;
+            if (CLIENT.leader) {
+              return sendVideoUpdate();
+            }
+          });
+          _this.vimeo.on('play', function() {
+            _this.paused = false;
+            if (CLIENT.leader) {
+              return sendVideoUpdate();
+            }
+          });
+          _this.play();
+          return _this.setVolume(VOLUME);
         };
       })(this));
     };
@@ -107,33 +105,44 @@
     VimeoPlayer.prototype.play = function() {
       this.paused = false;
       if (this.vimeo) {
-        return this.vimeo.api('play');
+        return this.vimeo.play()["catch"](function(error) {
+          return console.error('vimeo::play():', error);
+        });
       }
     };
 
     VimeoPlayer.prototype.pause = function() {
       this.paused = true;
       if (this.vimeo) {
-        return this.vimeo.api('pause');
+        return this.vimeo.pause()["catch"](function(error) {
+          return console.error('vimeo::pause():', error);
+        });
       }
     };
 
     VimeoPlayer.prototype.seekTo = function(time) {
       if (this.vimeo) {
-        return this.vimeo.api('seekTo', time);
+        return this.vimeo.setCurrentTime(time)["catch"](function(error) {
+          return console.error('vimeo::seekTo():', error);
+        });
       }
     };
 
     VimeoPlayer.prototype.setVolume = function(volume) {
       if (this.vimeo) {
-        return this.vimeo.api('setVolume', volume);
+        return this.vimeo.setVolume(volume)["catch"](function(error) {
+          return console.error('vimeo::setVolume():', error);
+        });
       }
     };
 
     VimeoPlayer.prototype.getTime = function(cb) {
       if (this.vimeo) {
-        return this.vimeo.api('getCurrentTime', function(time) {
+        return this.vimeo.getCurrentTime().then(function(time) {
+          console.log('time', time);
           return cb(parseFloat(time));
+        })["catch"](function(error) {
+          return console.error('vimeo::getCurrentTime():', error);
         });
       } else {
         return cb(0);
@@ -142,7 +151,12 @@
 
     VimeoPlayer.prototype.getVolume = function(cb) {
       if (this.vimeo) {
-        return this.vimeo.api('getVolume', cb);
+        return this.vimeo.getVolume().then(function(volume) {
+          console.log('volume', volume);
+          return cb(parseFloat(volume));
+        })["catch"](function(error) {
+          return console.error('vimeo::getVolume():', error);
+        });
       } else {
         return cb(VOLUME);
       }
