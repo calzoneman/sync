@@ -15,7 +15,7 @@ var session = require("../session");
 var csrf = require("./csrf");
 const url = require("url");
 
-const LOGGER = require('@calzoneman/jsli')('database/accounts');
+const LOGGER = require('@calzoneman/jsli')('web/accounts');
 
 let globalMessageBus;
 let emailConfig;
@@ -28,11 +28,41 @@ function handleAccountEditPage(req, res) {
     sendPug(res, "account-edit", {});
 }
 
+function verifyReferrer(req, expected) {
+    const referrer = req.header('referer');
+
+    if (!referrer) {
+        return true;
+    }
+
+    try {
+        const parsed = url.parse(referrer);
+
+        if (parsed.pathname !== expected) {
+            LOGGER.warn(
+                'Possible attempted forgery: %s POSTed to %s',
+                referrer,
+                expected
+            );
+            return false;
+        }
+
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 /**
  * Handles a POST request to edit a user"s account
  */
 function handleAccountEdit(req, res) {
     csrf.verify(req);
+
+    if (!verifyReferrer(req, '/account/edit')) {
+        res.status(403).send('Mismatched referrer');
+        return;
+    }
 
     var action = req.body.action;
     switch(action) {
@@ -43,7 +73,7 @@ function handleAccountEdit(req, res) {
             handleChangeEmail(req, res);
             break;
         default:
-            res.send(400);
+            res.sendStatus(400);
             break;
     }
 }
@@ -196,6 +226,11 @@ async function handleAccountChannelPage(req, res) {
  */
 function handleAccountChannel(req, res) {
     csrf.verify(req);
+
+    if (!verifyReferrer(req, '/account/channels')) {
+        res.status(403).send('Mismatched referrer');
+        return;
+    }
 
     var action = req.body.action;
     switch(action) {
@@ -395,6 +430,11 @@ function validateProfileImage(image, callback) {
 async function handleAccountProfile(req, res) {
     csrf.verify(req);
 
+    if (!verifyReferrer(req, '/account/profile')) {
+        res.status(403).send('Mismatched referrer');
+        return;
+    }
+
     const user = await webserver.authorize(req);
     // TODO: error message
     if (!user) {
@@ -464,6 +504,11 @@ function handlePasswordResetPage(req, res) {
  */
 function handlePasswordReset(req, res) {
     csrf.verify(req);
+
+    if (!verifyReferrer(req, '/account/passwordreset')) {
+        res.status(403).send('Mismatched referrer');
+        return;
+    }
 
     var name = req.body.name,
         email = req.body.email;

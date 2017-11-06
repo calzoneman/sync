@@ -1,3 +1,16 @@
+2017-11-05
+==========
+
+The latest commit introduces a referrer check in the account page handlers.
+This is added as a short-term mitigation for a recent report that account
+management functions (such as deleting channels) can be executed without the
+user's consent if placed in channel JS.
+
+Longer term options are being considered, such as moving account management to a
+separate subdomain to take advantage of cross-origin checks in browsers, and
+requiring the user to re-enter their password to demonstrate intent.  As always,
+I recommend admins take extreme caution when accepting channel JS.
+
 2017-09-26
 ==========
 
