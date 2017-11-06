@@ -74,8 +74,16 @@ function translateStatusCode(statusCode) {
     }
 }
 
-function testUrl(url, cb, redirCount) {
-    if (!redirCount) redirCount = 0;
+function getCookie(res) {
+    if (!res.headers['set-cookie']) {
+        return '';
+    }
+
+    return res.headers['set-cookie'].map(c => c.split(';')[0]).join(';') + ';';
+}
+
+function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
+    const { redirCount, cookie } = params;
     var data = urlparse.parse(url);
     if (!/https:/.test(data.protocol)) {
         return cb("Only links starting with 'https://' are supported " +
@@ -89,6 +97,9 @@ function testUrl(url, cb, redirCount) {
 
     var transport = (data.protocol === "https:") ? https : http;
     data.method = "HEAD";
+    if (cookie) {
+        data.headers = { 'Cookie': cookie };
+    }
     var req = transport.request(data, function (res) {
         req.abort();
 
@@ -99,8 +110,12 @@ function testUrl(url, cb, redirCount) {
                           "on the website hosting the link.  For best results, use " +
                           "a direct link.  See https://git.io/vrE75 for details.");
             }
+            const nextParams = {
+                redirCount: redirCount + 1,
+                cookie: cookie + getCookie(res)
+            };
             return testUrl(fixRedirectIfNeeded(data, res.headers["location"]), cb,
-                    redirCount + 1);
+                    nextParams);
         }
 
         if (res.statusCode !== 200) {
