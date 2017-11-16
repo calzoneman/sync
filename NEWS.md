@@ -1,3 +1,11 @@
+2017-11-15
+==========
+
+The Google Drive userscript has been updated due to breaking changes in
+Greasemonkey 4.0.  Remember to generate the script by running:
+
+    $ npm run generate-userscript "Your Site Name" http://your-site.example.com/r/*
+
 2017-11-05
 ==========
 

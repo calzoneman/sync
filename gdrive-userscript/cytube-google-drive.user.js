@@ -3,11 +3,13 @@
 // @namespace gdcytube
 // @description Play Google Drive videos on {SITENAME}
 // {INCLUDE_BLOCK}
+// @require https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @grant unsafeWindow
 // @grant GM_xmlhttpRequest
+// @grant GM.xmlHttpRequest
 // @connect docs.google.com
 // @run-at document-end
-// @version 1.3.0
+// @version 1.4.0
 // ==/UserScript==
 
 try {
@@ -56,7 +58,7 @@ try {
                 + '&hl=en';
         debug('Fetching ' + url);
 
-        GM_xmlhttpRequest({
+        GM.xmlHttpRequest({
             method: 'GET',
             url: url,
             onload: function (res) {
@@ -100,6 +102,9 @@ try {
                 error.reason = 'HTTP_ONERROR';
                 return cb(error);
             }
+        }).catch(function (error) {
+            error.reason = 'GM.xmlHttpRequest error';
+            return cb(error);
         });
     }
 
@@ -204,7 +209,7 @@ try {
 
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
-    unsafeWindow.driveUserscriptVersion = '1.3';
+    unsafeWindow.driveUserscriptVersion = '1.4';
 } catch (error) {
     unsafeWindow.console.error(error);
 }
