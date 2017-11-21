@@ -3,7 +3,6 @@
 // @namespace gdcytube
 // @description Play Google Drive videos on {SITENAME}
 // {INCLUDE_BLOCK}
-// @require https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @grant unsafeWindow
 // @grant GM_xmlhttpRequest
 // @grant GM.xmlHttpRequest
@@ -22,6 +21,17 @@ try {
             unsafeWindow.console.log(message);
         } catch (error) {
             unsafeWindow.console.error(error);
+        }
+    }
+
+    function httpRequest(opts) {
+        if (typeof GM_xmlhttpRequest === 'undefined') {
+            // Assume GM4.0
+            debug('Using GM4.0 GM.xmlHttpRequest');
+            GM.xmlHttpRequest(opts);
+        } else {
+            debug('Using old-style GM_xmlhttpRequest');
+            GM_xmlhttpRequest(opts);
         }
     }
 
@@ -58,7 +68,7 @@ try {
                 + '&hl=en';
         debug('Fetching ' + url);
 
-        GM.xmlHttpRequest({
+        httpRequest({
             method: 'GET',
             url: url,
             onload: function (res) {
@@ -102,9 +112,6 @@ try {
                 error.reason = 'HTTP_ONERROR';
                 return cb(error);
             }
-        }).catch(function (error) {
-            error.reason = 'GM.xmlHttpRequest error';
-            return cb(error);
         });
     }
 
