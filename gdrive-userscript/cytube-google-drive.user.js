@@ -199,7 +199,7 @@ try {
 
     function isRunningTampermonkey() {
         try {
-            return GM_info.scriptHandler === 'Tampermonkey';
+            return GM_info.scriptHandler === 'Tampermonkey' || GM_info.scriptHandler === 'Violentmonkey';
         } catch (error) {
             return false;
         }
