@@ -233,5 +233,3 @@ function eraseCookie(name) {
 
 /* to be implemented in callbacks.js */
 function setupCallbacks() { }
-
-window.enableCyTubeGoogleDriveUserscriptDebug = getOrDefault("cytube_drive_debug", false);

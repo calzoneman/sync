@@ -8,17 +8,13 @@
 // @grant GM.xmlHttpRequest
 // @connect docs.google.com
 // @run-at document-end
-// @version 1.4.0
+// @version 1.5.0
 // ==/UserScript==
 
 try {
     function debug(message) {
-        if (!unsafeWindow.enableCyTubeGoogleDriveUserscriptDebug) {
-            return;
-        }
-
         try {
-            unsafeWindow.console.log(message);
+            unsafeWindow.console.log('[Drive]', message);
         } catch (error) {
             unsafeWindow.console.error(error);
         }
@@ -74,6 +70,14 @@ try {
             onload: function (res) {
                 try {
                     debug('Got response ' + res.responseText);
+
+                    if (res.status !== 200) {
+                        debug('Response status not 200: ' + res.status);
+                        return cb(
+                            'Google Drive request failed: HTTP ' + res.status
+                        );
+                    }
+
                     var data = {};
                     var error;
                     res.responseText.split('&').forEach(function (kv) {
@@ -82,13 +86,13 @@ try {
                     });
 
                     if (data.status === 'fail') {
-                        var error = 'Google Docs request failed: ' +
+                        var error = 'Google Drive request failed: ' +
                                 unescape(data.reason).replace(/\+/g, ' ');
                         return cb(error);
                     }
 
                     if (!data.fmt_stream_map) {
-                        var error = 'Google Docs request failed: ' +
+                        var error = 'Google Drive request failed: ' +
                                 'metadata lookup returned no valid links';
                         return cb(error);
                     }
@@ -107,7 +111,7 @@ try {
             },
 
             onerror: function () {
-                var error = 'Google Docs request failed: ' +
+                var error = 'Google Drive request failed: ' +
                         'metadata lookup HTTP request failed';
                 error.reason = 'HTTP_ONERROR';
                 return cb(error);
@@ -197,9 +201,14 @@ try {
         }, 1000);
     }
 
+    var TM_COMPATIBLES = [
+        'Tampermonkey',
+        'Violentmonkey' // https://github.com/calzoneman/sync/issues/713
+    ];
+
     function isRunningTampermonkey() {
         try {
-            return GM_info.scriptHandler === 'Tampermonkey';
+            return TM_COMPATIBLES.indexOf(GM_info.scriptHandler) >= 0;
         } catch (error) {
             return false;
         }
@@ -216,7 +225,7 @@ try {
 
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
-    unsafeWindow.driveUserscriptVersion = '1.4';
+    unsafeWindow.driveUserscriptVersion = '1.5';
 } catch (error) {
     unsafeWindow.console.error(error);
 }

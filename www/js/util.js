@@ -3247,7 +3247,7 @@ function maybePromptToUpgradeUserscript() {
         return;
     }
 
-    var currentVersion = [1, 4];
+    var currentVersion = [1, 5];
     var userscriptVersion = window.driveUserscriptVersion;
     if (!userscriptVersion) {
         userscriptVersion = '1.0';
