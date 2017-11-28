@@ -8,7 +8,7 @@
 // @grant GM.xmlHttpRequest
 // @connect docs.google.com
 // @run-at document-end
-// @version 1.5.0
+// @version 1.6.0
 // ==/UserScript==
 
 try {
@@ -80,19 +80,27 @@ try {
 
                     var data = {};
                     var error;
+                    // Google Santa sometimes eats login cookies and gets mad if there aren't any.
+                    if(/accounts\.google\.com\/ServiceLogin/.test(res.responseText)){
+                        error = 'Google Docs request failed: ' +
+                                'This video requires you be logged into a Google account. ' +
+                                'Open your Gmail in another tab and then refresh video.';
+                        return cb(error);
+                    }
+
                     res.responseText.split('&').forEach(function (kv) {
                         var pair = kv.split('=');
                         data[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
                     });
 
                     if (data.status === 'fail') {
-                        var error = 'Google Drive request failed: ' +
+                        error = 'Google Drive request failed: ' +
                                 unescape(data.reason).replace(/\+/g, ' ');
                         return cb(error);
                     }
 
                     if (!data.fmt_stream_map) {
-                        var error = 'Google Drive request failed: ' +
+                        error = 'Google Drive request failed: ' +
                                 'metadata lookup returned no valid links';
                         return cb(error);
                     }
@@ -112,7 +120,7 @@ try {
 
             onerror: function () {
                 var error = 'Google Drive request failed: ' +
-                        'metadata lookup HTTP request failed';
+                            'metadata lookup HTTP request failed';
                 error.reason = 'HTTP_ONERROR';
                 return cb(error);
             }
@@ -206,7 +214,7 @@ try {
         'Violentmonkey' // https://github.com/calzoneman/sync/issues/713
     ];
 
-    function isRunningTampermonkey() {
+    function isTampermonkeyCompatible() {
         try {
             return TM_COMPATIBLES.indexOf(GM_info.scriptHandler) >= 0;
         } catch (error) {
@@ -214,7 +222,7 @@ try {
         }
     }
 
-    if (isRunningTampermonkey()) {
+    if (isTampermonkeyCompatible()) {
         unsafeWindow.getGoogleDriveMetadata = getVideoInfo;
     } else {
         debug('Using non-TM polling workaround');
@@ -225,7 +233,8 @@ try {
 
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
-    unsafeWindow.driveUserscriptVersion = '1.5';
+    // Checked against GS_VERSION from data.js
+    unsafeWindow.driveUserscriptVersion = '1.6';
 } catch (error) {
     unsafeWindow.console.error(error);
 }
