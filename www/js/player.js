@@ -123,7 +123,7 @@
     VimeoPlayer.prototype.seekTo = function(time) {
       if (this.vimeo) {
         return this.vimeo.setCurrentTime(time)["catch"](function(error) {
-          return console.error('vimeo::seekTo():', error);
+          return console.error('vimeo::setCurrentTime():', error);
         });
       }
     };
@@ -139,7 +139,6 @@
     VimeoPlayer.prototype.getTime = function(cb) {
       if (this.vimeo) {
         return this.vimeo.getCurrentTime().then(function(time) {
-          console.log('time', time);
           return cb(parseFloat(time));
         })["catch"](function(error) {
           return console.error('vimeo::getCurrentTime():', error);
@@ -152,7 +151,6 @@
     VimeoPlayer.prototype.getVolume = function(cb) {
       if (this.vimeo) {
         return this.vimeo.getVolume().then(function(volume) {
-          console.log('volume', volume);
           return cb(parseFloat(volume));
         })["catch"](function(error) {
           return console.error('vimeo::getVolume():', error);
@@ -500,16 +498,17 @@
       return {
         type: source.contentType,
         src: source.link,
-        quality: source.quality
+        res: source.quality,
+        label: getSourceLabel(source)
       };
     });
   };
 
   getSourceLabel = function(source) {
-    if (source.quality === 'auto') {
+    if (source.res === 'auto') {
       return 'auto';
     } else {
-      return source.quality + "p " + (source.type.split('/')[1]);
+      return source.quality + "p " + (source.contentType.split('/')[1]);
     }
   };
 
@@ -549,14 +548,6 @@
             return;
           }
           _this.sourceIdx = 0;
-          _this.sources.forEach(function(source) {
-            return $('<source/>').attr({
-              src: source.src,
-              type: source.type,
-              res: source.quality,
-              label: getSourceLabel(source)
-            }).appendTo(video);
-          });
           if (data.meta.gdrive_subtitles) {
             data.meta.gdrive_subtitles.available.forEach(function(subt) {
               var label;
@@ -585,15 +576,16 @@
             });
           }
           _this.player = videojs(video[0], {
-            autoplay: true,
+            autoplay: _this.sources[0].type !== 'application/dash+xml',
             controls: true,
             plugins: {
               videoJsResolutionSwitcher: {
-                "default": _this.sources[0].quality
+                "default": _this.sources[0].res
               }
             }
           });
           return _this.player.ready(function() {
+            _this.player.updateSrc(_this.sources);
             _this.player.on('error', function() {
               var err;
               err = _this.player.error();

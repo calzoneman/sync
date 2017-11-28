@@ -20,6 +20,7 @@ const SOURCE_QUALITIES = new Set([
 ]);
 
 const SOURCE_CONTENT_TYPES = new Set([
+    'application/dash+xml',
     'application/x-mpegURL',
     'audio/aac',
     'audio/ogg',
@@ -30,6 +31,7 @@ const SOURCE_CONTENT_TYPES = new Set([
 ]);
 
 const LIVE_ONLY_CONTENT_TYPES = new Set([
+    'application/dash+xml',
     'application/x-mpegURL'
 ]);
 
