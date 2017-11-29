@@ -3247,11 +3247,15 @@ function maybePromptToUpgradeUserscript() {
         return;
     }
 
-    var currentVersion = [1, 5];
+    var currentVersion = GS_VERSION.toString(); // data.js
     var userscriptVersion = window.driveUserscriptVersion;
     if (!userscriptVersion) {
         userscriptVersion = '1.0';
     }
+
+    currentVersion = currentVersion.split('.').map(function (part) {
+        return parseInt(part, 10);
+    });
     userscriptVersion = userscriptVersion.split('.').map(function (part) {
         return parseInt(part, 10);
     });

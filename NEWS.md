@@ -1,3 +1,10 @@
+2017-11-27
+==========
+
+The Google Drive userscript has been updated once again. Violentmonkey is
+now explicitly supported. Google login redirects are caught and handled.
+See directly below on how to regenerate the user script again.
+
 2017-11-15
 ==========
 
