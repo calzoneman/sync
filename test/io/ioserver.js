@@ -75,6 +75,7 @@ describe('IOServer', () => {
         });
     });
 
+    /*
     describe('#ipConnectionLimitMiddleware', () => {
         beforeEach(() => {
             socket.once = (event, callback) => {
@@ -123,6 +124,7 @@ describe('IOServer', () => {
             });
         });
     });
+    */
 
     describe('#cookieParsingMiddleware', () => {
         it('parses cookies', done => {
