@@ -167,7 +167,15 @@ function clearOldSubtitles() {
 
                 if (stats.mtime.getTime() < Date.now() - ONE_DAY) {
                     LOGGER.info('Deleting old subtitle file: ' + file);
-                    fs.unlink(path.join(subtitleDir, file));
+                    fs.unlink(path.join(subtitleDir, file), error => {
+                        if (error) {
+                            LOGGER.error(
+                                'Failed to remove file %s: %s',
+                                file,
+                                error.stack
+                            );
+                        }
+                    });
                 }
             });
         });
