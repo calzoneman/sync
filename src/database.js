@@ -18,6 +18,10 @@ const queryCount = new Counter({
     name: 'cytube_db_queries_total',
     help: 'DB query count'
 });
+const queryErrorCount = new Counter({
+    name: 'cytube_db_query_errors_total',
+    help: 'DB query error count'
+});
 
 setInterval(() => {
     queryLatency.reset();
@@ -55,10 +59,13 @@ class Database {
     runTransaction(fn) {
         const timer = Metrics.startTimer('db:queryTime');
         const end = queryLatency.startTimer();
-        return this.knex.transaction(fn).finally(() => {
+        return this.knex.transaction(fn).catch(error => {
+            queryErrorCount.inc(1);
+            throw error;
+        }).finally(() => {
             end();
             Metrics.stopTimer(timer);
-            queryCount.inc(1, new Date());
+            queryCount.inc(1);
         });
     }
 }
@@ -129,12 +136,13 @@ module.exports.query = function (query, sub, callback) {
         .then(res => {
             process.nextTick(callback, null, res[0]);
         }).catch(error => {
+            queryErrorCount.inc(1);
             LOGGER.error('Legacy DB query failed.  Query: %s, Substitutions: %j, Error: %s', query, sub, error);
             process.nextTick(callback, 'Database failure', null);
         }).finally(() => {
             end();
             Metrics.stopTimer(timer);
-            queryCount.inc(1, new Date());
+            queryCount.inc(1);
         });
 };
 
