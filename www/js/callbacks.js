@@ -37,7 +37,7 @@ Callbacks = {
 
     // Socket.IO error callback
     error: function (msg) {
-        window.SOCKET_ERROR_REASON = reason;
+        window.SOCKET_ERROR_REASON = msg;
         $("<div/>")
             .addClass("server-msg-disconnect")
             .text("Unable to connect: " + msg)
