@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird';
+import Promise from 'bluebird';
 import { stat } from 'fs';
 import * as fs from 'graceful-fs';
 import path from 'path';
@@ -37,18 +37,35 @@ export class FileStore {
         });
     }
 
-    save(id, channelName, data) {
-        const filename = this.filenameForChannel(channelName);
-        const fileContents = new Buffer(JSON.stringify(data), 'utf8');
-        if (fileContents.length > SIZE_LIMIT) {
-            return Promise.reject(new ChannelStateSizeError(
-                    'Channel state size is too large', {
-                        limit: SIZE_LIMIT,
-                        actual: fileContents.length
-                    }));
+    async save(id, channelName, data) {
+        let original;
+        try {
+            original = await this.load(id, channelName);
+        } catch (error) {
+            if (error.code !== 'ENOENT') {
+                throw error;
+            } else {
+                original = {};
+            }
         }
 
-        return writeFileAsync(filename, fileContents);
+        Object.keys(data).forEach(key => {
+            original[key] = data[key];
+        });
+
+        const filename = this.filenameForChannel(channelName);
+        const fileContents = new Buffer(JSON.stringify(original), 'utf8');
+        if (fileContents.length > SIZE_LIMIT) {
+            throw new ChannelStateSizeError(
+                'Channel state size is too large',
+                {
+                    limit: SIZE_LIMIT,
+                    actual: fileContents.length
+                }
+            );
+        }
+
+        return await writeFileAsync(filename, fileContents);
     }
 
     listChannels() {
