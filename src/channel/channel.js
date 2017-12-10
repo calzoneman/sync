@@ -10,6 +10,7 @@ import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import { throttle } from '../util/throttle';
 import Logger from '../logger';
+import * as Switches from '../switches';
 
 const LOGGER = require('@calzoneman/jsli')('channel');
 
@@ -239,37 +240,59 @@ Channel.prototype.loadState = function () {
     });
 };
 
-Channel.prototype.saveState = function () {
+Channel.prototype.saveState = async function () {
     if (!this.is(Flags.C_REGISTERED)) {
-        return Promise.resolve();
+        return;
     } else if (!this.is(Flags.C_READY)) {
-        return Promise.reject(new Error(`Attempted to save channel ${this.name} ` +
-                `but it wasn't finished loading yet!`));
+        throw new Error(
+            `Attempted to save channel ${this.name} ` +
+            `but it wasn't finished loading yet!`
+        );
     }
 
     if (this.is(Flags.C_ERROR)) {
-        return Promise.reject(new Error(`Channel is in error state`));
+        throw new Error(`Channel is in error state`);
     }
 
     this.logger.log("[init] Saving channel state to disk");
+
     const data = {};
     Object.keys(this.modules).forEach(m => {
-        this.modules[m].save(data);
+        if (
+            this.modules[m].dirty ||
+            !Switches.isActive('dirtyCheck') ||
+            !this.modules[m].supportsDirtyCheck
+        ) {
+            this.modules[m].save(data);
+        } else {
+            LOGGER.debug(
+                "Skipping save for %s[%s]: not dirty",
+                this.uniqueName,
+                m
+            );
+        }
     });
 
-    return ChannelStore.save(this.id, this.uniqueName, data)
-            .catch(ChannelStateSizeError, err => {
-        this.users.forEach(u => {
-            if (u.account.effectiveRank >= 2) {
-                u.socket.emit("warnLargeChandump", {
-                    limit: err.limit,
-                    actual: err.actual
-                });
-            }
+    try {
+        await ChannelStore.save(this.id, this.uniqueName, data);
+
+        Object.keys(this.modules).forEach(m => {
+            this.modules[m].dirty = false;
         });
+    } catch (error) {
+        if (error instanceof ChannelStateSizeError) {
+            this.users.forEach(u => {
+                if (u.account.effectiveRank >= 2) {
+                    u.socket.emit("warnLargeChandump", {
+                        limit: error.limit,
+                        actual: error.actual
+                    });
+                }
+            });
+        }
 
-        throw err;
-    });
+        throw error;
+    }
 };
 
 Channel.prototype.checkModules = function (fn, args, cb) {

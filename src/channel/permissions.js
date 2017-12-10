@@ -50,6 +50,7 @@ function PermissionsModule(channel) {
     ChannelModule.apply(this, arguments);
     this.permissions = {};
     this.openPlaylist = false;
+    this.supportsDirtyCheck = true;
 }
 
 PermissionsModule.prototype = Object.create(ChannelModule.prototype);
@@ -70,6 +71,8 @@ PermissionsModule.prototype.load = function (data) {
     } else if ("playlistLock" in data) {
         this.openPlaylist = !data.playlistLock;
     }
+
+    this.dirty = false;
 };
 
 PermissionsModule.prototype.save = function (data) {
@@ -124,6 +127,7 @@ PermissionsModule.prototype.handleTogglePlaylistLock = function (user) {
         return;
     }
 
+    this.dirty = true;
     this.openPlaylist = !this.openPlaylist;
     if (this.openPlaylist) {
         this.channel.logger.log("[playlist] " + user.getName() + " unlocked the playlist");
@@ -165,6 +169,7 @@ PermissionsModule.prototype.handleSetPermissions = function (user, perms) {
         }
     }
 
+    this.dirty = true;
     this.channel.logger.log("[mod] " + user.getName() + " updated permissions");
     this.sendPermissions(this.channel.users);
 };

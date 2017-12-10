@@ -1,5 +1,5 @@
 import Config from './config';
-import Switches from './switches';
+import * as Switches from './switches';
 import { isIP as validIP } from 'net';
 import { eventlog } from './logger';
 require('source-map-support').install();
@@ -66,6 +66,8 @@ function handleLine(line) {
                 }
             })
         }
+    } else if (line.indexOf('/save') === 0) {
+        sv.forceSave();
     } else if (line.indexOf('/unloadchan') === 0) {
         const args = line.split(/\s+/); args.shift();
         if (args.length) {

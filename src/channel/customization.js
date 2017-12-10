@@ -18,6 +18,7 @@ function CustomizationModule(channel) {
     this.css = "";
     this.js = "";
     this.motd = "";
+    this.supportsDirtyCheck = true;
 }
 
 CustomizationModule.prototype = Object.create(ChannelModule.prototype);
@@ -42,6 +43,8 @@ CustomizationModule.prototype.load = function (data) {
             this.motd = XSS.sanitizeHTML(data.motd);
         }
     }
+
+    this.dirty = false;
 };
 
 CustomizationModule.prototype.save = function (data) {
@@ -86,6 +89,7 @@ CustomizationModule.prototype.handleSetCSS = function (user, data) {
         return;
     }
 
+    this.dirty = true;
     this.css = data.css.substring(0, 20000);
     this.sendCSSJS(this.channel.users);
 
@@ -98,6 +102,7 @@ CustomizationModule.prototype.handleSetJS = function (user, data) {
         return;
     }
 
+    this.dirty = true;
     this.js = data.js.substring(0, 20000);
     this.sendCSSJS(this.channel.users);
 
@@ -112,6 +117,7 @@ CustomizationModule.prototype.handleSetMotd = function (user, data) {
 
     var motd = data.motd.substring(0, 20000);
 
+    this.dirty = true;
     this.setMotd(motd);
     this.channel.logger.log("[mod] " + user.getName() + " updated the MOTD");
 };

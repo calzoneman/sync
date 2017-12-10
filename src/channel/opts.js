@@ -34,6 +34,8 @@ function OptionsModule(channel) {
         new_user_chat_link_delay: 0, // Minimum account/IP age to post links
         playlist_max_duration_per_user: 0 // Maximum total playlist time per user
     };
+
+    this.supportsDirtyCheck = true;
 }
 
 OptionsModule.prototype = Object.create(ChannelModule.prototype);
@@ -51,6 +53,7 @@ OptionsModule.prototype.load = function (data) {
             this.opts.chat_antiflood_params.burst);
     this.opts.chat_antiflood_params.sustained = Math.min(10,
             this.opts.chat_antiflood_params.sustained);
+    this.dirty = false;
 };
 
 OptionsModule.prototype.save = function (data) {
@@ -356,6 +359,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
 
     this.channel.logger.log("[mod] " + user.getName() + " updated channel options");
     if (sendUpdate) {
+        this.dirty = true;
         this.sendOpts(this.channel.users);
     }
 };

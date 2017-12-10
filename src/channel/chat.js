@@ -36,6 +36,7 @@ function ChatModule(channel) {
     this.buffer = [];
     this.muted = new util.Set();
     this.commandHandlers = {};
+    this.supportsDirtyCheck = true;
 
     /* Default commands */
     this.registerCommand("/me", this.handleCmdMe.bind(this));
@@ -69,6 +70,8 @@ ChatModule.prototype.load = function (data) {
             this.muted.add(data.chatmuted[i]);
         }
     }
+
+    this.dirty = false;
 };
 
 ChatModule.prototype.save = function (data) {
@@ -441,6 +444,7 @@ ChatModule.prototype.sendModMessage = function (msg, minrank) {
 ChatModule.prototype.sendMessage = function (msgobj) {
     this.channel.broadcastAll("chatMsg", msgobj);
 
+    this.dirty = true;
     this.buffer.push(msgobj);
     if (this.buffer.length > 15) {
         this.buffer.shift();
@@ -492,6 +496,7 @@ ChatModule.prototype.handleCmdClear = function (user, msg, meta) {
         return;
     }
 
+    this.dirty = true;
     this.buffer = [];
     this.channel.broadcastAll("clearchat", { clearedBy: user.getName() });
     this.sendModMessage(user.getName() + " cleared chat.", -1);

@@ -119,6 +119,7 @@ function validateEmote(f) {
 function EmoteModule(channel) {
     ChannelModule.apply(this, arguments);
     this.emotes = new EmoteList();
+    this.supportsDirtyCheck = true;
 }
 
 EmoteModule.prototype = Object.create(ChannelModule.prototype);
@@ -129,6 +130,8 @@ EmoteModule.prototype.load = function (data) {
             this.emotes.updateEmote(data.emotes[i]);
         }
     }
+
+    this.dirty = false;
 };
 
 EmoteModule.prototype.save = function (data) {
@@ -198,6 +201,8 @@ EmoteModule.prototype.handleRenameEmote = function (user, data) {
     var success = this.emotes.renameEmote(Object.assign({}, f));
     if(!success){ return; }
 
+    this.dirty = true;
+
     var chan = this.channel;
     chan.broadcastAll("renameEmote", f);
     chan.logger.log(`[mod] ${user.getName()} renamed emote: ${f.old} -> ${f.name}`);
@@ -228,6 +233,9 @@ EmoteModule.prototype.handleUpdateEmote = function (user, data) {
     }
 
     this.emotes.updateEmote(f);
+
+    this.dirty = true;
+
     var chan = this.channel;
     chan.broadcastAll("updateEmote", f);
 
@@ -249,6 +257,9 @@ EmoteModule.prototype.handleImportEmotes = function (user, data) {
     this.emotes.importList(data.map(validateEmote).filter(function (f) {
         return f !== false;
     }));
+
+    this.dirty = true;
+
     this.sendEmotes(this.channel.users);
 };
 
@@ -266,6 +277,9 @@ EmoteModule.prototype.handleRemoveEmote = function (user, data) {
     }
 
     this.emotes.removeEmote(data);
+
+    this.dirty = true;
+
     this.channel.logger.log("[mod] " + user.getName() + " removed emote: " + data.name);
     this.channel.broadcastAll("removeEmote", data);
 };
@@ -284,6 +298,8 @@ EmoteModule.prototype.handleMoveEmote = function (user, data) {
     }
 
     this.emotes.moveEmote(data.from, data.to);
+
+    this.dirty = true;
 };
 
 module.exports = EmoteModule;

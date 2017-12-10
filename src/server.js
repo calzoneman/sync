@@ -295,53 +295,59 @@ Server.prototype.unloadChannel = function (chan, options) {
     if (!options.skipSave) {
         chan.saveState().catch(error => {
             LOGGER.error(`Failed to save /${this.chanPath}/${chan.name} for unload: ${error.stack}`);
-        });
+        }).then(finishUnloading);
+    } else {
+        finishUnloading();
     }
 
-    chan.logger.log("[init] Channel shutting down");
-    chan.logger.close();
+    var self = this;
 
-    chan.notifyModules("unload", []);
-    Object.keys(chan.modules).forEach(function (k) {
-        chan.modules[k].dead = true;
-        /*
-         * Automatically clean up any timeouts/intervals assigned
-         * to properties of channel modules.  Prevents a memory leak
-         * in case of forgetting to clear the timer on the "unload"
-         * module event.
-         */
-        Object.keys(chan.modules[k]).forEach(function (prop) {
-            if (chan.modules[k][prop] && chan.modules[k][prop]._onTimeout) {
-                LOGGER.warn("Detected non-null timer when unloading " +
-                        "module " + k + ": " + prop);
-                try {
-                    clearTimeout(chan.modules[k][prop]);
-                    clearInterval(chan.modules[k][prop]);
-                } catch (error) {
-                    LOGGER.error(error.stack);
+    function finishUnloading() {
+        chan.logger.log("[init] Channel shutting down");
+        chan.logger.close();
+
+        chan.notifyModules("unload", []);
+        Object.keys(chan.modules).forEach(function (k) {
+            chan.modules[k].dead = true;
+            /*
+             * Automatically clean up any timeouts/intervals assigned
+             * to properties of channel modules.  Prevents a memory leak
+             * in case of forgetting to clear the timer on the "unload"
+             * module event.
+             */
+            Object.keys(chan.modules[k]).forEach(function (prop) {
+                if (chan.modules[k][prop] && chan.modules[k][prop]._onTimeout) {
+                    LOGGER.warn("Detected non-null timer when unloading " +
+                            "module " + k + ": " + prop);
+                    try {
+                        clearTimeout(chan.modules[k][prop]);
+                        clearInterval(chan.modules[k][prop]);
+                    } catch (error) {
+                        LOGGER.error(error.stack);
+                    }
                 }
-            }
+            });
         });
-    });
 
-    for (var i = 0; i < this.channels.length; i++) {
-        if (this.channels[i].uniqueName === chan.uniqueName) {
-            this.channels.splice(i, 1);
-            i--;
+        for (var i = 0; i < self.channels.length; i++) {
+            if (self.channels[i].uniqueName === chan.uniqueName) {
+                self.channels.splice(i, 1);
+                i--;
+            }
         }
-    }
 
-    LOGGER.info("Unloaded channel " + chan.name);
-    chan.broadcastUsercount.cancel();
-    // Empty all outward references from the channel
-    var keys = Object.keys(chan);
-    for (var i in keys) {
-        if (keys[i] !== "refCounter") {
-            delete chan[keys[i]];
+        LOGGER.info("Unloaded channel " + chan.name);
+        chan.broadcastUsercount.cancel();
+        // Empty all outward references from the channel
+        var keys = Object.keys(chan);
+        for (var i in keys) {
+            if (keys[i] !== "refCounter") {
+                delete chan[keys[i]];
+            }
         }
+        chan.dead = true;
+        promActiveChannels.dec();
     }
-    chan.dead = true;
-    promActiveChannels.dec();
 };
 
 Server.prototype.packChannelList = function (publicOnly, isAdmin) {
@@ -378,6 +384,22 @@ Server.prototype.setAnnouncement = function (data) {
         this.announcement = data;
         sio.instance.emit("announcement", data);
     }
+};
+
+Server.prototype.forceSave = function () {
+    Promise.map(this.channels, channel => {
+        try {
+            return channel.saveState().tap(() => {
+                LOGGER.info(`Saved /${this.chanPath}/${channel.name}`);
+            }).catch(err => {
+                LOGGER.error(`Failed to save /${this.chanPath}/${channel.name}: ${err.stack}`);
+            });
+        } catch (error) {
+            LOGGER.error(`Failed to save channel: ${error.stack}`);
+        }
+    }, { concurrency: 5 }).then(() => {
+        LOGGER.info('Finished save');
+    });
 };
 
 Server.prototype.shutdown = function () {

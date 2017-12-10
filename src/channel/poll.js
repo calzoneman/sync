@@ -28,6 +28,7 @@ function PollModule(channel) {
         this.channel.modules.chat.registerCommand("poll", this.handlePollCmd.bind(this, false));
         this.channel.modules.chat.registerCommand("hpoll", this.handlePollCmd.bind(this, true));
     }
+    this.supportsDirtyCheck = true;
 }
 
 PollModule.prototype = Object.create(ChannelModule.prototype);
@@ -49,6 +50,8 @@ PollModule.prototype.load = function (data) {
             this.poll.timestamp = data.poll.timestamp;
         }
     }
+
+    this.dirty = false;
 };
 
 PollModule.prototype.save = function (data) {
@@ -197,6 +200,7 @@ PollModule.prototype.handleNewPoll = function (user, data, ack) {
     }
 
     this.poll = poll;
+    this.dirty = true;
     this.broadcastPoll(true);
     this.channel.logger.log("[poll] " + user.getName() + " opened poll: '" + poll.title + "'");
     ack({});
@@ -209,6 +213,7 @@ PollModule.prototype.handleVote = function (user, data) {
 
     if (this.poll) {
         this.poll.vote(user.realip, data.option);
+        this.dirty = true;
         this.broadcastPoll(false);
     }
 };
@@ -231,6 +236,7 @@ PollModule.prototype.handleClosePoll = function (user) {
         this.channel.broadcastAll("closePoll");
         this.channel.logger.log("[poll] " + user.getName() + " closed the active poll");
         this.poll = null;
+        this.dirty = true;
     }
 };
 
@@ -255,6 +261,7 @@ PollModule.prototype.handlePollCmd = function (obscured, user, msg, meta) {
 
     var poll = new Poll(user.getName(), title, args, obscured);
     this.poll = poll;
+    this.dirty = true;
     this.broadcastPoll(true);
     this.channel.logger.log("[poll] " + user.getName() + " opened poll: '" + poll.title + "'");
 };

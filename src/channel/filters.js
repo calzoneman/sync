@@ -65,6 +65,7 @@ const DEFAULT_FILTERS = [
 function ChatFilterModule(channel) {
     ChannelModule.apply(this, arguments);
     this.filters = new FilterList();
+    this.supportsDirtyCheck = true;
 }
 
 ChatFilterModule.prototype = Object.create(ChannelModule.prototype);
@@ -84,6 +85,8 @@ ChatFilterModule.prototype.load = function (data) {
     } else {
         this.filters = new FilterList(DEFAULT_FILTERS);
     }
+
+    this.dirty = false;
 };
 
 ChatFilterModule.prototype.save = function (data) {
@@ -149,6 +152,8 @@ ChatFilterModule.prototype.handleAddFilter = function (user, data) {
         return;
     }
 
+    this.dirty = true;
+
     user.socket.emit("addFilterSuccess");
 
     var chan = this.channel;
@@ -197,6 +202,8 @@ ChatFilterModule.prototype.handleUpdateFilter = function (user, data) {
         return;
     }
 
+    this.dirty = true;
+
     var chan = this.channel;
     chan.users.forEach(function (u) {
         if (chan.modules.permissions.canEditFilters(u)) {
@@ -232,6 +239,8 @@ ChatFilterModule.prototype.handleImportFilters = function (user, data) {
         return;
     }
 
+    this.dirty = true;
+
     this.channel.logger.log("[mod] " + user.getName() + " imported the filter list");
     this.sendChatFilters(this.channel.users);
 };
@@ -258,6 +267,9 @@ ChatFilterModule.prototype.handleRemoveFilter = function (user, data) {
         });
         return;
     }
+
+    this.dirty = true;
+
     var chan = this.channel;
     chan.users.forEach(function (u) {
         if (chan.modules.permissions.canEditFilters(u)) {
@@ -290,6 +302,8 @@ ChatFilterModule.prototype.handleMoveFilter = function (user, data) {
         });
         return;
     }
+
+    this.dirty = true;
 };
 
 ChatFilterModule.prototype.handleRequestChatFilters = function (user) {

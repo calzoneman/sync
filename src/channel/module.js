@@ -1,5 +1,7 @@
 function ChannelModule(channel) {
     this.channel = channel;
+    this.dirty = false;
+    this.supportsDirtyCheck = false;
 }
 
 ChannelModule.prototype = {
