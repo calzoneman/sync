@@ -7,6 +7,37 @@ var urlparse = require("url");
 var path = require("path");
 
 const LOGGER = require('@calzoneman/jsli')('ffmpeg');
+const ECODE_MESSAGES = {
+    ENOTFOUND: e => (
+        `Unknown host "${e.hostname}".  ` +
+        'Please check that the link is correct.'
+    ),
+    EPROTO: e => 'The remote server does not support HTTPS.',
+    ECONNREFUSED: e => (
+        'The remote server refused the connection.  ' +
+        'Please check that the link is correct and the server is running.'
+    ),
+    ETIMEDOUT: e => (
+        'The connection to the remote server timed out.  ' +
+        'Please check that the link is correct.'
+    ),
+    ENETUNREACH: e => (
+        "The remote server's network is unreachable from this server.  " +
+        "Please contact an administrator for assistance."
+    ),
+
+    DEPTH_ZERO_SELF_SIGNED_CERT: e => (
+        'The remote server provided an invalid ' +
+        '(self-signed) SSL certificate.  Raw file support requires a ' +
+        'trusted certificate.  See https://letsencrypt.org/ to get ' +
+        'a free, trusted certificate.'
+    ),
+    UNABLE_TO_VERIFY_LEAF_SIGNATURE: e => (
+        "The remote server's SSL certificate chain could not be validated.  " +
+        "Please contact the administrator of the server to correct their " +
+        "SSL certificate configuration."
+    )
+};
 
 var USE_JSON = true;
 var TIMEOUT = 30000;
@@ -138,18 +169,12 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
             cb("The remote server provided an invalid SSL certificate.  Details: "
                     + err.reason);
             return;
-        } else if (err.code === 'ENOTFOUND') {
-            cb(`Unknown host "${err.hostname}".  Please check that the link is correct.`);
-            return;
-        } else if (err.code === 'ECONNREFUSED') {
-            cb("The remote server refused the connection.  Please check that the link is correct.");
-            return;
-        } else if (err.code === 'ETIMEDOUT') {
-            cb("The connection to the remote server timed out.  Please check that the link is correct.");
+        } else if (ECODE_MESSAGES.hasOwnProperty(err.code)) {
+            cb(`${ECODE_MESSAGES[err.code](err)} (error code: ${err.code})`);
             return;
         }
 
-        LOGGER.error("Error sending preflight request: %s (link: %s)", err.message, url);
+        LOGGER.error("Error sending preflight request: %s (code=%s) (link: %s)", err.message, err.code, url);
         cb("An unexpected error occurred while trying to process the link.  " +
            "Try again, and contact support for further troubleshooting if the " +
            "problem continues." + (!!err.code ? (" Error code: " + err.code) : ""));

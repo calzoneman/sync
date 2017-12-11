@@ -64,7 +64,7 @@ class ReferenceCounter {
                 for (var caller in this.references) {
                     this.refCount += this.references[caller];
                 }
-            } else if (this.channel.users.length > 0) {
+            } else if (this.channel.users && this.channel.users.length > 0) {
                 LOGGER.error("ReferenceCounter::refCount reached 0 but still had " +
                         this.channel.users.length + " active users" +
                         ` (channel: ${this.channelName})`);

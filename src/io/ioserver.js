@@ -50,10 +50,28 @@ class IOServer {
     // If the resulting address is a known Tor exit, flag it as such
     ipProxyMiddleware(socket, next) {
         if (!socket.context) socket.context = {};
-        socket.context.ipAddress = proxyaddr(socket.client.request, this.proxyTrustFn);
+
+        try {
+            socket.context.ipAddress = proxyaddr(
+                socket.client.request,
+                this.proxyTrustFn
+            );
+
+            if (!socket.context.ipAddress) {
+                throw new Error(
+                    `Assertion failed: unexpected IP ${socket.context.ipAddress}`
+                );
+            }
+        } catch (error) {
+            LOGGER.warn('Rejecting socket - proxyaddr failed: %s', error);
+            next(new Error('Could not determine IP address'));
+            return;
+        }
+
         if (isTorExit(socket.context.ipAddress)) {
             socket.context.torConnection = true;
         }
+
         next();
     }
 
