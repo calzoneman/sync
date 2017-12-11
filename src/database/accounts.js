@@ -45,7 +45,22 @@ module.exports = {
                 callback(err, true);
                 return;
             }
-            callback(null, rows.length > 0);
+
+            let matched = null;
+
+            rows.forEach(row => {
+                if (row.name === name) {
+                    matched = name;
+                } else if (matched === null) {
+                    matched = row.name;
+                }
+            });
+
+            callback(
+                null,
+                rows.length > 0,
+                matched
+            );
         });
     },
 
@@ -144,7 +159,7 @@ module.exports = {
                 return;
             }
 
-            module.exports.isUsernameTaken(name, function (err, taken) {
+            module.exports.isUsernameTaken(name, function (err, taken, matched) {
                 if (err) {
                     delete registrationLock[lname];
                     callback(err, null);
@@ -153,7 +168,22 @@ module.exports = {
 
                 if (taken) {
                     delete registrationLock[lname];
-                    callback("Username is already registered", null);
+
+                    if (matched === name) {
+                        callback(
+                            `Please choose a different username: "${name}" ` +
+                            `is already registered.`,
+                            null
+                        );
+                    } else {
+                        callback(
+                            `Please choose a different username: "${name}" ` +
+                            `too closely matches an existing name.  ` +
+                            `For example, "Joe" (lowercase 'o'), and ` +
+                            `"j0e" (zero) are not considered unique.`,
+                            null
+                        );
+                    }
                     return;
                 }
 
