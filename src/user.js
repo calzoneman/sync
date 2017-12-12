@@ -242,6 +242,21 @@ User.prototype.setAFK = function (afk) {
         this.autoAFK();
     }
 
+    if (!this.inChannel()) {
+        // I haven't exactly nailed down why this.channel can
+        // become null halfway through the function, but based
+        // on log analysis I suspect it's because this.socket.emit()
+        // can fire the "disconnect" event which then tears down
+        // the User object.
+        LOGGER.warn(
+            "Encountered this.channel == null from setAFK.  " +
+            "this.dead=%t this.flags=%b",
+            this.dead,
+            this.flags
+        );
+        return;
+    }
+
     /* Number of AFK users changed, voteskip state changes */
     if (this.channel.modules.voteskip) {
         this.channel.modules.voteskip.update();
