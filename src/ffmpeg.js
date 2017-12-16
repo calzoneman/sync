@@ -303,12 +303,15 @@ exports.ffprobe = function ffprobe(filename, cb) {
     var stdout = "";
     var stderr = "";
     var timer = setTimeout(function () {
-        LOGGER.error("Possible runaway ffprobe process for file " + filename);
+        LOGGER.warn("Timed out when probing " + filename);
         fflog("Killing ffprobe for " + filename + " after " + (TIMEOUT/1000) + " seconds");
-        childErr = new Error("File query exceeded time limit of " + (TIMEOUT/1000) +
-                             " seconds.  To avoid this issue, encode your videos " +
-                             "using the 'faststart' option: " +
-                             "https://trac.ffmpeg.org/wiki/Encode/H.264#faststartforwebvideo");
+        childErr = new Error(
+                "File query exceeded time limit of " + (TIMEOUT/1000) +
+                " seconds.  This can be caused if the remote server is far " +
+                "away or if you did not encode the video " +
+                "using the 'faststart' option: " +
+                "https://trac.ffmpeg.org/wiki/Encode/H.264#faststartforwebvideo"
+        );
         child.kill("SIGKILL");
     }, TIMEOUT);
 

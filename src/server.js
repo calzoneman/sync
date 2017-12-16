@@ -284,9 +284,11 @@ Server.prototype.getChannel = function (name) {
 };
 
 Server.prototype.unloadChannel = function (chan, options) {
-    if (chan.dead) {
+    if (chan.dead || chan.dying) {
         return;
     }
+
+    chan.dying = true;
 
     if (!options) {
         options = {};
@@ -509,7 +511,7 @@ Server.prototype.handleChannelDelete = function (event) {
                     u.kick('Channel deleted');
                 });
 
-                if (!channel.dead) {
+                if (!channel.dead && !channel.dying) {
                     channel.emit('empty');
                 }
 
@@ -536,7 +538,7 @@ Server.prototype.handleChannelRegister = function (event) {
                     u.kick('Channel reloading');
                 });
 
-                if (!channel.dead) {
+                if (!channel.dead && !channel.dying) {
                     channel.emit('empty');
                 }
 
