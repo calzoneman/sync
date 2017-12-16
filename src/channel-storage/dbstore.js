@@ -10,9 +10,17 @@ const loadRowcount = new Counter({
     name: 'cytube_channel_db_load_rows_total',
     help: 'Total rows loaded from the channel_data table'
 });
+const loadCharcount = new Counter({
+    name: 'cytube_channel_db_load_chars_total',
+    help: 'Total characters (JSON length) loaded from the channel_data table'
+});
 const saveRowcount = new Counter({
     name: 'cytube_channel_db_save_rows_total',
     help: 'Total rows saved in the channel_data table'
+});
+const saveCharcount = new Counter({
+    name: 'cytube_channel_db_save_chars_total',
+    help: 'Total characters (JSON length) saved in the channel_data table'
 });
 
 function queryAsync(query, substitutions) {
@@ -54,6 +62,7 @@ export class DatabaseStore {
             rows.forEach(row => {
                 try {
                     data[row.key] = JSON.parse(row.value);
+                    loadCharcount.inc(row.value.length);
                 } catch (e) {
                     LOGGER.error(`Channel data for channel "${channelName}", ` +
                             `key "${row.key}" is invalid: ${e}`);
@@ -95,8 +104,6 @@ export class DatabaseStore {
             return;
         }
 
-        saveRowcount.inc(rowCount);
-
         if (totalSize > SIZE_LIMIT) {
             throw new ChannelStateSizeError(
                     'Channel state size is too large', {
@@ -104,6 +111,9 @@ export class DatabaseStore {
                 actual: totalSize
             });
         }
+
+        saveRowcount.inc(rowCount);
+        saveCharcount.inc(totalSize);
 
         return await queryAsync(buildUpdateQuery(rowCount), substitutions);
     }

@@ -10,7 +10,6 @@ import Promise from 'bluebird';
 import { EventEmitter } from 'events';
 import { throttle } from '../util/throttle';
 import Logger from '../logger';
-import * as Switches from '../switches';
 
 const LOGGER = require('@calzoneman/jsli')('channel');
 
@@ -260,7 +259,6 @@ Channel.prototype.saveState = async function () {
     Object.keys(this.modules).forEach(m => {
         if (
             this.modules[m].dirty ||
-            !Switches.isActive('dirtyCheck') ||
             !this.modules[m].supportsDirtyCheck
         ) {
             this.modules[m].save(data);

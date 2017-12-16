@@ -10,6 +10,7 @@ var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
 import counters from '../counters';
 import { Counter } from 'prom-client';
+import * as Switches from '../switches';
 
 const LOGGER = require('@calzoneman/jsli')('playlist');
 
@@ -107,19 +108,45 @@ function PlaylistModule(channel) {
         this.channel.modules.chat.registerCommand("/clean", this.handleClean.bind(this));
         this.channel.modules.chat.registerCommand("/cleantitle", this.handleClean.bind(this));
     }
+
+    this.supportsDirtyCheck = true;
+    this._positionDirty = false;
+    this._listDirty = false;
 }
 
 PlaylistModule.prototype = Object.create(ChannelModule.prototype);
 
+Object.defineProperty(PlaylistModule.prototype, "dirty", {
+    get() {
+        return this._positionDirty || this._listDirty || !Switches.isActive("plDirtyCheck");
+    },
+
+    set(val) {
+        this._positionDirty = this._listDirty = val;
+    }
+});
+
 PlaylistModule.prototype.load = function (data) {
     var self = this;
-    var playlist = data.playlist;
-    if (typeof playlist !== "object" || !("pl" in playlist)) {
+    let { playlist, playlistPosition } = data;
+
+    if (typeof playlist !== "object" || !playlist.hasOwnProperty("pl")) {
+        LOGGER.warn(
+            "Bad playlist for channel %s",
+            self.channel.uniqueName
+        );
         return;
     }
 
-    var i = 0;
-    playlist.pos = parseInt(playlist.pos);
+    if (!playlistPosition) {
+        // Old style playlist
+        playlistPosition = {
+            index: playlist.pos,
+            time: playlist.time
+        };
+    }
+
+    let i = 0;
     playlist.pl.forEach(function (item) {
         if (item.media.type === "cu" && item.media.id.indexOf("cu:") !== 0) {
             try {
@@ -142,14 +169,15 @@ PlaylistModule.prototype.load = function (data) {
         self.items.append(newitem);
         self.meta.count++;
         self.meta.rawTime += m.seconds;
-        if (playlist.pos === i) {
+        if (playlistPosition.index === i) {
             self.current = newitem;
         }
         i++;
     });
 
     self.meta.time = util.formatTime(self.meta.rawTime);
-    self.startPlayback(playlist.time);
+    self.startPlayback(playlistPosition.time);
+    self.dirty = false;
 };
 
 PlaylistModule.prototype.save = function (data) {
@@ -167,11 +195,18 @@ PlaylistModule.prototype.save = function (data) {
         time = this.current.media.currentTime;
     }
 
-    data.playlist = {
-        pl: arr,
-        pos: pos,
-        time: time
-    };
+    if (Switches.isActive("plDirtyCheck")) {
+        data.playlistPosition = {
+            index: pos,
+            time
+        };
+
+        if (this._listDirty) {
+            data.playlist = { pl: arr };
+        }
+    } else {
+        data.playlist = { pl: arr, pos, time };
+    }
 };
 
 PlaylistModule.prototype.unload = function () {
@@ -585,6 +620,7 @@ PlaylistModule.prototype.handleSetTemp = function (user, data) {
 
     item.temp = data.temp;
     this.channel.broadcastAll("setTemp", data);
+    this._listDirty = true;
 
     if (!data.temp && this.channel.modules.library) {
         this.channel.modules.library.cacheMedia(item.media);
@@ -633,6 +669,7 @@ PlaylistModule.prototype.handleMoveMedia = function (user, data) {
         self.channel.logger.log("[playlist] " + user.getName() + " moved " +
                                 from.media.title +
                                 (after ? " after " + after.media.title : ""));
+        self._listDirty = true;
         lock.release();
         self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
     });
@@ -698,6 +735,8 @@ PlaylistModule.prototype.handleClear = function (user) {
 
     this.channel.broadcastAll("playlist", []);
     this.channel.broadcastAll("setPlaylistMeta", this.meta);
+    this._listDirty = true;
+    this._positionDirty = true;
 };
 
 PlaylistModule.prototype.handleShuffle = function (user) {
@@ -721,6 +760,8 @@ PlaylistModule.prototype.handleShuffle = function (user) {
         this.items.append(item);
         pl.splice(i, 1);
     }
+    this._listDirty = true;
+    this._positionDirty = true;
 
     this.current = this.items.first;
     pl = this.items.toArray(true);
@@ -821,6 +862,7 @@ PlaylistModule.prototype.handleUpdate = function (user, data) {
     media.currentTime = data.currentTime;
     media.paused = Boolean(data.paused);
     var update = media.getTimeUpdate();
+    this._positionDirty = true;
 
     this.channel.broadcastAll("mediaUpdate", update);
 };
@@ -859,6 +901,8 @@ PlaylistModule.prototype._delete = function (uid) {
         self.current = next;
         self.startPlayback();
     }
+
+    self._listDirty = true;
 
     return success;
 };
@@ -976,6 +1020,8 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
             self.startPlayback();
         }
 
+        self._listDirty = true;
+
         if (cb) {
             cb();
         }
@@ -1016,6 +1062,7 @@ PlaylistModule.prototype.startPlayback = function (time) {
 
     var media = self.current.media;
     media.reset();
+    self._positionDirty = true;
 
     if (self.leader != null) {
         media.paused = false;
@@ -1093,6 +1140,8 @@ PlaylistModule.prototype._leadLoop = function() {
         }
         return;
     }
+
+    this._positionDirty = true;
 
     var dt = (Date.now() - this._lastUpdate) / 1000.0;
     var t = this.current.media.currentTime;
