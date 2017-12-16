@@ -791,9 +791,9 @@ Callbacks = {
         function loadNext() {
             if (!PLAYER || data.type !== PLAYER.mediaType) {
                 loadMediaPlayer(data);
+            } else {
+                handleMediaUpdate(data);
             }
-
-            handleMediaUpdate(data);
         }
 
         // Persist the user's volume preference from the the player, if possible
