@@ -512,18 +512,10 @@ var Getters = {
 
     /* vid.me */
     vm: function (id, callback) {
-        if (!/^[\w-]+$/.test(id)) {
-            process.nextTick(callback, "Invalid vid.me ID");
-            return;
-        }
-
-        Vidme.lookup(id).then(video => {
-            const media = new Media(video.id, video.title, video.duration,
-                                    "vm", video.meta);
-            process.nextTick(callback, false, media);
-        }).catch(function (err) {
-            callback(err.message || err, null);
-        });
+        process.nextTick(
+            callback,
+            "As of December 2017, vid.me is no longer in service."
+        );
     },
 
     /* streamable */

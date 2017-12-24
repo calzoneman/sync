@@ -30,8 +30,6 @@ function formatURL(data) {
             return "https://vimeo.com/" + data.id;
         case "dm":
             return "https://dailymotion.com/video/" + data.id;
-        case "vm":
-            return "https://vid.me/" + data.id;
         case "sc":
             return data.id;
         case "li":

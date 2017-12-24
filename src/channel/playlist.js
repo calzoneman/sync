@@ -130,7 +130,11 @@ PlaylistModule.prototype.load = function (data) {
     var self = this;
     let { playlist, playlistPosition } = data;
 
-    if (typeof playlist !== "object" || !playlist.hasOwnProperty("pl")) {
+    if (typeof playlist !== "object") {
+        return;
+    }
+
+    if (!playlist.hasOwnProperty("pl")) {
         LOGGER.warn(
             "Bad playlist for channel %s",
             self.channel.uniqueName
@@ -156,6 +160,14 @@ PlaylistModule.prototype.load = function (data) {
             }
         } else if (item.media.type === "gd") {
             delete item.media.meta.gpdirect;
+        } else if (["vm", "jw"].includes(item.media.type)) {
+            // JW has been deprecated for a long time
+            // VM shut down in December 2017
+            LOGGER.warn(
+                "Dropping playlist item with deprecated type %s",
+                item.media.type
+            );
+            return;
         }
 
         var m = new Media(item.media.id, item.media.title, item.media.seconds,
@@ -174,6 +186,13 @@ PlaylistModule.prototype.load = function (data) {
         }
         i++;
     });
+
+    // Sanity check, in case the current item happened to be deleted by
+    // one of the checks above
+    if (!self.current && self.meta.count > 0) {
+        self.current = self.items.first;
+        playlistPosition.time = -3;
+    }
 
     self.meta.time = util.formatTime(self.meta.rawTime);
     self.startPlayback(playlistPosition.time);

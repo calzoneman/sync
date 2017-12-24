@@ -367,6 +367,21 @@ function queue(pos, src) {
             var title = undefined;
             if (data.type === "fi") {
                 title = $("#addfromurl-title-val").val();
+            } else if (data.type === "vm") {
+                /*
+                 * As of December 2017, vid.me is no longer in service.
+                 * Leaving this temporarily to hopefully avoid confusion
+                 * for people pasting old vid.me links.
+                 *
+                 * TODO: remove at some point in the future
+                 */
+
+                Callbacks.queueFail({
+                    link: link,
+                    msg: "As of December 2017, vid.me is no longer in service."
+                });
+
+                return;
             }
 
             if (data.id == null || data.type == null) {
