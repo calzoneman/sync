@@ -60,8 +60,7 @@ var defaults = {
     io: {
         domain: "http://localhost",
         "default-port": 1337,
-        "ip-connection-limit": 10,
-        "per-message-deflate": false
+        "ip-connection-limit": 10
     },
     "youtube-v3-key": "",
     "channel-blacklist": [],
