@@ -1,3 +1,9 @@
+2017-12-24
+==========
+
+As of December 2017, Vid.me is no longer in service.  Accordingly, Vid.me
+support in CyTube has been deprecated.
+
 2017-11-27
 ==========
 
