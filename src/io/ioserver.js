@@ -52,8 +52,12 @@ class IOServer {
         if (!socket.context) socket.context = {};
 
         try {
+            socket.handshake.connection = {
+                remoteAddress: socket.handshake.address
+            };
+
             socket.context.ipAddress = proxyaddr(
-                socket.client.request,
+                socket.handshake,
                 this.proxyTrustFn
             );
 
@@ -159,7 +163,7 @@ class IOServer {
 
     // Parse cookies
     cookieParsingMiddleware(socket, next) {
-        const req = socket.request;
+        const req = socket.handshake;
         if (req.headers.cookie) {
             cookieParser(req, null, () => next());
         } else {
@@ -172,7 +176,7 @@ class IOServer {
     // Determine session age from ip-session cookie
     // (Used for restricting chat)
     ipSessionCookieMiddleware(socket, next) {
-        const cookie = socket.request.signedCookies['ip-session'];
+        const cookie = socket.handshake.signedCookies['ip-session'];
         if (!cookie) {
             socket.context.ipSessionFirstSeen = new Date();
             next();
@@ -193,7 +197,7 @@ class IOServer {
         socket.context.aliases = [];
 
         const promises = [];
-        const auth = socket.request.signedCookies.auth;
+        const auth = socket.handshake.signedCookies.auth;
         if (auth) {
             promises.push(verifySession(auth).then(user => {
                 socket.context.user = Object.assign({}, user);

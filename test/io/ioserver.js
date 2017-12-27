@@ -10,19 +10,13 @@ describe('IOServer', () => {
             context: {
                 ipAddress: '9.9.9.9'
             },
-            client: {
-                request: {
-                    connection: {
-                        remoteAddress: '127.0.0.1'
-                    },
-                    headers: {
-                        'x-forwarded-for': '1.2.3.4'
-                    }
+            handshake: {
+                address: '127.0.0.1',
+                headers: {
+                    'x-forwarded-for': '1.2.3.4'
                 }
             }
         };
-
-        socket.request = socket.client.request;
     });
 
     describe('#ipProxyMiddleware', () => {
@@ -35,7 +29,7 @@ describe('IOServer', () => {
         });
 
         it('does not proxy from a non-trusted address', done => {
-            socket.client.request.connection.remoteAddress = '5.6.7.8';
+            socket.handshake.address = '5.6.7.8';
             server.ipProxyMiddleware(socket, error => {
                 assert(!error);
                 assert.strictEqual(socket.context.ipAddress, '5.6.7.8');
@@ -128,18 +122,18 @@ describe('IOServer', () => {
 
     describe('#cookieParsingMiddleware', () => {
         it('parses cookies', done => {
-            socket.request.headers.cookie = 'flavor=chocolate%20chip';
+            socket.handshake.headers.cookie = 'flavor=chocolate%20chip';
 
             server.cookieParsingMiddleware(socket, () => {
-                assert.strictEqual(socket.request.cookies.flavor, 'chocolate chip');
+                assert.strictEqual(socket.handshake.cookies.flavor, 'chocolate chip');
                 done();
             });
         });
 
         it('defaults to empty objects if no cookies', done => {
             server.cookieParsingMiddleware(socket, () => {
-                assert.deepStrictEqual(socket.request.cookies, {});
-                assert.deepStrictEqual(socket.request.signedCookies, {});
+                assert.deepStrictEqual(socket.handshake.cookies, {});
+                assert.deepStrictEqual(socket.handshake.signedCookies, {});
                 done();
             });
         });
