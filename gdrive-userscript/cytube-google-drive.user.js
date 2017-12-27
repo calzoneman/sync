@@ -8,7 +8,7 @@
 // @grant GM.xmlHttpRequest
 // @connect docs.google.com
 // @run-at document-end
-// @version 1.6.0
+// @version 1.7.0
 // ==/UserScript==
 
 try {
@@ -100,8 +100,11 @@ try {
                     }
 
                     if (!data.fmt_stream_map) {
-                        error = 'Google Drive request failed: ' +
-                                'metadata lookup returned no valid links';
+                        error = (
+                            'Google has removed the video streams associated' +
+                            ' with this item.  It can no longer be played.'
+                        );
+
                         return cb(error);
                     }
 
@@ -234,7 +237,7 @@ try {
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
     // Checked against GS_VERSION from data.js
-    unsafeWindow.driveUserscriptVersion = '1.6';
+    unsafeWindow.driveUserscriptVersion = '1.7';
 } catch (error) {
     unsafeWindow.console.error(error);
 }
