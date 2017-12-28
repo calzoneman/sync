@@ -8,7 +8,6 @@ var ffmpeg = require("./ffmpeg");
 var mediaquery = require("cytube-mediaquery");
 var YouTube = require("cytube-mediaquery/lib/provider/youtube");
 var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
-var Vidme = require("cytube-mediaquery/lib/provider/vidme");
 var Streamable = require("cytube-mediaquery/lib/provider/streamable");
 var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
