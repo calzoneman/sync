@@ -284,6 +284,8 @@ Server.prototype.getChannel = function (name) {
 };
 
 Server.prototype.unloadChannel = function (chan, options) {
+    var self = this;
+
     if (chan.dead || chan.dying) {
         return;
     }
@@ -301,8 +303,6 @@ Server.prototype.unloadChannel = function (chan, options) {
     } else {
         finishUnloading();
     }
-
-    var self = this;
 
     function finishUnloading() {
         chan.logger.log("[init] Channel shutting down");
