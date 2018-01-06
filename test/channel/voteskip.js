@@ -1,9 +1,14 @@
 const VoteskipModule = require('../../lib/channel/voteskip');
 const assert = require('assert');
+const Flags = require('../../lib/flags');
 
 describe('VoteskipModule', () => {
-    describe('#update', () => {
-        let fakeUser = {
+    let fakeUser;
+    let fakeChannel;
+    let voteskipModule;
+
+    beforeEach(() => {
+        fakeUser = {
             socket: {
                 emit() {
 
@@ -13,7 +18,7 @@ describe('VoteskipModule', () => {
                 return false
             }
         };
-        let fakeChannel = {
+        fakeChannel = {
             logger: {
                 log() {
 
@@ -46,8 +51,10 @@ describe('VoteskipModule', () => {
             users: [fakeUser]
         };
 
-        let voteskipModule = new VoteskipModule(fakeChannel);
+        voteskipModule = new VoteskipModule(fakeChannel);
+    });
 
+    describe('#update', () => {
         it('resets the vote before changing to the next video', () => {
             let reset = false, playNext = false;
             fakeChannel.modules.playlist._playNext = () => {
@@ -71,6 +78,38 @@ describe('VoteskipModule', () => {
             assert.equal(voteskipModule.poll, false, 'Expected voteskip poll to be reset to false');
             assert(reset, 'Expected voteskip to be reset');
             assert(playNext, 'Expected playlist to be advanced');
+        });
+    });
+
+    describe('#calcUsercounts', () => {
+        it('calculates correctly', () => {
+            fakeChannel.users = [
+                // 1 with permission and not AFK
+                { is(f) { return false; }, _has_permission: true },
+                // 1 without permission and not AFK
+                { is(f) { return false; }, _has_permission: false },
+                // 1 afk with permission
+                { is(f) { return f === Flags.U_AFK; }, _has_permission: true },
+                // 1 afk without permission
+                { is(f) { return f === Flags.U_AFK; }, _has_permission: false }
+            ]
+
+            fakeChannel.modules.permissions.canVoteskip = u => u._has_permission;
+
+            const {
+                total,
+                eligible,
+                afk,
+                noPermission
+            } = voteskipModule.calcUsercounts();
+
+            assert.strictEqual(total, 4, 'mismatch: total');
+            assert.strictEqual(eligible, 1, 'mismatch: eligible');
+            // Permission is checked before AFK; if user is AFK and also does
+            // not have permission, they should be counted in noPermission
+            // but not afk
+            assert.strictEqual(afk, 1, 'mismatch: afk');
+            assert.strictEqual(noPermission, 2, 'mismatch: noPermission');
         });
     });
 });
