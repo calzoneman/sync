@@ -13,6 +13,7 @@ const ECODE_MESSAGES = {
         'Please check that the link is correct.'
     ),
     EPROTO: e => 'The remote server does not support HTTPS.',
+    ECONNRESET: e => 'The remote server unexpectedly closed the connection.',
     ECONNREFUSED: e => (
         'The remote server refused the connection.  ' +
         'Please check that the link is correct and the server is running.'
@@ -36,6 +37,10 @@ const ECODE_MESSAGES = {
         "The remote server's SSL certificate chain could not be validated.  " +
         "Please contact the administrator of the server to correct their " +
         "SSL certificate configuration."
+    ),
+    CERT_HAS_EXPIRED: e => (
+        "The remote server's SSL certificate has expired.  Please contact " +
+        "the administrator of the server to renew the certificate."
     )
 };
 
