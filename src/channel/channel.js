@@ -317,6 +317,15 @@ Channel.prototype.checkModules = function (fn, args, cb) {
                 return;
             }
 
+            if (!self.modules) {
+                LOGGER.warn(
+                    'checkModules(%s): self.modules is undefined; dead=%s',
+                    fn,
+                    self.dead
+                );
+                return;
+            }
+
             var module = self.modules[m];
             module[fn].apply(module, args);
         };
