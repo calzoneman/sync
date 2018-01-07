@@ -672,6 +672,9 @@ ChatModule.prototype.handleCmdUnmute = function (user, msg, meta) {
     this.muted.remove(name);
     this.muted.remove(SHADOW_TAG + name);
 
+    this.channel.logger.log("[mod] " + user.getName() + " unmuted " + name);
+    this.sendModMessage(user.getName() + " unmuted " + name, muteperm);
+
     var target;
     for (var i = 0; i < this.channel.users.length; i++) {
         if (this.channel.users[i].getLowerName() === name) {
@@ -686,8 +689,6 @@ ChatModule.prototype.handleCmdUnmute = function (user, msg, meta) {
 
     target.clearFlag(Flags.U_MUTED | Flags.U_SMUTED);
     this.channel.sendUserMeta(this.channel.users, target, -1);
-    this.channel.logger.log("[mod] " + user.getName() + " unmuted " + target.getName());
-    this.sendModMessage(user.getName() + " unmuted " + target.getName(), muteperm);
 };
 
 module.exports = ChatModule;
