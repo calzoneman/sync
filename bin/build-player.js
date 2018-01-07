@@ -1,4 +1,6 @@
-var coffee = require('coffee-script');
+#!/usr/bin/env node
+
+var coffee = require('coffeescript');
 var fs = require('fs');
 var path = require('path');
 

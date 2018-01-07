@@ -1,3 +1,18 @@
+2018-01-07
+==========
+
+**Build changes:** When the `babel` dependency was first added to transpile ES6
+code to ES5, an interactive prompt was added to the `postinstall` script before
+transpilation, in case the user had made local modifications to the files in
+`lib` which previously would have been detected as a git conflict when pulling.
+
+It has now been sufficiently long that this is no longer needed, so I've removed
+it.  As always, users wishing to make local modifications (or forks) should edit
+the code in `src/` and run `npm run build-server` to regenerate `lib/`.
+
+This commit also removes the bundled `www/js/player.js` file in favor of having
+`postinstall` generate it from the sources in `player/`.
+
 2017-12-24
 ==========
 
