@@ -467,6 +467,11 @@ var Getters = {
 
     /* google docs */
     gd: function (id, callback) {
+        if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+            callback("Invalid ID: " + id);
+            return;
+        }
+
         var data = {
             type: "googledrive",
             kind: "single",
