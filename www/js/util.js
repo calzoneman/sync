@@ -3229,7 +3229,7 @@ function stopQueueSpinner(data) {
     // TODO: this is a temp hack, need to replace media ID check with
     // a passthrough request ID (since media ID from API is not necessarily
     // the same as the URL "ID" from the user)
-    if (data.type === "us") {
+    if (data && data.type === "us") {
         data = { id: data.title.match(/Ustream.tv - (.*)/)[1] };
     }
 
