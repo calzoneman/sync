@@ -142,7 +142,7 @@ PlaylistModule.prototype.load = function (data) {
         return;
     }
 
-    if (!playlistPosition) {
+    if (!playlistPosition || !playlist.externalPosition) {
         // Old style playlist
         playlistPosition = {
             index: playlist.pos,
@@ -221,7 +221,7 @@ PlaylistModule.prototype.save = function (data) {
         };
 
         if (this._listDirty) {
-            data.playlist = { pl: arr };
+            data.playlist = { pl: arr, pos, time, externalPosition: true };
         }
     } else {
         data.playlist = { pl: arr, pos, time };

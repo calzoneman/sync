@@ -1,4 +1,6 @@
-const switches = {};
+const switches = {
+    plDirtyCheck: true
+};
 
 export function isActive(switchName) {
     return switches.hasOwnProperty(switchName) && switches[switchName] === true;
