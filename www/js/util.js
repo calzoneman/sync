@@ -3226,6 +3226,13 @@ function startQueueSpinner(data) {
 }
 
 function stopQueueSpinner(data) {
+    // TODO: this is a temp hack, need to replace media ID check with
+    // a passthrough request ID (since media ID from API is not necessarily
+    // the same as the URL "ID" from the user)
+    if (data.type === "us") {
+        data = { id: data.title.match(/Ustream.tv - (.*)/)[1] };
+    }
+
     var shouldRemove = (data !== null &&
                         typeof data === 'object' &&
                         $("#queueprogress").data("queue-id") === data.id);

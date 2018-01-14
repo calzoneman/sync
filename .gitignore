@@ -16,3 +16,5 @@ integration-test-config.json
 conf/*.toml
 www/js/cytube-google-drive.user.js
 www/js/cytube-google-drive.meta.js
+www/js/player.js
+tor-exit-list.json

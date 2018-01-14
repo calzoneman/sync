@@ -208,7 +208,6 @@ module.exports = {
         require('./acp').init(app, ioConfig);
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);
-        require('./routes/ustream_bypass')(app);
 
         if (process.env.UNFINISHED_FEATURE) {
             const { AccountDataRoute } = require('./routes/account/data');
