@@ -1218,6 +1218,12 @@ PlaylistModule.prototype.clean = function (test) {
  * == Command Handlers ==
  */
 
+/*
+ * TODO: investigate how many people are relying on regex
+ * capabilities for /clean.  Might be user friendlier to
+ * replace it with a glob matcher (or at least remove the
+ * -flags)
+ */
 function generateTargetRegex(target) {
     const flagsre = /^(-[img]+\s+)/i
     var m = target.match(flagsre);
@@ -1242,7 +1248,15 @@ PlaylistModule.prototype.handleClean = function (user, msg, meta) {
                 "/cleantitle <title>"
         });
     }
-    var target = generateTargetRegex(args.join(" "));
+    var target;
+    try {
+        target = generateTargetRegex(args.join(" "));
+    } catch (error) {
+        user.socket.emit("errorMsg", {
+            msg: `Invalid target: ${args.join(" ")}`
+        });
+        return;
+    }
 
     this.channel.logger.log("[playlist] " + user.getName() + " used " + cmd +
             " with target regex: " + target);
