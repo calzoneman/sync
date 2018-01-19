@@ -2915,8 +2915,8 @@ function formatScriptAccessPrefs() {
 
 function EmoteList(selector, emoteClickCallback) {
     this.elem = $(selector);
+    this.sortAlphabetical = true;
     this.initSearch();
-    this.initSortOption();
     this.table = this.elem.find(".emotelist-table")[0];
     this.paginatorContainer = this.elem.find(".emotelist-paginator-container");
     this.cols = 5;
@@ -2939,18 +2939,6 @@ EmoteList.prototype.initSearch = function () {
         } else {
             self.filter = null;
         }
-        self.handleChange();
-        self.loadPage(0);
-    });
-};
-
-EmoteList.prototype.initSortOption = function () {
-    this.sortOption = this.elem.find(".emotelist-alphabetical");
-    this.sortAlphabetical = false;
-    var self = this;
-
-    this.sortOption.change(function () {
-        self.sortAlphabetical = this.checked;
         self.handleChange();
         self.loadPage(0);
     });
@@ -3039,7 +3027,6 @@ function onEmoteClicked(emote) {
 }
 
 window.EMOTELIST = new EmoteList("#emotelist", onEmoteClicked);
-window.EMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
 function CSEmoteList(selector) {
     EmoteList.call(this, selector);
@@ -3192,7 +3179,6 @@ CSEmoteList.prototype.loadPage = function (page) {
 };
 
 window.CSEMOTELIST = new CSEmoteList("#cs-emotes");
-window.CSEMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
 function showChannelSettings() {
     $("#channeloptions").modal();
