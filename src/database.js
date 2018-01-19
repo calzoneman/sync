@@ -137,7 +137,25 @@ module.exports.query = function (query, sub, callback) {
             process.nextTick(callback, null, res[0]);
         }).catch(error => {
             queryErrorCount.inc(1);
-            LOGGER.error('Legacy DB query failed.  Query: %s, Substitutions: %j, Error: %s', query, sub, error);
+
+            let subs = JSON.stringify(sub);
+            if (subs.length > 100) {
+                subs = subs.substring(0, 100) + '...';
+            }
+
+            // Attempt to strip off the beginning of the message which
+            // contains the entire substituted SQL query (followed by an
+            // error code)
+            // Thanks MySQL/MariaDB...
+            error.message = error.message.replace(/^.* - ER/, 'ER');
+
+            LOGGER.error(
+                'Legacy DB query failed.  Query: %s, Substitutions: %s, ' +
+                'Error: %s',
+                query,
+                subs,
+                error
+            );
             process.nextTick(callback, 'Database failure', null);
         }).finally(() => {
             end();
