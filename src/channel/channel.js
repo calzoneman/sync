@@ -46,6 +46,7 @@ class ReferenceCounter {
                 LOGGER.error("ReferenceCounter::unref() called by caller [" +
                         caller + "] but this caller had no active references! " +
                         `(channel: ${this.channelName})`);
+                return;
             }
         }
 

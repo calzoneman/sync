@@ -6,6 +6,8 @@ var http = require("http");
 var urlparse = require("url");
 var path = require("path");
 
+import { callOnce } from './util/call-once';
+
 const LOGGER = require('@calzoneman/jsli')('ffmpeg');
 const ECODE_MESSAGES = {
     ENOTFOUND: e => (
@@ -179,7 +181,19 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
             return;
         }
 
-        LOGGER.error("Error sending preflight request: %s (code=%s) (link: %s)", err.message, err.code, url);
+        // HPE_INVALID_CONSTANT comes from node's HTTP parser because
+        // facebook's CDN violates RFC 2616 by sending a body even though
+        // the request uses the HEAD method.
+        // Avoid logging this because it's a known issue.
+        if (!(err.code === 'HPE_INVALID_CONSTANT' && /fbcdn/.test(url))) {
+            LOGGER.error(
+                "Error sending preflight request: %s (code=%s) (link: %s)",
+                err.message,
+                err.code,
+                url
+            );
+        }
+
         cb("An unexpected error occurred while trying to process the link.  " +
            "Try again, and contact support for further troubleshooting if the " +
            "problem continues." + (!!err.code ? (" Error code: " + err.code) : ""));
@@ -387,7 +401,7 @@ exports.query = function (filename, cb) {
                   "Ensure that the link begins with 'https://'.");
     }
 
-    testUrl(filename, function (err) {
+    testUrl(filename, callOnce(function (err) {
         if (err) {
             return cb(err);
         }
@@ -458,5 +472,5 @@ exports.query = function (filename, cb) {
                           "https://git.io/vrE75 for details.");
             }
         });
-    });
+    }));
 };
