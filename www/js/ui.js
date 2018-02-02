@@ -846,6 +846,12 @@ $("#emotelistbtn").click(function () {
     EMOTELISTMODAL.modal();
 });
 
+EMOTELISTMODAL.find(".emotelist-alphabetical").change(function () {
+    USEROPTS.emotelist_sort = this.checked;
+    setOpt("emotelist_sort", USEROPTS.emotelist_sort);
+});
+EMOTELISTMODAL.find(".emotelist-alphabetical").prop("checked", USEROPTS.emotelist_sort);
+
 $("#fullscreenbtn").click(function () {
     var elem = document.querySelector("#videowrap .embed-responsive");
     // this shit is why frontend web development sucks
