@@ -187,8 +187,10 @@ module.exports = {
                 fs.mkdirSync(cacheDir);
             }
             app.use((req, res, next) => {
+                res.minifyOptions = res.minifyOptions || {};
+
                 if (/\.user\.js/.test(req.url)) {
-                    res._no_minify = true;
+                    res.minifyOptions.minify = false;
                 }
 
                 next();
