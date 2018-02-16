@@ -28,6 +28,10 @@ const ECODE_MESSAGES = {
         "The remote server's network is unreachable from this server.  " +
         "Please contact an administrator for assistance."
     ),
+    EHOSTUNREACH: e => (
+        "The remote server is unreachable from this server.  " +
+        "Please contact the video server's administrator for assistance."
+    ),
 
     DEPTH_ZERO_SELF_SIGNED_CERT: e => (
         'The remote server provided an invalid ' +

@@ -44,6 +44,10 @@ function initChannelDumper(Server) {
     var CHANNEL_SAVE_INTERVAL = parseInt(Config.get("channel-save-interval"))
                                 * 60000;
     setInterval(function () {
+        if (Server.channels.length === 0) {
+            return;
+        }
+
         var wait = CHANNEL_SAVE_INTERVAL / Server.channels.length;
         LOGGER.info(`Saving channels with delay ${wait}`);
         Promise.reduce(Server.channels, (_, chan) => {

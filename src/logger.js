@@ -2,7 +2,6 @@
 
 var fs = require("graceful-fs");
 var path = require("path");
-import { sprintf } from 'sprintf-js';
 import { Logger as JsliLogger, LogLevel } from '@calzoneman/jsli';
 import jsli from '@calzoneman/jsli';
 

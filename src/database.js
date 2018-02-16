@@ -138,6 +138,10 @@ module.exports.query = function (query, sub, callback) {
         }).catch(error => {
             queryErrorCount.inc(1);
 
+            if (!sub) {
+                sub = [];
+            }
+
             let subs = JSON.stringify(sub);
             if (subs.length > 100) {
                 subs = subs.substring(0, 100) + '...';
