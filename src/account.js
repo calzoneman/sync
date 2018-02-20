@@ -1,5 +1,11 @@
-var db = require("./database");
-var Q = require("q");
+import db from './database';
+import Promise from 'bluebird';
+
+const dbGetGlobalRank = Promise.promisify(db.users.getGlobalRank);
+const dbMultiGetGlobalRank = Promise.promisify(db.users.getGlobalRanks);
+const dbGetChannelRank = Promise.promisify(db.channels.getRank);
+const dbMultiGetChannelRank = Promise.promisify(db.channels.getRanks);
+const dbGetAliases = Promise.promisify(db.getAliases);
 
 const DEFAULT_PROFILE = Object.freeze({ image: '', text: '' });
 
@@ -33,71 +39,23 @@ class Account {
 
 module.exports.Account = Account;
 
-module.exports.rankForName = function (name, opts, cb) {
-    if (!cb) {
-        cb = opts;
-        opts = {};
-    }
+module.exports.rankForName = async function rankForNameAsync(name, channel) {
+    const [globalRank, channelRank] = await Promise.all([
+        dbGetGlobalRank(name),
+        dbGetChannelRank(channel, name)
+    ]);
 
-    var rank = 0;
-    Q.fcall(function () {
-        return Q.nfcall(db.users.getGlobalRank, name);
-    }).then(function (globalRank) {
-        rank = globalRank;
-        if (opts.channel) {
-            return Q.nfcall(db.channels.getRank, opts.channel, name);
-        } else {
-            return globalRank > 0 ? 1 : 0;
-        }
-    }).then(function (chanRank) {
-        setImmediate(function () {
-            cb(null, Math.max(rank, chanRank));
-        });
-    }).catch(function (err) {
-        cb(err, 0);
-    }).done();
+    return Math.max(globalRank, channelRank);
 };
 
-module.exports.rankForIP = function (ip, opts, cb) {
-    if (!cb) {
-        cb = opts;
-        opts = {};
-    }
-
+module.exports.rankForIP = async function rankForIP(ip, channel) {
     var globalRank, rank, names;
 
-    var promise = Q.nfcall(db.getAliases, ip)
-    .then(function (_names) {
-        names = _names;
-        return Q.nfcall(db.users.getGlobalRanks, names);
-    }).then(function (ranks) {
-        ranks.push(0);
-        globalRank = Math.max.apply(Math, ranks);
-        rank = globalRank;
-    });
+    const aliases = await dbGetAliases(ip);
+    const [globalRanks, channelRanks] = await Promise.all([
+        dbMultiGetGlobalRank(names),
+        dbMultiGetChannelRank(channel, names)
+    ]);
 
-    if (!opts.channel) {
-        promise.then(function () {
-            setImmediate(function () {
-                cb(null, globalRank);
-            });
-        }).catch(function (err) {
-            cb(err, null);
-        }).done();
-    } else {
-        promise.then(function () {
-            return Q.nfcall(db.channels.getRanks, opts.channel, names);
-        }).then(function (ranks) {
-            ranks.push(globalRank);
-            rank = Math.max.apply(Math, ranks);
-        }).then(function () {
-            setImmediate(function () {
-                cb(null, rank);
-            });
-        }).catch(function (err) {
-            setImmediate(function () {
-                cb(err, null);
-            });
-        }).done();
-    }
+    return Math.max.apply(Math, globalRanks.concat(channelRanks));
 };
