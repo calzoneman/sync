@@ -3,7 +3,12 @@ var db = require("../database");
 var Flags = require("../flags");
 var util = require("../utilities");
 var Account = require("../account");
-var Q = require("q");
+import Promise from 'bluebird';
+
+const dbIsNameBanned = Promise.promisify(db.channels.isNameBanned);
+const dbIsIPBanned = Promise.promisify(db.channels.isIPBanned);
+const dbAddBan = Promise.promisify(db.channels.ban);
+const dbGetIPs = Promise.promisify(db.getIPs);
 
 const TYPE_UNBAN = {
     id: "number",
@@ -234,7 +239,11 @@ KickBanModule.prototype.handleCmdBan = function (user, msg, meta) {
 
     const chan = this.channel;
     chan.refCounter.ref("KickBanModule::handleCmdBan");
-    this.banName(user, name, reason, function (err) {
+
+    this.banName(user, name, reason).catch(error => {
+        const message = error.message || error;
+        user.socket.emit("errorMsg", { msg: message });
+    }).finally(() => {
         chan.refCounter.unref("KickBanModule::handleCmdBan");
     });
 };
@@ -261,23 +270,29 @@ KickBanModule.prototype.handleCmdIPBan = function (user, msg, meta) {
 
     const chan = this.channel;
     chan.refCounter.ref("KickBanModule::handleCmdIPBan");
-    this.banAll(user, name, range, reason, function (err) {
+
+    this.banAll(user, name, range, reason).catch(error => {
+        //console.log('!!!', error.stack);
+        const message = error.message || error;
+        user.socket.emit("errorMsg", { msg: message });
+    }).finally(() => {
         chan.refCounter.unref("KickBanModule::handleCmdIPBan");
     });
 };
 
-KickBanModule.prototype.banName = function (actor, name, reason, cb) {
-    var self = this;
+KickBanModule.prototype.checkChannelAlive = function checkChannelAlive() {
+    if (!this.channel || this.channel.dead) {
+        throw new Error("Channel not live");
+    }
+};
+
+KickBanModule.prototype.banName = async function banName(actor, name, reason) {
     reason = reason.substring(0, 255);
 
     var chan = this.channel;
-    var error = function (what) {
-        actor.socket.emit("errorMsg", { msg: what });
-        cb(what);
-    };
 
     if (!chan.modules.permissions.canBan(actor)) {
-        return error("You do not have ban permissions on this channel");
+        throw new Error("You do not have ban permissions on this channel");
     }
 
     name = name.toLowerCase();
@@ -285,129 +300,126 @@ KickBanModule.prototype.banName = function (actor, name, reason, cb) {
         actor.socket.emit("costanza", {
             msg: "You can't ban yourself"
         });
-        return cb("Attempted to ban self");
+
+        throw new Error("You cannot ban yourself");
     }
 
-    Q.nfcall(Account.rankForName, name, { channel: chan.name })
-    .then(function (rank) {
-        if (rank >= actor.account.effectiveRank) {
-            throw "You don't have permission to ban " + name;
-        }
+    const rank = await Account.rankForName(name, chan.name);
+    this.checkChannelAlive();
 
-        return Q.nfcall(db.channels.isNameBanned, chan.name, name);
-    }).then(function (banned) {
-        if (banned) {
-            throw name + " is already banned";
-        }
+    if (rank >= actor.account.effectiveRank) {
+        throw new Error("You don't have permission to ban " + name);
+    }
 
-        if (chan.dead) { throw null; }
+    const isBanned = await dbIsNameBanned(chan.name, name);
+    this.checkChannelAlive();
 
-        return Q.nfcall(db.channels.ban, chan.name, "*", name, reason, actor.getName());
-    }).then(function () {
-        chan.logger.log("[mod] " + actor.getName() + " namebanned " + name);
-        if (chan.modules.chat) {
-            chan.modules.chat.sendModMessage(actor.getName() + " namebanned " + name,
-                                             chan.modules.permissions.permissions.ban);
-        }
-        return true;
-    }).then(function () {
-        self.kickBanTarget(name, null);
-        setImmediate(function () {
-            cb(null);
-        });
-    }).catch(error).done();
+    if (isBanned) {
+        throw new Error(name + " is already banned");
+    }
+
+    await dbAddBan(chan.name, "*", name, reason, actor.getName());
+    this.checkChannelAlive();
+
+    chan.logger.log("[mod] " + actor.getName() + " namebanned " + name);
+
+    if (chan.modules.chat) {
+        chan.modules.chat.sendModMessage(
+                actor.getName() + " namebanned " + name,
+                chan.modules.permissions.permissions.ban
+        );
+    }
+
+    this.kickBanTarget(name, null);
 };
 
-KickBanModule.prototype.banIP = function (actor, ip, name, reason, cb) {
-    var self = this;
+KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
     reason = reason.substring(0, 255);
     var masked = util.cloakIP(ip);
 
     var chan = this.channel;
-    var error = function (what) {
-        actor.socket.emit("errorMsg", { msg: what });
-        cb(what);
-    };
 
     if (!chan.modules.permissions.canBan(actor)) {
-        return error("You do not have ban permissions on this channel");
+        throw new Error("You do not have ban permissions on this channel");
     }
 
-    Q.nfcall(Account.rankForIP, ip, { channel: chan.name }).then(function (rank) {
-        if (rank >= actor.account.effectiveRank) {
-            throw "You don't have permission to ban IP " + masked;
-        }
+    const rank = await Account.rankForIP(ip, chan.name);
+    this.checkChannelAlive();
 
-        return Q.nfcall(db.channels.isIPBanned, chan.name, ip);
-    }).then(function (banned) {
-        if (banned) {
-            throw masked + " is already banned";
-        }
+    if (rank >= actor.account.effectiveRank) {
+        // TODO: this message should be made friendlier
+        throw new Error("You don't have permission to ban IP " + masked);
+    }
 
-        if (chan.dead) { throw null; }
+    const isBanned = await dbIsIPBanned(chan.name, ip);
+    this.checkChannelAlive();
 
-        return Q.nfcall(db.channels.ban, chan.name, ip, name, reason, actor.getName());
-    }).then(function () {
-        var cloaked = util.cloakIP(ip);
-        chan.logger.log("[mod] " + actor.getName() + " banned " + cloaked + " (" + name + ")");
-        if (chan.modules.chat) {
-            chan.modules.chat.sendModMessage(actor.getName() + " banned " +
-                                             cloaked + " (" + name + ")",
-                                             chan.modules.permissions.permissions.ban);
-        }
-    }).then(function () {
-        self.kickBanTarget(name, ip);
-        setImmediate(function () {
-            cb(null);
-        });
-    }).catch(error).done();
+    if (isBanned) {
+        // TODO: this message should be made friendlier
+        throw new Error(masked + " is already banned");
+    }
+
+    await dbAddBan(chan.name, ip, name, reason, actor.getName());
+    this.checkChannelAlive();
+
+    var cloaked = util.cloakIP(ip);
+    chan.logger.log(
+            "[mod] " + actor.getName() + " banned " + cloaked +
+            " (" + name + ")"
+    );
+
+    if (chan.modules.chat) {
+        chan.modules.chat.sendModMessage(
+                actor.getName() + " banned " + cloaked + " (" + name + ")",
+                chan.modules.permissions.permissions.ban
+        );
+    }
+
+    this.kickBanTarget(name, ip);
 };
 
-KickBanModule.prototype.banAll = function (actor, name, range, reason, cb) {
-    var self = this;
+KickBanModule.prototype.banAll = async function banAll(
+        actor,
+        name,
+        range,
+        reason
+) {
     reason = reason.substring(0, 255);
 
-    var chan = self.channel;
-    var error = function (what) {
-        cb(what);
-    };
+    var chan = this.channel;
 
     if (!chan.modules.permissions.canBan(actor)) {
-        return error("You do not have ban permissions on this channel");
+        throw new Error("You do not have ban permissions on this channel");
     }
 
-    self.banName(actor, name, reason, function (err) {
-        if (err && err.indexOf("is already banned") === -1) {
-            cb(err);
-        } else {
-            db.getIPs(name, function (err, ips) {
-                if (err) {
-                    return error(err);
-                }
+    const ips = await dbGetIPs(name);
+    this.checkChannelAlive();
 
-                var seenIPs = {};
-                var all = ips.map(function (ip) {
-                    if (range === "range") {
-                        ip = util.getIPRange(ip);
-                    } else if (range === "wrange") {
-                        ip = util.getWideIPRange(ip);
-                    }
-
-                    if (seenIPs.hasOwnProperty(ip)) {
-                        return;
-                    } else {
-                        seenIPs[ip] = true;
-                    }
-
-                    return Q.nfcall(self.banIP.bind(self), actor, ip, name, reason);
-                });
-
-                Q.all(all).then(function () {
-                    setImmediate(cb);
-                }).catch(error).done();
-            });
+    const toBan = new Set();
+    for (let ip of ips) {
+        switch (range) {
+            case "range":
+                toBan.add(util.getIPRange(ip));
+                break;
+            case "wrange":
+                toBan.add(util.getWideIPRange(ip));
+                break;
+            default:
+                toBan.add(ip);
+                break;
         }
-    });
+    }
+
+    const promises = Array.from(toBan).map(ip =>
+            this.banIP(actor, ip, name, reason)
+    );
+
+    if (!await dbIsNameBanned(chan.name, name)) {
+        promises.push(this.banName(actor, name, reason));
+    }
+
+    await Promise.all(promises);
+    this.checkChannelAlive();
 };
 
 KickBanModule.prototype.kickBanTarget = function (name, ip) {

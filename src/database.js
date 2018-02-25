@@ -71,6 +71,8 @@ class Database {
 }
 
 module.exports.Database = Database;
+module.exports.users = require("./database/accounts");
+module.exports.channels = require("./database/channels");
 
 module.exports.init = function (newDB) {
     if (newDB) {
@@ -85,9 +87,6 @@ module.exports.init = function (newDB) {
             }).then(() => {
                 process.nextTick(legacySetup);
             });
-
-    module.exports.users = require("./database/accounts");
-    module.exports.channels = require("./database/channels");
 };
 
 module.exports.getDB = function getDB() {

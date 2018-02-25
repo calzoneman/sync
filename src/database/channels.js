@@ -328,10 +328,10 @@ module.exports = {
         var replace = "(" + names.map(function () { return "?"; }).join(",") + ")";
 
         /* Last substitution is the channel to select ranks for */
-        names.push(chan);
+        const sub = names.concat([chan]);
 
         db.query("SELECT * FROM `channel_ranks` WHERE name IN " +
-                 replace + " AND channel=?", names,
+                 replace + " AND channel=?", sub,
         function (err, rows) {
             if (err) {
                 callback(err, []);
