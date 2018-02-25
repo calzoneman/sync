@@ -190,6 +190,8 @@ RankModule.prototype.updateDatabase = function (data, cb) {
         }
 
         return dbSetChannelRank(chan.name, data.name, data.rank);
+    }).then(() => {
+        process.nextTick(cb);
     }).catch(error => {
         process.nextTick(cb, error.message || error);
     });

@@ -49,12 +49,10 @@ module.exports.rankForName = async function rankForNameAsync(name, channel) {
 };
 
 module.exports.rankForIP = async function rankForIP(ip, channel) {
-    var globalRank, rank, names;
-
     const aliases = await dbGetAliases(ip);
     const [globalRanks, channelRanks] = await Promise.all([
-        dbMultiGetGlobalRank(names),
-        dbMultiGetChannelRank(channel, names)
+        dbMultiGetGlobalRank(aliases),
+        dbMultiGetChannelRank(channel, aliases)
     ]);
 
     return Math.max.apply(Math, globalRanks.concat(channelRanks));

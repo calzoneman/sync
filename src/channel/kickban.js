@@ -272,6 +272,7 @@ KickBanModule.prototype.handleCmdIPBan = function (user, msg, meta) {
     chan.refCounter.ref("KickBanModule::handleCmdIPBan");
 
     this.banAll(user, name, range, reason).catch(error => {
+        //console.log('!!!', error.stack);
         const message = error.message || error;
         user.socket.emit("errorMsg", { msg: message });
     }).finally(() => {
@@ -328,6 +329,8 @@ KickBanModule.prototype.banName = async function banName(actor, name, reason) {
                 chan.modules.permissions.permissions.ban
         );
     }
+
+    this.kickBanTarget(name, null);
 };
 
 KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
@@ -344,6 +347,7 @@ KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
     this.checkChannelAlive();
 
     if (rank >= actor.account.effectiveRank) {
+        // TODO: this message should be made friendlier
         throw new Error("You don't have permission to ban IP " + masked);
     }
 
@@ -351,6 +355,7 @@ KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
     this.checkChannelAlive();
 
     if (isBanned) {
+        // TODO: this message should be made friendlier
         throw new Error(masked + " is already banned");
     }
 
@@ -409,7 +414,9 @@ KickBanModule.prototype.banAll = async function banAll(
             this.banIP(actor, ip, name, reason)
     );
 
-    promises.push(this.banName(actor, name, reason));
+    if (!await dbIsNameBanned(chan.name, name)) {
+        promises.push(this.banName(actor, name, reason));
+    }
 
     await Promise.all(promises);
     this.checkChannelAlive();
