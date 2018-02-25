@@ -320,9 +320,12 @@ Channel.prototype.checkModules = function (fn, args, cb) {
 
             if (!self.modules) {
                 LOGGER.warn(
-                    'checkModules(%s): self.modules is undefined; dead=%s',
+                    'checkModules(%s): self.modules is undefined; dead=%s,' +
+                    ' current=%s, remaining=%s',
                     fn,
-                    self.dead
+                    self.dead,
+                    m,
+                    keys
                 );
                 return;
             }
