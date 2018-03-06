@@ -69,9 +69,10 @@ mixin us-playback
       +rcheckbox("us-synch", "Synchronize video playback")
       +textbox("us-synch-accuracy", "Synch threshold (seconds)", "2")
       +rcheckbox("us-wmode-transparent", "Set wmode=transparent")
-      .col-sm-4
-      .col-sm-8
-        p.text-info Setting <code>wmode=transparent</code> allows objects to be displayed above the video player, but may cause performance issues on some systems.
+      .form-group
+        .col-sm-4
+        .col-sm-8
+          p.text-info Setting <code>wmode=transparent</code> allows objects to be displayed above the video player, but may cause performance issues on some systems.
       +rcheckbox("us-hidevideo", "Remove the video player")
       +rcheckbox("us-playlistbuttons", "Hide playlist buttons by default")
       +rcheckbox("us-oldbtns", "Old style playlist buttons")
@@ -86,6 +87,10 @@ mixin us-playback
             option(value="720") 720p
             option(value="1080") 1080p
             option(value="best") Highest Available
+      .form-group
+        .col-sm-4
+        .col-sm-8
+          p.text-info Due to technical changes on YouTube's side, the CyTube quality preference can no longer be automatically applied on YouTube videos.  See <a href="https://github.com/calzoneman/sync/issues/726" rel="noopener noreferer" target="_blank">this GitHub issue</a> for details.
 
 mixin us-chat
   #us-chat.tab-pane
