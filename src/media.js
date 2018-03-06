@@ -25,14 +25,13 @@ Media.prototype = {
     },
 
     pack: function () {
-        return {
+        const result = {
             id: this.id,
             title: this.title,
             seconds: this.seconds,
             duration: this.duration,
             type: this.type,
             meta: {
-                direct: this.meta.direct,
                 restricted: this.meta.restricted,
                 codec: this.meta.codec,
                 bitrate: this.meta.bitrate,
@@ -42,6 +41,16 @@ Media.prototype = {
                 textTracks: this.meta.textTracks
             }
         };
+
+        /*
+         * 2018-03-05: Remove GDrive metadata from saved playlists to save
+         * space since this is no longer used.
+         */
+        if (this.type !== "gd") {
+            result.meta.direct = this.meta.direct;
+        }
+
+        return result;
     },
 
     getTimeUpdate: function () {
