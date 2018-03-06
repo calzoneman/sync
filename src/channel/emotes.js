@@ -126,9 +126,7 @@ EmoteModule.prototype = Object.create(ChannelModule.prototype);
 
 EmoteModule.prototype.load = function (data) {
     if ("emotes" in data) {
-        for (var i = 0; i < data.emotes.length; i++) {
-            this.emotes.updateEmote(data.emotes[i]);
-        }
+        this.emotes = new EmoteList(data.emotes);
     }
 
     this.dirty = false;
