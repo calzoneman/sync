@@ -592,10 +592,17 @@ PlaylistModule.prototype.queueYouTubePlaylist = function (user, data) {
             }
 
             self.channel.refCounter.ref("PlaylistModule::queueYouTubePlaylist");
+
+            if (self.channel.modules.library && data.shouldAddToLibrary) {
+                self.channel.modules.library.cacheMediaList(vids);
+                data.shouldAddToLibrary = false;
+            }
+
             vids.forEach(function (media) {
                 data.link = util.formatLink(media.id, media.type);
                 self._addItem(media, data, user);
             });
+
             self.channel.refCounter.unref("PlaylistModule::queueYouTubePlaylist");
 
             lock.release();

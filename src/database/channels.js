@@ -5,6 +5,8 @@ var path = require("path");
 var tables = require("./tables");
 var Flags = require("../flags");
 var util = require("../utilities");
+import { createMySQLDuplicateKeyUpdate } from '../util/on-duplicate-key-update';
+import Config from '../config';
 
 const LOGGER = require('@calzoneman/jsli')('database/channels');
 
@@ -439,6 +441,45 @@ module.exports = {
                  "(id, title, seconds, type, meta, channel) " +
                  "VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=id",
                  [media.id, media.title, media.seconds, media.type, meta, chan], callback);
+    },
+
+    /**
+     * Adds a list of media items to the library
+     */
+    addListToLibrary: async function addListToLibrary(chan, list) {
+        if (!valid(chan)) {
+            throw new Error("Invalid channel name");
+        }
+
+        if (list.length > Config.get("playlist.max-items")) {
+            throw new Error("Cannot save list to library: exceeds max-items");
+        }
+
+        const items = list.map(item => ({
+            id: item.id,
+            title: item.title,
+            seconds: item.seconds,
+            type: item.type,
+            meta: JSON.stringify({
+                bitrate: item.meta.bitrate,
+                codec: item.meta.codec,
+                scuri: item.meta.scuri,
+                embed: item.meta.embed,
+                direct: item.meta.direct
+            }),
+            channel: chan
+        }));
+
+        await db.getDB().runTransaction(tx => {
+            const insert = tx.table('channel_libraries')
+                    .insert(items);
+
+            const update = tx.raw(createMySQLDuplicateKeyUpdate(
+                    ['title', 'seconds', 'meta']
+            ));
+
+            return tx.raw(insert.toString() + update.toString());
+        });
     },
 
     /**
