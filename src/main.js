@@ -30,6 +30,7 @@ function handleLine(line) {
     if (line === '/reload') {
         LOGGER.info('Reloading config');
         Config.load('config.yaml');
+        require('./web/pug').clearCache();
     } else if (line.indexOf('/switch') === 0) {
         const args = line.split(' ');
         args.shift();
@@ -124,7 +125,19 @@ if (Config.get('service-socket.enabled')) {
     LOGGER.info('Opening service socket');
     const ServiceSocket = require('./servsock');
     const sock = new ServiceSocket();
-    sock.init(handleLine, Config.get('service-socket.socket'));
+    sock.init(
+        line => {
+            try {
+                handleLine(line);
+            } catch (error) {
+                LOGGER.error(
+                    'Error in UNIX socket command handler: %s',
+                    error.stack
+                );
+            }
+        },
+        Config.get('service-socket.socket')
+    );
 }
 
 let stdinbuf = '';
@@ -133,7 +146,11 @@ process.stdin.on('data', function (data) {
     if (stdinbuf.indexOf('\n') !== -1) {
         let line = stdinbuf.substring(0, stdinbuf.indexOf('\n'));
         stdinbuf = stdinbuf.substring(stdinbuf.indexOf('\n') + 1);
-        handleLine(line);
+        try {
+            handleLine(line);
+        } catch (error) {
+            LOGGER.error('Command line input handler failed: %s', error.stack);
+        }
     }
 });
 

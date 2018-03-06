@@ -3,7 +3,9 @@ var fs = require("fs");
 var path = require("path");
 var Config = require("../config");
 var templates = path.join(__dirname, "..", "..", "templates");
-var cache = {};
+
+const cache = new Map();
+const LOGGER = require('@calzoneman/jsli')('web/pug');
 
 /**
  * Merges locals with globals for pug rendering
@@ -42,16 +44,21 @@ function sendPug(res, view, locals) {
     locals.loginName = nvl(locals.loginName, res.locals.loginName);
     locals.superadmin = nvl(locals.superadmin, res.locals.superadmin);
 
-    if (!(view in cache) || Config.get("debug")) {
+    let renderFn = cache.get(view);
+
+    if (!renderFn || Config.get("debug")) {
+        LOGGER.debug("Loading template %s", view);
+
         var file = path.join(templates, view + ".pug");
-        var fn = pug.compile(fs.readFileSync(file), {
+        renderFn = pug.compile(fs.readFileSync(file), {
             filename: file,
             pretty: !Config.get("http.minify")
         });
-        cache[view] = fn;
+
+        cache.set(view, renderFn);
     }
-    var html = cache[view](merge(locals, res));
-    res.send(html);
+
+    res.send(renderFn(merge(locals, res)));
 }
 
 function nvl(a, b) {
@@ -59,6 +66,18 @@ function nvl(a, b) {
     return a;
 }
 
+function clearCache() {
+    let removed = 0;
+
+    for (const key of cache.keys()) {
+        cache.delete(key);
+        removed++;
+    }
+
+    LOGGER.info('Removed %d compiled templates from the cache', removed);
+}
+
 module.exports = {
-    sendPug: sendPug
+    sendPug: sendPug,
+    clearCache: clearCache
 };
