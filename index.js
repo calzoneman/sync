@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
-if (/^v0/.test(process.version)) {
-    console.error('node.js ' + process.version + ' is not supported.  ' +
-            'For more information, visit ' +
-            'https://github.com/calzoneman/sync/wiki/CyTube-3.0-Installation-Guide#nodejs');
+const ver = process.version.match(/v(\d+)\.\d+\.\d+/);
+
+if (parseInt(ver[1], 10) < 6) {
+    console.error(
+        `node.js ${process.version} is not supported. ` +
+        'CyTube requires node v6 or later.'
+    )
     process.exit(1);
 }
 
@@ -24,7 +27,7 @@ function fork() {
     try {
         console.log('Warning: --daemonize support is experimental.  Use with caution.');
 
-        const { spawn } = require('child_process');
+        const spawn = require('child_process').spawn;
         const path = require('path');
         const main = path.resolve(__dirname, 'lib', 'main.js');
 
@@ -62,9 +65,9 @@ function handleStartupError(err) {
 
 function parseArgs() {
     const args = new Map();
-    for (let i = 2; i < process.argv.length; i++) {
+    for (var i = 2; i < process.argv.length; i++) {
         if (/^--/.test(process.argv[i])) {
-            let val;
+            var val;
             if (i+1 < process.argv.length) val = process.argv[i+1];
             else val = null;
 
