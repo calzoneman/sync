@@ -1386,7 +1386,7 @@ function parseMediaLink(url) {
 
     if ((m = url.match(/(.*\.m3u8)/))) {
         return {
-            id: m[1],
+            id: url,
             type: "hl"
         };
     }
