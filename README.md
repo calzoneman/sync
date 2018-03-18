@@ -1,91 +1,46 @@
-Read before submitting an issue: https://github.com/calzoneman/sync/wiki/Reporting-an-Issue
-===========================================================================================
+CyTube
+======
 
-calzoneman/sync
-===============
+CyTube is a project I started in early 2013 as a hobby project to build my own
+clone of synchtube.com (now defunct).
 
-About
------
+The basic concept is that users register channels where connected viewers can
+watch videos from different video hosts (e.g., YouTube, Twitch) and the playback
+is synchronized for all the viewers in the channel.
 
-CyTube is a web application providing media synchronization, chat, and more for an arbitrary number of channels.
-I began developing this as a hobby project, and when synchtube.com announced their closure, I
-began polishing it and readying it for the public.
+Each channel has a playlist where users can queue up videos to play, as well as
+an integrated chatroom for discussion.
 
-I am hosting a CyTube server at http://cytu.be
+The official server is located at https://cytu.be, but there are other public
+servers hosted for various communities.
 
-The serverside is written in JavaScript and runs on Node.JS.  It makes use
-of a MySQL database to store user registrations, cached media metadata, and
-data about each channel.
+## Installation
 
-The clientside is written in JavaScript and makes use of Socket.IO and
-jQuery as well as the APIs for various media providers.
-The web interface uses Bootstrap for layout and styling.
+The installation guide for server administrators is located [on the
+wiki](https://github.com/calzoneman/sync/wiki/CyTube-3.0-Installation-Guide).
 
-Features
---------
-- Standalone web/socket.io server
-- Optional SSL support for socket.io and the account API
-- Synchronized playback from the following sources:
-  - YouTube (individual videos + playlists)
-  - Google Docs videos
-  - Vimeo
-  - Dailymotion
-  - Soundcloud
-  - Raw video/audio files (via video.js)
-- Embedding of the following sources:
-  - livestream.com
-  - twitch.tv
-  - justin.tv
-  - ustream.tv
-  - RTMP streams
-  - Custom `<iframe>` and `<object>` embeds
-- Channel customization
-  - HTML Message of the Day
-  - CSS
-  - JavaScript
-  - Permissions
-    - Tiered ranks (Site admin > Channel admin > Moderator > Leader > Member > Guest > Anonymous)
-  - Chat filters (based on regular expressions)
-  - Lock/unlock playlist to allow additions by non-moderators (configurable with permissions)
-  - Searchable library of videos
-- Integrated YouTube search
-- Save/load playlists per user account
-- Polls
-- Voteskip (can be disabled by a channel moderator)
-- Auto-AFK status (can be configured per-channel)
-- Leader
-  - Grants control of playback to a user (can pause/seek)
-  - Can also be used to grant temporary mod-like powers to a user
-  - Not necessary for synchronization as the server has an internal timer
-- Channel state saves/loads on restart
-- Account management
-  - Password change
-  - Password reset (via email)
-  - Profile avatar and text
-- Moderation
-  - Mute users
-  - Kick users
-  - Ban users by name
-  - Ban users by IP address (and by /24 range)
-- Administration
-  - Log viewer
-  - Global bans
-  - Search registered channels and users
-  - Currently loaded channels
-  - Stats (usercount, channelcount, RAM usage)
+## Contact
 
-Installing
-----------
+**Please check if the
+[FAQ](https://github.com/calzoneman/sync/wiki/Frequently-Asked-Questions)
+answers your question already.**
 
-Installation instructions are available here: https://github.com/calzoneman/sync/wiki/CyTube-3.0-Installation-Guide
+For bug reports and feature requests, please open a GitHub issue.  To report a
+security vulnerability, or to discuss an issue with https://cytu.be itself
+(unrelated to the code), please send me an email: cyzon@cytu.be
 
+Please be courteous and search through [the open and closed
+issues](https://github.com/calzoneman/sync/issues?utf8=%E2%9C%93&q=is%3Aissue)
+for your request before submitting a new one.
 
-Feedback
---------
+General help with the software and the website is also available on the IRC
+channel at [irc.esper.net#cytube](http://webchat.esper.net/?channels=cytube)
+during US daytime hours.
 
-Please open a GitHub Issue.
+## License
 
-License
--------
+Original source code in this repository is provided under the MIT license
+(see the LICENSE file for the full text).
 
-Licensed under MIT.  See LICENSE for the full license text.
+Bundled source code, such as third-party CSS and JavaScript libraries, are
+provided under their respective licenses.
