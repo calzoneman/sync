@@ -2,7 +2,7 @@ CyTube
 ======
 
 CyTube is a project I started in early 2013 as a hobby project to build my own
-clone of synchtube.com (now defunct).
+clone of synchtube.com (which shut down in March 2013).
 
 The basic concept is that users register channels where connected viewers can
 watch videos from different video hosts (e.g., YouTube, Twitch) and the playback
