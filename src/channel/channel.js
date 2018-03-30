@@ -401,27 +401,6 @@ Channel.prototype.joinUser = function (user, data) {
     });
 };
 
-
-Channel.prototype.getUserForName = function(name){
-    var result;
-    var self = this;
-    for (var i = 0; i < self.users.length; i++) {
-        if (self.users[i].getLowerName() === name) {
-            result = self.users[i];
-            break;
-        }
-    }
-
-    return result;
-};
-
-Channel.prototype.setLeader = function(user, name){
-    var self = this;
-    if("playlist" in self.modules){
-       self.modules['playlist'].handleAssignLeader(user, {name: name}); 
-    }
-};
-
 Channel.prototype.acceptUser = function (user) {
     user.setFlag(Flags.U_IN_CHANNEL);
     user.socket.join(this.name);

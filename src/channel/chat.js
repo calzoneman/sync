@@ -48,7 +48,6 @@ function ChatModule(channel) {
     this.registerCommand("/a", this.handleCmdAdminflair.bind(this));
     this.registerCommand("/afk", this.handleCmdAfk.bind(this));
     this.registerCommand("/mute", this.handleCmdMute.bind(this));
-    this.registerCommand("/leader", this.handleCmdLeader.bind(this));
     this.registerCommand("/smute", this.handleCmdSMute.bind(this));
     this.registerCommand("/unmute", this.handleCmdUnmute.bind(this));
     this.registerCommand("/unsmute", this.handleCmdUnmute.bind(this));
@@ -536,25 +535,6 @@ ChatModule.prototype.handleCmdAdminflair = function (user, msg, meta) {
 ChatModule.prototype.handleCmdAfk = function (user, msg, meta) {
     user.setAFK(!user.is(Flags.U_AFK));
 };
-ChatModule.prototype.handleCmdLeader = function (user, msg, meta) {
-    if (!this.channel.modules.permissions.canAssignLeader(user)) {
-        return;
-    }
-
-    var args = msg.split(" ");
-    args.shift();
-
-    var name = args.shift();
-    if (typeof name !== "string") {
-        user.socket.emit("errorMsg", {
-            msg: "/leader requires a target name"
-        });
-        return;
-    }
-    name = name.toLowerCase();
-    this.channel.setLeader(user, name);
-    this.channel.logger.log(`[mod] ${user.getName()} assigned leader to ${name}`);
-};
 
 ChatModule.prototype.handleCmdMute = function (user, msg, meta) {
     if (!this.channel.modules.permissions.canMute(user)) {
@@ -574,7 +554,14 @@ ChatModule.prototype.handleCmdMute = function (user, msg, meta) {
     }
     name = name.toLowerCase();
 
-    var target = this.channel.getUserForName(name);
+    var target;
+
+    for (var i = 0; i < this.channel.users.length; i++) {
+        if (this.channel.users[i].getLowerName() === name) {
+            target = this.channel.users[i];
+            break;
+        }
+    }
 
     if (!target) {
         user.socket.emit("errorMsg", {
@@ -617,7 +604,14 @@ ChatModule.prototype.handleCmdSMute = function (user, msg, meta) {
     }
     name = name.toLowerCase();
 
-    var target = this.channel.getUserForName(name);
+    var target;
+
+    for (var i = 0; i < this.channel.users.length; i++) {
+        if (this.channel.users[i].getLowerName() === name) {
+            target = this.channel.users[i];
+            break;
+        }
+    }
 
     if (!target) {
         user.socket.emit("errorMsg", {
@@ -681,7 +675,13 @@ ChatModule.prototype.handleCmdUnmute = function (user, msg, meta) {
     this.channel.logger.log("[mod] " + user.getName() + " unmuted " + name);
     this.sendModMessage(user.getName() + " unmuted " + name, muteperm);
 
-    var target = this.channel.getUserForName(name);
+    var target;
+    for (var i = 0; i < this.channel.users.length; i++) {
+        if (this.channel.users[i].getLowerName() === name) {
+            target = this.channel.users[i];
+            break;
+        }
+    }
 
     if (!target) {
         return;
