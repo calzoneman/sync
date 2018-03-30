@@ -418,6 +418,14 @@ Channel.prototype.acceptUser = function (user) {
 
         this.logger.log("[login] Accepted connection from Tor exit at " +
                         user.displayip);
+    } 
+    else if(user.isAnonymous()){
+        var anonymousBanned = this.modules.options && this.modules.options.get("block_anonymous_users");
+        if (anonymousBanned) {
+            user.kick("This channel has banned anonymous users. Please register if you'd like to join.");
+            this.logger.log("[login] Blocked connection from anonymous user at " + user.displayip);
+            return;
+        }  
     } else {
         this.logger.log("[login] Accepted connection from " + user.displayip);
     }
