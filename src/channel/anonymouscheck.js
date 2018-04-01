@@ -1,5 +1,3 @@
-"use strict";
-
 var ChannelModule = require("./module");
 var Flags = require("../flags");
 
