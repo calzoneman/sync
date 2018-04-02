@@ -10,8 +10,8 @@ AnonymousCheck.prototype = Object.create(ChannelModule.prototype);
 AnonymousCheck.prototype.onUserPreJoin = function (user, data, cb) {
     var chan = this.channel,
     opts = this.channel.modules.options;
-   var anonymousBanned =  opts.get("block_anonymous_users");
-   if(anonymousBanned && user.isAnonymous()) {
+    var anonymousBanned =  opts.get("block_anonymous_users");
+    if(anonymousBanned && user.isAnonymous()) {
         user.socket.on("disconnect", function () {
             if (!user.is(Flags.U_IN_CHANNEL)) {
                 cb("User disconnected", ChannelModule.DENY);
