@@ -18,14 +18,14 @@ AnonymousCheck.prototype.onUserPreJoin = function (user, data, cb) {
             }
         });
         
-       user.socket.emit("errorMsg", { msg : "This channel has blocked anonymous users. Please provide a user name to join."});
+        user.socket.emit("errorMsg", { msg : "This channel has blocked anonymous users. Please provide a user name to join."});
         user.waitFlag(Flags.U_LOGGED_IN, function () {
             cb(null, ChannelModule.PASSTHROUGH);
         });  
         return;            
     }
     else{
-         cb(null, ChannelModule.PASSTHROUGH);
+        cb(null, ChannelModule.PASSTHROUGH);
     }
 };
 
