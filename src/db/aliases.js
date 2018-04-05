@@ -31,7 +31,7 @@ class AliasesDB {
         return this.db.runTransaction(async tx => {
             const query = tx.table('aliases');
             if (net.isIP(ip)) {
-                query.where({ ip: ip })
+                query.where({ ip: ip });
             } else {
                 const delimiter = /^[0-9]+\./.test(ip) ? '.' : ':';
                 query.where('ip', 'LIKE', ip + delimiter + '%');

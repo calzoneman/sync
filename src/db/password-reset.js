@@ -44,7 +44,7 @@ class PasswordResetDB {
     cleanup(threshold = ONE_DAY) {
         return this.db.runTransaction(tx => {
             return tx.table('password_reset')
-                    .where('expire', '<', Date.now() - ONE_DAY)
+                    .where('expire', '<', Date.now() - threshold)
                     .del();
         });
     }

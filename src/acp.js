@@ -2,8 +2,6 @@ var Logger = require("./logger");
 var Server = require("./server");
 var db = require("./database");
 var util = require("./utilities");
-var Config = require("./config");
-var Server = require("./server");
 import { v4 as uuidv4 } from 'uuid';
 
 function eventUsername(user) {

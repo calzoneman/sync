@@ -86,7 +86,7 @@ PlaylistItem.prototype = {
     }
 };
 
-function PlaylistModule(channel) {
+function PlaylistModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.items = new ULList();
     this.meta = {
@@ -541,7 +541,6 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
         }
 
         function handleLookup() {
-            var channelName = self.channel.name;
             InfoGetter.getMedia(data.id, data.type, function (err, media) {
                 if (err) {
                     error(XSS.sanitizeText(String(err)));
@@ -795,7 +794,7 @@ PlaylistModule.prototype.handleShuffle = function (user) {
     this.channel.users.forEach(function (u) {
         if (perms.canSeePlaylist(u)) {
             u.socket.emit("playlist", pl);
-        };
+        }
     });
     this.startPlayback();
 };
@@ -1069,16 +1068,6 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
     }
 };
 
-function isExpired(media) {
-    if (media.meta.expiration && media.meta.expiration < Date.now()) {
-        return true;
-    } else if (media.type === "gd") {
-        return !media.meta.object;
-    } else if (media.type === "vi") {
-        return !media.meta.direct;
-    }
-}
-
 PlaylistModule.prototype.startPlayback = function (time) {
     var self = this;
 
@@ -1150,7 +1139,7 @@ PlaylistModule.prototype.startPlayback = function (time) {
             }
         }
     );
-}
+};
 
 const UPDATE_INTERVAL = Config.get("playlist.update-interval");
 
@@ -1232,7 +1221,7 @@ PlaylistModule.prototype.clean = function (test) {
  * -flags)
  */
 function generateTargetRegex(target) {
-    const flagsre = /^(-[img]+\s+)/i
+    const flagsre = /^(-[img]+\s+)/i;
     var m = target.match(flagsre);
     var flags = "";
     if (m) {
@@ -1242,7 +1231,7 @@ function generateTargetRegex(target) {
     return new RegExp(target, flags);
 }
 
-PlaylistModule.prototype.handleClean = function (user, msg, meta) {
+PlaylistModule.prototype.handleClean = function (user, msg, _meta) {
     if (!this.channel.modules.permissions.canDeleteVideo(user)) {
         return;
     }

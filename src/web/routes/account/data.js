@@ -1,6 +1,6 @@
+// TODO: either finish this refactoring or just delete it
 import { GET, POST, PATCH, DELETE } from '@calzoneman/express-babel-decorators';
 import { CSRFError, InvalidRequestError } from '../../../errors';
-import Promise from 'bluebird';
 
 const LOGGER = require('@calzoneman/jsli')('AccountDataRoute');
 

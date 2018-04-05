@@ -1,6 +1,5 @@
 var http = require("http");
 var https = require("https");
-var cheerio = require('cheerio');
 var Media = require("./media");
 var CustomEmbedFilter = require("./customembed").filter;
 var Config = require("./config");
@@ -9,7 +8,6 @@ var mediaquery = require("cytube-mediaquery");
 var YouTube = require("cytube-mediaquery/lib/provider/youtube");
 var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 var Streamable = require("cytube-mediaquery/lib/provider/streamable");
-var GoogleDrive = require("cytube-mediaquery/lib/provider/googledrive");
 var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
 var TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
 import { Counter } from 'prom-client';
@@ -209,7 +207,7 @@ var Getters = {
         /* TODO: require server owners to register their own API key, put in config */
         const SC_CLIENT = "2e0c82ab5a020f3a7509318146128abd";
 
-        var m = id.match(/([\w-\/\.:]+)/);
+        var m = id.match(/([\w-/.:]+)/);
         if (m) {
             id = m[1];
         } else {
@@ -377,7 +375,7 @@ var Getters = {
          * http://www.ustream.tv/foo so they do both.
          * [](/cleese)
          */
-        var m = id.match(/([^\?&#]+)|(channel\/[^\?&#]+)/);
+        var m = id.match(/([^?&#]+)|(channel\/[^?&#]+)/);
         if (m) {
             id = m[1];
         } else {

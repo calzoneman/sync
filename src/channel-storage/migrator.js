@@ -6,7 +6,8 @@ import { DatabaseStore } from './dbstore';
 import { sanitizeHTML } from '../xss';
 import { ChannelNotFoundError } from '../errors';
 
-const QUERY_CHANNEL_NAMES = 'SELECT name FROM channels WHERE 1';
+/* eslint no-console: off */
+
 const EXPECTED_KEYS = [
     'chatbuffer',
     'chatmuted',
@@ -21,21 +22,6 @@ const EXPECTED_KEYS = [
     'playlist',
     'poll'
 ];
-
-function queryAsync(query, substitutions) {
-    return new Promise((resolve, reject) => {
-        db.query(query, substitutions, (err, res) => {
-            if (err) {
-                if (!(err instanceof Error)) {
-                    err = new Error(err);
-                }
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        });
-    });
-}
 
 function fixOldChandump(data) {
     const converted = {};
@@ -146,7 +132,7 @@ function migrate(src, dest, opts) {
                 return dest.save(name, data);
             }).then(() => {
                 console.log(`Migrated /${chanPath}/${name}`);
-            }).catch(ChannelNotFoundError, err => {
+            }).catch(ChannelNotFoundError, _err => {
                 console.log(`Skipping /${chanPath}/${name} (not present in the database)`);
             }).catch(err => {
                 console.error(`Failed to migrate /${chanPath}/${name}: ${err.stack}`);

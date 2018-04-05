@@ -42,8 +42,8 @@ class RedisClientProvider {
      * @param {Error} err error from the client
      * @private
      */
-    _defaultErrorHandler(err) {
+    _defaultErrorHandler(_err) {
     }
 }
 
-export default RedisClientProvider
+export default RedisClientProvider;

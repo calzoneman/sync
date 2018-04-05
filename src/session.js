@@ -1,5 +1,4 @@
 var dbAccounts = require("./database/accounts");
-var util = require("./utilities");
 var crypto = require("crypto");
 
 function sha256(input) {
@@ -30,7 +29,7 @@ exports.verifySession = function (input, cb) {
         return cb(new Error("Invalid auth string"));
     }
 
-    const [name, expiration, salt, hash, global_rank] = parts;
+    const [name, expiration, salt, hash, _global_rank] = parts;
 
     if (Date.now() > parseInt(expiration, 10)) {
         return cb(new Error("Session expired"));

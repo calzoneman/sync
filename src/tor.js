@@ -61,7 +61,7 @@ function loadTorListFromWebsite() {
             });
         }).on('error', error => {
             reject(error);
-        })
+        });
     });
 }
 
@@ -83,4 +83,4 @@ loadTorList().then(exits => {
 
 export function isTorExit(ip) {
     return TOR_EXIT_IPS.has(ip);
-};
+}

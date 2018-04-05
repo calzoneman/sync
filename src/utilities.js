@@ -1,17 +1,9 @@
 (function () {
-    var root, crypto, net = false;
+    const root = module.exports;
+    const net = require("net");
+    const crypto = require("crypto");
 
-    if (typeof window === "undefined") {
-        root = module.exports;
-    } else {
-        root = window.utils = {};
-    }
-
-    if (typeof require === "function") {
-        crypto = require("crypto");
-        net = require("net");
-    }
-
+    // TODO: now that the Set type is native, find usages and remove this
     var Set = function (items) {
         this._items = {};
         var self = this;
@@ -157,6 +149,8 @@
     root.parseTime = function (time) {
         var parts = time.split(":").reverse();
         var seconds = 0;
+        // TODO: consider refactoring to remove this suppression
+        /* eslint no-fallthrough: off */
         switch (parts.length) {
             case 3:
                 seconds += parseInt(parts[2]) * 3600;
@@ -278,12 +272,12 @@
         var shasum = crypto.createHash("sha1");
         shasum.update(data);
         return shasum.digest("hex");
-    }
+    },
 
     root.cloakIP = function (ip) {
         if (ip.match(/\d+\.\d+(\.\d+)?(\.\d+)?/)) {
             return cloakIPv4(ip);
-        } else if (ip.match(/([0-9a-f]{1,4}\:){1,7}[0-9a-f]{1,4}/)) {
+        } else if (ip.match(/([0-9a-f]{1,4}:){1,7}[0-9a-f]{1,4}/)) {
             return cloakIPv6(ip);
         } else {
             return ip;
@@ -323,5 +317,5 @@
             while (parts.length < 4) parts.push("*");
             return parts.join(":");
         }
-    }
+    };
 })();

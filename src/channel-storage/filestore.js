@@ -21,10 +21,14 @@ export class FileStore {
         return statAsync(filename).then(stats => {
             if (stats.size > SIZE_LIMIT) {
                 return Promise.reject(
-                        new ChannelStateSizeError('Channel state file is too large', {
-                    limit: SIZE_LIMIT,
-                    actual: stats.size
-                }));
+                    new ChannelStateSizeError(
+                        'Channel state file is too large',
+                        {
+                            limit: SIZE_LIMIT,
+                            actual: stats.size
+                        }
+                    )
+                );
             } else {
                 return readFileAsync(filename);
             }

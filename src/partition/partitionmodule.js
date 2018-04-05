@@ -3,7 +3,6 @@ import { PartitionConfig } from './partitionconfig';
 import { PartitionDecider } from './partitiondecider';
 import { PartitionClusterClient } from '../io/cluster/partitionclusterclient';
 import RedisClientProvider from '../redis/redisclientprovider';
-import LegacyConfig from '../config';
 import path from 'path';
 import { AnnouncementRefresher } from './announcementrefresher';
 import { RedisPartitionMapReloader } from './redispartitionmapreloader';

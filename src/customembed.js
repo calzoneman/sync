@@ -54,7 +54,7 @@ function filterEmbed(tag) {
             src: tag.attribs.src,
             params: {}
         }
-    }
+    };
 
     for (var key in tag.attribs) {
         if (ALLOWED_PARAMS.test(key)) {

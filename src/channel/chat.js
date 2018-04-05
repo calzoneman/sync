@@ -1,16 +1,14 @@
 var Config = require("../config");
-var User = require("../user");
 var XSS = require("../xss");
 var ChannelModule = require("./module");
 var util = require("../utilities");
 var Flags = require("../flags");
-var url = require("url");
 var counters = require("../counters");
 import { transformImgTags } from '../camo';
 import { Counter } from 'prom-client';
 
 const SHADOW_TAG = "[shadow]";
-const LINK = /(\w+:\/\/(?:[^:\/\[\]\s]+|\[[0-9a-f:]+\])(?::\d+)?(?:\/[^\/\s]*)*)/ig;
+const LINK = /(\w+:\/\/(?:[^:/[\]\s]+|\[[0-9a-f:]+\])(?::\d+)?(?:\/[^/\s]*)*)/ig;
 const LINK_PLACEHOLDER = '\ueeee';
 const LINK_PLACEHOLDER_RE = /\ueeee/g;
 
@@ -31,7 +29,7 @@ const MIN_ANTIFLOOD = {
     sustained: 10
 };
 
-function ChatModule(channel) {
+function ChatModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.buffer = [];
     this.muted = new util.Set();
@@ -66,7 +64,7 @@ ChatModule.prototype.load = function (data) {
     }
 
     if ("chatmuted" in data) {
-        for (var i = 0; i < data.chatmuted.length; i++) {
+        for (i = 0; i < data.chatmuted.length; i++) {
             this.muted.add(data.chatmuted[i]);
         }
     }
@@ -79,7 +77,7 @@ ChatModule.prototype.save = function (data) {
     data.chatmuted = Array.prototype.slice.call(this.muted);
 };
 
-ChatModule.prototype.packInfo = function (data, isAdmin) {
+ChatModule.prototype.packInfo = function (data, _isAdmin) {
     data.chat = Array.prototype.slice.call(this.buffer);
 };
 
@@ -231,7 +229,6 @@ ChatModule.prototype.handlePm = function (user, data) {
         return;
     }
 
-    var reallyTo = data.to;
     data.to = data.to.toLowerCase();
 
     if (data.to === user.getLowerName()) {
@@ -383,7 +380,6 @@ ChatModule.prototype.formatMessage = function (username, data) {
 
 ChatModule.prototype.filterMessage = function (msg) {
     var filters = this.channel.modules.filters.filters;
-    var chan = this.channel;
     var convertLinks = this.channel.modules.options.get("enable_link_regex");
     var links = msg.match(LINK);
     var intermediate = msg.replace(LINK, LINK_PLACEHOLDER);
@@ -450,9 +446,11 @@ ChatModule.prototype.sendMessage = function (msgobj) {
         this.buffer.shift();
     }
 
-    this.channel.logger.log("<" + msgobj.username + (msgobj.meta.addClass ?
-                            "." + msgobj.meta.addClass : "") +
-                            "> " + XSS.decodeText(msgobj.msg));
+    this.channel.logger.log(
+        "<" + msgobj.username +
+        (msgobj.meta.addClass ? "." + msgobj.meta.addClass : "") +
+        "> " + XSS.decodeText(msgobj.msg)
+    );
 };
 
 ChatModule.prototype.registerCommand = function (cmd, cb) {
@@ -491,7 +489,7 @@ ChatModule.prototype.handleCmdSay = function (user, msg, meta) {
     this.processChatMsg(user, { msg: args.join(" "), meta: meta });
 };
 
-ChatModule.prototype.handleCmdClear = function (user, msg, meta) {
+ChatModule.prototype.handleCmdClear = function (user, _msg, _meta) {
     if (!this.channel.modules.permissions.canClearChat(user)) {
         return;
     }
@@ -532,11 +530,11 @@ ChatModule.prototype.handleCmdAdminflair = function (user, msg, meta) {
     this.processChatMsg(user, { msg: cargs.join(" "), meta: meta });
 };
 
-ChatModule.prototype.handleCmdAfk = function (user, msg, meta) {
+ChatModule.prototype.handleCmdAfk = function (user, _msg, _meta) {
     user.setAFK(!user.is(Flags.U_AFK));
 };
 
-ChatModule.prototype.handleCmdMute = function (user, msg, meta) {
+ChatModule.prototype.handleCmdMute = function (user, msg, _meta) {
     if (!this.channel.modules.permissions.canMute(user)) {
         return;
     }
@@ -586,7 +584,7 @@ ChatModule.prototype.handleCmdMute = function (user, msg, meta) {
     this.sendModMessage(user.getName() + " muted " + target.getName(), muteperm);
 };
 
-ChatModule.prototype.handleCmdSMute = function (user, msg, meta) {
+ChatModule.prototype.handleCmdSMute = function (user, msg, _meta) {
     if (!this.channel.modules.permissions.canMute(user)) {
         return;
     }
@@ -637,7 +635,7 @@ ChatModule.prototype.handleCmdSMute = function (user, msg, meta) {
     this.sendModMessage(user.getName() + " shadowmuted " + target.getName(), muteperm);
 };
 
-ChatModule.prototype.handleCmdUnmute = function (user, msg, meta) {
+ChatModule.prototype.handleCmdUnmute = function (user, msg, _meta) {
     if (!this.channel.modules.permissions.canMute(user)) {
         return;
     }

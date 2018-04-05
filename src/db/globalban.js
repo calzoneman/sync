@@ -1,6 +1,3 @@
-import util from '../utilities';
-import Promise from 'bluebird';
-
 const LOGGER = require('@calzoneman/jsli')('GlobalBanDB');
 
 class GlobalBanDB {

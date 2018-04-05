@@ -8,13 +8,13 @@ ChannelModule.prototype = {
     /**
      * Called when the channel is loading its data from a JSON object.
      */
-    load: function (data) {
+    load: function (_data) {
     },
 
     /**
      * Called when the channel is saving its state to a JSON object.
      */
-    save: function (data) {
+    save: function (_data) {
     },
 
     /**
@@ -27,7 +27,7 @@ ChannelModule.prototype = {
     /**
      * Called to pack info, e.g. for channel detail view
      */
-    packInfo: function (data, isAdmin) {
+    packInfo: function (_data, _isAdmin) {
 
     },
 
@@ -37,40 +37,40 @@ ChannelModule.prototype = {
      * data is the data sent by the client with the joinChannel
      * packet.
      */
-    onUserPreJoin: function (user, data, cb) {
+    onUserPreJoin: function (_user, _data, cb) {
         cb(null, ChannelModule.PASSTHROUGH);
     },
 
     /**
      * Called after a user has been accepted to the channel.
      */
-    onUserPostJoin: function (user) {
+    onUserPostJoin: function (_user) {
     },
 
     /**
      * Called after a user has been disconnected from the channel.
      */
-    onUserPart: function (user) {
+    onUserPart: function (_user) {
     },
 
     /**
      * Called when a chatMsg event is received
      */
-    onUserPreChat: function (user, data, cb) {
+    onUserPreChat: function (_user, _data, cb) {
         cb(null, ChannelModule.PASSTHROUGH);
     },
 
     /**
      * Called before a new video begins playing
      */
-    onPreMediaChange: function (data, cb) {
+    onPreMediaChange: function (_data, cb) {
         cb(null, ChannelModule.PASSTHROUGH);
     },
 
     /**
      * Called when a new video begins playing
      */
-    onMediaChange: function (data) {
+    onMediaChange: function (_data) {
 
     },
 };
