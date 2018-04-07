@@ -3,6 +3,8 @@ var fs = require("fs");
 var path = require("path");
 var execSync = require("child_process").execSync;
 
+const LOGGER = require('@calzoneman/jsli')('setuid');
+
 var needPermissionsFixed = [
     path.join(__dirname, "..", "chanlogs"),
     path.join(__dirname, "..", "chandump"),
@@ -31,15 +33,21 @@ if (Config.get("setuid.enabled")) {
     setTimeout(function() {
         try {
             fixPermissions(Config.get("setuid.user"), Config.get("setuid.group"));
-            console.log("Old User ID: " + process.getuid() + ", Old Group ID: " +
-                    process.getgid());
+            LOGGER.info(
+                'Old User ID: %s, Old Group ID: %s',
+                process.getuid(),
+                process.getgid()
+            );
             process.setgid(Config.get("setuid.group"));
             process.setuid(Config.get("setuid.user"));
-            console.log("New User ID: " + process.getuid() + ", New Group ID: "
-                    + process.getgid());
+            LOGGER.info(
+                'New User ID: %s, New Group ID: %s',
+                process.getuid(),
+                process.getgid()
+            );
         } catch (err) {
-            console.log("Error setting uid: " + err.stack);
+            LOGGER.error('Error setting uid: %s', err.stack);
             process.exit(1);
         }
     }, (Config.get("setuid.timeout")));
-};
+}

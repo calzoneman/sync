@@ -1,5 +1,4 @@
 import Promise from 'bluebird';
-import Server from '../server';
 
 var SERVER = null;
 

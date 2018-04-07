@@ -1,4 +1,3 @@
-var fs = require("fs");
 var path = require("path");
 var net = require("net");
 var YAML = require("yamljs");
@@ -194,7 +193,7 @@ function checkLoadConfig(configClass, filename) {
         }
 
         if (typeof error.line !== 'undefined') {
-            LOGGER.error(`Error in conf/${fileanme}: ${error} (line ${error.line})`);
+            LOGGER.error(`Error in conf/${filename}: ${error} (line ${error.line})`);
         } else {
             LOGGER.error(`Error loading conf/${filename}: ${error.stack}`);
         }

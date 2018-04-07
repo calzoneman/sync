@@ -1,4 +1,4 @@
-const SPECIALCHARS = /([\\\.\?\+\*\$\^\|\(\)\[\]\{\}])/g;
+const SPECIALCHARS = /([\\.?+*$^|()[\]{}])/g;
 
 class CamoConfig {
     constructor(config = { camo: { enabled: false } }) {

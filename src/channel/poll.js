@@ -18,7 +18,7 @@ const TYPE_VOTE = {
 const ROOM_VIEW_HIDDEN = ":viewHidden";
 const ROOM_NO_VIEW_HIDDEN = ":noViewHidden";
 
-function PollModule(channel) {
+function PollModule(_channel) {
     ChannelModule.apply(this, arguments);
 
     this.poll = null;
@@ -125,7 +125,6 @@ PollModule.prototype.broadcastPoll = function (isNewPoll) {
 
     var obscured = this.poll.packUpdate(false);
     var unobscured = this.poll.packUpdate(true);
-    var perms = this.channel.modules.permissions;
 
     const event = isNewPoll ? "newPoll" : "updatePoll";
     if (isNewPoll) {
@@ -192,7 +191,7 @@ PollModule.prototype.handleNewPoll = function (user, data, ack) {
         poll.timer = setTimeout(function () {
             if (self.poll === poll) {
                 self.handleClosePoll({
-                    getName: function () { return "[poll timer]" },
+                    getName: function () { return "[poll timer]"; },
                     effectiveRank: 255
                 });
             }
@@ -240,7 +239,7 @@ PollModule.prototype.handleClosePoll = function (user) {
     }
 };
 
-PollModule.prototype.handlePollCmd = function (obscured, user, msg, meta) {
+PollModule.prototype.handlePollCmd = function (obscured, user, msg, _meta) {
     if (!this.channel.modules.permissions.canControlPoll(user)) {
         return;
     }

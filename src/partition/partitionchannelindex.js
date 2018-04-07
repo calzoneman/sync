@@ -9,7 +9,7 @@ var SERVER = null;
 const CHANNEL_INDEX = 'publicChannelList';
 const CACHE_REFRESH_INTERVAL = 30 * 1000;
 const CACHE_EXPIRE_DELAY = 40 * 1000;
-const READ_CHANNEL_LIST = path.join(__dirname, 'read_channel_list.lua')
+const READ_CHANNEL_LIST = path.join(__dirname, 'read_channel_list.lua');
 
 class PartitionChannelIndex {
     constructor(redisClient) {

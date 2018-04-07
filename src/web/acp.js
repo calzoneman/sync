@@ -3,8 +3,6 @@ var fs = require("fs");
 var webserver = require("./webserver");
 var sendPug = require("./pug").sendPug;
 var Logger = require("../logger");
-var db = require("../database");
-var Config = require("../config");
 
 let ioConfig;
 
@@ -29,7 +27,7 @@ function checkAdmin(cb) {
 /**
  * Handles a request for the ACP
  */
-function handleAcp(req, res, user) {
+function handleAcp(req, res, _user) {
     const ioServers = ioConfig.getSocketEndpoints();
     const chosenServer = ioServers[0];
 

@@ -21,9 +21,12 @@ EmoteList.prototype = {
     },
 
     emoteExists: function (emote){
-        if(this.emotes.filter((item)=>{ return item.name === emote.name }).length){
-            return true;
+        for (let i = 0; i < this.emotes.length; i++) {
+            if (this.emotes[i].name === emote.name) {
+                return true;
+            }
         }
+
         return false;
     },
 
@@ -61,7 +64,6 @@ EmoteList.prototype = {
     },
 
     removeEmote: function (emote) {
-        var found = false;
         for (var i = 0; i < this.emotes.length; i++) {
             if (this.emotes[i].name === emote.name) {
                 this.emotes.splice(i, 1);
@@ -99,7 +101,7 @@ function validateEmote(f) {
     f.image = f.image.substring(0, 1000);
     f.image = XSS.sanitizeText(f.image);
 
-    var s = XSS.looseSanitizeText(f.name).replace(/([\\\.\?\+\*\$\^\|\(\)\[\]\{\}])/g, "\\$1");
+    var s = XSS.looseSanitizeText(f.name).replace(/([\\.?+*$^|()[\]{}])/g, "\\$1");
     s = "(^|\\s)" + s + "(?!\\S)";
     f.source = s;
 
@@ -114,9 +116,9 @@ function validateEmote(f) {
     }
 
     return f;
-};
+}
 
-function EmoteModule(channel) {
+function EmoteModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.emotes = new EmoteList();
     this.supportsDirtyCheck = true;
@@ -153,7 +155,6 @@ EmoteModule.prototype.onUserPostJoin = function (user) {
 
 EmoteModule.prototype.sendEmotes = function (users) {
     var f = this.emotes.pack();
-    var chan = this.channel;
     users.forEach(function (u) {
         u.socket.emit("emoteList", f);
     });

@@ -46,7 +46,7 @@ const DEFAULT_PERMISSIONS = {
     exceedmaxdurationperuser: 2 // Exceed maximum total playlist length per user
 };
 
-function PermissionsModule(channel) {
+function PermissionsModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.permissions = {};
     this.openPlaylist = false;
@@ -148,7 +148,7 @@ PermissionsModule.prototype.handleSetPermissions = function (user, perms) {
         return;
     }
 
-    for (var key in perms) {
+    for (const key in perms) {
         if (typeof perms[key] !== "number") {
             perms[key] = parseFloat(perms[key]);
             if (isNaN(perms[key])) {
@@ -157,7 +157,7 @@ PermissionsModule.prototype.handleSetPermissions = function (user, perms) {
         }
     }
 
-    for (var key in perms) {
+    for (const key in perms) {
         if (key in this.permissions) {
             this.permissions[key] = perms[key];
         }
@@ -215,7 +215,7 @@ PermissionsModule.prototype.canMoveVideo = function (account) {
 };
 
 PermissionsModule.prototype.canDeleteVideo = function (account) {
-    return this.hasPermission(account, "playlistdelete")
+    return this.hasPermission(account, "playlistdelete");
 };
 
 PermissionsModule.prototype.canSkipVideo = function (account) {

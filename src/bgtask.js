@@ -14,7 +14,7 @@ const LOGGER = require('@calzoneman/jsli')('bgtask');
 var init = null;
 
 /* Alias cleanup */
-function initAliasCleanup(Server) {
+function initAliasCleanup(_Server) {
     var CLEAN_INTERVAL = parseInt(Config.get("aliases.purge-interval"));
     var CLEAN_EXPIRE = parseInt(Config.get("aliases.max-age"));
 
@@ -28,7 +28,7 @@ function initAliasCleanup(Server) {
 }
 
 /* Password reset cleanup */
-function initPasswordResetCleanup(Server) {
+function initPasswordResetCleanup(_Server) {
     var CLEAN_INTERVAL = 8*60*60*1000;
 
     setInterval(function () {

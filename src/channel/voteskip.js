@@ -2,7 +2,7 @@ var ChannelModule = require("./module");
 var Flags = require("../flags");
 var Poll = require("../poll").Poll;
 
-function VoteskipModule(channel) {
+function VoteskipModule(_channel) {
     ChannelModule.apply(this, arguments);
 
     this.poll = false;
@@ -128,7 +128,7 @@ VoteskipModule.prototype.reset = function reset() {
     this.sendVoteskipData(this.channel.users);
 };
 
-VoteskipModule.prototype.onMediaChange = function (data) {
+VoteskipModule.prototype.onMediaChange = function (_data) {
     this.reset();
 };
 

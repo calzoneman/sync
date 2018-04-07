@@ -50,22 +50,22 @@ function handleLine(line) {
             const ip = args.shift();
             const comment = args.join(' ');
             // TODO: this is broken by the knex refactoring
-            require('./database').globalBanIP(ip, comment, function (err, res) {
+            require('./database').globalBanIP(ip, comment, function (err, _res) {
                 if (!err) {
                     eventlog.log('[acp] ' + 'SYSTEM' + ' global banned ' + ip);
                 }
-            })
+            });
         }
     } else if (line.indexOf('/unglobalban') === 0) {
         var args = line.split(/\s+/); args.shift();
         if (args.length >= 1 && validIP(args[0]) !== 0) {
             var ip = args.shift();
             // TODO: this is broken by the knex refactoring
-            require('./database').globalUnbanIP(ip, function (err, res) {
+            require('./database').globalUnbanIP(ip, function (err, _res) {
                 if (!err) {
                     eventlog.log('[acp] ' + 'SYSTEM' + ' un-global banned ' + ip);
                 }
-            })
+            });
         }
     } else if (line.indexOf('/save') === 0) {
         sv.forceSave();
@@ -160,6 +160,6 @@ process.on('SIGUSR2', () => {
 });
 
 require('bluebird');
-process.on('unhandledRejection', function (reason, promise) {
+process.on('unhandledRejection', function (reason, _promise) {
     LOGGER.error('Unhandled rejection: %s', reason.stack);
 });

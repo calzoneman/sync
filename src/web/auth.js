@@ -4,8 +4,6 @@
  * @author Calvin Montgomery <cyzon@cyzon.us>
  */
 
-var pug = require("pug");
-var path = require("path");
 var webserver = require("./webserver");
 var sendPug = require("./pug").sendPug;
 var Logger = require("../logger");

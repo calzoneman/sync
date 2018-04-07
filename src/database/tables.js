@@ -1,3 +1,5 @@
+const LOGGER = require('@calzoneman/jsli')('database/tables');
+
 const TBL_USERS = "" +
     "CREATE TABLE IF NOT EXISTS `users` (" +
         "`id` INT NOT NULL AUTO_INCREMENT," +
@@ -134,7 +136,11 @@ module.exports.init = function (queryfn, cb) {
         aq.queue(function (lock) {
             queryfn(tables[tbl], function (err) {
                 if (err) {
-                    console.log(err);
+                    LOGGER.error(
+                        'Failed to create table %s: %s',
+                        tbl,
+                        err.stack
+                    );
                     hasError = true;
                 }
                 lock.release();

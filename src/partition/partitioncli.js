@@ -2,6 +2,8 @@ import { PartitionModule } from './partitionmodule';
 import { PartitionMap } from './partitionmap';
 import fs from 'fs';
 
+/* eslint no-console: off */
+
 const partitionModule = new PartitionModule();
 partitionModule.cliMode = true;
 

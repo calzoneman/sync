@@ -1,7 +1,3 @@
-import path from 'path';
-import fs from 'fs';
-import crypto from 'crypto';
-
 const NO_EXPIRATION = new Date('Fri, 31 Dec 9999 23:59:59 GMT');
 
 export function createIPSessionCookie(ip, date) {

@@ -9,7 +9,7 @@ AsyncQueue.prototype.next = function () {
         if (!this.lock())
             return;
         var item = this._q.shift();
-        var fn = item[0], tm = item[1];
+        var fn = item[0];
         this._tm = Date.now() + item[1];
         fn(this);
     }

@@ -17,7 +17,7 @@ module.exports.checkVersion = function () {
                               "db_version=" + DB_VERSION);
             db.query("INSERT INTO `meta` (`key`, `value`) VALUES ('db_version', ?)",
                      [DB_VERSION],
-                     function (err) {
+                     function (_err) {
             });
         } else {
             var v = parseInt(rows[0].value);
@@ -89,7 +89,7 @@ function populateUsernameDedupeColumn(cb) {
             cb();
         }).catch(error => {
             LOGGER.error("Unable to perform database upgrade to add dedupe column: " + (error.stack ? error.stack : error));
-        })
+        });
     });
 }
 

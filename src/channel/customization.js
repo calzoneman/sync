@@ -13,7 +13,7 @@ const TYPE_SETMOTD = {
     motd: "string"
 };
 
-function CustomizationModule(channel) {
+function CustomizationModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.css = "";
     this.js = "";

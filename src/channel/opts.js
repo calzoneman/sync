@@ -7,7 +7,7 @@ function realTypeOf(thing) {
     return thing === null ? 'null' : typeof thing;
 }
 
-function OptionsModule(channel) {
+function OptionsModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.opts = {
         allow_voteskip: true,      // Allow users to voteskip
@@ -28,7 +28,7 @@ function OptionsModule(channel) {
         password: false,           // Channel password (false -> no password required for entry)
         allow_dupes: false,        // Allow duplicate videos on the playlist
         torbanned: false,          // Block connections from Tor exit nodes
-        block_anonymous_users: false, //Only allow connections from registered users. 
+        block_anonymous_users: false, //Only allow connections from registered users.
         allow_ascii_control: false,// Allow ASCII control characters (\x00-\x1f)
         playlist_max_per_user: 0,  // Maximum number of playlist items per user
         new_user_chat_delay: 0,      // Minimum account/IP age to chat
@@ -50,10 +50,14 @@ OptionsModule.prototype.load = function (data) {
         }
     }
 
-    this.opts.chat_antiflood_params.burst = Math.min(20,
-            this.opts.chat_antiflood_params.burst);
-    this.opts.chat_antiflood_params.sustained = Math.min(10,
-            this.opts.chat_antiflood_params.sustained);
+    this.opts.chat_antiflood_params.burst = Math.min(
+        20,
+        this.opts.chat_antiflood_params.burst
+    );
+    this.opts.chat_antiflood_params.sustained = Math.min(
+        10,
+        this.opts.chat_antiflood_params.sustained
+    );
     this.dirty = false;
 };
 
@@ -164,7 +168,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     if ("maxlength" in data) {
         var ml = 0;
         if (typeof data.maxlength !== "number") {
-           ml = Utilities.parseTime(data.maxlength);
+            ml = Utilities.parseTime(data.maxlength);
         } else {
             ml = parseInt(data.maxlength);
         }
@@ -206,13 +210,13 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
                 target: "#cs-externalcss"
             });
         } else {
-            var data = url.parse(link);
-            if (!data.protocol || data.protocol !== 'https:') {
+            var urldata = url.parse(link);
+            if (!urldata.protocol || urldata.protocol !== 'https:') {
                 user.socket.emit("validationError", {
                     target: "#cs-externalcss",
                     message: prefix + " URL must begin with 'https://'"
                 });
-            } else if (!data.host) {
+            } else if (!urldata.host) {
                 user.socket.emit("validationError", {
                     target: "#cs-externalcss",
                     message: prefix + "missing hostname"
@@ -221,14 +225,14 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
                 user.socket.emit("validationPassed", {
                     target: "#cs-externalcss"
                 });
-                this.opts.externalcss = data.href;
+                this.opts.externalcss = urldata.href;
                 sendUpdate = true;
             }
         }
     }
 
     if ("externaljs" in data && user.account.effectiveRank >= 3) {
-        var prefix = "Invalid URL for external JS: ";
+        const prefix = "Invalid URL for external JS: ";
         if (typeof data.externaljs !== "string") {
             user.socket.emit("validationError", {
                 target: "#cs-externaljs",
@@ -237,7 +241,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
             });
         }
 
-        var link = data.externaljs.substring(0, 255).trim();
+        const link = data.externaljs.substring(0, 255).trim();
         if (!link) {
             sendUpdate = (this.opts.externaljs !== "");
             this.opts.externaljs = "";
@@ -245,13 +249,13 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
                 target: "#cs-externaljs"
             });
         } else {
-            var data = url.parse(link);
-            if (!data.protocol || data.protocol !== 'https:') {
+            const urldata = url.parse(link);
+            if (!urldata.protocol || urldata.protocol !== 'https:') {
                 user.socket.emit("validationError", {
                     target: "#cs-externaljs",
                     message: prefix + " URL must begin with 'https://'"
                 });
-            } else if (!data.host) {
+            } else if (!urldata.host) {
                 user.socket.emit("validationError", {
                     target: "#cs-externaljs",
                     message: prefix + "missing hostname"
@@ -260,7 +264,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
                 user.socket.emit("validationPassed", {
                     target: "#cs-externaljs"
                 });
-                this.opts.externaljs = data.href;
+                this.opts.externaljs = urldata.href;
                 sendUpdate = true;
             }
         }
@@ -333,7 +337,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
         this.opts.block_anonymous_users = Boolean(data.block_anonymous_users);
         sendUpdate = true;
     }
-    
+
     if ("allow_ascii_control" in data && user.account.effectiveRank >= 3) {
         this.opts.allow_ascii_control = Boolean(data.allow_ascii_control);
         sendUpdate = true;
@@ -348,7 +352,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     }
 
     if ("new_user_chat_delay" in data) {
-        var delay = data.new_user_chat_delay;
+        const delay = data.new_user_chat_delay;
         if (!isNaN(delay) && delay >= 0) {
             this.opts.new_user_chat_delay = delay;
             sendUpdate = true;
@@ -356,7 +360,7 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     }
 
     if ("new_user_chat_link_delay" in data) {
-        var delay = data.new_user_chat_link_delay;
+        const delay = data.new_user_chat_link_delay;
         if (!isNaN(delay) && delay >= 0) {
             this.opts.new_user_chat_link_delay = delay;
             sendUpdate = true;

@@ -1,9 +1,5 @@
-var mysql = require("mysql");
-var bcrypt = require("bcrypt");
 var Config = require("./config");
 var tables = require("./database/tables");
-var net = require("net");
-var util = require("./utilities");
 import * as Metrics from './metrics/metrics';
 import knex from 'knex';
 import { GlobalBanDB } from './db/globalban';
@@ -127,7 +123,7 @@ module.exports.query = function (query, sub, callback) {
     }
 
     if (process.env.SHOW_SQL) {
-        console.log(query);
+        LOGGER.debug('%s', query);
     }
 
     const end = queryLatency.startTimer();
