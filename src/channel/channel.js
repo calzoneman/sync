@@ -156,7 +156,8 @@ Channel.prototype.initModules = function () {
         "./poll"          : "poll",
         "./kickban"       : "kickban",
         "./ranks"         : "rank",
-        "./accesscontrol" : "password"
+        "./accesscontrol" : "password",
+        "./anonymouscheck": "anoncheck"
     };
 
     var self = this;
@@ -418,7 +419,8 @@ Channel.prototype.acceptUser = function (user) {
 
         this.logger.log("[login] Accepted connection from Tor exit at " +
                         user.displayip);
-    } else {
+    } 
+    else {
         this.logger.log("[login] Accepted connection from " + user.displayip);
     }
 

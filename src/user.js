@@ -286,6 +286,11 @@ User.prototype.kick = function (reason) {
     this.socket.disconnect();
 };
 
+User.prototype.isAnonymous = function(){
+    var self = this;
+    return !self.is(Flags.U_LOGGED_IN);
+};
+
 User.prototype.initAdminCallbacks = function () {
     var self = this;
     self.socket.on("borrow-rank", function (rank) {
