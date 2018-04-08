@@ -118,7 +118,9 @@ Callbacks = {
     },
 
     needIdentity: function (wrongpw) {
-        $('#channel-overlay-content-header').text('User name required.');
+        $('#channel-overlay-submit').off('click');
+        $('#channel-overlay-content-input').off('keydown');
+        $('#channel-overlay-content-header').text('User name required');
         $('#channel-overlay-content-msg').text('This channel has blocked anonymous users. Please login or provide a guest name.');
         $('#channel-overlay').removeClass('d-none');
         var ovarlayInput = $('#channel-overlay-content-input');
@@ -126,7 +128,7 @@ Callbacks = {
 
         var guestLogin = function () {
             socket.emit("login", {
-                name: $('#channel-overlay-content-input').val()
+                name: ovarlayInput.val()
             });
         };
         $('#channel-overlay-submit').click(guestLogin);
@@ -144,10 +146,18 @@ Callbacks = {
     
     
     needPassword: function (wrongpw) {
+        $('#channel-overlay-submit').off('click');
+        $('#channel-overlay-content-input').off('keydown');
         $('#channel-overlay-content-header').text('Channel Password');
         $('#channel-overlay').removeClass('d-none');
+
         var ovarlayInput = $('#channel-overlay-content-input');
         ovarlayInput.attr("type", "password");
+        
+        if(wrongpw){
+            $('#channel-overlay-content-msg').text('Wrong Password. Try Again.');
+        }
+
         var sendPw = function () {
             socket.emit("channelPassword", ovarlayInput.val());
         };

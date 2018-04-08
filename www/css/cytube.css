@@ -564,10 +564,15 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     position: absolute;
 }
 
-    #channel-overlay-content{
-        margin: 0 auto;
-        margin-top: 20%;
-    }
+#channel-overlay-content{
+    margin: 0 auto;
+    margin-top: 20%;
+}
+
+#channel-overlay-content-input{
+    width: 50%;
+    margin: 0 auto;
+}
     
 @media screen and (min-width: 768px) {
     .modal-dialog {
@@ -587,6 +592,10 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
   
     #channel-overlay-content{
         margin-top:3%;
+    }
+    
+    #channel-overlay-content-input{
+        width: 80%;
     }
   
 }
@@ -712,17 +721,17 @@ body.hd #resize-video-larger, body.hd #resize-video-smaller {
 }
 
 .d-block{
-    display:block;
+    display:block !important;
 }
 .d-none{
-    display: none;
+    display: none !important;
 }
 .position-absolute{
-    position: absolute;
+    position: absolute !important;
 }
 
 .mb-5{
-    margin-bottom: 5px;
+    margin-bottom: 5px !important;
     
 }
 

@@ -21,9 +21,9 @@ AnonymousCheck.prototype.onUserPreJoin = function (user, data, cb) {
         });
         
         user.waitFlag(Flags.U_LOGGED_IN, function () {
+            user.socket.emit("cancelNeedIdentity");
             cb(null, ChannelModule.PASSTHROUGH);
-            user.socket.emit("cancelIdentity");
-        });  _
+        });
         
         return;
     }
