@@ -118,25 +118,29 @@ Callbacks = {
     },
 
     needIdentity: function (wrongpw) {
-        $('#channel-overlay-submit').off('click');
-        $('#channel-overlay-content-input').off('keydown');
+        var overlayInput = $('#channel-overlay-content-input');
+        var overlaySubmit = $('#channel-overlay-submit');
+        overlaySubmit.off('click');
+        overlayInput.off('keydown');
         $('#channel-overlay-content-header').text('User name required');
         $('#channel-overlay-content-msg').text('This channel has blocked anonymous users. Please login or provide a guest name.');
         $('#channel-overlay').removeClass('d-none');
-        var ovarlayInput = $('#channel-overlay-content-input');
-        ovarlayInput.attr("type", "text").val('');
+  
+        overlayInput.attr("type", "text").val('');
 
         var guestLogin = function () {
             socket.emit("login", {
-                name: ovarlayInput.val()
+                name: overlayInput.val()
             });
         };
-        $('#channel-overlay-submit').click(guestLogin);
-        $('#channel-overlay-content-input').keydown(function (ev) {
+        overlaySubmit.click(guestLogin);
+        overlayInput.keydown(function (ev) {
             if (ev.keyCode == 13) {
                 guestLogin();
             }
         });
+
+        overlayInput.focus();
     },
     
     
@@ -146,30 +150,32 @@ Callbacks = {
     
     
     needPassword: function (wrongpw) {
-        $('#channel-overlay-submit').off('click');
-        $('#channel-overlay-content-input').off('keydown');
+        var overlayInput = $('#channel-overlay-content-input');
+        var overlaySubmit = $('#channel-overlay-submit');
+        overlaySubmit.off('click');
+        overlayInput.off('keydown');
         $('#channel-overlay-content-header').text('Channel Password');
         $('#channel-overlay').removeClass('d-none');
 
-        var ovarlayInput = $('#channel-overlay-content-input');
-        ovarlayInput.attr("type", "password");
+        overlayInput.attr("type", "password");
         
         if(wrongpw){
             $('#channel-overlay-content-msg').text('Wrong Password. Try Again.');
         }
 
         var sendPw = function () {
-            socket.emit("channelPassword", ovarlayInput.val());
+            socket.emit("channelPassword", overlayInput.val());
         };
 
-        $('#channel-overlay-submit').click(sendPw);
+        overlaySubmit.click(sendPw);
 
-        $('#channel-overlay-content-input').keydown(function (ev) {
+        overlayInput.keydown(function (ev) {
             if (ev.keyCode == 13) {
                 sendPw();
             }
         });
-        $('#channel-overlay-content-input').focus();
+
+        overlayInput.focus();
     },
 
     
