@@ -23,7 +23,7 @@ class EmailConfig {
             getPassword() {
                 return smtp.password;
             }
-        }
+        };
 
         const reset = config['password-reset'];
         this._reset = {

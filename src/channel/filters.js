@@ -62,7 +62,7 @@ const DEFAULT_FILTERS = [
         "<span class=\"spoiler\">\\1</span>")
 ];
 
-function ChatFilterModule(channel) {
+function ChatFilterModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.filters = new FilterList();
     this.supportsDirtyCheck = true;

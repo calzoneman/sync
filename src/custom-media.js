@@ -2,7 +2,6 @@ import { ValidationError } from './errors';
 import { parse as urlParse } from 'url';
 import net from 'net';
 import Media from './media';
-import { hash } from './util/hash';
 import { get as httpGet } from 'http';
 import { get as httpsGet } from 'https';
 

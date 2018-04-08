@@ -201,7 +201,7 @@ class IOServer {
         if (auth) {
             promises.push(verifySession(auth).then(user => {
                 socket.context.user = Object.assign({}, user);
-            }).catch(error => {
+            }).catch(_error => {
                 authFailureCount.inc(1);
                 LOGGER.warn('Unable to verify session for %s - ignoring auth',
                         socket.context.ipAddress);
@@ -210,7 +210,7 @@ class IOServer {
 
         promises.push(getAliases(socket.context.ipAddress).then(aliases => {
             socket.context.aliases = aliases;
-        }).catch(error => {
+        }).catch(_error => {
             LOGGER.warn('Unable to load aliases for %s',
                     socket.context.ipAddress);
         }));

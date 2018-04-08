@@ -17,30 +17,28 @@ ULList.prototype.prepend = function(item) {
     if(this.first !== null) {
         item.next = this.first;
         this.first.prev = item;
-    }
-    else {
+    } else {
         this.last = item;
     }
     this.first = item;
     this.first.prev = null;
     this.length++;
     return true;
-}
+};
 
 /* Add an item to the end of the list */
 ULList.prototype.append = function(item) {
     if(this.last !== null) {
         item.prev = this.last;
         this.last.next = item;
-    }
-    else {
+    } else {
         this.first = item;
     }
     this.last = item;
     this.last.next = null;
     this.length++;
     return true;
-}
+};
 
 /* Insert an item after one which has a specified UID */
 ULList.prototype.insertAfter = function(item, uid) {
@@ -63,7 +61,7 @@ ULList.prototype.insertAfter = function(item, uid) {
     this.length++;
 
     return true;
-}
+};
 
 /* Insert an item before one that has a specified UID */
 ULList.prototype.insertBefore = function(item, uid) {
@@ -86,7 +84,7 @@ ULList.prototype.insertBefore = function(item, uid) {
     this.length++;
 
     return true;
-}
+};
 
 /* Remove an item from the list */
 ULList.prototype.remove = function(uid) {
@@ -108,7 +106,7 @@ ULList.prototype.remove = function(uid) {
 
     this.length--;
     return true;
-}
+};
 
 /* Find an element in the list, return false if specified UID not found */
 ULList.prototype.find = function(uid) {
@@ -126,14 +124,14 @@ ULList.prototype.find = function(uid) {
     if(item && item.uid == uid)
         return item;
     return false;
-}
+};
 
 /* Clear all elements from the list */
 ULList.prototype.clear = function() {
     this.first = null;
     this.last = null;
     this.length = 0;
-}
+};
 
 /* Dump the contents of the list into an array */
 ULList.prototype.toArray = function(pack) {
@@ -148,7 +146,7 @@ ULList.prototype.toArray = function(pack) {
         item = item.next;
     }
     return arr;
-}
+};
 
 /* iterate across the playlist */
 ULList.prototype.forEach = function (fn) {
@@ -178,6 +176,6 @@ ULList.prototype.findAll = function(fn) {
         }
     });
     return result;
-}
+};
 
 module.exports = ULList;

@@ -1,18 +1,15 @@
-var Account = require("../account");
 var ChannelModule = require("./module");
 var Flags = require("../flags");
 
-function AccessControlModule(channel) {
+function AccessControlModule(_channel) {
     ChannelModule.apply(this, arguments);
 }
 
 AccessControlModule.prototype = Object.create(ChannelModule.prototype);
 
-var pending = 0;
 AccessControlModule.prototype.onUserPreJoin = function (user, data, cb) {
     var chan = this.channel,
         opts = this.channel.modules.options;
-    var self = this;
     if (user.socket.disconnected) {
         return cb("User disconnected", ChannelModule.DENY);
     }

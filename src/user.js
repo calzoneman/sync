@@ -156,14 +156,14 @@ User.prototype.handleLogin = function handleLogin(data) {
 };
 
 User.prototype.die = function () {
-    for (var key in this.socket._events) {
+    for (const key in this.socket._events) {
         delete this.socket._events[key];
     }
 
     delete this.socket.typecheckedOn;
     delete this.socket.typecheckedOnce;
 
-    for (var key in this.__evHandlers) {
+    for (const key in this.__evHandlers) {
         delete this.__evHandlers[key];
     }
 

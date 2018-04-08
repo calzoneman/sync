@@ -2,6 +2,8 @@ const SEED = 0x1234;
 const M = 0xc6a4a793;
 const R = 16;
 
+/* eslint no-fallthrough: off */
+
 export function murmurHash1(str) {
     const buffer = new Buffer(str, 'utf8');
     var length = buffer.length;

@@ -106,10 +106,12 @@ export class DatabaseStore {
 
         if (totalSize > SIZE_LIMIT) {
             throw new ChannelStateSizeError(
-                    'Channel state size is too large', {
-                limit: SIZE_LIMIT,
-                actual: totalSize
-            });
+                'Channel state size is too large',
+                {
+                    limit: SIZE_LIMIT,
+                    actual: totalSize
+                }
+            );
         }
 
         saveRowcount.inc(rowCount);

@@ -35,7 +35,6 @@ module.exports = {
 
 var path = require("path");
 var fs = require("fs");
-var http = require("http");
 var https = require("https");
 var express = require("express");
 var Channel = require("./channel/channel");
@@ -46,11 +45,9 @@ import LocalChannelIndex from './web/localchannelindex';
 import { PartitionChannelIndex } from './partition/partitionchannelindex';
 import IOConfiguration from './configuration/ioconfig';
 import WebConfiguration from './configuration/webconfig';
-import NullClusterClient from './io/cluster/nullclusterclient';
 import session from './session';
 import { LegacyModule } from './legacymodule';
 import { PartitionModule } from './partition/partitionmodule';
-import * as Switches from './switches';
 import { Gauge } from 'prom-client';
 import { AccountDB } from './db/account';
 import { ChannelDB } from './db/channel';
@@ -108,7 +105,7 @@ var Server = function () {
     } else {
         emailTransport = {
             sendMail() {
-                throw new Error('Email is not enabled on this server')
+                throw new Error('Email is not enabled on this server');
             }
         };
     }
@@ -177,6 +174,7 @@ var Server = function () {
                 try {
                     socket.destroy();
                 } catch (e) {
+                    // Ignore
                 }
             });
         } else if (bind.http) {
@@ -185,6 +183,7 @@ var Server = function () {
                 try {
                     socket.destroy();
                 } catch (e) {
+                    // Ignore
                 }
             });
         }
@@ -341,12 +340,11 @@ Server.prototype.unloadChannel = function (chan, options) {
         LOGGER.info("Unloaded channel " + chan.name);
         chan.broadcastUsercount.cancel();
         // Empty all outward references from the channel
-        var keys = Object.keys(chan);
-        for (var i in keys) {
-            if (keys[i] !== "refCounter") {
-                delete chan[keys[i]];
+        Object.keys(chan).forEach(key => {
+            if (key !== "refCounter") {
+                delete chan[key];
             }
-        }
+        });
         chan.dead = true;
         promActiveChannels.dec();
     }
@@ -361,7 +359,6 @@ Server.prototype.packChannelList = function (publicOnly, isAdmin) {
         return c.modules.options && c.modules.options.get("show_public");
     });
 
-    var self = this;
     return channels.map(function (c) {
         return c.packInfo(isAdmin);
     });
@@ -442,6 +439,7 @@ Server.prototype.handlePartitionMapChange = function () {
                     try {
                         u.socket.disconnect();
                     } catch (error) {
+                        // Ignore
                     }
                 });
                 this.unloadChannel(channel, { skipSave: true });

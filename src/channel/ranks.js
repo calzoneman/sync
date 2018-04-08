@@ -11,7 +11,7 @@ const TYPE_SET_CHANNEL_RANK = {
     rank: "number"
 };
 
-function RankModule(channel) {
+function RankModule(_channel) {
     ChannelModule.apply(this, arguments);
 
     if (this.channel.modules.chat) {
@@ -47,7 +47,7 @@ RankModule.prototype.sendChannelRanks = function (users) {
     });
 };
 
-RankModule.prototype.handleCmdRank = function (user, msg, meta) {
+RankModule.prototype.handleCmdRank = function (user, msg, _meta) {
     var args = msg.split(" ");
     args.shift(); /* shift off /rank */
     var name = args.shift();
@@ -186,7 +186,6 @@ RankModule.prototype.updateDatabase = function (data, cb) {
                     "You can't promote or demote someone" +
                     " with equal or higher rank than you."
             );
-            return;
         }
 
         return dbSetChannelRank(chan.name, data.name, data.rank);

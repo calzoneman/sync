@@ -4,6 +4,7 @@ import Config from '../config';
 import db from '../database';
 import { DatabaseStore } from './dbstore';
 
+/* eslint no-console: off */
 function main() {
     Config.load('config.yaml');
     db.init();

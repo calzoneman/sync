@@ -50,7 +50,7 @@ var ATTRIBUTE_MAP = {
     table: ["cellpadding", "cellspacing"],
     th: ["colspan", "rowspan"],
     td: ["colspan", "rowspan"]
-}
+};
 
 for (var key in ATTRIBUTE_MAP) {
     ALLOWED_ATTRIBUTES.forEach(function (attr) {

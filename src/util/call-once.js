@@ -3,5 +3,5 @@ export function callOnce(fn) {
 
     return (...args) => {
         called || fn(...args), called = true;
-    }
+    };
 }

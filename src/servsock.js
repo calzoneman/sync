@@ -1,6 +1,8 @@
 var fs = require('fs');
 var net = require('net');
 
+/* eslint no-console: off */
+
 export default class ServiceSocket {
 
     constructor() {
@@ -11,7 +13,7 @@ export default class ServiceSocket {
         this.handler = handler;
         this.socket = socket;
 
-        fs.stat(this.socket, (err, stats) => {
+        fs.stat(this.socket, (err, _stats) => {
             if (err) {
                 return this.openServiceSocket();
             }

@@ -10,7 +10,6 @@ var Logger = require("../logger");
 var db = require("../database");
 var $util = require("../utilities");
 var Config = require("../config");
-var Server = require("../server");
 var session = require("../session");
 var csrf = require("./csrf");
 const url = require("url");
@@ -110,7 +109,7 @@ async function handleChangePassword(req, res) {
 
     newpassword = newpassword.substring(0, 100);
 
-    db.users.verifyLogin(name, oldpassword, function (err, user) {
+    db.users.verifyLogin(name, oldpassword, function (err, _user) {
         if (err) {
             sendPug(res, "account-edit", {
                 errorMessage: err
@@ -118,7 +117,7 @@ async function handleChangePassword(req, res) {
             return;
         }
 
-        db.users.setPassword(name, newpassword, function (err, dbres) {
+        db.users.setPassword(name, newpassword, function (err, _dbres) {
             if (err) {
                 sendPug(res, "account-edit", {
                     errorMessage: err
@@ -177,7 +176,7 @@ function handleChangeEmail(req, res) {
         return;
     }
 
-    db.users.verifyLogin(name, password, function (err, user) {
+    db.users.verifyLogin(name, password, function (err, _user) {
         if (err) {
             sendPug(res, "account-edit", {
                 errorMessage: err
@@ -185,7 +184,7 @@ function handleChangeEmail(req, res) {
             return;
         }
 
-        db.users.setEmail(name, email, function (err, dbres) {
+        db.users.setEmail(name, email, function (err, _dbres) {
             if (err) {
                 sendPug(res, "account-edit", {
                     errorMessage: err
@@ -292,7 +291,7 @@ async function handleNewChannel(req, res) {
             return;
         }
 
-        db.channels.register(name, user.name, function (err, channel) {
+        db.channels.register(name, user.name, function (err, _channel) {
             if (!err) {
                 Logger.eventlog.log("[channel] " + user.name + "@" +
                                     req.realIP +
@@ -565,7 +564,7 @@ function handlePasswordReset(req, res) {
             email: email,
             hash: hash,
             expire: expire
-        }, function (err, dbres) {
+        }, function (err, _dbres) {
             if (err) {
                 sendPug(res, "account-passwordreset", {
                     reset: false,
@@ -594,7 +593,7 @@ function handlePasswordReset(req, res) {
                 username: name,
                 address: email,
                 url: `${baseUrl}/account/passwordrecover/${hash}`
-            }).then(result => {
+            }).then(_result => {
                 sendPug(res, "account-passwordreset", {
                     reset: true,
                     resetEmail: email,

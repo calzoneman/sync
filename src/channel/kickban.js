@@ -15,7 +15,7 @@ const TYPE_UNBAN = {
     name: "string"
 };
 
-function KickBanModule(channel) {
+function KickBanModule(_channel) {
     ChannelModule.apply(this, arguments);
 
     if (this.channel.modules.chat) {
@@ -31,16 +31,6 @@ KickBanModule.prototype = Object.create(ChannelModule.prototype);
 
 function checkIPBan(cname, ip, cb) {
     db.channels.isIPBanned(cname, ip, function (err, banned) {
-        if (err) {
-            cb(false);
-        } else {
-            cb(banned);
-        }
-    });
-}
-
-function checkNameBan(cname, name, cb) {
-    db.channels.isNameBanned(cname, name, function (err, banned) {
         if (err) {
             cb(false);
         } else {
@@ -65,7 +55,6 @@ KickBanModule.prototype.onUserPreJoin = function (user, data, cb) {
     }
 
     const cname = this.channel.name;
-    const check = (user.getName() !== '') ? checkBan : checkIPBan;
     function callback(banned) {
         if (banned) {
             cb(null, ChannelModule.DENY);
@@ -162,7 +151,7 @@ KickBanModule.prototype.sendUnban = function (users, data) {
     });
 };
 
-KickBanModule.prototype.handleCmdKick = function (user, msg, meta) {
+KickBanModule.prototype.handleCmdKick = function (user, msg, _meta) {
     if (!this.channel.modules.permissions.canKick(user)) {
         return;
     }
@@ -206,7 +195,7 @@ KickBanModule.prototype.handleCmdKick = function (user, msg, meta) {
     }
 };
 
-KickBanModule.prototype.handleCmdKickAnons = function (user, msg, meta) {
+KickBanModule.prototype.handleCmdKickAnons = function (user, _msg, _meta) {
     if (!this.channel.modules.permissions.canKick(user)) {
         return;
     }
@@ -226,7 +215,7 @@ KickBanModule.prototype.handleCmdKickAnons = function (user, msg, meta) {
 };
 
 /* /ban - name bans */
-KickBanModule.prototype.handleCmdBan = function (user, msg, meta) {
+KickBanModule.prototype.handleCmdBan = function (user, msg, _meta) {
     var args = msg.split(" ");
     args.shift(); /* shift off /ban */
     if (args.length === 0 || args[0].trim() === "") {
@@ -249,7 +238,7 @@ KickBanModule.prototype.handleCmdBan = function (user, msg, meta) {
 };
 
 /* /ipban - bans name and IP addresses associated with it */
-KickBanModule.prototype.handleCmdIPBan = function (user, msg, meta) {
+KickBanModule.prototype.handleCmdIPBan = function (user, msg, _meta) {
     var args = msg.split(" ");
     args.shift(); /* shift off /ipban */
     if (args.length === 0 || args[0].trim() === "") {
@@ -325,8 +314,8 @@ KickBanModule.prototype.banName = async function banName(actor, name, reason) {
 
     if (chan.modules.chat) {
         chan.modules.chat.sendModMessage(
-                actor.getName() + " namebanned " + name,
-                chan.modules.permissions.permissions.ban
+            actor.getName() + " namebanned " + name,
+            chan.modules.permissions.permissions.ban
         );
     }
 
@@ -364,14 +353,14 @@ KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
 
     var cloaked = util.cloakIP(ip);
     chan.logger.log(
-            "[mod] " + actor.getName() + " banned " + cloaked +
-            " (" + name + ")"
+        "[mod] " + actor.getName() + " banned " + cloaked +
+        " (" + name + ")"
     );
 
     if (chan.modules.chat) {
         chan.modules.chat.sendModMessage(
-                actor.getName() + " banned " + cloaked + " (" + name + ")",
-                chan.modules.permissions.permissions.ban
+            actor.getName() + " banned " + cloaked + " (" + name + ")",
+            chan.modules.permissions.permissions.ban
         );
     }
 
@@ -379,10 +368,10 @@ KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
 };
 
 KickBanModule.prototype.banAll = async function banAll(
-        actor,
-        name,
-        range,
-        reason
+    actor,
+    name,
+    range,
+    reason
 ) {
     reason = reason.substring(0, 255);
 
@@ -411,7 +400,7 @@ KickBanModule.prototype.banAll = async function banAll(
     }
 
     const promises = Array.from(toBan).map(ip =>
-            this.banIP(actor, ip, name, reason)
+        this.banIP(actor, ip, name, reason)
     );
 
     if (!await dbIsNameBanned(chan.name, name)) {
@@ -451,8 +440,10 @@ KickBanModule.prototype.handleUnban = function (user, data) {
         self.channel.logger.log("[mod] " + user.getName() + " unbanned " + data.name);
         if (self.channel.modules.chat) {
             var banperm = self.channel.modules.permissions.permissions.ban;
-            self.channel.modules.chat.sendModMessage(user.getName() + " unbanned " +
-                                                     data.name, banperm);
+            self.channel.modules.chat.sendModMessage(
+                user.getName() + " unbanned " + data.name,
+                banperm
+            );
         }
         self.channel.refCounter.unref("KickBanModule::handleUnban");
     });

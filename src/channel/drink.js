@@ -1,6 +1,10 @@
+// TODO: figure out what to do with this module
+// it serves a very niche use case and is only a core module because of
+// legacy reasons (early channels requested it before I had criteria
+// around what to include in core)
 var ChannelModule = require("./module");
 
-function DrinkModule(channel) {
+function DrinkModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.drinks = 0;
 }

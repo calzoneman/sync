@@ -199,7 +199,7 @@ module.exports = {
                              " VALUES " +
                              "(?, ?, ?, ?, '', ?, ?, ?)",
                              [name, hash, 1, email, ip, Date.now(), module.exports.dedupeUsername(name)],
-                    function (err, res) {
+                    function (err, _res) {
                         delete registrationLock[lname];
                         if (err) {
                             callback(err, null);
@@ -292,7 +292,7 @@ module.exports = {
 
             db.query("UPDATE `users` SET password=? WHERE name=?",
                      [hash, name],
-            function (err, result) {
+            function (err, _result) {
                 callback(err, err ? null : true);
             });
         });
@@ -347,7 +347,7 @@ module.exports = {
         }
 
         db.query("UPDATE `users` SET global_rank=? WHERE name=?", [rank, name],
-        function (err, result) {
+        function (err, _result) {
             callback(err, err ? null : true);
         });
     },
@@ -427,7 +427,7 @@ module.exports = {
         }
 
         db.query("UPDATE `users` SET email=? WHERE name=?", [email, name],
-        function (err, result) {
+        function (err, _result) {
             callback(err, err ? null : true);
         });
     },
@@ -509,7 +509,7 @@ module.exports = {
         });
 
         db.query("UPDATE `users` SET profile=? WHERE name=?", [profilejson, name],
-        function (err, result) {
+        function (err, _result) {
             callback(err, err ? null : true);
         });
     },

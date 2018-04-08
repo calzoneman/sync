@@ -5,7 +5,7 @@ export default class NullClusterClient {
         this.ioConfig = ioConfig;
     }
 
-    getSocketConfig(channel) {
+    getSocketConfig(_channel) {
         const servers = this.ioConfig.getSocketEndpoints();
         return Promise.resolve({
             servers: servers

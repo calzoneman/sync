@@ -24,7 +24,7 @@ function loadAndExecuteScript(redisClient, filename, args) {
 
 function runEvalSha(redisClient, filename, args) {
     const evalInput = args.slice();
-    evalInput.unshift(EVALSHA_CACHE[filename])
+    evalInput.unshift(EVALSHA_CACHE[filename]);
     return redisClient.evalshaAsync.apply(redisClient, evalInput);
 }
 

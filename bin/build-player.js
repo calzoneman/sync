@@ -30,7 +30,12 @@ var order = [
 
 var buffer = '';
 order.forEach(function (file) {
-    buffer += fs.readFileSync(path.join('player', file)) + '\n';
+    buffer += fs.readFileSync(
+        path.join(__dirname, '..', 'player', file)
+    ) + '\n';
 });
 
-fs.writeFileSync(path.join('www', 'js', 'player.js'), coffee.compile(buffer));
+fs.writeFileSync(
+    path.join(__dirname, '..', 'www', 'js', 'player.js'),
+    coffee.compile(buffer)
+);

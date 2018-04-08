@@ -14,37 +14,37 @@ const ECODE_MESSAGES = {
         `Unknown host "${e.hostname}".  ` +
         'Please check that the link is correct.'
     ),
-    EPROTO: e => 'The remote server does not support HTTPS.',
-    ECONNRESET: e => 'The remote server unexpectedly closed the connection.',
-    ECONNREFUSED: e => (
+    EPROTO: _e => 'The remote server does not support HTTPS.',
+    ECONNRESET: _e => 'The remote server unexpectedly closed the connection.',
+    ECONNREFUSED: _e => (
         'The remote server refused the connection.  ' +
         'Please check that the link is correct and the server is running.'
     ),
-    ETIMEDOUT: e => (
+    ETIMEDOUT: _e => (
         'The connection to the remote server timed out.  ' +
         'Please check that the link is correct.'
     ),
-    ENETUNREACH: e => (
+    ENETUNREACH: _e => (
         "The remote server's network is unreachable from this server.  " +
         "Please contact an administrator for assistance."
     ),
-    EHOSTUNREACH: e => (
+    EHOSTUNREACH: _e => (
         "The remote server is unreachable from this server.  " +
         "Please contact the video server's administrator for assistance."
     ),
 
-    DEPTH_ZERO_SELF_SIGNED_CERT: e => (
+    DEPTH_ZERO_SELF_SIGNED_CERT: _e => (
         'The remote server provided an invalid ' +
         '(self-signed) SSL certificate.  Raw file support requires a ' +
         'trusted certificate.  See https://letsencrypt.org/ to get ' +
         'a free, trusted certificate.'
     ),
-    UNABLE_TO_VERIFY_LEAF_SIGNATURE: e => (
+    UNABLE_TO_VERIFY_LEAF_SIGNATURE: _e => (
         "The remote server's SSL certificate chain could not be validated.  " +
         "Please contact the administrator of the server to correct their " +
         "SSL certificate configuration."
     ),
-    CERT_HAS_EXPIRED: e => (
+    CERT_HAS_EXPIRED: _e => (
         "The remote server's SSL certificate has expired.  Please contact " +
         "the administrator of the server to renew the certificate."
     )
@@ -73,6 +73,7 @@ var audioOnlyContainers = {
 
 function fflog() { }
 
+/* eslint no-func-assign: off */
 function initFFLog() {
     if (fflog.initialized) return;
     var logger = new Logger.Logger(path.resolve(__dirname, "..", "ffmpeg.log"));
@@ -200,7 +201,7 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
 
         cb("An unexpected error occurred while trying to process the link.  " +
            "Try again, and contact support for further troubleshooting if the " +
-           "problem continues." + (!!err.code ? (" Error code: " + err.code) : ""));
+           "problem continues." + (err.code ? (" Error code: " + err.code) : ""));
     });
 
     req.end();
@@ -389,7 +390,7 @@ exports.ffprobe = function ffprobe(filename, cb) {
 
         return cb(null, result);
     });
-}
+};
 
 exports.query = function (filename, cb) {
     if (Config.get("ffmpeg.log") && !fflog.initialized) {

@@ -2,7 +2,6 @@ var db = require("../database");
 var valid = require("../utilities").isValidChannelName;
 var fs = require("fs");
 var path = require("path");
-var tables = require("./tables");
 var Flags = require("../flags");
 var util = require("../utilities");
 import { createMySQLDuplicateKeyUpdate } from '../util/on-duplicate-key-update';
@@ -11,18 +10,6 @@ import Config from '../config';
 const LOGGER = require('@calzoneman/jsli')('database/channels');
 
 var blackHole = function () { };
-
-function dropTable(name, callback) {
-    db.query("DROP TABLE `" + name + "`", callback);
-}
-
-function initTables(name, owner, callback) {
-    if (!valid(name)) {
-        callback("Invalid channel name", null);
-        return;
-    }
-
-}
 
 module.exports = {
     init: function () {
@@ -152,7 +139,7 @@ module.exports = {
             db.query("INSERT INTO `channels` " +
                      "(`name`, `owner`, `time`, `last_loaded`) VALUES (?, ?, ?, ?)",
                      [name, owner, Date.now(), new Date()],
-                     function (err, res) {
+                     function (err, _res) {
                 if (err) {
                     callback(err, null);
                     return;
@@ -220,7 +207,7 @@ module.exports = {
                 }
             });
 
-            callback(err, !Boolean(err));
+            callback(err, !err);
         });
     },
 

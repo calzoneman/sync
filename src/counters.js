@@ -5,7 +5,6 @@ import { JSONFileMetricsReporter } from './metrics/jsonfilemetricsreporter';
 
 const LOGGER = require('@calzoneman/jsli')('counters');
 
-var counters = {};
 var server = null;
 
 exports.add = Metrics.incCounter;
