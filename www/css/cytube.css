@@ -556,6 +556,19 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     margin-right: 5px;
 }
 
+#channel-overlay{
+    height: 97%;
+    width: 100%;
+    background-color: #272b30;
+    z-index: 9998;
+    position: absolute;
+}
+
+    #channel-overlay-content{
+        margin: 0 auto;
+        margin-top: 20%;
+    }
+    
 @media screen and (min-width: 768px) {
     .modal-dialog {
         min-width: 600px!important;
@@ -566,8 +579,17 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     .modal-dialog-nonfluid.modal-dialog {
         max-width: 600px!important;
     }
+    
+
 }
 
+@media screen and (max-width: 480px) {
+  
+    #channel-overlay-content{
+        margin-top:3%;
+    }
+  
+}
 table td {
     max-width: 200px;
     word-wrap: break-word;
@@ -688,3 +710,19 @@ input#logout[type="submit"]:hover {
 body.hd #resize-video-larger, body.hd #resize-video-smaller {
     display: none;
 }
+
+.d-block{
+    display:block;
+}
+.d-none{
+    display: none;
+}
+.position-absolute{
+    position: absolute;
+}
+
+.mb-5{
+    margin-bottom: 5px;
+    
+}
+

@@ -117,41 +117,54 @@ Callbacks = {
         errDialog(message);
     },
 
-    needPassword: function (wrongpw) {
-        var div = $("<div/>");
-        $("<strong/>").text("Channel Password")
-            .appendTo(div);
-        if (wrongpw) {
-            $("<br/>").appendTo(div);
-            $("<span/>").addClass("text-error")
-                .text("Wrong Password")
-                .appendTo(div);
-        }
+    needIdentity: function (wrongpw) {
+        $('#channel-overlay-content-header').text('User name required.');
+        $('#channel-overlay-content-msg').text('This channel has blocked anonymous users. Please login or provide a guest name.');
+        $('#channel-overlay').removeClass('d-none');
+        var ovarlayInput = $('#channel-overlay-content-input');
+        ovarlayInput.attr("type", "text").val('');
 
-        var pwbox = $("<input/>").addClass("form-control")
-            .attr("type", "password")
-            .appendTo(div);
-        var submit = $("<button/>").addClass("btn btn-xs btn-default btn-block")
-            .css("margin-top", "5px")
-            .text("Submit")
-            .appendTo(div);
-        var parent = chatDialog(div);
-        parent.attr("id", "needpw");
-        var sendpw = function () {
-            socket.emit("channelPassword", pwbox.val());
-            parent.remove();
+        var guestLogin = function () {
+            socket.emit("login", {
+                name: $('#channel-overlay-content-input').val()
+            });
         };
-        submit.click(sendpw);
-        pwbox.keydown(function (ev) {
+        $('#channel-overlay-submit').click(guestLogin);
+        $('#channel-overlay-content-input').keydown(function (ev) {
             if (ev.keyCode == 13) {
-                sendpw();
+                guestLogin();
             }
         });
-        pwbox.focus();
+    },
+    
+    
+    cancelNeedIdentity: function(){
+         $('#channel-overlay').addClass('d-none');
+    },
+    
+    
+    needPassword: function (wrongpw) {
+        $('#channel-overlay-content-header').text('Channel Password');
+        $('#channel-overlay').removeClass('d-none');
+        var ovarlayInput = $('#channel-overlay-content-input');
+        ovarlayInput.attr("type", "password");
+        var sendPw = function () {
+            socket.emit("channelPassword", ovarlayInput.val());
+        };
+
+        $('#channel-overlay-submit').click(sendPw);
+
+        $('#channel-overlay-content-input').keydown(function (ev) {
+            if (ev.keyCode == 13) {
+                sendPw();
+            }
+        });
+        $('#channel-overlay-content-input').focus();
     },
 
+    
     cancelNeedPassword: function () {
-        $("#needpw").remove();
+        $('#channel-overlay').addClass('d-none');
     },
 
     cooldown: function (time) {
