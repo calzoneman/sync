@@ -369,6 +369,14 @@ Channel.prototype.joinUser = function (user, data) {
 
         user.channel = self;
         user.waitFlag(Flags.U_LOGGED_IN, () => {
+            if (self.dead) {
+                LOGGER.warn(
+                    'Got U_LOGGED_IN for %s after channel already unloaded',
+                    user.getName()
+                );
+                return;
+            }
+
             if (user.is(Flags.U_REGISTERED)) {
                 db.channels.getRank(self.name, user.getName(), (error, rank) => {
                     if (!error) {
