@@ -22,15 +22,14 @@ AnonymousCheck.prototype.onUserPreJoin = function (user, data, cb) {
                 cb("User disconnected", ChannelModule.DENY);
             }
         });
-        
+
         user.waitFlag(Flags.U_LOGGED_IN, function () {
             user.socket.emit("cancelNeedIdentity");
             cb(null, ChannelModule.PASSTHROUGH);
         });
-        
+
         return;
-    }
-    else{
+    } else{
         cb(null, ChannelModule.PASSTHROUGH);
     }
 };
