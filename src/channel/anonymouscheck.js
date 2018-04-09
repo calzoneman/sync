@@ -1,5 +1,3 @@
-"use strict";
-
 var ChannelModule = require("./module");
 var Flags = require("../flags");
 
@@ -16,7 +14,7 @@ AnonymousCheck.prototype.onUserPreJoin = function (user, data, cb) {
     if (user.socket.disconnected) {
         return cb("User disconnected", ChannelModule.DENY);
     }
-    
+
     if(anonymousBanned && user.isAnonymous()) {
         user.socket.emit("needIdentity");
         user.socket.on("disconnect", function () {
