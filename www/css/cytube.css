@@ -587,7 +587,6 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
 }
 
 @media screen and (max-width: 480px) {
-  
     #channel-overlay-content{
         margin-top:3%;
     }
@@ -595,7 +594,6 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     #channel-overlay-content-input{
         width: 80%;
     }
-  
 }
 table td {
     max-width: 200px;
@@ -732,4 +730,3 @@ body.hd #resize-video-larger, body.hd #resize-video-smaller {
     margin-bottom: 5px !important;
     
 }
-
