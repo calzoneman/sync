@@ -3,39 +3,6 @@
     const net = require("net");
     const crypto = require("crypto");
 
-    // TODO: now that the Set type is native, find usages and remove this
-    var Set = function (items) {
-        this._items = {};
-        var self = this;
-        if (items instanceof Array)
-            items.forEach(function (it) { self.add(it); });
-    };
-
-    Set.prototype.contains = function (what) {
-        return (what in this._items);
-    };
-
-    Set.prototype.add = function (what) {
-        this._items[what] = true;
-    };
-
-    Set.prototype.remove = function (what) {
-        if (what in this._items)
-            delete this._items[what];
-    };
-
-    Set.prototype.clear = function () {
-        this._items = {};
-    };
-
-    Set.prototype.forEach = function (fn) {
-        for (var k in this._items) {
-            fn(k);
-        }
-    };
-
-    root.Set = Set;
-
     root.isValidChannelName = function (name) {
         return name.match(/^[\w-]{1,30}$/);
     },

@@ -32,7 +32,7 @@ const MIN_ANTIFLOOD = {
 function ChatModule(_channel) {
     ChannelModule.apply(this, arguments);
     this.buffer = [];
-    this.muted = new util.Set();
+    this.muted = new Set();
     this.commandHandlers = {};
     this.supportsDirtyCheck = true;
 
@@ -55,7 +55,7 @@ ChatModule.prototype = Object.create(ChannelModule.prototype);
 
 ChatModule.prototype.load = function (data) {
     this.buffer = [];
-    this.muted = new util.Set();
+    this.muted = new Set();
 
     if ("chatbuffer" in data) {
         for (var i = 0; i < data.chatbuffer.length; i++) {
@@ -74,7 +74,7 @@ ChatModule.prototype.load = function (data) {
 
 ChatModule.prototype.save = function (data) {
     data.chatbuffer = this.buffer;
-    data.chatmuted = Array.prototype.slice.call(this.muted);
+    data.chatmuted = Array.from(this.muted);
 };
 
 ChatModule.prototype.packInfo = function (data, _isAdmin) {
@@ -102,8 +102,8 @@ ChatModule.prototype.onUserPostJoin = function (user) {
 };
 
 ChatModule.prototype.isMuted = function (name) {
-    return this.muted.contains(name.toLowerCase()) ||
-           this.muted.contains(SHADOW_TAG + name.toLowerCase());
+    return this.muted.has(name.toLowerCase()) ||
+           this.muted.has(SHADOW_TAG + name.toLowerCase());
 };
 
 ChatModule.prototype.mutedUsers = function () {
@@ -114,7 +114,7 @@ ChatModule.prototype.mutedUsers = function () {
 };
 
 ChatModule.prototype.isShadowMuted = function (name) {
-    return this.muted.contains(SHADOW_TAG + name.toLowerCase());
+    return this.muted.has(SHADOW_TAG + name.toLowerCase());
 };
 
 ChatModule.prototype.shadowMutedUsers = function () {
@@ -667,8 +667,8 @@ ChatModule.prototype.handleCmdUnmute = function (user, msg, _meta) {
         return;
     }
 
-    this.muted.remove(name);
-    this.muted.remove(SHADOW_TAG + name);
+    this.muted.delete(name);
+    this.muted.delete(SHADOW_TAG + name);
 
     this.channel.logger.log("[mod] " + user.getName() + " unmuted " + name);
     this.sendModMessage(user.getName() + " unmuted " + name, muteperm);
