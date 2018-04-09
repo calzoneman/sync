@@ -9,6 +9,8 @@ import { ChannelStateSizeError } from '../errors';
 import { EventEmitter } from 'events';
 import { throttle } from '../util/throttle';
 import Logger from '../logger';
+// Not directly used, but needs to be in scope for async functions
+import Promise from 'bluebird';
 
 const LOGGER = require('@calzoneman/jsli')('channel');
 
