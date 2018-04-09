@@ -584,8 +584,6 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     .modal-dialog-nonfluid.modal-dialog {
         max-width: 600px!important;
     }
-    
-
 }
 
 @media screen and (max-width: 480px) {
