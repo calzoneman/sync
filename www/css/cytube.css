@@ -556,6 +556,24 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     margin-right: 5px;
 }
 
+#channel-overlay{
+    height: 97%;
+    width: 100%;
+    background-color: #272b30;
+    z-index: 9998;
+    position: absolute;
+}
+
+#channel-overlay-content{
+    margin: 0 auto;
+    margin-top: 20%;
+}
+
+#channel-overlay-content-input{
+    width: 50%;
+    margin: 0 auto;
+}
+    
 @media screen and (min-width: 768px) {
     .modal-dialog {
         min-width: 600px!important;
@@ -568,6 +586,15 @@ body.chatOnly .pm-panel, body.chatOnly .pm-panel-placeholder {
     }
 }
 
+@media screen and (max-width: 480px) {
+    #channel-overlay-content{
+        margin-top:3%;
+    }
+    
+    #channel-overlay-content-input{
+        width: 80%;
+    }
+}
 table td {
     max-width: 200px;
     word-wrap: break-word;
@@ -687,4 +714,18 @@ input#logout[type="submit"]:hover {
 
 body.hd #resize-video-larger, body.hd #resize-video-smaller {
     display: none;
+}
+
+.d-block{
+    display:block !important;
+}
+.d-none{
+    display: none !important;
+}
+.position-absolute{
+    position: absolute !important;
+}
+
+.mb-5{
+    margin-bottom: 5px !important;
 }

@@ -43,6 +43,13 @@ html(lang="en")
                 i#userlisttoggle.glyphicon.glyphicon-chevron-down.pull-left.pointer(title="Show/Hide Userlist")
                 span#usercount.pointer Not Connected
                 span#modflair.label.label-default.pull-right.pointer Name Color
+              #overlay-container.row
+                  #channel-overlay.col-xs-12.d-none.position-absolute
+                    #channel-overlay-content.text-center
+                        h4#channel-overlay-content-header.mb-5
+                        span#channel-overlay-content-msg.d-block.mb-5
+                        input#channel-overlay-content-input.form-control.mb-5
+                        button#channel-overlay-submit.btn.btn-default Submit
               #userlist
               #messagebuffer.linewrap
               input#chatline.form-control(type="text", maxlength="240", style="display: none")
