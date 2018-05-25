@@ -76,6 +76,7 @@ CyTube.ui = {
 CyTube.featureFlag = {
     efficientEmotes: true
 };
+CyTube._internal_do_not_use_or_you_will_be_banned = {};
 
 function getOpt(k) {
     var v = NO_STORAGE ? readCookie(k) : localStorage.getItem(k);
