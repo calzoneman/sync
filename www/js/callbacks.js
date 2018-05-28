@@ -920,6 +920,7 @@ Callbacks = {
 
         }
         $("<span/>").addClass("label label-default pull-right").data('timestamp',data.timestamp).appendTo(poll)
+            .attr('title', 'Poll opened by ' + data.initiator).data('initiator',data.initiator)
             .text(new Date(data.timestamp).toTimeString().split(" ")[0]);
 
         poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
