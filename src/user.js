@@ -381,6 +381,19 @@ User.prototype.guestLogin = function (name) {
         return;
     }
 
+    if (name.match(Config.get("reserved-names.usernames"))) {
+        LOGGER.warn(
+            'Rejecting attempt by %s to use reserved username "%s"',
+            self.realip,
+            name
+        );
+        self.socket.emit("login", {
+            success: false,
+            error: "That username is reserved."
+        });
+        return;
+    }
+
     // Prevent duplicate logins
     self.setFlag(Flags.U_LOGGING_IN);
     db.users.isUsernameTaken(name, function (err, taken) {

@@ -190,6 +190,11 @@ function handleRegister(req, res) {
     }
 
     if (name.match(Config.get("reserved-names.usernames"))) {
+        LOGGER.warn(
+            'Rejecting attempt by %s to register reserved username "%s"',
+            ip,
+            name
+        );
         sendPug(res, "register", {
             registerError: "That username is reserved"
         });
