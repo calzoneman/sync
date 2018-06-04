@@ -1,3 +1,26 @@
+2018-06-03
+==========
+
+## Dependency upgrades
+
+In order to support node.js 10, the `bcrypt` dependency has been upgraded to
+version 2.  `bcrypt` version 2 defaults to the `$2b$` algorithm, whereas version
+1 defaults to the `$2a$` algorithm.  Existing password hashes will continue to
+be readable, however hashes created with version 2 will not be readable by
+version 1.  See https://github.com/kelektiv/node.bcrypt.js for details.
+
+In addition, the optional dependency on `v8-profiler` has been removed, since
+this is not compatible with newer versions of v8.
+
+## Supported node.js versions
+
+In accordance with the node.js release schedule, node.js 4.x, 5.x, 7.x, and 9.x
+are end-of-life and are no longer maintained upstream.  Accordingly, these
+versions are no longer supported by CyTube.
+
+Please upgrade to 8.x (LTS) or 10.x (current).  6.x is still supported, but is
+in the "maintenance" phase upstream, and should be phased out.
+
 2018-01-07
 ==========
 
