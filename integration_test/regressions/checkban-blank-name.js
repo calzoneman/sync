@@ -51,7 +51,10 @@ describe('onPreUserJoin Ban Check', () => {
                 return 'anotherTroll';
             },
 
-            realip: bannedIP
+            realip: bannedIP,
+
+            kick() {
+            }
         };
 
         module.onUserPreJoin(user, null, (error, res) => {
@@ -67,7 +70,10 @@ describe('onPreUserJoin Ban Check', () => {
                 return 'troll';
             },
 
-            realip: '5.5.5.5'
+            realip: '5.5.5.5',
+
+            kick() {
+            }
         };
 
         module.onUserPreJoin(user, null, (error, res) => {
@@ -83,7 +89,10 @@ describe('onPreUserJoin Ban Check', () => {
                 return '';
             },
 
-            realip: bannedIP
+            realip: bannedIP,
+
+            kick() {
+            }
         };
 
         module.onUserPreJoin(user, null, (error, res) => {
