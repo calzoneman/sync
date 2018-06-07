@@ -487,13 +487,13 @@ Callbacks = {
     userlist: function(data) {
         $(".userlist_item").remove();
         for(var i = 0; i < data.length; i++) {
-            CyTube._internal_do_not_use_or_you_will_be_banned.addUserToList(data[i]);
+            CyTube._internal_do_not_use_or_you_will_be_banned.addUserToList(data[i], false);
         }
         sortUserlist();
     },
 
     addUser: function(data) {
-        CyTube._internal_do_not_use_or_you_will_be_banned.addUserToList(data);
+        CyTube._internal_do_not_use_or_you_will_be_banned.addUserToList(data, true);
         sortUserlist();
     },
 

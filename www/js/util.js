@@ -3364,11 +3364,13 @@ CyTube.ui.changeVideoWidth = function uiChangeVideoWidth(direction) {
     handleVideoResize();
 };
 
-CyTube._internal_do_not_use_or_you_will_be_banned.addUserToList = function (data) {
-    var user = findUserlistItem(data.name);
-    // Remove previous instance of user, if there was one
-    if(user !== null)
-        user.remove();
+CyTube._internal_do_not_use_or_you_will_be_banned.addUserToList = function (data, removePrev) {
+    if (removePrev) {
+        var user = findUserlistItem(data.name);
+        // Remove previous instance of user, if there was one
+        if(user !== null)
+            user.remove();
+    }
     var div = $("<div/>")
         .addClass("userlist_item");
     var icon = $("<span/>").appendTo(div);
