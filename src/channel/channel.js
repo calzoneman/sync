@@ -725,6 +725,7 @@ Channel.prototype.handleReadLog = function (user) {
 
 Channel.prototype.broadcastToRoom = function (msg, data, ns) {
     sio.instance.in(ns).emit(msg, data);
+    require('../io/uws').in(ns).emit(msg, data);
 };
 
 Channel.prototype.broadcastAll = function (msg, data) {

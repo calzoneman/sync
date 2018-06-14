@@ -190,6 +190,7 @@ var Server = function () {
     });
 
     require("./io/ioserver").init(self, webConfig);
+    require("./io/uws").init();
 
     // background tasks init ----------------------------------------------
     require("./bgtask")(self);
