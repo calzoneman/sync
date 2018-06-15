@@ -1295,10 +1295,16 @@ function checkLetsEncrypt(socketConfig, nonLetsEncryptError) {
     });
 }
 
+function initWS() {
+    window.socket = new WSShim(new WebSocket('ws://localhost:3000/'));
+    setupCallbacks();
+}
+
 (function () {
     $.getJSON("/socketconfig/" + CHANNEL.name + ".json")
         .done(function (socketConfig) {
-            initSocketIO(socketConfig);
+            //initSocketIO(socketConfig);
+            initWS();
         }).fail(function () {
             makeAlert("Error", "Failed to retrieve socket.io configuration.  " +
                                "Please try again in a few minutes.",

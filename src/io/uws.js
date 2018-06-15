@@ -92,15 +92,13 @@ export function init() {
     const server = new uws.Server({ port: 3000 });
 
     server.on('connection', socket => {
-        const wrap = new UWSWrapper(
-            socket,
-            {
-                aliases: [],
-                ipSessionFirstSeen: new Date(),
-                torConnection: false,
-                ipAddress: null
-            }
-        );
+        const context = {
+            aliases: [],
+            ipSessionFirstSeen: new Date(),
+            torConnection: false,
+            ipAddress: null
+        };
+        const wrap = new UWSWrapper(socket, context);
         new User(wrap, '127.0.0.1', null);
     });
 }
