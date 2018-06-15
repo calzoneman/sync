@@ -356,7 +356,7 @@ function preprocessConfig(cfg) {
                 cfg["link-domain-blacklist"].join("|").replace(/\./g, "\\."), "gi");
     } else {
         // Match nothing
-        cfg["link-domain-blacklist-regex"] = new RegExp("$^", "gi");
+        cfg["link-domain-blacklist-regex"] = new RegExp("$x^", "gi");
     }
 
     if (cfg["youtube-v3-key"]) {
