@@ -1451,7 +1451,9 @@ function parseMediaLink(url) {
             Callbacks.queueFail({
                 link: url,
                 msg: "The file you are attempting to queue does not match the supported " +
-                     "file extensions mp4, flv, webm, ogg, ogv, mp3, mov, m4a."
+                     "file extensions mp4, flv, webm, ogg, ogv, mp3, mov, m4a. " +
+                     "For more information about why other filetypes are not supported, " +
+                     "see https://git.io/va9g9"
             });
             // Lol I forgot about this hack
             throw new Error("ERROR_QUEUE_UNSUPPORTED_EXTENSION");
