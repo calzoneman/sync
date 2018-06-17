@@ -1,5 +1,6 @@
 const assert = require('assert');
 const IOServer = require('../../lib/io/ioserver').IOServer;
+const SocketIOContext = require('../../lib/io/ioserver').SocketIOContext;
 
 describe('IOServer', () => {
     let server;
@@ -7,9 +8,6 @@ describe('IOServer', () => {
     beforeEach(() => {
         server = new IOServer();
         socket = {
-            context: {
-                ipAddress: '9.9.9.9'
-            },
             handshake: {
                 address: '127.0.0.1',
                 headers: {
@@ -17,6 +15,7 @@ describe('IOServer', () => {
                 }
             }
         };
+        socket.context = new SocketIOContext(socket);
     });
 
     describe('#ipProxyMiddleware', () => {
@@ -29,7 +28,7 @@ describe('IOServer', () => {
         });
 
         it('does not proxy from a non-trusted address', done => {
-            socket.handshake.address = '5.6.7.8';
+            socket.context.upgradeReq.connection.remoteAddress = '5.6.7.8';
             server.ipProxyMiddleware(socket, error => {
                 assert(!error);
                 assert.strictEqual(socket.context.ipAddress, '5.6.7.8');

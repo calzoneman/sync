@@ -34,6 +34,20 @@ const authFailureCount = new Counter({
     help: 'Number of failed authentications from session middleware'
 });
 
+class SocketIOContext {
+    constructor(socket) {
+        socket.handshake.connection = {
+            remoteAddress: socket.handshake.address
+        };
+
+        this.upgradeReq = socket.handshake;
+        this.ipAddress = null;
+        this.torConnection = null;
+        this.ipSessionFirstSeen = null;
+        this.user = null;
+    }
+}
+
 class IOServer {
     constructor(options = {
         proxyTrustFn: proxyaddr.compile('127.0.0.1')
@@ -49,21 +63,16 @@ class IOServer {
     // Map proxied sockets to the real IP address via X-Forwarded-For
     // If the resulting address is a known Tor exit, flag it as such
     ipProxyMiddleware(socket, next) {
-        if (!socket.context) socket.context = {};
-
         try {
-            socket.handshake.connection = {
-                remoteAddress: socket.handshake.address
-            };
-
             socket.context.ipAddress = proxyaddr(
-                socket.handshake,
+                socket.context.upgradeReq,
                 this.proxyTrustFn
             );
 
             if (!socket.context.ipAddress) {
                 throw new Error(
-                    `Assertion failed: unexpected IP ${socket.context.ipAddress}`
+                    'Could not determine IP address from ' +
+                    socket.context.upgradeReq.connection.remoteAddress
                 );
             }
         } catch (error) {
@@ -163,7 +172,7 @@ class IOServer {
 
     // Parse cookies
     cookieParsingMiddleware(socket, next) {
-        const req = socket.handshake;
+        const req = socket.context.upgradeReq;
         if (req.headers.cookie) {
             cookieParser(req, null, () => next());
         } else {
@@ -176,7 +185,7 @@ class IOServer {
     // Determine session age from ip-session cookie
     // (Used for restricting chat)
     ipSessionCookieMiddleware(socket, next) {
-        const cookie = socket.handshake.signedCookies['ip-session'];
+        const cookie = socket.context.upgradeReq.signedCookies['ip-session'];
         if (!cookie) {
             socket.context.ipSessionFirstSeen = new Date();
             next();
@@ -197,7 +206,7 @@ class IOServer {
         socket.context.aliases = [];
 
         const promises = [];
-        const auth = socket.handshake.signedCookies.auth;
+        const auth = socket.context.upgradeReq.signedCookies.auth;
         if (auth) {
             promises.push(verifySession(auth).then(user => {
                 socket.context.user = Object.assign({}, user);
@@ -245,6 +254,10 @@ class IOServer {
         patchTypecheckedFunctions();
 
         const io = this.io = sio.instance = sio();
+        io.use((socket, next) => {
+            socket.context = new SocketIOContext(socket);
+            next();
+        });
         io.use(this.ipProxyMiddleware.bind(this));
         io.use(this.ipBanMiddleware.bind(this));
         io.use(this.ipThrottleMiddleware.bind(this));
@@ -422,7 +435,9 @@ module.exports = {
         ioServer.bindTo(servers);
     },
 
-    IOServer: IOServer
+    IOServer: IOServer,
+
+    SocketIOContext: SocketIOContext
 };
 
 /* Clean out old rate limiters */
