@@ -3,7 +3,6 @@
         this._ws = ws;
         this._listeners = Object.create(null);
 
-        this._ws.onopen = this._onopen.bind(this);
         this._ws.onclose = this._onclose.bind(this);
         this._ws.onmessage = this._onmessage.bind(this);
         this._ws.onerror = this._onerror.bind(this);
@@ -36,10 +35,6 @@
         this.listeners(frame).forEach(function (cb) {
             cb.apply(null, args);
         });
-    };
-
-    WSShim.prototype._onopen = function _onopen() {
-        this._emit('connect');
     };
 
     WSShim.prototype._onclose = function _onclose() {

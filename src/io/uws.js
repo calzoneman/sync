@@ -1,17 +1,43 @@
 import { EventEmitter } from 'events';
 import { Multimap } from '../util/multimap';
-import User from '../user';
+import clone from 'clone';
+import uws from 'uws';
 
 const rooms = new Multimap();
 
+class UWSContext {
+    constructor(upgradeReq) {
+        this.upgradeReq = upgradeReq;
+        this.ipAddress = null;
+        this.torConnection = null;
+        this.ipSessionFirstSeen = null;
+        this.user = null;
+    }
+}
+
 class UWSWrapper extends EventEmitter {
-    constructor(socket, context) {
+    constructor(socket) {
         super();
 
         this._uwsSocket = socket;
         this._joined = new Set();
         this._connected = true;
-        this.context = context;
+
+        this.context = new UWSContext({
+            connection: {
+                remoteAddress: socket._socket.remoteAddress
+            },
+            headers: clone(socket.upgradeReq.headers)
+        });
+        // socket.io metrics compatibility
+        this.client = {
+            conn: {
+                on: function(){},
+                transport: {
+                    name: 'uws'
+                }
+            }
+        };
 
         this._uwsSocket.on('message', message => {
             this._emit.apply(this, this._decode(message));
@@ -67,6 +93,61 @@ class UWSWrapper extends EventEmitter {
 
 Object.assign(UWSWrapper.prototype, { _emit: EventEmitter.prototype.emit });
 
+class UWSServer extends EventEmitter {
+    constructor() {
+        super();
+
+        this._server = new uws.Server({ port: 3000, host: '127.0.0.1' });
+        this._middleware = [];
+
+        this._server.on('connection', socket => this._onConnection(socket));
+        this._server.on('listening', () => this.emit('listening'));
+        this._server.on('error', e => this.emit('error', e));
+    }
+
+    use(cb) {
+        this._middleware.push(cb);
+    }
+
+    _onConnection(uwsSocket) {
+        const socket = new UWSWrapper(uwsSocket);
+
+        if (this._middleware.length === 0) {
+            this._acceptConnection(socket);
+            return;
+        }
+
+        let i = 0;
+        const self = this;
+        function next(error) {
+            if (error) {
+                socket.emit('error', error.message);
+                socket.disconnect();
+                return;
+            }
+
+            if (i >= self._middleware.length) {
+                self._acceptConnection(socket);
+                return;
+            }
+
+            process.nextTick(self._middleware[i], socket, next);
+            i++;
+        }
+
+        process.nextTick(next, null);
+    }
+
+    _acceptConnection(socket) {
+        socket.emit('connect');
+        this.emit('connection', socket);
+    }
+
+    shutdown() {
+        this._server.close();
+    }
+}
+
 function encode(frame, args) {
     return JSON.stringify([frame].concat(args));
 }
@@ -83,22 +164,5 @@ function inRoom(room) {
     };
 }
 
-export { UWSWrapper };
+export { UWSServer };
 exports['in'] = inRoom;
-
-export function init() {
-    const uws = require('uws');
-
-    const server = new uws.Server({ port: 3000 });
-
-    server.on('connection', socket => {
-        const context = {
-            aliases: [],
-            ipSessionFirstSeen: new Date(),
-            torConnection: false,
-            ipAddress: null
-        };
-        const wrap = new UWSWrapper(socket, context);
-        new User(wrap, '127.0.0.1', null);
-    });
-}

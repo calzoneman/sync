@@ -18,6 +18,7 @@ import { Counter, Gauge } from 'prom-client';
 import Socket from 'socket.io/lib/socket';
 import { TokenBucket } from '../util/token-bucket';
 import http from 'http';
+import { UWSServer } from './uws';
 
 const LOGGER = require('@calzoneman/jsli')('ioserver');
 
@@ -268,6 +269,19 @@ class IOServer {
         io.on('connection', this.handleConnection.bind(this));
     }
 
+    initUWS() {
+        const uws = this.uws = new UWSServer();
+
+        uws.use(this.ipProxyMiddleware.bind(this));
+        uws.use(this.ipBanMiddleware.bind(this));
+        uws.use(this.ipThrottleMiddleware.bind(this));
+        uws.use(this.cookieParsingMiddleware.bind(this));
+        uws.use(this.ipSessionCookieMiddleware.bind(this));
+        uws.use(this.authUserMiddleware.bind(this));
+        uws.use(this.metricsEmittingMiddleware.bind(this));
+        uws.on('connection', this.handleConnection.bind(this));
+    }
+
     bindTo(servers) {
         if (!this.io) {
             throw new Error('Cannot bind: socket.io has not been initialized yet');
@@ -407,6 +421,7 @@ module.exports = {
         });
 
         ioServer.initSocketIO();
+        ioServer.initUWS();
 
         const uniqueListenAddresses = new Set();
         const servers = [];
