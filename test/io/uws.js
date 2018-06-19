@@ -19,9 +19,14 @@ describe('UWSServer', () => {
         socket.test = new EventEmitter();
 
         socket.onmessage = message => {
-            const args = JSON.parse(message.data);
-            const frame = args.shift();
-            socket.test.emit(frame, ...args);
+            const { type, frame, payload, ackId } = JSON.parse(message.data);
+
+            if (type === 0) {
+                socket.test.emit(frame, payload);
+            } else if (type === 1) {
+                console.log(message.data);
+                socket.test.emit('ack', ackId, payload);
+            }
         };
         socket.onerror = e => { throw e; };
 
@@ -79,5 +84,60 @@ describe('UWSServer', () => {
             assert(!m2);
             done();
         });
+    });
+
+    it('receives a normal frame', done => {
+        server.on('connection', s => {
+            s.on('test', data => {
+                assert.deepStrictEqual(data, {foo: 'bar'});
+                done();
+            });
+        });
+
+        socket = connect();
+        socket.onopen = () => {
+            socket.send(JSON.stringify({
+                type: 0,
+                frame: 'test',
+                payload: { foo: 'bar' }
+            }));
+        };
+    });
+
+    it('sends a normal frame', done => {
+        server.on('connection', s => {
+            s.emit('test', { foo: 'bar' });
+        });
+
+        socket = connect();
+        socket.test.on('test', data => {
+            assert.deepStrictEqual(data, { foo: 'bar' });
+            done();
+        });
+    });
+
+    it('responds with an ack frame', done => {
+        server.on('connection', s => {
+            s.on('test', (data, ack) => {
+                assert.deepStrictEqual(data, {foo: 'bar'});
+                ack({ baz: 'quux' });
+            });
+        });
+
+        socket = connect();
+        socket.onopen = () => {
+            socket.send(JSON.stringify({
+                type: 0,
+                frame: 'test',
+                payload: { foo: 'bar' },
+                ackId: 1
+            }));
+
+            socket.test.on('ack', (ackId, payload) => {
+                assert.strictEqual(ackId, 1);
+                assert.deepStrictEqual(payload, { baz: 'quux' });
+                done();
+            });
+        };
     });
 });

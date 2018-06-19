@@ -1,7 +1,13 @@
 import { EventEmitter } from 'events';
 import { Multimap } from '../util/multimap';
 import clone from 'clone';
+import typecheck from 'json-typecheck';
 import uws from 'uws';
+
+const LOGGER = require('@calzoneman/jsli')('uws');
+
+const TYPE_FRAME = 0;
+const TYPE_ACK = 1;
 
 const rooms = new Multimap();
 
@@ -40,7 +46,16 @@ class UWSWrapper extends EventEmitter {
         };
 
         this._uwsSocket.on('message', message => {
-            this._emit.apply(this, this._decode(message));
+            try {
+                this._decode(message);
+            } catch (error) {
+                LOGGER.warn(
+                    'Decode failed (ip=%s): %s',
+                    this.context.ipAddress,
+                    error
+                );
+                this.disconnect();
+            }
         });
 
         this._uwsSocket.on('close', () => {
@@ -63,8 +78,17 @@ class UWSWrapper extends EventEmitter {
         return !this._connected;
     }
 
-    emit(frame, ...args) {
-        this._uwsSocket.send(encode(frame, args));
+    emit(frame, payload) {
+        try {
+            this._uwsSocket.send(encode(frame, payload));
+        } catch (error) {
+            LOGGER.error(
+                'Emit failed (ip=%s): %s',
+                this.context.ipAddress,
+                error.stack
+            );
+            this.disconnect();
+        }
     }
 
     join(room) {
@@ -78,16 +102,67 @@ class UWSWrapper extends EventEmitter {
     }
 
     typecheckedOn(frame, typeDef, cb) {
-        this.on(frame, cb);
+        this.on(frame, (data, ack) => {
+            typecheck(data, typeDef, (err, data) => {
+                if (err) {
+                    this.emit('errorMsg', {
+                        msg: 'Unexpected error for message ' + frame + ': ' +
+                             err.message
+                    });
+                } else {
+                    cb(data, ack);
+                }
+            });
+        });
     }
 
     typecheckedOnce(frame, typeDef, cb) {
-        this.once(frame, cb);
+        this.once(frame, (data, ack) => {
+            typecheck(data, typeDef, (err, data) => {
+                if (err) {
+                    this.emit('errorMsg', {
+                        msg: 'Unexpected error for message ' + frame + ': ' +
+                             err.message
+                    });
+                } else {
+                    cb(data, ack);
+                }
+            });
+        });
+    }
+
+    _ack(ackId, payload) {
+        this._uwsSocket.send(JSON.stringify({
+            type: TYPE_ACK,
+            ackId,
+            payload
+        }));
     }
 
     _decode(message) {
-        // TODO: handle error and kill clients with protocol violations
-        return JSON.parse(message);
+        const { frame, type, ackId, payload } = JSON.parse(message);
+
+        if (type !== TYPE_FRAME) {
+            LOGGER.warn(
+                'Unexpected message type %s from client; dropping',
+                type
+            );
+            return;
+        }
+
+        const args = [payload];
+
+        if (typeof ackId === 'number') {
+            args.push(payload => {
+                try {
+                    this._ack(ackId, payload);
+                } catch (error) {
+                    LOGGER.error('Error in ack callback: %s', error.stack);
+                }
+            });
+        }
+
+        this._emit(frame, ...args);
     }
 }
 
@@ -148,8 +223,12 @@ class UWSServer extends EventEmitter {
     }
 }
 
-function encode(frame, args) {
-    return JSON.stringify([frame].concat(args));
+function encode(frame, payload) {
+    return JSON.stringify({
+        type: TYPE_FRAME,
+        frame,
+        payload
+    });
 }
 
 function inRoom(room) {
