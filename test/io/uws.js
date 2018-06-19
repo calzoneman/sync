@@ -24,7 +24,6 @@ describe('UWSServer', () => {
             if (type === 0) {
                 socket.test.emit(frame, payload);
             } else if (type === 1) {
-                console.log(message.data);
                 socket.test.emit('ack', ackId, payload);
             }
         };
@@ -136,6 +135,32 @@ describe('UWSServer', () => {
             socket.test.on('ack', (ackId, payload) => {
                 assert.strictEqual(ackId, 1);
                 assert.deepStrictEqual(payload, { baz: 'quux' });
+                done();
+            });
+        };
+    });
+
+    it('typechecks input frames', done => {
+        server.on('connection', s => {
+            s.typecheckedOn('test', { foo: 'string' }, data => {
+                assert.fail('Should not have reached callback');
+            });
+        });
+
+        socket = connect();
+        socket.onopen = () => {
+            socket.send(JSON.stringify({
+                type: 0,
+                frame: 'test',
+                payload: { foo: 123 }
+            }));
+
+            socket.test.on('errorMsg', payload => {
+                assert.equal(
+                    payload.msg,
+                    'Unexpected error for message test: ' +
+                    'Expected key foo to be of type string, instead got number'
+                );
                 done();
             });
         };
