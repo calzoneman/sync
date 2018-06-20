@@ -233,8 +233,8 @@ function encode(frame, payload) {
 
 function inRoom(room) {
     return {
-        emit(frame, ...args) {
-            const encoded = encode(frame, args);
+        emit(frame, payload) {
+            const encoded = encode(frame, payload);
 
             for (let wrapper of rooms.get(room)) {
                 wrapper._uwsSocket.send(encoded);

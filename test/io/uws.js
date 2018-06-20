@@ -1,6 +1,7 @@
 const { EventEmitter } = require('events');
 const assert = require('assert');
 const { UWSServer } = require('../../lib/io/uws');
+const inRoom = require('../../lib/io/uws')['in'];
 const WebSocket = require('uws');
 
 describe('UWSServer', () => {
@@ -106,6 +107,19 @@ describe('UWSServer', () => {
     it('sends a normal frame', done => {
         server.on('connection', s => {
             s.emit('test', { foo: 'bar' });
+        });
+
+        socket = connect();
+        socket.test.on('test', data => {
+            assert.deepStrictEqual(data, { foo: 'bar' });
+            done();
+        });
+    });
+
+    it('broadcasts to a room', done => {
+        server.on('connection', s => {
+            s.join('testroom');
+            inRoom('testroom').emit('test', { foo: 'bar' });
         });
 
         socket = connect();
