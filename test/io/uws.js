@@ -179,4 +179,43 @@ describe('UWSServer', () => {
             });
         };
     });
+
+    it('catches errors during socket.emit()', done => {
+        server.on('connection', s => {
+            s.join('testroom');
+            s._uwsSocket.send = () => { throw new Error('well darn'); };
+
+            s.emit('test', { foo: 'bar' });
+            done();
+        });
+
+        socket = connect();
+    });
+
+    it('catches errors during inRoom().emit()', done => {
+        server.on('connection', s => {
+            s.join('testroom');
+            s._uwsSocket.send = () => { throw new Error('well darn'); };
+
+            inRoom('testroom').emit('test', { foo: 'bar' });
+            done();
+        });
+
+        socket = connect();
+    });
+
+    it('sets disconnected = true after a disconnect', done => {
+        server.on('connection', s => {
+            assert.strictEqual(s.disconnected, false);
+
+            s.on('disconnect', () => {
+                assert.strictEqual(s.disconnected, true);
+                done();
+            });
+
+            s.disconnect();
+        });
+
+        socket = connect();
+    });
 });
