@@ -3305,6 +3305,7 @@ function backoffRetry(fn, cb, options) {
     var jitter = options.jitter || 0;
     var factor = options.factor || 1;
     var isRetryable = options.isRetryable || function () { return true; };
+    var maxDelay = options.maxDelay || Infinity;
     var tries = 0;
 
     function callback(error, result) {
@@ -3316,7 +3317,10 @@ function backoffRetry(fn, cb, options) {
                 cb(error, result);
             } else if (isRetryable(error)) {
                 var offset = Math.random() * jitter;
-                var delay = options.delay * factor + offset;
+                var delay = Math.min(
+                    options.delay * factor,
+                    maxDelay
+                ) + offset;
                 console.log('Retrying on error: ' + error);
                 console.log('Waiting ' + delay + ' ms before retrying');
 

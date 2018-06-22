@@ -5,10 +5,11 @@
     function WSShim(ws) {
         this._ws = ws;
         this._listeners = Object.create(null);
+        this._connected = false;
 
+        this._ws.onopen = this._onopen.bind(this);
         this._ws.onclose = this._onclose.bind(this);
         this._ws.onmessage = this._onmessage.bind(this);
-        this._ws.onerror = this._onerror.bind(this);
 
         this._ackId = 0;
         this._pendingAcks = Object.create(null);
@@ -51,9 +52,41 @@
         });
     };
 
+    WSShim.prototype._onopen = function _onopen() {
+        this._connected = true;
+    };
+
     WSShim.prototype._onclose = function _onclose() {
-        // TODO: reconnect logic
+        if (!this._connected) {
+            return;
+        }
+
         this._emit('disconnect');
+
+        if (!KICKED) {
+            function reconnectAsync(cb) {
+                initWS();
+
+                window.socket._ws.addEventListener('open', function () {
+                    cb(null);
+                });
+
+                window.socket._ws.addEventListener('error', function (error) {
+                    cb(error);
+                });
+            }
+
+            var retryOpts = {
+                delay: 1000,
+                jitter: 1000,
+                factor: 2,
+                maxDelay: 20000
+            };
+
+            setTimeout(function () {
+                backoffRetry(reconnectAsync, function(){}, retryOpts);
+            }, 1000);
+        }
     };
 
     WSShim.prototype._onmessage = function _onmessage(message) {
@@ -76,10 +109,6 @@
             console.error(error.stack);
             return;
         }
-    };
-
-    WSShim.prototype._onerror = function _onerror() {
-        console.error('Dunno how to handle onerror');
     };
 
     window.WSShim = WSShim;
