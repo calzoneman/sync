@@ -2,17 +2,15 @@
     var TYPE_FRAME = 0;
     var TYPE_ACK = 1;
 
-    function WSShim(ws) {
-        this._ws = ws;
+    function WSShim(url) {
+        this._url = url;
         this._listeners = Object.create(null);
         this._connected = false;
 
-        this._ws.onopen = this._onopen.bind(this);
-        this._ws.onclose = this._onclose.bind(this);
-        this._ws.onmessage = this._onmessage.bind(this);
-
         this._ackId = 0;
         this._pendingAcks = Object.create(null);
+
+        this._openWS();
     }
 
     WSShim.prototype.listeners = function listeners(frame) {
@@ -78,17 +76,23 @@
             return;
         }
 
+        this._connected = false;
         this._emit('disconnect');
 
+        // TODO: checking for KICKED here is insufficient;
+        // need to have some sort of explicit disconnect vs. connection loss
+        // check
         if (!KICKED) {
-            function reconnectAsync(cb) {
-                initWS();
+            var self = this;
 
-                window.socket._ws.addEventListener('open', function () {
+            function reconnectAsync(cb) {
+                self._openWS();
+
+                self._ws.addEventListener('open', function () {
                     cb(null);
                 });
 
-                window.socket._ws.addEventListener('error', function (error) {
+                self._ws.addEventListener('error', function (error) {
                     cb(error);
                 });
             }
@@ -126,6 +130,18 @@
             console.error(error.stack);
             return;
         }
+    };
+
+    WSShim.prototype._openWS = function _openWS() {
+        if (this._connected) {
+            throw new Error('Cannot _openWS() when already connected');
+        }
+
+        this._ws = new WebSocket(this._url);
+        this._ws.onopen = this._onopen.bind(this);
+        this._ws.onclose = this._onclose.bind(this);
+        this._ws.onmessage = this._onmessage.bind(this);
+        this._connected = false;
     };
 
     window.WSShim = WSShim;

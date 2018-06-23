@@ -1296,7 +1296,7 @@ function checkLetsEncrypt(socketConfig, nonLetsEncryptError) {
 }
 
 function initWS() {
-    window.socket = new WSShim(new WebSocket('ws://localhost:3000/'));
+    window.socket = new WSShim('ws://localhost:3000/');
     setupCallbacks();
 }
 

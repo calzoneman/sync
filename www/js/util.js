@@ -3304,13 +3304,13 @@ function maybePromptToUpgradeUserscript() {
 function backoffRetry(fn, cb, options) {
     var jitter = options.jitter || 0;
     var factor = options.factor || 1;
+    var currentFactor = factor;
     var isRetryable = options.isRetryable || function () { return true; };
     var maxDelay = options.maxDelay || Infinity;
     var tries = 0;
 
     function callback(error, result) {
         tries++;
-        factor *= factor;
         if (error) {
             if (tries >= options.maxTries) {
                 console.log('Max tries exceeded');
@@ -3318,7 +3318,7 @@ function backoffRetry(fn, cb, options) {
             } else if (isRetryable(error)) {
                 var offset = Math.random() * jitter;
                 var delay = Math.min(
-                    options.delay * factor,
+                    options.delay * currentFactor,
                     maxDelay
                 ) + offset;
                 console.log('Retrying on error: ' + error);
@@ -3331,6 +3331,8 @@ function backoffRetry(fn, cb, options) {
         } else {
             cb(error, result);
         }
+
+        currentFactor *= factor;
     }
 
     fn(callback);
