@@ -27,6 +27,11 @@
         this.listeners(frame).push(callback);
     };
 
+    WSShim.prototype.once = function on(frame, callback) {
+        callback._once = true;
+        this.listeners(frame).push(callback);
+    };
+
     WSShim.prototype.emit = function emit(frame, payload, ack) {
         var message = {
             type: TYPE_FRAME,
@@ -43,13 +48,25 @@
     };
 
     WSShim.prototype._emit = function _emit(frame, payload) {
+        var hasOnce = false;
+
         this.listeners(frame).forEach(function (cb) {
             try {
+                if (cb._once) {
+                    hasOnce = true;
+                }
+
                 cb(payload);
             } catch (error) {
                 console.error('Error in callback for ' + frame + ': ' + error);
             }
         });
+
+        if (hasOnce) {
+            this._listeners[frame] = this._listeners[frame].filter(function (cb) {
+                return !cb._once;
+            });
+        }
     };
 
     WSShim.prototype._onopen = function _onopen() {
