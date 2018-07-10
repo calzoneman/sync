@@ -218,17 +218,12 @@ class IOServer {
         Promise.all(promises).then(() => next());
     }
 
-    metricsEmittingMiddleware(socket, next) {
-        emitMetrics(socket);
-        next();
-    }
-
     handleConnection(socket) {
-        // TODO: move out of handleConnection if possible
-        // see: https://github.com/calzoneman/sync/issues/724
         if (!this.checkIPLimit(socket)) {
             return;
         }
+
+        emitMetrics(socket);
 
         LOGGER.info('Accepted socket from %s', socket.context.ipAddress);
         counters.add('socket.io:accept', 1);
@@ -257,7 +252,6 @@ class IOServer {
         io.use(this.cookieParsingMiddleware.bind(this));
         io.use(this.ipSessionCookieMiddleware.bind(this));
         io.use(this.authUserMiddleware.bind(this));
-        io.use(this.metricsEmittingMiddleware.bind(this));
         io.on('connection', this.handleConnection.bind(this));
     }
 

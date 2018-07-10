@@ -69,57 +69,6 @@ describe('IOServer', () => {
         });
     });
 
-    /*
-    describe('#ipConnectionLimitMiddleware', () => {
-        beforeEach(() => {
-            socket.once = (event, callback) => {
-                socket[`on_${event}`] = callback;
-            };
-        });
-
-        it('allows IPs before the limit', done => {
-            server.ipConnectionLimitMiddleware(socket, error => {
-                if (error) {
-                    throw error;
-                }
-
-                done();
-            });
-        });
-
-        it('rejects IPs at the limit', done => {
-            server.ipCount.set(socket.context.ipAddress,
-                    require('../../lib/config').get('io.ip-connection-limit'));
-            server.ipConnectionLimitMiddleware(socket, error => {
-                assert(error, 'Expected an error to be returned');
-                assert.strictEqual(error.message,
-                        'Too many connections from your IP address');
-                done();
-            });
-        });
-
-        it('manages the ipCount map correctly', done => {
-            const ip = socket.context.ipAddress;
-
-            assert(!server.ipCount.has(ip), 'Test precondition failed: ipCount.has(ip)');
-
-            server.ipConnectionLimitMiddleware(socket, error => {
-                if (error) {
-                    throw error;
-                }
-
-                assert.strictEqual(server.ipCount.get(ip), 1);
-
-                socket.on_disconnect();
-
-                assert.strictEqual(server.ipCount.get(ip), 0);
-
-                done();
-            });
-        });
-    });
-    */
-
     describe('#cookieParsingMiddleware', () => {
         it('parses cookies', done => {
             socket.handshake.headers.cookie = 'flavor=chocolate%20chip';
