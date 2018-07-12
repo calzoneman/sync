@@ -3,14 +3,20 @@ const assert = require('assert');
 const { UWSServer } = require('../../lib/io/uws');
 const inRoom = require('../../lib/io/uws')['in'];
 const WebSocket = require('uws');
+const http = require('http');
 
 describe('UWSServer', () => {
     const endpoint = 'ws://127.0.0.1:3000';
 
+    let httpServer;
     let server;
     let socket;
     beforeEach(done => {
+        httpServer = http.createServer();
+        httpServer.listen(3000);
+
         server = new UWSServer();
+        server.attach(httpServer);
         server.on('error', e => { throw e; });
         server.once('listening', done);
     });
@@ -38,6 +44,8 @@ describe('UWSServer', () => {
         socket = null;
         if (server) server.shutdown();
         server = null;
+        if (httpServer) httpServer.close();
+        httpServer = null;
     });
 
     it('accepts a connection immediately if there is no middleware', done => {

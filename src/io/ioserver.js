@@ -278,17 +278,19 @@ class IOServer {
         uws.use(this.cookieParsingMiddleware.bind(this));
         uws.use(this.ipSessionCookieMiddleware.bind(this));
         uws.use(this.authUserMiddleware.bind(this));
-        uws.use(this.metricsEmittingMiddleware.bind(this));
         uws.on('connection', this.handleConnection.bind(this));
     }
 
-    bindTo(servers) {
+    bindTo(sioServers, uwsServers) {
         if (!this.io) {
             throw new Error('Cannot bind: socket.io has not been initialized yet');
         }
 
-        servers.forEach(server => {
+        sioServers.forEach(server => {
             this.io.attach(server);
+        });
+        uwsServers.forEach(server => {
+            this.uws.attach(server);
         });
     }
 }
@@ -425,11 +427,18 @@ module.exports = {
 
         const uniqueListenAddresses = new Set();
         const servers = [];
+        const uwsServers = [];
 
         Config.get("listen").forEach(function (bind) {
-            if (!bind.io) {
+            if (bind.io && bind.uws) {
+                throw new Error(
+                    'Cannot bind both socket.io and uws to the same listener'
+                );
+            } else if (!bind.io && !bind.uws) {
                 return;
             }
+
+            const serverList = bind.io ? servers : uwsServers;
 
             const id = bind.ip + ":" + bind.port;
             if (uniqueListenAddresses.has(id)) {
@@ -438,16 +447,16 @@ module.exports = {
             }
 
             if (srv.servers.hasOwnProperty(id)) {
-                servers.push(srv.servers[id]);
+                serverList.push(srv.servers[id]);
             } else {
                 const server = http.createServer().listen(bind.port, bind.ip);
-                servers.push(server);
+                serverList.push(server);
             }
 
             uniqueListenAddresses.add(id);
         });
 
-        ioServer.bindTo(servers);
+        ioServer.bindTo(servers, uwsServers);
     },
 
     IOServer: IOServer,

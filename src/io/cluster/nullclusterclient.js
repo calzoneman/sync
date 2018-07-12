@@ -7,8 +7,10 @@ export default class NullClusterClient {
 
     getSocketConfig(_channel) {
         const servers = this.ioConfig.getSocketEndpoints();
+        const uwsServers = this.ioConfig.getUWSEndpoints();
         return Promise.resolve({
-            servers: servers
+            servers: servers,
+            uwsServers: uwsServers
         });
     }
 }

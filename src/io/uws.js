@@ -165,16 +165,24 @@ class UWSServer extends EventEmitter {
     constructor() {
         super();
 
-        this._server = new uws.Server({ port: 3000, host: '127.0.0.1' });
+        this._servers = [];
         this._middleware = [];
-
-        this._server.on('connection', socket => this._onConnection(socket));
-        this._server.on('listening', () => this.emit('listening'));
-        this._server.on('error', e => this.emit('error', e));
     }
 
     use(cb) {
         this._middleware.push(cb);
+    }
+
+    attach(server) {
+        const uwsServer = new uws.Server({
+            server,
+            perMessageDeflate: false
+        });
+        this._servers.push(uwsServer);
+
+        uwsServer.on('connection', socket => this._onConnection(socket));
+        server.on('listening', () => this.emit('listening'));
+        uwsServer.on('error', e => this.emit('error', e));
     }
 
     _onConnection(uwsSocket) {
@@ -212,7 +220,7 @@ class UWSServer extends EventEmitter {
     }
 
     shutdown() {
-        this._server.close();
+        this._servers.forEach(sv => sv.close());
     }
 }
 

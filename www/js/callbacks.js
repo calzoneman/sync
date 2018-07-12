@@ -1221,7 +1221,19 @@ function ioServerConnect(socketConfig) {
 
 var USING_LETS_ENCRYPT = false;
 
+function initSocket(socketConfig) {
+    if (socketConfig.uwsServers && socketConfig.uwsServers.length > 0) {
+        initWS(socketConfig.uwsServers);
+    } else {
+        initSocketIO(socketConfig);
+    }
+
+    setupCallbacks();
+}
+
 function initSocketIO(socketConfig) {
+    console.log('Using socket.io');
+
     function genericConnectionError() {
         var message = "The socket.io library could not be loaded from <code>" +
                       source + "</code>.  Ensure that it is not being blocked " +
@@ -1295,16 +1307,16 @@ function checkLetsEncrypt(socketConfig, nonLetsEncryptError) {
     });
 }
 
-function initWS() {
-    window.socket = new WSShim('ws://localhost:3000/');
-    setupCallbacks();
+function initWS(servers) {
+    console.log('Using WSShim');
+    console.log("Connecting to " + JSON.stringify(servers[0]));
+    window.socket = new WSShim(servers[0].url);
 }
 
 (function () {
     $.getJSON("/socketconfig/" + CHANNEL.name + ".json")
         .done(function (socketConfig) {
-            //initSocketIO(socketConfig);
-            initWS();
+            initSocket(socketConfig);
         }).fail(function () {
             makeAlert("Error", "Failed to retrieve socket.io configuration.  " +
                                "Please try again in a few minutes.",

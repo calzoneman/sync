@@ -6,11 +6,47 @@ export default class IOConfiguration {
     getSocketEndpoints() {
         return this.config.endpoints.slice();
     }
+
+    getUWSEndpoints() {
+        return this.config.uwsEndpoints.slice();
+    }
+}
+
+function getUWSEndpoints(oldConfig) {
+    const uwsEndpoints = oldConfig.get('listen').filter(it => it.uws)
+            .map(it => {
+                let domain;
+                if (it.https) {
+                    domain = oldConfig.get('https.domain')
+                            .replace(/^https/, 'wss');
+                } else {
+                    domain = oldConfig.get('io.domain')
+                            .replace(/^http/, 'ws');
+                }
+
+                return {
+                    secure: !!it.https,
+                    url: `${domain}:${it.port}`
+                };
+            });
+
+    uwsEndpoints.sort((a, b) => {
+        if (a.secure && !b.secure) {
+            return -1;
+        } else if (b.secure && !a.secure) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+
+    return uwsEndpoints;
 }
 
 IOConfiguration.fromOldConfig = function (oldConfig) {
     const config = {
-        endpoints: []
+        endpoints: [],
+        uwsEndpoints: getUWSEndpoints(oldConfig)
     };
 
     if (oldConfig.get('io.ipv4-ssl')) {

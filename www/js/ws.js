@@ -113,7 +113,6 @@
     WSShim.prototype._onmessage = function _onmessage(message) {
         try {
             var parsed = JSON.parse(message.data);
-            console.log(parsed);
             var type = parsed.type;
             var frame = parsed.frame;
             var payload = parsed.payload;
