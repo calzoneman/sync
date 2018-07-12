@@ -1227,8 +1227,6 @@ function initSocket(socketConfig) {
     } else {
         initSocketIO(socketConfig);
     }
-
-    setupCallbacks();
 }
 
 function initSocketIO(socketConfig) {
@@ -1311,6 +1309,7 @@ function initWS(servers) {
     console.log('Using WSShim');
     console.log("Connecting to " + JSON.stringify(servers[0]));
     window.socket = new WSShim(servers[0].url);
+    setupCallbacks();
 }
 
 (function () {
