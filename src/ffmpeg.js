@@ -103,8 +103,14 @@ function translateStatusCode(statusCode) {
                 "the file to be downloaded.";
         case 404:
             return "The requested link could not be found (404).";
+        case 405:
+            return "The website hosting the link does not support HEAD requests, " +
+                   "so the link could not be retrieved.";
         case 410:
             return "The requested link does not exist (410 Gone).";
+        case 501:
+            return "The requested link could not be retrieved because the server " +
+                   "hosting it does not support CyTube's request.";
         case 500:
         case 503:
             return "The website hosting the audio/video link encountered an error " +
