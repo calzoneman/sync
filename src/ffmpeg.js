@@ -149,68 +149,76 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
     if (cookie) {
         data.headers = { 'Cookie': cookie };
     }
-    var req = transport.request(data, function (res) {
-        req.abort();
 
-        if (res.statusCode === 301 || res.statusCode === 302) {
-            if (redirCount > 2) {
-                return cb("The request for the audio/video file has been redirected " +
-                          "more than twice.  This could indicate a misconfiguration " +
-                          "on the website hosting the link.  For best results, use " +
-                          "a direct link.  See https://git.io/vrE75 for details.");
+    try {
+        var req = transport.request(data, function (res) {
+            req.abort();
+
+            if (res.statusCode === 301 || res.statusCode === 302) {
+                if (redirCount > 2) {
+                    return cb("The request for the audio/video file has been redirected " +
+                              "more than twice.  This could indicate a misconfiguration " +
+                              "on the website hosting the link.  For best results, use " +
+                              "a direct link.  See https://git.io/vrE75 for details.");
+                }
+                const nextParams = {
+                    redirCount: redirCount + 1,
+                    cookie: cookie + getCookie(res)
+                };
+                return testUrl(fixRedirectIfNeeded(data, res.headers["location"]), cb,
+                        nextParams);
             }
-            const nextParams = {
-                redirCount: redirCount + 1,
-                cookie: cookie + getCookie(res)
-            };
-            return testUrl(fixRedirectIfNeeded(data, res.headers["location"]), cb,
-                    nextParams);
-        }
 
-        if (res.statusCode !== 200) {
-            return cb(translateStatusCode(res.statusCode));
-        }
+            if (res.statusCode !== 200) {
+                return cb(translateStatusCode(res.statusCode));
+            }
 
-        if (!/^audio|^video/.test(res.headers["content-type"])) {
-            return cb("Expected a content-type starting with 'audio' or 'video', but " +
-                      "got '" + res.headers["content-type"] + "'.  Only direct links " +
-                      "to video and audio files are accepted, and the website hosting " +
-                      "the file must be configured to send the correct MIME type.  " +
-                      "See https://git.io/vrE75 for details.");
-        }
+            if (!/^audio|^video/.test(res.headers["content-type"])) {
+                return cb("Expected a content-type starting with 'audio' or 'video', but " +
+                          "got '" + res.headers["content-type"] + "'.  Only direct links " +
+                          "to video and audio files are accepted, and the website hosting " +
+                          "the file must be configured to send the correct MIME type.  " +
+                          "See https://git.io/vrE75 for details.");
+            }
 
-        cb();
-    });
+            cb();
+        });
 
-    req.on("error", function (err) {
-        if (/hostname\/ip doesn't match/i.test(err.message)) {
-            cb("The remote server provided an invalid SSL certificate.  Details: "
-                    + err.reason);
-            return;
-        } else if (ECODE_MESSAGES.hasOwnProperty(err.code)) {
-            cb(`${ECODE_MESSAGES[err.code](err)} (error code: ${err.code})`);
-            return;
-        }
+        req.on("error", function (err) {
+            if (/hostname\/ip doesn't match/i.test(err.message)) {
+                cb("The remote server provided an invalid SSL certificate.  Details: "
+                        + err.reason);
+                return;
+            } else if (ECODE_MESSAGES.hasOwnProperty(err.code)) {
+                cb(`${ECODE_MESSAGES[err.code](err)} (error code: ${err.code})`);
+                return;
+            }
 
-        // HPE_INVALID_CONSTANT comes from node's HTTP parser because
-        // facebook's CDN violates RFC 2616 by sending a body even though
-        // the request uses the HEAD method.
-        // Avoid logging this because it's a known issue.
-        if (!(err.code === 'HPE_INVALID_CONSTANT' && /fbcdn/.test(url))) {
-            LOGGER.error(
-                "Error sending preflight request: %s (code=%s) (link: %s)",
-                err.message,
-                err.code,
-                url
-            );
-        }
+            // HPE_INVALID_CONSTANT comes from node's HTTP parser because
+            // facebook's CDN violates RFC 2616 by sending a body even though
+            // the request uses the HEAD method.
+            // Avoid logging this because it's a known issue.
+            if (!(err.code === 'HPE_INVALID_CONSTANT' && /fbcdn/.test(url))) {
+                LOGGER.error(
+                    "Error sending preflight request: %s (code=%s) (link: %s)",
+                    err.message,
+                    err.code,
+                    url
+                );
+            }
 
+            cb("An unexpected error occurred while trying to process the link.  " +
+               "Try again, and contact support for further troubleshooting if the " +
+               "problem continues." + (err.code ? (" Error code: " + err.code) : ""));
+        });
+
+        req.end();
+    } catch (error) {
+        LOGGER.error('Unable to make raw file probe request: %s', error.stack);
         cb("An unexpected error occurred while trying to process the link.  " +
            "Try again, and contact support for further troubleshooting if the " +
-           "problem continues." + (err.code ? (" Error code: " + err.code) : ""));
-    });
-
-    req.end();
+           "problem continues.");
+    }
 }
 
 function readOldFormat(buf) {
