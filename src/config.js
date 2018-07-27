@@ -386,6 +386,12 @@ function preprocessConfig(cfg) {
         return contact.name !== 'calzoneman';
     });
 
+    if (!cfg.io.throttle) {
+        cfg.io.throttle = {
+            'in-rate-limit': Infinity
+        };
+    }
+
     return cfg;
 }
 

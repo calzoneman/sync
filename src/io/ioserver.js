@@ -233,6 +233,8 @@ class IOServer {
             return;
         }
 
+        this.setRateLimiter(socket);
+
         emitMetrics(socket);
 
         LOGGER.info('Accepted socket from %s', socket.context.ipAddress);
@@ -248,6 +250,25 @@ class IOServer {
         if (announcement !== null) {
             socket.emit('announcement', announcement);
         }
+    }
+
+    setRateLimiter(socket) {
+        const thunk = () => Config.get('io.throttle.in-rate-limit');
+
+        socket._inRateLimit = new TokenBucket(thunk, thunk);
+
+        socket.on('cytube:count-event', () => {
+            if (socket._inRateLimit.throttle()) {
+                LOGGER.warn(
+                    'Kicking client %s: exceeded in-rate-limit of %d',
+                    socket.context.ipAddress,
+                    thunk()
+                );
+
+                socket.emit('kick', { reason: 'Rate limit exceeded' });
+                socket.disconnect();
+            }
+        });
     }
 
     initSocketIO() {
@@ -306,10 +327,12 @@ const outgoingPacketCount = new Counter({
 function patchSocketMetrics() {
     const onevent = Socket.prototype.onevent;
     const packet = Socket.prototype.packet;
+    const emit = require('events').EventEmitter.prototype.emit;
 
     Socket.prototype.onevent = function patchedOnevent() {
         onevent.apply(this, arguments);
         incomingEventCount.inc(1);
+        emit.call(this, 'cytube:count-event');
     };
 
     Socket.prototype.packet = function patchedPacket() {

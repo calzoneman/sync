@@ -13,6 +13,7 @@ var Config = require("../config");
 var session = require("../session");
 var csrf = require("./csrf");
 const url = require("url");
+import crypto from 'crypto';
 
 const LOGGER = require('@calzoneman/jsli')('web/accounts');
 
@@ -536,76 +537,91 @@ function handlePasswordReset(req, res) {
             return;
         }
 
-        if (actualEmail !== email.trim()) {
+        if (actualEmail === '') {
+            sendPug(res, "account-passwordreset", {
+                reset: false,
+                resetEmail: "",
+                resetErr: `Username ${name} cannot be recovered because it ` +
+                          "doesn't have an email address associated with it."
+            });
+            return;
+        } else if (actualEmail.toLowerCase() !== email.trim().toLowerCase()) {
             sendPug(res, "account-passwordreset", {
                 reset: false,
                 resetEmail: "",
                 resetErr: "Provided email does not match the email address on record for " + name
             });
             return;
-        } else if (actualEmail === "") {
-            sendPug(res, "account-passwordreset", {
-                reset: false,
-                resetEmail: "",
-                resetErr: name + " doesn't have an email address on record.  Please contact an " +
-                          "administrator to manually reset your password."
-            });
-            return;
         }
 
-        var hash = $util.sha1($util.randomSalt(64));
-        // 24-hour expiration
-        var expire = Date.now() + 86400000;
-        var ip = req.realIP;
-
-        db.addPasswordReset({
-            ip: ip,
-            name: name,
-            email: email,
-            hash: hash,
-            expire: expire
-        }, function (err, _dbres) {
+        crypto.randomBytes(20, (err, bytes) => {
             if (err) {
+                LOGGER.error(
+                    'Could not generate random bytes for password reset: %s',
+                    err.stack
+                );
                 sendPug(res, "account-passwordreset", {
                     reset: false,
-                    resetEmail: "",
-                    resetErr: err
+                    resetEmail: email,
+                    resetErr: "Internal error when generating password reset"
                 });
                 return;
             }
 
-            Logger.eventlog.log("[account] " + ip + " requested password recovery for " +
-                                name + " <" + email + ">");
+            var hash = bytes.toString('hex');
+            // 24-hour expiration
+            var expire = Date.now() + 86400000;
+            var ip = req.realIP;
 
-            if (!emailConfig.getPasswordReset().isEnabled()) {
-                sendPug(res, "account-passwordreset", {
-                    reset: false,
-                    resetEmail: email,
-                    resetErr: "This server does not have mail support enabled.  Please " +
-                              "contact an administrator for assistance."
-                });
-                return;
-            }
+            db.addPasswordReset({
+                ip: ip,
+                name: name,
+                email: actualEmail,
+                hash: hash,
+                expire: expire
+            }, function (err, _dbres) {
+                if (err) {
+                    sendPug(res, "account-passwordreset", {
+                        reset: false,
+                        resetEmail: "",
+                        resetErr: err
+                    });
+                    return;
+                }
 
-            const baseUrl = `${req.realProtocol}://${req.header("host")}`;
+                Logger.eventlog.log("[account] " + ip + " requested password recovery for " +
+                                    name + " <" + email + ">");
 
-            emailController.sendPasswordReset({
-                username: name,
-                address: email,
-                url: `${baseUrl}/account/passwordrecover/${hash}`
-            }).then(_result => {
-                sendPug(res, "account-passwordreset", {
-                    reset: true,
-                    resetEmail: email,
-                    resetErr: false
-                });
-            }).catch(error => {
-                LOGGER.error("Sending password reset email failed: %s", error);
-                sendPug(res, "account-passwordreset", {
-                    reset: false,
-                    resetEmail: email,
-                    resetErr: "Sending reset email failed.  Please contact an " +
-                              "administrator for assistance."
+                if (!emailConfig.getPasswordReset().isEnabled()) {
+                    sendPug(res, "account-passwordreset", {
+                        reset: false,
+                        resetEmail: email,
+                        resetErr: "This server does not have mail support enabled.  Please " +
+                                  "contact an administrator for assistance."
+                    });
+                    return;
+                }
+
+                const baseUrl = `${req.realProtocol}://${req.header("host")}`;
+
+                emailController.sendPasswordReset({
+                    username: name,
+                    address: email,
+                    url: `${baseUrl}/account/passwordrecover/${hash}`
+                }).then(_result => {
+                    sendPug(res, "account-passwordreset", {
+                        reset: true,
+                        resetEmail: email,
+                        resetErr: false
+                    });
+                }).catch(error => {
+                    LOGGER.error("Sending password reset email failed: %s", error);
+                    sendPug(res, "account-passwordreset", {
+                        reset: false,
+                        resetEmail: email,
+                        resetErr: "Sending reset email failed.  Please contact an " +
+                                  "administrator for assistance."
+                    });
                 });
             });
         });

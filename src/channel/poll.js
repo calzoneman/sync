@@ -79,7 +79,9 @@ PollModule.prototype.onUserPostJoin = function (user) {
     this.addUserToPollRoom(user);
     const self = this;
     user.on("effectiveRankChange", () => {
-        self.addUserToPollRoom(user);
+        if (self.channel && !self.channel.dead) {
+            self.addUserToPollRoom(user);
+        }
     });
 };
 
