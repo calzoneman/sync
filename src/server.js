@@ -122,7 +122,9 @@ var Server = function () {
     var channelIndex;
     if (Config.get("enable-partition")) {
         channelIndex = new PartitionChannelIndex(
-                initModule.getRedisClientProvider().get()
+                initModule.getRedisClientProvider().get(),
+                initModule.getRedisClientProvider().get(),
+                initModule.partitionConfig.getChannelIndexChannel()
         );
     } else {
         channelIndex = new LocalChannelIndex();

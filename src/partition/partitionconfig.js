@@ -26,6 +26,10 @@ class PartitionConfig {
     getGlobalMessageBusChannel() {
         return this.config.redis.globalMessageBusChannel || 'globalMessages';
     }
+
+    getChannelIndexChannel() {
+        return this.config.redis.channelIndexChannel || 'channelIndexUpdates';
+    }
 }
 
 export { PartitionConfig };
