@@ -1,6 +1,5 @@
 import Promise from 'bluebird';
 import uuid from 'uuid';
-import path from 'path';
 
 const LOGGER = require('@calzoneman/jsli')('partitionchannelindex');
 
