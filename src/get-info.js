@@ -1,15 +1,16 @@
-var http = require("http");
-var https = require("https");
-var Media = require("./media");
-var CustomEmbedFilter = require("./customembed").filter;
-var Config = require("./config");
-var ffmpeg = require("./ffmpeg");
-var mediaquery = require("cytube-mediaquery");
-var YouTube = require("cytube-mediaquery/lib/provider/youtube");
-var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
-var Streamable = require("cytube-mediaquery/lib/provider/streamable");
-var TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
-var TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
+const http = require("http");
+const https = require("https");
+const Media = require("./media");
+const CustomEmbedFilter = require("./customembed").filter;
+const Config = require("./config");
+const ffmpeg = require("./ffmpeg");
+const mediaquery = require("cytube-mediaquery");
+const YouTube = require("cytube-mediaquery/lib/provider/youtube");
+const Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
+const Streamable = require("cytube-mediaquery/lib/provider/streamable");
+const TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
+const TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
+const Mixer = require("cytube-mediaquery/lib/provider/mixer");
 import { Counter } from 'prom-client';
 import { lookup as lookupCustomMetadata } from './custom-media';
 
@@ -544,6 +545,27 @@ var Getters = {
         } catch (error) {
             process.nextTick(callback, error.message);
         }
+    },
+
+    /* mixer.com */
+    mx: function (id, callback) {
+        let m = id.match(/^[\w-]+$/);
+        if (!m) {
+            process.nextTick(callback, "Invalid mixer.com ID");
+            return;
+        }
+
+        Mixer.lookup(id).then(stream => {
+            process.nextTick(callback, null, new Media(
+                stream.id,
+                stream.title,
+                "--:--",
+                "mx",
+                stream.meta
+            ));
+        }).catch(error => {
+            process.nextTick(callback, error.message || error, null);
+        });
     }
 };
 

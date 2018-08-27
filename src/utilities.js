@@ -177,7 +177,7 @@
         };
     },
 
-    root.formatLink = function (id, type) {
+    root.formatLink = function (id, type, meta) {
         switch (type) {
             case "yt":
                 return "https://youtu.be/" + id;
@@ -211,6 +211,12 @@
                 return "https://clips.twitch.tv/" + id;
             case "cm":
                 return id;
+            case "mx":
+                if (meta !== null) {
+                    return `https://mixer.com/${meta.mixer.channelToken}`;
+                } else {
+                    return `https://mixer.com/${id}`;
+                }
             default:
                 return "";
         }
@@ -226,6 +232,7 @@
             case "im":
             case "hb":
             case "hl":
+            case "mx":
                 return true;
             default:
                 return false;

@@ -20,6 +20,7 @@ TYPE_MAP =
     sb: StreamablePlayer
     tc: VideoJSPlayer
     cm: VideoJSPlayer
+    mx: MixerPlayer
 
 window.loadMediaPlayer = (data) ->
     try

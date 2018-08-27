@@ -241,7 +241,11 @@ PlaylistModule.prototype.packInfo = function (data, isAdmin) {
     if (this.current) {
         data.mediatitle = this.current.media.title;
         if (isAdmin) {
-            data.mediaLink = util.formatLink(this.current.media.id, this.current.media.type);
+            data.mediaLink = util.formatLink(
+                this.current.media.id,
+                this.current.media.type,
+                this.current.media.meta
+            );
         }
     } else {
         data.mediatitle = "(Nothing Playing)";
@@ -407,7 +411,7 @@ PlaylistModule.prototype.handleQueue = function (user, data) {
         data.title = false;
     }
 
-    var link = util.formatLink(id, type);
+    var link = util.formatLink(id, type, null);
     var perms = this.channel.modules.permissions;
 
     if (!perms.canAddVideo(user, data)) {

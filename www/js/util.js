@@ -56,6 +56,8 @@ function formatURL(data) {
             return "https://clips.twitch.tv/" + data.id;
         case "cm":
             return data.id;
+        case "mx":
+            return "https://mixer.com/" + data.meta.mixer.channelToken;
         default:
             return "#";
     }
@@ -1396,6 +1398,13 @@ function parseMediaLink(url) {
         return {
             id: m[1],
             type: "sb"
+        };
+    }
+
+    if ((m = url.match(/\bmixer\.com\/([\w-]+)/))) {
+        return {
+            id: m[1],
+            type: "mx"
         };
     }
 
@@ -3237,6 +3246,8 @@ function stopQueueSpinner(data) {
     // the same as the URL "ID" from the user)
     if (data && data.type === "us") {
         data = { id: data.title.match(/Ustream.tv - (.*)/)[1] };
+    } else if (data && data.type === "mx") {
+        data = { id: data.meta.mixer.channelToken };
     }
 
     var shouldRemove = (data !== null &&
