@@ -1,3 +1,13 @@
+2018-08-27
+==========
+
+Support for node.js 6.x has been dropped, in order to bump the babel preset to
+generate more efficient code (8.x supports async-await and other ES6+ features
+natively and is the current node.js LTS).
+
+If you are unable to upgrade to node.js 8.x, you can revert the changes to
+package.json in this commit, however, be warned that I no longer test on 6.x.
+
 2018-06-03
 ==========
 
