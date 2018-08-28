@@ -1,18 +1,13 @@
-// @flow
-
-import { Database } from '../database';
 import net from 'net';
 
 const LOGGER = require('@calzoneman/jsli')('AliasesDB');
 
 class AliasesDB {
-    db: Database;
-
-    constructor(db: Database) {
+    constructor(db) {
         this.db = db;
     }
 
-    async addAlias(ip: string, name: string) {
+    async addAlias(ip, name) {
         return this.db.runTransaction(async tx => {
             try {
                 await tx.table('aliases')
@@ -27,7 +22,7 @@ class AliasesDB {
         });
     }
 
-    async getAliasesByIP(ip: string): Promise<Array<string>> {
+    async getAliasesByIP(ip) {
         return this.db.runTransaction(async tx => {
             const query = tx.table('aliases');
             if (net.isIP(ip)) {
@@ -45,7 +40,7 @@ class AliasesDB {
         });
     }
 
-    async getIPsByName(name: string): Promise<Array<string>> {
+    async getIPsByName(name) {
         return this.db.runTransaction(async tx => {
             const rows = await tx.table('aliases')
                     .select('ip')

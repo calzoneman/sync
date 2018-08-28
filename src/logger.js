@@ -1,5 +1,3 @@
-// @flow
-
 var fs = require("graceful-fs");
 var path = require("path");
 import { Logger as JsliLogger, LogLevel } from '@calzoneman/jsli';
@@ -66,12 +64,12 @@ exports.syslog = syslog;
 exports.eventlog = eventlog;
 
 class LegacyLogger extends JsliLogger {
-    constructor(loggerName: string, level: LogLevel) {
+    constructor(loggerName, level) {
         super(loggerName, level);
     }
 
-    emitMessage(level: LogLevel, message: string) {
-        var output: string = `[${level.name}] ${this.loggerName}: ${message}`;
+    emitMessage(level, message) {
+        var output = `[${level.name}] ${this.loggerName}: ${message}`;
         if (level.shouldLogAtLevel(LogLevel.ERROR)) {
             errlog.log(output);
         } else {
@@ -81,7 +79,7 @@ class LegacyLogger extends JsliLogger {
 }
 
 // TODO: allow reconfiguration of log level at runtime
-const level: LogLevel = process.env.DEBUG ? LogLevel.DEBUG : LogLevel.INFO;
+const level = process.env.DEBUG ? LogLevel.DEBUG : LogLevel.INFO;
 
 jsli.setLogBackend((loggerName) => {
     return new LegacyLogger(loggerName, level);
