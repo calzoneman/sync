@@ -49,9 +49,6 @@ import session from './session';
 import { LegacyModule } from './legacymodule';
 import { PartitionModule } from './partition/partitionmodule';
 import { Gauge } from 'prom-client';
-import { AccountDB } from './db/account';
-import { ChannelDB } from './db/channel';
-import { AccountController } from './controller/account';
 import { EmailController } from './controller/email';
 
 var Server = function () {
@@ -83,12 +80,6 @@ var Server = function () {
     self.db = Database;
     self.db.init();
     ChannelStore.init();
-
-    const accountDB = new AccountDB(db.getDB());
-    const channelDB = new ChannelDB(db.getDB());
-
-    // controllers
-    const accountController = new AccountController(accountDB, globalMessageBus);
 
     let emailTransport;
     if (Config.getEmailConfig().getPasswordReset().isEnabled()) {
@@ -138,8 +129,6 @@ var Server = function () {
             channelIndex,
             session,
             globalMessageBus,
-            accountController,
-            channelDB,
             Config.getEmailConfig(),
             emailController
     );
