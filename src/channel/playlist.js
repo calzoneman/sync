@@ -957,6 +957,10 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
     if (data.duration) {
         media.seconds = data.duration;
         media.duration = util.formatTime(media.seconds);
+    } else if (media.seconds === 0 && !this.channel.modules.permissions.canAddLive(user)) {
+        // Issue #766
+        qfail("You don't have permission to add livestreams");
+        return;
     }
 
     if (data.maxlength > 0 && media.seconds > data.maxlength) {
