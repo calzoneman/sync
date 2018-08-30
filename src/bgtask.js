@@ -51,13 +51,19 @@ function initChannelDumper(Server) {
         var wait = CHANNEL_SAVE_INTERVAL / Server.channels.length;
         LOGGER.info(`Saving channels with delay ${wait}`);
         Promise.reduce(Server.channels, (_, chan) => {
-            return Promise.delay(wait).then(() => {
+            return Promise.delay(wait).then(async () => {
                 if (!chan.dead && chan.users && chan.users.length > 0) {
-                    return chan.saveState().tap(() => {
+                    try {
+                        await chan.saveState();
                         LOGGER.info(`Saved /${chanPath}/${chan.name}`);
-                    }).catch(err => {
-                        LOGGER.error(`Failed to save /${chanPath}/${chan.name}: ${err.stack}`);
-                    });
+                    } catch (error) {
+                        LOGGER.error(
+                            'Failed to save /%s/%s: %s',
+                            chanPath,
+                            chan ? chan.name : '<undefined>',
+                            error.stack
+                        );
+                    }
                 }
             }).catch(error => {
                 LOGGER.error(`Failed to save channel: ${error.stack}`);
