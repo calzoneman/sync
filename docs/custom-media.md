@@ -1,10 +1,6 @@
 CyTube Custom Content Metadata
 ==============================
 
-Last Updated: 2017-08-08
-
-Status: Experimental
-
 ## Purpose ##
 
 CyTube currently supports adding custom audio/video content by allowing the user
