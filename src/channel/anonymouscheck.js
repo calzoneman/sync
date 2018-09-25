@@ -16,16 +16,18 @@ AnonymousCheck.prototype.onUserPreJoin = function (user, data, cb) {
     }
 
     if(anonymousBanned && user.isAnonymous()) {
+        user.socket.emit("needIdentity");
         user.socket.on("disconnect", function () {
             if (!user.is(Flags.U_IN_CHANNEL)) {
                 cb("User disconnected", ChannelModule.DENY);
             }
         });
 
-        user.socket.emit("errorMsg", { msg : "This channel has blocked anonymous users. Please provide a user name to join."});
         user.waitFlag(Flags.U_LOGGED_IN, function () {
+            user.socket.emit("cancelNeedIdentity");
             cb(null, ChannelModule.PASSTHROUGH);
         });
+
         return;
     } else{
         cb(null, ChannelModule.PASSTHROUGH);
