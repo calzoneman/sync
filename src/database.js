@@ -38,7 +38,7 @@ class Database {
                     password: Config.get('mysql.password'),
                     database: Config.get('mysql.database'),
                     multipleStatements: true, // Legacy thing
-                    charset: 'UTF8MB4_GENERAL_CI'
+                    charset: 'utf8mb4'
                 },
                 pool: {
                     min: Config.get('mysql.pool-size'),
@@ -80,8 +80,14 @@ module.exports.init = function (newDB) {
             .catch(error => {
                 LOGGER.error('Initial database connection failed: %s', error.stack);
                 process.exit(1);
-            }).then(() => {
-                process.nextTick(legacySetup);
+            })
+            .then(() => tables.initTables())
+            .then(() => {
+                require('./database/update').checkVersion();
+                module.exports.loadAnnouncement();
+            }).catch(error => {
+                LOGGER.error(error.stack);
+                process.exit(1);
             });
 };
 
@@ -96,16 +102,6 @@ module.exports.getGlobalBanDB = function getGlobalBanDB() {
 
     return globalBanDB;
 };
-
-function legacySetup() {
-    tables.init(module.exports.query, function (err) {
-        if (err) {
-            return;
-        }
-        require("./database/update").checkVersion();
-        module.exports.loadAnnouncement();
-    });
-}
 
 /**
  * Execute a database query
