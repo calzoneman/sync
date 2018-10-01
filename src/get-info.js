@@ -376,7 +376,7 @@ var Getters = {
          * http://www.ustream.tv/foo so they do both.
          * [](/cleese)
          */
-        var m = id.match(/([^?&#]+)|(channel\/[^?&#]+)/);
+        var m = id.match(/([\w]+)|(channel\/[\w]+)/);
         if (m) {
             id = m[1];
         } else {
