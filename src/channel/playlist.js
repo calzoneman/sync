@@ -394,10 +394,6 @@ PlaylistModule.prototype.handleQueue = function (user, data) {
 
     var id = data.id;
     var type = data.type;
-    if (type === "lib") {
-        LOGGER.warn("Outdated client: IP %s emitting queue with type=lib",
-                user.realip);
-    }
 
     if (data.pos !== "next" && data.pos !== "end") {
         return;
@@ -522,42 +518,18 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
     this.channel.refCounter.ref("PlaylistModule::queueStandard");
     counters.add("playlist:queue:count", 1);
     this.semaphore.queue(function (lock) {
-        var lib = self.channel.modules.library;
-        if (lib && self.channel.is(Flags.C_REGISTERED) && !util.isLive(data.type)) {
-            // TODO: remove this check entirely once metrics are collected.
-            lib.getItem(data.id, function (err, item) {
-                if (err && err !== "Item not in library") {
-                    LOGGER.error("Failed to query for library item: %s", String(err));
-                } else if (err === "Item not in library") {
-                    counters.add("playlist:queue:library:miss", 1);
-                } else {
-                    // temp hack until all clients are updated.
-                    // previously, library search results would queue with
-                    // type "lib"; this has now been changed.
-                    data.type = item.type;
-                    counters.add("playlist:queue:library:hit", 1);
-                }
+        InfoGetter.getMedia(data.id, data.type, function (err, media) {
+            if (err) {
+                error(XSS.sanitizeText(String(err)));
+                self.channel.refCounter.unref("PlaylistModule::queueStandard");
+                return lock.release();
+            }
 
-                handleLookup();
+            self._addItem(media, data, user, function () {
+                lock.release();
+                self.channel.refCounter.unref("PlaylistModule::queueStandard");
             });
-        } else {
-            handleLookup();
-        }
-
-        function handleLookup() {
-            InfoGetter.getMedia(data.id, data.type, function (err, media) {
-                if (err) {
-                    error(XSS.sanitizeText(String(err)));
-                    self.channel.refCounter.unref("PlaylistModule::queueStandard");
-                    return lock.release();
-                }
-
-                self._addItem(media, data, user, function () {
-                    lock.release();
-                    self.channel.refCounter.unref("PlaylistModule::queueStandard");
-                });
-            });
-        }
+        });
     });
 };
 

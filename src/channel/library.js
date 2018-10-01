@@ -3,7 +3,7 @@ var Flags = require("../flags");
 var util = require("../utilities");
 var InfoGetter = require("../get-info");
 var db = require("../database");
-var Media = require("../media");
+import { Counter, Summary } from 'prom-client';
 const LOGGER = require('@calzoneman/jsli')('channel/library');
 
 const TYPE_UNCACHE = {
@@ -45,17 +45,6 @@ LibraryModule.prototype.cacheMediaList = function (list) {
     }
 };
 
-LibraryModule.prototype.getItem = function (id, cb) {
-    db.channels.getLibraryItem(this.channel.name, id, function (err, row) {
-        if (err) {
-            cb(err, null);
-        } else {
-            var meta = JSON.parse(row.meta || "{}");
-            cb(null, new Media(row.id, row.title, row.seconds, row.type, meta));
-        }
-    });
-};
-
 LibraryModule.prototype.handleUncache = function (user, data) {
     if (!this.channel.is(Flags.C_REGISTERED)) {
         return;
@@ -81,11 +70,24 @@ LibraryModule.prototype.handleUncache = function (user, data) {
     });
 };
 
+const librarySearchQueryCount = new Counter({
+    name: 'cytube_library_search_query_count',
+    help: 'Counter for number of channel library searches',
+    labelNames: ['source']
+});
+const librarySearchResultSize = new Summary({
+    name: 'cytube_library_search_results_size',
+    help: 'Summary for number of channel library results returned',
+    labelNames: ['source']
+});
 LibraryModule.prototype.handleSearchMedia = function (user, data) {
     var query = data.query.substring(0, 100);
     var searchYT = function () {
+        librarySearchQueryCount.labels('yt').inc(1, new Date());
         InfoGetter.Getters.ytSearch(query, function (e, vids) {
             if (!e) {
+                librarySearchResultSize.labels('yt')
+                        .observe(vids.length, new Date());
                 user.socket.emit("searchResults", {
                     source: "yt",
                     results: vids
@@ -98,10 +100,15 @@ LibraryModule.prototype.handleSearchMedia = function (user, data) {
         !this.channel.modules.permissions.canSeePlaylist(user)) {
         searchYT();
     } else {
+        librarySearchQueryCount.labels('library').inc(1, new Date());
+
         db.channels.searchLibrary(this.channel.name, query, function (err, res) {
             if (err) {
                 res = [];
             }
+
+            librarySearchResultSize.labels('library')
+                    .observe(res.length, new Date());
 
             if (res.length === 0) {
                 return searchYT();

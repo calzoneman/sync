@@ -229,7 +229,15 @@ class IOServer {
 
         LOGGER.info('Accepted socket from %s', socket.context.ipAddress);
         counters.add('socket.io:accept', 1);
-        socket.once('disconnect', () => counters.add('socket.io:disconnect', 1));
+        socket.once('disconnect', (reason, reasonDetail) => {
+            LOGGER.info(
+                '%s disconnected (%s%s)',
+                socket.context.ipAddress,
+                reason,
+                reasonDetail ? ` - ${reasonDetail}` : ''
+            );
+            counters.add('socket.io:disconnect', 1);
+        });
 
         const user = new User(socket, socket.context.ipAddress, socket.context.user);
         if (socket.context.user) {
