@@ -338,7 +338,7 @@ Channel.prototype.checkModules = function (fn, args, cb) {
         };
 
         args.push(next);
-        next(null, ChannelModule.PASSTHROUGH);
+        process.nextTick(next, null, ChannelModule.PASSTHROUGH);
     });
 };
 

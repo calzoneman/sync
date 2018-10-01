@@ -228,6 +228,11 @@ module.exports = {
             return;
         }
 
+        if (!$util.isValidUserName(name)) {
+            callback(`Invalid username "${name}"`);
+            return;
+        }
+
         /* Passwords are capped at 100 characters to prevent a potential
            denial of service vector through causing the server to hash
            ridiculously long strings.

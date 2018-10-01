@@ -232,7 +232,7 @@ KickBanModule.prototype.handleCmdBan = function (user, msg, _meta) {
     this.banName(user, name, reason).catch(error => {
         const message = error.message || error;
         user.socket.emit("errorMsg", { msg: message });
-    }).finally(() => {
+    }).then(() => {
         chan.refCounter.unref("KickBanModule::handleCmdBan");
     });
 };
@@ -264,7 +264,7 @@ KickBanModule.prototype.handleCmdIPBan = function (user, msg, _meta) {
         //console.log('!!!', error.stack);
         const message = error.message || error;
         user.socket.emit("errorMsg", { msg: message });
-    }).finally(() => {
+    }).then(() => {
         chan.refCounter.unref("KickBanModule::handleCmdIPBan");
     });
 };
