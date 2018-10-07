@@ -131,7 +131,8 @@ var USEROPTS = {
     emotelist_sort       : getOrDefault("emotelist_sort", true),
     no_emotes            : getOrDefault("no_emotes", false),
     strip_image          : getOrDefault("strip_image", false),
-    chat_tab_method      : getOrDefault("chat_tab_method", "Cycle options")
+    chat_tab_method      : getOrDefault("chat_tab_method", "Cycle options"),
+    notifications        : getOrDefault("notifications", "never")
 };
 
 /* Backwards compatibility check */
