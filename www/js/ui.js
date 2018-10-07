@@ -48,6 +48,35 @@ $("#modflair").click(function () {
     setOpt('modhat', USEROPTS.modhat);
 });
 
+$("#notifications").click(function() {
+    var m = $("#notifications");
+    if (m.hasClass("label-success")) {
+        USEROPTS.notifications = false;
+        m.removeClass("label-success")
+            .addClass("label-default");
+        $("#us-notifications").prop("checked", USEROPTS.notifications);
+        setOpt("notifications", USEROPTS.notifications);
+    } else {
+        if ("Notification" in window) {
+            Notification.requestPermission().then(function (permission) {
+                USEROPTS.notifications = permission === "granted";
+                if (USEROPTS.notifications) {
+                    m.removeClass("label-default")
+                        .addClass("label-success");
+                }
+                $("#us-notifications").prop("checked", USEROPTS.notifications);
+                setOpt("notifications", USEROPTS.notifications);
+            });
+        } else {
+            USEROPTS.notifications = false;
+            m.removeClass("label-success")
+                .addClass("label-default");
+            $("#us-notifications").prop("checked", USEROPTS.notifications);
+            setOpt("notifications", USEROPTS.notifications);
+        }
+    }
+});
+
 $("#usercount").mouseenter(function (ev) {
     var breakdown = calcUserBreakdown();
     // re-using profile-box class for convenience

@@ -649,6 +649,7 @@ function showUserOptions() {
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-shadowchat").prop("checked", USEROPTS.show_shadowchat);
+    $("#us-notifications").prop("checked", USEROPTS.notifications);
 
     formatScriptAccessPrefs();
 
@@ -676,6 +677,7 @@ function saveUserOptions() {
     USEROPTS.sort_afk             = $("#us-sort-afk").prop("checked");
     USEROPTS.blink_title          = $("#us-blink-title").val();
     USEROPTS.boop                 = $("#us-ping-sound").val();
+    USEROPTS.notifications        = $("#us-notifications").prop("checked");
     USEROPTS.chatbtn              = $("#us-sendbtn").prop("checked");
     USEROPTS.no_emotes            = $("#us-no-emotes").prop("checked");
     USEROPTS.strip_image          = $("#us-strip-image").prop("checked");
@@ -757,6 +759,27 @@ function applyOpts() {
         $("#modflair").removeClass("label-success")
             .addClass("label-default");
     }
+
+    if (USEROPTS.notifications) {
+        if ("Notification" in window)
+        {
+            Notification.requestPermission().then(function(permission) {
+                USEROPTS.notifications = permission === "granted";
+                if (USEROPTS.notifications) {
+                    $("#notifications").removeClass("label-default")
+                        .addClass("label-success");
+                } else {
+                    $("#notifications").removeClass("label-success")
+                        .addClass("label-default");
+                }
+            });
+        }
+        else {
+            USEROPTS.notifications = false;
+        }
+    }
+
+    
 }
 
 function parseTimeout(t) {
@@ -1649,6 +1672,10 @@ function addChatMessage(data) {
 
     pingMessage(isHighlight);
 
+    if (USEROPTS.notifications && document.hidden)
+    {
+        new Notification(data.username, {body: data.msg, icon: null});
+    }
 }
 
 function trimChatBuffer() {
