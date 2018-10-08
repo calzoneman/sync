@@ -1674,7 +1674,7 @@ function addChatMessage(data) {
 
     if (USEROPTS.notifications && document.hidden)
     {
-        new Notification(data.username, {body: data.msg, icon: null});
+        new Notification(data.username, {body: data.msg.replace(/<[^>]+>/g, ''), icon: null});
     }
 }
 
