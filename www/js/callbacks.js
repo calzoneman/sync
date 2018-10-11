@@ -472,10 +472,12 @@ Callbacks = {
             return;
         }
 
+        var ping = false;
+
         if (data.username === CLIENT.name) {
             name = data.to;
         } else {
-            pingMessage(true);
+            ping = true;
         }
         var pm = initPm(name);
         var msg = formatChatMessage(data, pm.data("last"));
@@ -484,6 +486,10 @@ Callbacks = {
         buffer.scrollTop(buffer.prop("scrollHeight"));
         if (pm.find(".panel-body").is(":hidden")) {
             pm.removeClass("panel-default").addClass("panel-primary");
+        }
+
+        if (ping) {
+            pingMessage(true, "PM: " + name, msg.last().text());
         }
     },
 

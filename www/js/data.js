@@ -132,7 +132,7 @@ var USEROPTS = {
     no_emotes            : getOrDefault("no_emotes", false),
     strip_image          : getOrDefault("strip_image", false),
     chat_tab_method      : getOrDefault("chat_tab_method", "Cycle options"),
-    notifications        : getOrDefault("notifications", false)
+    notifications        : getOrDefault("notifications", "never")
 };
 
 /* Backwards compatibility check */
