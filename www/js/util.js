@@ -1662,7 +1662,7 @@ function addChatMessage(data) {
         }
     }
 
-    pingMessage(isHighlight, data.username, div.text());
+    pingMessage(isHighlight, data.username, $(div.children()[2]).text());
 }
 
 function trimChatBuffer() {
@@ -1698,7 +1698,7 @@ function pingMessage(isHighlight, notificationTitle, notificationBody) {
 
         if (USEROPTS.notifications === "always" || (USEROPTS.notifications === "onlyping" &&
             isHighlight)) {
-            showDesktopNotification(notificationTitle, notificationBody.replace(/\[[^\]]+\]/g, ''));
+            showDesktopNotification(notificationTitle, notificationBody);
         }
     }
 }

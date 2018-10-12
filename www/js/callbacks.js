@@ -489,7 +489,7 @@ Callbacks = {
         }
 
         if (ping) {
-            pingMessage(true, "PM: " + name, msg.last().text());
+            pingMessage(true, "PM: " + name, $(msg.children()[2]).text());
         }
     },
 
