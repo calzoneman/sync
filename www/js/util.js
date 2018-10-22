@@ -1466,6 +1466,20 @@ function parseMediaLink(url) {
                 id: url,
                 type: "cm"
             };
+        } else if (tmp.match(/kissanime|kimcartoon|kisscartoon/i)) {
+            Callbacks.queueFail({
+                link: url,
+                msg: "Kisscartoon and Kissanime are not supported.  See https://git.io/vxS9n" +
+                     " for more information about why these cannot be supported."
+            });
+            throw new Error("ERROR_QUEUE_KISS");
+        } else if (tmp.match(/mega\.nz/)) {
+            Callbacks.queueFail({
+                link: url,
+                msg: "Mega.nz is not supported.  See https://git.io/fx6fz" +
+                     " for more information about why mega.nz cannot be supported."
+            });
+            throw new Error("ERROR_QUEUE_MEGA");
         } else if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3|mov|m4a)$/)) {
             return {
                 id: url,
