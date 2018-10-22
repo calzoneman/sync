@@ -1,5 +1,6 @@
-var ChannelModule = require("./module");
-var XSS = require("../xss");
+const ChannelModule = require("./module");
+const XSS = require("../xss");
+const { hash } = require('../util/hash');
 
 const TYPE_SETCSS = {
     css: "string"
@@ -22,6 +23,28 @@ function CustomizationModule(_channel) {
 }
 
 CustomizationModule.prototype = Object.create(ChannelModule.prototype);
+
+Object.defineProperty(CustomizationModule.prototype, 'css', {
+    get() {
+        return this._css;
+    },
+
+    set(val) {
+        this._css = val;
+        this.cssHash = hash('md5', val, 'base64');
+    }
+});
+
+Object.defineProperty(CustomizationModule.prototype, 'js', {
+    get() {
+        return this._js;
+    },
+
+    set(val) {
+        this._js = val;
+        this.jsHash = hash('md5', val, 'base64');
+    }
+});
 
 CustomizationModule.prototype.load = function (data) {
     if ("css" in data) {
@@ -69,7 +92,9 @@ CustomizationModule.prototype.onUserPostJoin = function (user) {
 CustomizationModule.prototype.sendCSSJS = function (users) {
     var data = {
         css: this.css,
-        js: this.js
+        cssHash: this.cssHash,
+        js: this.js,
+        jsHash: this.jsHash
     };
     users.forEach(function (u) {
         u.socket.emit("channelCSSJS", data);
@@ -89,11 +114,15 @@ CustomizationModule.prototype.handleSetCSS = function (user, data) {
         return;
     }
 
-    this.dirty = true;
+    let oldHash = this.cssHash;
+    // TODO: consider sending back an error instead of silently truncating
     this.css = data.css.substring(0, 20000);
-    this.sendCSSJS(this.channel.users);
 
-    this.channel.logger.log("[mod] " + user.getName() + " updated the channel CSS");
+    if (oldHash !== this.cssHash) {
+        this.dirty = true;
+        this.sendCSSJS(this.channel.users);
+        this.channel.logger.log("[mod] " + user.getName() + " updated the channel CSS");
+    }
 };
 
 CustomizationModule.prototype.handleSetJS = function (user, data) {
@@ -102,11 +131,14 @@ CustomizationModule.prototype.handleSetJS = function (user, data) {
         return;
     }
 
-    this.dirty = true;
+    let oldHash = this.jsHash;
     this.js = data.js.substring(0, 20000);
-    this.sendCSSJS(this.channel.users);
 
-    this.channel.logger.log("[mod] " + user.getName() + " updated the channel JS");
+    if (oldHash !== this.jsHash) {
+        this.dirty = true;
+        this.sendCSSJS(this.channel.users);
+        this.channel.logger.log("[mod] " + user.getName() + " updated the channel JS");
+    }
 };
 
 CustomizationModule.prototype.handleSetMotd = function (user, data) {
