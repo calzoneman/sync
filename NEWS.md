@@ -1,3 +1,12 @@
+2018-10-21
+==========
+
+The `sanitize-html` dependency has made a change that results in `"` no longer
+being replaced by `&quot;` when not inside an HTML attribute value.  This
+potentially breaks any chat filters matching quotes as `&quot;` (on my
+particular instance, this seems to be quite rare).  These filters will need to
+be updated in order to continue matching quotes.
+
 2018-08-27
 ==========
 
