@@ -2,6 +2,7 @@ var $util = require("../utilities");
 var bcrypt = require("bcrypt");
 var db = require("../database");
 var Config = require("../config");
+import { promisify } from "bluebird";
 
 const LOGGER = require('@calzoneman/jsli')('database/accounts');
 
@@ -89,7 +90,9 @@ module.exports = {
             return;
         }
 
-        db.query("SELECT * FROM `users` WHERE name = ?", [name], function (err, rows) {
+        db.query("SELECT * FROM `users` WHERE name = ? AND inactive = FALSE",
+                 [name],
+                 function (err, rows) {
             if (err) {
                 callback(err, true);
                 return;
@@ -244,7 +247,7 @@ module.exports = {
            the hashes match.
         */
 
-        db.query("SELECT * FROM `users` WHERE name=?",
+        db.query("SELECT * FROM `users` WHERE name=? AND inactive = FALSE",
                  [name],
         function (err, rows) {
             if (err) {
@@ -401,7 +404,7 @@ module.exports = {
             return;
         }
 
-        db.query("SELECT email FROM `users` WHERE name=?", [name],
+        db.query("SELECT email FROM `users` WHERE name=? AND inactive = FALSE", [name],
         function (err, rows) {
             if (err) {
                 callback(err, null);
@@ -520,17 +523,6 @@ module.exports = {
     },
 
     /**
-     * Retrieve a list of channels owned by a user
-     */
-    getChannels: function (name, callback) {
-        if (typeof callback !== "function") {
-            return;
-        }
-
-        db.query("SELECT * FROM `channels` WHERE owner=?", [name], callback);
-    },
-
-    /**
      * Retrieves all names registered from a given IP
      */
     getAccounts: function (ip, callback) {
@@ -540,5 +532,57 @@ module.exports = {
 
         db.query("SELECT name,global_rank FROM `users` WHERE `ip`=?", [ip],
                  callback);
+    },
+
+    requestAccountDeletion: id => {
+        return db.getDB().runTransaction(async tx => {
+            try {
+                let user = await tx.table('users').where({ id }).first();
+                await tx.table('user_deletion_requests')
+                        .insert({
+                            user_id: id
+                        });
+                await tx.table('users')
+                        .where({ id })
+                        .update({ password: '', inactive: true });
+
+                // TODO: ideally password reset should be by user_id and not name
+                // For now, we need to make sure to clear it
+                await tx.table('password_reset')
+                        .where({ name: user.name })
+                        .delete();
+            } catch (error) {
+                // Ignore unique violation -- probably caused by a duplicate request
+                if (error.code !== 'ER_DUP_ENTRY') {
+                    throw error;
+                }
+            }
+        });
+    },
+
+    findAccountsPendingDeletion: () => {
+        return db.getDB().runTransaction(tx => {
+            let lastWeek = new Date(Date.now() - 7 * 24 * 3600 * 1000);
+            return tx.table('user_deletion_requests')
+                    .where('user_deletion_requests.created_at', '<', lastWeek)
+                    .join('users', 'user_deletion_requests.user_id', '=', 'users.id')
+                    .select('users.id', 'users.name');
+        });
+    },
+
+    purgeAccount: id => {
+        return db.getDB().runTransaction(async tx => {
+            let user = await tx.table('users').where({ id }).first();
+            if (!user) {
+                return false;
+            }
+
+            await tx.table('channel_ranks').where({ name: user.name }).delete();
+            await tx.table('user_playlists').where({ user: user.name }).delete();
+            await tx.table('users').where({ id }).delete();
+            return true;
+        });
     }
 };
+
+module.exports.verifyLoginAsync = promisify(module.exports.verifyLogin);

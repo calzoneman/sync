@@ -26,6 +26,27 @@ class EmailController {
 
         return result;
     }
+
+    async sendAccountDeletion(params = {}) {
+        const { address, username } = params;
+
+        const deleteConfig = this.config.getDeleteAccount();
+
+        const html = deleteConfig.getHTML()
+                .replace(/\$user\$/g, username);
+        const text = deleteConfig.getText()
+                .replace(/\$user\$/g, username);
+
+        const result = await this.mailer.sendMail({
+            from: deleteConfig.getFrom(),
+            to: `${username} <${address}>`,
+            subject: deleteConfig.getSubject(),
+            html,
+            text
+        });
+
+        return result;
+    }
 }
 
 export { EmailController };

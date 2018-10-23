@@ -1,0 +1,51 @@
+extends layout.pug
+
+block content
+  .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
+    if internalError
+      h2 Error
+      p
+        | Your account deletion request could not be processed due to an internal
+        | error.  Please try again later and ask an administrator for assistance
+        | if the problem persists.
+    else if !loggedIn
+      h2 Authentication Required
+      p
+        | You must&nbsp;
+        a(href="/login") log in
+        | &nbsp; before requesting deletion of your account.
+    else if authFailed
+      h2 Authentication failed
+      p= reason
+    else if channelCount > 0
+      h2 Delete Account
+      p
+        | Your account cannot be deleted because you have one or more channels
+        | registered.  In order to delete your account, you must first&nbsp;
+        a(href="/account/channels") delete them
+        | &nbsp;or ask an administrator to transfer ownership of these channels
+        | to another account.
+    else
+      h2 Delete Account
+      p
+        strong Submitting this form will initiate permanent deletion of your account.&nbsp;
+        | After 7 days, your account will be permanently deleted and unrecoverable.
+        | During this time, you will not be able to log in, but you can ask an
+        | administrator to restore your account if the deletion was requested in error.
+        | Please confirm your password to continue.
+      form(action="/account/delete", method="post")
+        input(type="hidden", name="_csrf", value=csrfToken)
+        .form-group(class=wrongPassword ? "has-error" : "")
+          label.control-label(for="password") Password
+          input#password.form-control(type="password", name="password")
+          if wrongPassword
+            p.text-danger.
+              Password was incorrect
+        .checkbox
+          label
+            input#confirm-delete(type="checkbox", name="confirmed")
+            | I acknowledge that by submitting this request, my account will be permanently deleted unrecoverably
+          if missingConfirmation
+            p.text-danger.
+              You must check the box to confirm you want to delete your account
+        button.btn.btn-danger.btn-block(type="submit") Delete Account

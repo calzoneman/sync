@@ -129,4 +129,16 @@ export async function initTables() {
         t.index(['ip', 'channel']);
         t.index(['name', 'channel']);
     });
+
+    await ensureTable('user_deletion_requests', t => {
+        t.increments('request_id').notNullable().primary();
+        t.integer('user_id')
+            .unsigned()
+            .notNullable()
+            .references('id').inTable('users')
+            .onDelete('cascade')
+            .unique();
+        t.timestamps(/* useTimestamps */ true, /* defaultToNow */ true);
+        t.index('created_at');
+    });
 }
