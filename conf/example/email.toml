@@ -39,3 +39,28 @@ This email address is not monitored for replies.  For assistance with password r
 
 from = "Example Website <website@example.com>"
 subject = "Password reset request"
+
+# Email configuration for account deletion request notifications
+[delete-account]
+enabled = true
+
+html-template = """
+Hi $user$,
+<br>
+<br>
+Account deletion was requested for your account on CHANGE ME.  Your account will be automatically deleted in 7 days without any further action from you.
+<br>
+<br>
+This email address is not monitored for replies.  For assistance, please <a href="http://example.com/contact">contact an administrator</a>.
+"""
+
+text-template = """
+Hi $user$,
+
+Account deletion was requested for your account on CHANGE ME.  Your account will be automatically deleted in 7 days without any further action from you.
+
+This email address is not monitored for replies.  For assistance, please contact an administrator.  See http://example.com/contact for contact information.
+"""
+
+from = "Example Website <website@example.com>"
+subject = "Account deletion request"

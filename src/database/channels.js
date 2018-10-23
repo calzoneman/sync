@@ -230,6 +230,18 @@ module.exports = {
         });
     },
 
+    listUserChannelsAsync: owner => {
+        return new Promise((resolve, reject) => {
+            module.exports.listUserChannels(owner, (error, rows) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(rows);
+                }
+            });
+        });
+    },
+
     /**
      * Loads the channel from the database
      */

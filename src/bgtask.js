@@ -14,7 +14,7 @@ const LOGGER = require('@calzoneman/jsli')('bgtask');
 var init = null;
 
 /* Alias cleanup */
-function initAliasCleanup(_Server) {
+function initAliasCleanup() {
     var CLEAN_INTERVAL = parseInt(Config.get("aliases.purge-interval"));
     var CLEAN_EXPIRE = parseInt(Config.get("aliases.max-age"));
 
@@ -28,7 +28,7 @@ function initAliasCleanup(_Server) {
 }
 
 /* Password reset cleanup */
-function initPasswordResetCleanup(_Server) {
+function initPasswordResetCleanup() {
     var CLEAN_INTERVAL = 8*60*60*1000;
 
     setInterval(function () {
@@ -74,6 +74,25 @@ function initChannelDumper(Server) {
     }, CHANNEL_SAVE_INTERVAL);
 }
 
+function initAccountCleanup() {
+    setInterval(() => {
+        (async () => {
+            let rows = await db.users.findAccountsPendingDeletion();
+            for (let row of rows) {
+                try {
+                    await db.users.purgeAccount(row.id);
+                    LOGGER.info('Purged account from request %j', row);
+                } catch (error) {
+                    LOGGER.error('Error purging account %j: %s', row, error.stack);
+                }
+            }
+        })().catch(error => {
+            LOGGER.error('Error purging deleted accounts: %s', error.stack);
+        });
+    //}, 3600 * 1000);
+    }, 60 * 1000);
+}
+
 module.exports = function (Server) {
     if (init === Server) {
         LOGGER.warn("Attempted to re-init background tasks");
@@ -81,7 +100,8 @@ module.exports = function (Server) {
     }
 
     init = Server;
-    initAliasCleanup(Server);
+    initAliasCleanup();
     initChannelDumper(Server);
-    initPasswordResetCleanup(Server);
+    initPasswordResetCleanup();
+    initAccountCleanup();
 };

@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 
 const LOGGER = require('@calzoneman/jsli')('database/update');
 
-const DB_VERSION = 11;
+const DB_VERSION = 12;
 var hasUpdates = [];
 
 module.exports.checkVersion = function () {
@@ -51,6 +51,8 @@ function update(version, cb) {
         addChannelLastLoadedColumn(cb);
     } else if (version < 11) {
         addChannelOwnerLastSeenColumn(cb);
+    } else if (version < 12) {
+        addUserInactiveColumn(cb);
     }
 }
 
@@ -126,5 +128,16 @@ function addChannelOwnerLastSeenColumn(cb) {
 
             cb();
         });
+    });
+}
+
+function addUserInactiveColumn(cb) {
+    db.query("ALTER TABLE users ADD COLUMN inactive BOOLEAN DEFAULT FALSE", error => {
+        if (error) {
+            LOGGER.error(`Failed to add inactive column: ${error}`);
+            cb(error);
+        } else {
+            cb();
+        }
     });
 }

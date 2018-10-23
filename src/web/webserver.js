@@ -203,6 +203,15 @@ module.exports = {
         require('./routes/contact')(app, webConfig);
         require('./auth').init(app);
         require('./account').init(app, globalMessageBus, emailConfig, emailController);
+        require('./routes/account/delete-account')(
+            app,
+            csrf.verify,
+            require('../database/channels'),
+            require('../database/accounts'),
+            emailConfig,
+            emailController
+        );
+
         require('./acp').init(app, ioConfig);
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);
