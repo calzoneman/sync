@@ -35,6 +35,10 @@ Callbacks = {
         scrollChat();
     },
 
+    reconnect: function () {
+        socket.emit("reportReconnect");
+    },
+
     // Socket.IO error callback
     error: function (msg) {
         window.SOCKET_ERROR_REASON = msg;

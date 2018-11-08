@@ -289,8 +289,37 @@ class IOServer {
             throw new Error('Cannot bind: socket.io has not been initialized yet');
         }
 
+        const engineOpts = {
+            /*
+             * Set ping timeout to 2 minutes to avoid spurious reconnects
+             * during transient network issues.  The default of 5 minutes
+             * is too aggressive.
+             *
+             * https://github.com/calzoneman/sync/issues/780
+             */
+            pingTimeout: 120000,
+
+            /*
+             * Per `ws` docs: "Note that Node.js has a variety of issues with
+             * high-performance compression, where increased concurrency,
+             * especially on Linux, can lead to catastrophic memory
+             * fragmentation and slow performance."
+             *
+             * CyTube's frames are ordinarily quite small, so there's not much
+             * point in compressing them.
+             */
+            perMessageDeflate: false,
+            httpCompression: false,
+
+            /*
+             * Default is 10MB.
+             * Even 1MiB seems like a generous limit...
+             */
+            maxHttpBufferSize: 1 << 20
+        };
+
         servers.forEach(server => {
-            this.io.attach(server);
+            this.io.attach(server, engineOpts);
         });
     }
 }
@@ -375,6 +404,10 @@ const promSocketDisconnect = new Counter({
     name: 'cytube_sockets_disconnects_total',
     help: 'Counter for number of connections disconnected.'
 });
+const promSocketReconnect = new Counter({
+    name: 'cytube_sockets_reconnects_total',
+    help: 'Counter for number of reconnects detected.'
+});
 function emitMetrics(sock) {
     try {
         let closed = false;
@@ -403,6 +436,15 @@ function emitMetrics(sock) {
                 promSocketDisconnect.inc(1);
             } catch (error) {
                 LOGGER.error('Error emitting disconnect metrics for socket (ip=%s): %s',
+                        sock.context.ipAddress, error.stack);
+            }
+        });
+
+        sock.once('reportReconnect', () => {
+            try {
+                promSocketReconnect.inc(1, new Date());
+            } catch (error) {
+                LOGGER.error('Error emitting reconnect metrics for socket (ip=%s): %s',
                         sock.context.ipAddress, error.stack);
             }
         });
