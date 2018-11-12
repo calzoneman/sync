@@ -53,7 +53,9 @@ function handleLogin(req, res) {
 
     var host = req.hostname;
     // TODO: remove this check from /login, make it generic middleware
-    if (host.indexOf(Config.get("http.root-domain")) === -1 &&
+    // TODO: separate root-domain and "login domain", e.g. accounts.example.com
+    if (host !== Config.get("http.root-domain") &&
+            !host.endsWith("." + Config.get("http.root-domain")) &&
             Config.get("http.alt-domains").indexOf(host) === -1) {
         LOGGER.warn("Attempted login from non-approved domain " + host);
         return res.sendStatus(403);
