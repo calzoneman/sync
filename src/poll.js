@@ -24,7 +24,9 @@ Poll.prototype.vote = function(ip, option) {
     if(!(ip in this.votes) || this.votes[ip] == null) {
         this.votes[ip] = option;
         this.counts[option]++;
+        return true;
     }
+    return false;
 };
 
 Poll.prototype.unvote = function(ip) {

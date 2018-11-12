@@ -40,7 +40,10 @@ VoteskipModule.prototype.handleVoteskip = function (user) {
         this.poll = new Poll("[server]", "voteskip", ["skip"], false);
     }
 
-    this.poll.vote(user.realip, 0);
+    if (!this.poll.vote(user.realip, 0)) {
+        // Vote was already recorded for this IP, no update needed
+        return;
+    }
 
     var title = "";
     if (this.channel.modules.playlist.current) {
