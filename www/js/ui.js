@@ -1,12 +1,18 @@
 /* window focus/blur */
-$(window).focus(function() {
-    FOCUSED = true;
-    clearInterval(TITLE_BLINK);
-    TITLE_BLINK = false;
-    document.title = PAGETITLE;
-}).blur(function() {
-    FOCUSED = false;
-});
+if (typeof document.hidden === "undefined") {
+    console.error("Browser is too old; giving up on visibility tracking for notifications");
+} else {
+    document.addEventListener("visibilitychange", function () {
+        if (document.hidden) {
+            FOCUSED = false;
+        } else {
+            FOCUSED = true;
+            clearInterval(TITLE_BLINK);
+            TITLE_BLINK = false;
+            document.title = PAGETITLE;
+        }
+    });
+}
 
 $("#togglemotd").click(function () {
     var hidden = $("#motd").css("display") === "none";
