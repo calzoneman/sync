@@ -119,7 +119,16 @@ CyTube.tabCompleteMethods['Cycle options'] = function (input, position, options,
     var matches = options.filter(function (option) {
         return option.toLowerCase().indexOf(incomplete) === 0;
     }).sort(function (a, b) {
-        return a.toLowerCase() > b.toLowerCase();
+        var aLower = a.toLowerCase();
+        var bLower = b.toLowerCase();
+
+        if (aLower > bLower) {
+            return 1;
+        } else if (aLower < bLower) {
+            return -1;
+        } else {
+            return 0;
+        }
     });
 
     if (matches.length === 0) {
