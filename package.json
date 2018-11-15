@@ -20,7 +20,7 @@
     "create-error": "^0.3.1",
     "csrf": "^3.0.0",
     "cytube-mediaquery": "git://github.com/CyTube/mediaquery",
-    "cytubefilters": "git://github.com/calzoneman/cytubefilters#67c7c69a",
+    "cytubefilters": "git://github.com/calzoneman/cytubefilters.git#ffdbce83",
     "express": "^4.16.2",
     "express-minify": "^1.0.0",
     "graceful-fs": "^4.1.2",
