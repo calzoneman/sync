@@ -1,18 +1,18 @@
 /* window focus/blur */
-if (typeof document.hidden === "undefined") {
-    console.error("Browser is too old; giving up on visibility tracking for notifications");
-} else {
-    document.addEventListener("visibilitychange", function () {
-        if (document.hidden) {
-            FOCUSED = false;
-        } else {
-            FOCUSED = true;
-            clearInterval(TITLE_BLINK);
-            TITLE_BLINK = false;
-            document.title = PAGETITLE;
-        }
-    });
-}
+CyTube.ui.onPageFocus = function () {
+    FOCUSED = true;
+    clearInterval(TITLE_BLINK);
+    TITLE_BLINK = false;
+    document.title = PAGETITLE;
+};
+
+CyTube.ui.onPageBlur = function (event) {
+    FOCUSED = false;
+};
+
+$(window).focus(CyTube.ui.onPageFocus).blur(CyTube.ui.onPageBlur);
+// See #783
+$(".modal").focus(CyTube.ui.onPageFocus);
 
 $("#togglemotd").click(function () {
     var hidden = $("#motd").css("display") === "none";
