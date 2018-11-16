@@ -54,5 +54,13 @@ describe('TokenBucket', () => {
             assert(!bucket.throttle());
             assert.strictEqual(bucket.count, 0);
         });
+
+        it('handles infinite refill rate and capacity', () => {
+            bucket = new TokenBucket(Infinity, Infinity);
+
+            for (let i = 0; i < 100; i++) {
+                assert(!bucket.throttle(), 'should not throttle');
+            }
+        });
     });
 });

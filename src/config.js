@@ -397,10 +397,15 @@ function preprocessConfig(cfg) {
     });
 
     if (!cfg.io.throttle) {
-        cfg.io.throttle = {
-            'in-rate-limit': Infinity
-        };
+        cfg.io.throttle = {};
     }
+
+    cfg.io.throttle = Object.assign({
+        'in-rate-limit': Infinity
+    }, cfg.io.throttle);
+    cfg.io.throttle = Object.assign({
+        'bucket-capacity': cfg.io.throttle['in-rate-limit']
+    }, cfg.io.throttle);
 
     return cfg;
 }

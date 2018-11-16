@@ -251,16 +251,17 @@ class IOServer {
     }
 
     setRateLimiter(socket) {
-        const thunk = () => Config.get('io.throttle.in-rate-limit');
+        const refillRate = () => Config.get('io.throttle.in-rate-limit');
+        const capacity = () => Config.get('io.throttle.bucket-capacity');
 
-        socket._inRateLimit = new TokenBucket(thunk, thunk);
+        socket._inRateLimit = new TokenBucket(capacity, refillRate);
 
         socket.on('cytube:count-event', () => {
             if (socket._inRateLimit.throttle()) {
                 LOGGER.warn(
                     'Kicking client %s: exceeded in-rate-limit of %d',
                     socket.context.ipAddress,
-                    thunk()
+                    refillRate()
                 );
 
                 socket.emit('kick', { reason: 'Rate limit exceeded' });
