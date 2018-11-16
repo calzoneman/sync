@@ -90,13 +90,13 @@ describe('custom-media', () => {
             assert.throws(() => validate(invalid), /URL protocol must be HTTPS/);
         });
 
-        it('rejects non-live HLS', () => {
+        it('rejects non-live DASH', () => {
             invalid.live = false;
-            invalid.sources[0].contentType = 'application/x-mpegURL';
+            invalid.sources[0].contentType = 'application/dash+xml';
 
             assert.throws(
                 () => validate(invalid),
-                /contentType "application\/x-mpegURL" requires live: true/
+                /contentType "application\/dash\+xml" requires live: true/
             );
         });
     });

@@ -30,8 +30,7 @@ const SOURCE_CONTENT_TYPES = new Set([
 ]);
 
 const LIVE_ONLY_CONTENT_TYPES = new Set([
-    'application/dash+xml',
-    'application/x-mpegURL'
+    'application/dash+xml'
 ]);
 
 export function lookup(url, opts) {
