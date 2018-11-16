@@ -2800,7 +2800,7 @@ function initPm(user) {
     var buffer = $("<div/>").addClass("pm-buffer linewrap").appendTo(body);
     $("<hr/>").appendTo(body);
     var input = $("<input/>").addClass("form-control pm-input").attr("type", "text")
-        .attr("maxlength", 240)
+        .attr("maxlength", 320)
         .appendTo(body);
 
     input.keydown(function (ev) {
