@@ -688,3 +688,7 @@ input#logout[type="submit"]:hover {
 body.hd #resize-video-larger, body.hd #resize-video-smaller {
     display: none;
 }
+
+.userlist-ignored {
+    text-decoration: line-through;
+}

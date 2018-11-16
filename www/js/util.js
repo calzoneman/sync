@@ -220,14 +220,18 @@ function addUserDropdown(entry) {
             if(IGNORED.indexOf(name) == -1) {
                 ignore.text("Unignore User");
                 IGNORED.push(name);
+                entry.addClass("userlist-ignored");
             } else {
                 ignore.text("Ignore User");
                 IGNORED.splice(IGNORED.indexOf(name), 1);
+                entry.removeClass("userlist-ignored");
             }
         });
     if(IGNORED.indexOf(name) == -1) {
+        entry.removeClass("userlist-ignored");
         ignore.text("Ignore User");
     } else {
+        entry.addClass("userlist-ignored");
         ignore.text("Unignore User");
     }
 
