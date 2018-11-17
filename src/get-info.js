@@ -369,14 +369,7 @@ var Getters = {
 
     /* ustream.tv */
     us: function (id, callback) {
-        /**
-         *2013-09-17
-         * They couldn't fucking decide whether channels should
-         * be at http://www.ustream.tv/channel/foo or just
-         * http://www.ustream.tv/foo so they do both.
-         * [](/cleese)
-         */
-        var m = id.match(/([\w]+)|(channel\/[\w]+)/);
+        var m = id.match(/(channel\/[^?&#]+)/);
         if (m) {
             id = m[1];
         } else {
@@ -386,25 +379,23 @@ var Getters = {
 
         var options = {
             host: "www.ustream.tv",
-            port: 80,
+            port: 443,
             path: "/" + id,
             method: "GET",
             timeout: 1000
         };
 
-        urlRetrieve(http, options, function (status, data) {
+        urlRetrieve(https, options, function (status, data) {
             if(status !== 200) {
                 callback("Ustream HTTP " + status, null);
                 return;
             }
 
-            /**
-             * Regexing the ID out of the HTML because
-             * Ustream's API is so horribly documented
-             * I literally could not figure out how to retrieve
-             * this information.
-             *
-             * [](/eatadick)
+            /*
+             * Yes, regexing this information out of the HTML sucks.
+             * No, there is not a better solution -- it seems IBM
+             * deprecated the old API (or at least replaced with an
+             * enterprise API marked "Contact sales") so fuck it.
              */
             var m = data.match(/https:\/\/www\.ustream\.tv\/embed\/(\d+)/);
             if (m) {
