@@ -1,4 +1,3 @@
-const http = require("http");
 const https = require("https");
 const Media = require("./media");
 const CustomEmbedFilter = require("./customembed").filter;
