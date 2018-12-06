@@ -89,8 +89,7 @@ function initAccountCleanup() {
         })().catch(error => {
             LOGGER.error('Error purging deleted accounts: %s', error.stack);
         });
-    //}, 3600 * 1000);
-    }, 60 * 1000);
+    }, 3600 * 1000);
 }
 
 module.exports = function (Server) {
