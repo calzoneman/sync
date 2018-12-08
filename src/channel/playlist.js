@@ -935,6 +935,11 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         return;
     }
 
+    if (isNaN(media.seconds)) {
+        LOGGER.warn("Detected NaN duration for %j", media);
+        return qfail("Internal error: could not determine media duration");
+    }
+
     if (data.maxlength > 0 && media.seconds > data.maxlength) {
         return qfail("Video exceeds the maximum length set by the channel admin: " +
                      data.maxlength + " seconds");
