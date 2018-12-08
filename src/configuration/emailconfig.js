@@ -51,7 +51,7 @@ class EmailConfig {
         const deleteAccount = config['delete-account'];
         this._delete = {
             isEnabled() {
-                return deleteAccount !== null && deleteAccount.enabled;
+                return deleteAccount != null && deleteAccount.enabled;
             },
 
             getHTML() {
