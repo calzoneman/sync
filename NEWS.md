@@ -1,3 +1,12 @@
+2018-12-07
+==========
+
+Users can now self-service request their account to be deleted, and it will be
+automatically purged after 7 days.  In order to send a notification email to
+the user about the request, copy the [email
+configuration](https://github.com/calzoneman/sync/blob/3.0/conf/example/email.toml#L43)
+to `conf/email.toml` (the same file used for password reset emails).
+
 2018-10-21
 ==========
 
