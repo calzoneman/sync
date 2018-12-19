@@ -29,6 +29,7 @@ export async function initTables() {
         // Registration time, TODO convert to timestamp
         t.bigint('time').notNullable();
         t.string('name_dedupe', 20).defaultTo(null);
+        t.boolean('inactive').defaultTo(false);
     });
 
     await ensureTable('channels', t => {
