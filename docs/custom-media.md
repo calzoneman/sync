@@ -73,7 +73,6 @@ The following MIME types are accepted for the `contentType` field:
   * `application/x-mpegURL` (HLS streams)
     - HLS is only tested with livestreams.  VODs are accepted, but I do not test
       this functionality.
-      but without `live: true` will be rejected.
   * `application/dash+xml` (DASH streams)
     - Support for DASH is experimental
   * ~~`rtmp/flv`~~
