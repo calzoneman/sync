@@ -14,7 +14,6 @@ function merge(locals, res) {
     var _locals = {
         siteTitle: Config.get("html-template.title"),
         siteDescription: Config.get("html-template.description"),
-        siteAuthor: "Calvin 'calzoneman' 'cyzon' Montgomery",
         csrfToken: typeof res.req.csrfToken === 'function' ? res.req.csrfToken() : '',
         baseUrl: getBaseUrl(res),
         channelPath: Config.get("channel-path"),
