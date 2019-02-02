@@ -109,15 +109,14 @@ io:
   ip-connection-limit: 10
 
 # YouTube v3 API key
-# See https://developers.google.com/youtube/registering_an_application
-# YouTube links will not work without this!
-# Instructions:
-#     1. Go to https://console.developers.google.com/project
-#     2. Create a new API project
-#     3. On the left sidebar, click "Credentials" under "APIs & auth"
-#     4. Click "Create new Key" under "Public API access"
-#     5. Click "Server key"
-#     6. Under "APIs & auth" click "YouTube Data API" and then click "Enable API"
+# 1. Go to https://console.developers.google.com/, create a new "project" (or choose an existing one)
+# 2. Make sure the YouTube Data v3 API is "enabled" for your project: https://console.developers.google.com/apis/library/youtube.googleapis.com
+# 3. Go to "Credentials" on the sidebar of https://console.developers.google.com/, click "Create credentials" and choose type "API key"
+# 4. Optionally restrict the key for security, or just copy the key.
+# 5. Test your key (may take a few minutes to become active):
+#
+#    $ export YOUTUBE_API_KEY="your key here"
+#    $ curl "https://www.googleapis.com/youtube/v3/search?key=$YOUTUBE_API_KEY&part=id&maxResults=1&q=test+video&type=video"
 youtube-v3-key: ''
 # Limit for the number of channels a user can register
 max-channels-per-user: 5
