@@ -27,6 +27,7 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
 
             @dm.addEventListener('apiready', =>
                 @dm.ready = true
+                @dm.apiready = true
                 @dm.addEventListener('ended', ->
                     if CLIENT.leader
                         socket.emit('playNext')
@@ -47,12 +48,24 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
                         @setVolume(VOLUME)
                         @initialVolumeSet = true
                 )
+
+                # Once the video stops, the internal state of the player
+                # becomes unusable and attempting to load() will corrupt it and
+                # crash the player with an error.  As a short–medium term
+                # workaround, mark the player as "not ready" until the next
+                # video loads
+                @dm.addEventListener('video_end', =>
+                    @dm.ready = false
+                )
+                @dm.addEventListener('playback_ready', =>
+                    @dm.ready = true
+                )
             )
         )
 
     load: (data) ->
         @setMediaProperties(data)
-        if @dm and @dm.ready
+        if @dm and @dm.apiready
             @dm.load(data.id)
             @dm.seek(data.currentTime)
         else
