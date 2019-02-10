@@ -488,6 +488,18 @@ module.exports = {
             } else {
                 const server = http.createServer().listen(bind.port, bind.ip);
                 servers.push(server);
+                server.on("error", error => {
+                    if (error.code === "EADDRINUSE") {
+                        LOGGER.fatal(
+                            "Could not bind %s: address already in use.  Check " +
+                            "whether another application has already bound this " +
+                            "port, or whether another instance of this server " +
+                            "is running.",
+                            id
+                        );
+                        process.exit(1);
+                    }
+                });
             }
 
             uniqueListenAddresses.add(id);
