@@ -41,7 +41,6 @@ var socket = {
         console.log(arguments);
     }
 };
-var IGNORED = [];
 var CHATHIST = [];
 var CHATHISTIDX = 0;
 var CHATTHROTTLE = false;
@@ -109,6 +108,8 @@ function getOrDefault(k, def) {
         return parseFloat(v);
     return v;
 }
+
+var IGNORED = getOrDefault("ignorelist", []);
 
 var USEROPTS = {
     theme                : getOrDefault("theme", DEFAULT_THEME), // Set in head template

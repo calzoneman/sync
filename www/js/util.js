@@ -226,6 +226,7 @@ function addUserDropdown(entry) {
                 IGNORED.splice(IGNORED.indexOf(name), 1);
                 entry.removeClass("userlist-ignored");
             }
+            setOpt("ignorelist", IGNORED);
         });
     if(IGNORED.indexOf(name) == -1) {
         entry.removeClass("userlist-ignored");
