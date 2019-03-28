@@ -416,6 +416,13 @@ var Getters = {
 
     /* HLS stream */
     hl: function (id, callback) {
+        if (!/^https/.test(id)) {
+            callback(
+                "HLS links must start with HTTPS due to browser security " +
+                "policy.  See https://git.io/vpDLK for details."
+            );
+            return;
+        }
         var title = "Livestream";
         var media = new Media(id, title, "--:--", "hl");
         callback(false, media);
