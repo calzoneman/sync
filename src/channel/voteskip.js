@@ -86,6 +86,18 @@ VoteskipModule.prototype.update = function () {
             `- no permission (${noPermission}); ` +
             `ratio = ${this.channel.modules.options.get("voteskip_ratio")}`;
         this.channel.logger.log(`[playlist] Voteskip passed: ${info}`);
+        this.channel.broadcastAll(
+            'chatMsg',
+            {
+                username: "[voteskip]",
+                msg: `Voteskip passed: ${info}`,
+                meta: {
+                    addClass: "server-whisper",
+                    addClassToNameAndTimestamp: true
+                },
+                time: Date.now()
+            }
+        );
         this.reset();
         this.channel.modules.playlist._playNext();
     } else {
