@@ -43,12 +43,17 @@ describe('VoteskipModule', () => {
                     }
                 },
                 playlist: {
+                    _playNext() {
+                    },
+
                     meta: {
                         count: 1
                     }
                 }
             },
-            users: [fakeUser]
+            users: [fakeUser],
+            broadcastAll() {
+            }
         };
 
         voteskipModule = new VoteskipModule(fakeChannel);
@@ -78,6 +83,20 @@ describe('VoteskipModule', () => {
             assert.equal(voteskipModule.poll, false, 'Expected voteskip poll to be reset to false');
             assert(reset, 'Expected voteskip to be reset');
             assert(playNext, 'Expected playlist to be advanced');
+        });
+
+        it('broadcasts a message', () => {
+            let sentMessage = false;
+            fakeChannel.broadcastAll = (frame, data) => {
+                assert.strictEqual(frame, 'chatMsg');
+                assert(/voteskip passed/i.test(data.msg), 'Expected voteskip passed message')
+                sentMessage = true;
+            };
+            voteskipModule.poll = {
+                counts: [1]
+            };
+            voteskipModule.update();
+            assert(sentMessage, 'Expected voteskip passed message');
         });
     });
 
