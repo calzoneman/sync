@@ -1316,6 +1316,14 @@ function parseMediaLink(url) {
         };
     }
 
+    // #790
+    if ((m = url.match(/twitch\.tv\/(?:.*?)\/clip\/([A-Za-z]+)/))) {
+        return {
+            id: m[1],
+            type: "tc"
+        }
+    }
+
     if((m = url.match(/twitch\.tv\/(?:.*?)\/([cv])\/(\d+)/))) {
         return {
             id: m[1] + m[2],
