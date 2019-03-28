@@ -4,7 +4,6 @@ window.YouTubePlayer = class YouTubePlayer extends Player
             return new YouTubePlayer(data)
 
         @setMediaProperties(data)
-        @qualityRaceCondition = true
         @pauseSeekRaceCondition = false
 
         waitUntilDefined(window, 'YT', =>
@@ -18,7 +17,8 @@ window.YouTubePlayer = class YouTubePlayer extends Player
                     videoId: data.id
                     playerVars:
                         autohide: 1
-                        autoplay: 1
+                        autoplay: if data.currentTime > 0 then 1 else 0
+                        start: if data.currentTime > 0 then Math.round(data.currentTime) else 0
                         controls: 1
                         iv_load_policy: 3 # iv_load_policy 3 indicates no annotations
                         rel: 0
@@ -34,9 +34,6 @@ window.YouTubePlayer = class YouTubePlayer extends Player
         @setMediaProperties(data)
         if @yt and @yt.ready
             @yt.loadVideoById(data.id, data.currentTime)
-            @qualityRaceCondition = true
-            if USEROPTS.default_quality
-                @setQuality(USEROPTS.default_quality)
         else
             console.error('WTF?  YouTubePlayer::load() called but yt is not ready')
 
@@ -45,13 +42,6 @@ window.YouTubePlayer = class YouTubePlayer extends Player
         @setVolume(VOLUME)
 
     onStateChange: (ev) ->
-        # For some reason setting the quality doesn't work
-        # until the first event has fired.
-        if @qualityRaceCondition
-            @qualityRaceCondition = false
-            if USEROPTS.default_quality
-                @setQuality(USEROPTS.default_quality)
-
         # Similar to above, if you pause the video before the first PLAYING
         # event is emitted, weird things happen.
         if ev.data == YT.PlayerState.PLAYING and @pauseSeekRaceCondition
@@ -90,20 +80,7 @@ window.YouTubePlayer = class YouTubePlayer extends Player
             @yt.setVolume(volume * 100)
 
     setQuality: (quality) ->
-        if not @yt or not @yt.ready
-            return
-
-        ytQuality = switch String(quality)
-            when '240' then 'small'
-            when '360' then 'medium'
-            when '480' then 'large'
-            when '720' then 'hd720'
-            when '1080' then 'hd1080'
-            when 'best' then 'highres'
-            else 'auto'
-
-        if ytQuality != 'auto'
-            @yt.setPlaybackQuality(ytQuality)
+        # YouTube no longer supports this
 
     getTime: (cb) ->
         if @yt and @yt.ready
