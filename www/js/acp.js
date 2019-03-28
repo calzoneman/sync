@@ -323,6 +323,8 @@ socket.on("acp-list-channels", function (channels) {
             $("<td/>").text(c.id).appendTo(tr);
             $("<td/>").text(c.name).appendTo(tr);
             $("<td/>").text(c.owner).appendTo(tr);
+            $("<td/>").text(c.last_loaded).appendTo(tr);
+            $("<td/>").text(c.owner_last_seen).appendTo(tr);
             var remove = $("<td/>").appendTo(tr);
 
             // Drop channel
