@@ -59,8 +59,7 @@ window.handleMediaUpdate = (data) ->
         if data.currentTime < 0
             data.currentTime = 0
         PLAYER.load(data)
-        if not waiting
-            PLAYER.play()
+        PLAYER.play()
 
     if waiting
         PLAYER.seekTo(0)
