@@ -1468,53 +1468,25 @@ function parseMediaLink(url) {
     /* Raw file */
     var tmp = url.split("?")[0];
     if (tmp.match(/^https?:\/\//)) {
-        if (tmp.match(/^http:/)) {
-            Callbacks.queueFail({
-                link: url,
-                msg: "Raw files must begin with 'https'.  Plain http is not supported."
-            });
-            throw new Error("ERROR_QUEUE_HTTP");
-        } else if (tmp.match(/\.json$/)) {
+        if (tmp.match(/\.json$/)) {
+            // Custom media manifest format
             return {
                 id: url,
                 type: "cm"
             };
-        } else if (tmp.match(/kissanime|kimcartoon|kisscartoon/i)) {
-            Callbacks.queueFail({
-                link: url,
-                msg: "Kisscartoon and Kissanime are not supported.  See https://git.io/vxS9n" +
-                     " for more information about why these cannot be supported."
-            });
-            throw new Error("ERROR_QUEUE_KISS");
-        } else if (tmp.match(/mega\.nz/)) {
-            Callbacks.queueFail({
-                link: url,
-                msg: "Mega.nz is not supported.  See https://git.io/fx6fz" +
-                     " for more information about why mega.nz cannot be supported."
-            });
-            throw new Error("ERROR_QUEUE_MEGA");
-        } else if (tmp.match(/\.(mp4|flv|webm|og[gv]|mp3|mov|m4a)$/)) {
+        } else {
+            // Assume raw file (server will check)
             return {
                 id: url,
                 type: "fi"
             };
-        } else {
-            Callbacks.queueFail({
-                link: url,
-                msg: "The file you are attempting to queue does not match the supported " +
-                     "file extensions mp4, flv, webm, ogg, ogv, mp3, mov, m4a. " +
-                     "For more information about why other filetypes are not supported, " +
-                     "see https://git.io/va9g9"
-            });
-            // Lol I forgot about this hack
-            throw new Error("ERROR_QUEUE_UNSUPPORTED_EXTENSION");
         }
     }
 
-    return {
-        id: null,
-        type: null
-    };
+    throw new Error(
+        'Could not determine video type.  Check https://git.io/fjtOK for a list ' +
+        'of supported media providers.'
+    );
 }
 
 function sendVideoUpdate() {

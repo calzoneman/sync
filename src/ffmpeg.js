@@ -174,11 +174,10 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
             }
 
             if (!/^audio|^video/.test(res.headers["content-type"])) {
-                return cb("Expected a content-type starting with 'audio' or 'video', but " +
-                          "got '" + res.headers["content-type"] + "'.  Only direct links " +
-                          "to video and audio files are accepted, and the website hosting " +
-                          "the file must be configured to send the correct MIME type.  " +
-                          "See https://git.io/vrE75 for details.");
+                cb("Could not detect a supported audio/video type.  See " +
+                   "https://git.io/fjtOK for a list of supported providers.  " +
+                   "(Content-Type was: '" + res.headers["content-type"] + "')");
+                return;
             }
 
             cb();
