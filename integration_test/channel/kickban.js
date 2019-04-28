@@ -228,7 +228,8 @@ describe('KickbanModule', () => {
                 await tx.table('aliases')
                         .insert([{
                             name: 'test_user',
-                            ip: '1.2.3.4'
+                            ip: '1.2.3.4',
+                            time: Date.now()
                         }]);
             });
         });
@@ -385,7 +386,8 @@ describe('KickbanModule', () => {
                 await tx.table('aliases')
                         .insert({
                             name: 'test_user',
-                            ip: longIP
+                            ip: longIP,
+                            time: Date.now()
                         });
             }).then(() => {
                 kickban.handleCmdIPBan(
@@ -489,7 +491,8 @@ describe('KickbanModule', () => {
                 await tx.table('aliases')
                         .insert({
                             name: 'another_user',
-                            ip: '1.2.3.3' // different IP, same /24 range
+                            ip: '1.2.3.3', // different IP, same /24 range
+                            time: Date.now()
                         });
             }).then(() => {
                 mockUser.socket.emit = (frame, obj) => {

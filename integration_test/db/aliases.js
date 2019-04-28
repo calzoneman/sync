@@ -21,9 +21,9 @@ function addSomeAliases() {
     return cleanup().then(() => {
         return testDB.knex.table('aliases')
                 .insert([
-                    { ip: testIPs[0], name: testNames[0] },
-                    { ip: testIPs[0], name: testNames[1] },
-                    { ip: testIPs[1], name: testNames[1] }
+                    { ip: testIPs[0], name: testNames[0], time: Date.now() },
+                    { ip: testIPs[0], name: testNames[1], time: Date.now() },
+                    { ip: testIPs[1], name: testNames[1], time: Date.now() }
                 ]);
     });
 }
