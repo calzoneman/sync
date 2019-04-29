@@ -59,6 +59,7 @@ OptionsModule.prototype.load = function (data) {
         10,
         this.opts.chat_antiflood_params.sustained
     );
+    this.opts.afk_timeout = Math.min(86400 /* one day */, this.opts.afk_timeout);
     this.dirty = false;
 };
 
@@ -139,18 +140,26 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
 
     if ("afk_timeout" in data) {
         var tm = parseInt(data.afk_timeout);
-        if (isNaN(tm) || tm < 0) {
+        if (isNaN(tm) || tm < 0 || tm > 86400 /* one day */) {
             tm = 0;
-        }
-
-        var same = tm === this.opts.afk_timeout;
-        this.opts.afk_timeout = tm;
-        if (!same) {
-            this.channel.users.forEach(function (u) {
-                u.autoAFK();
+            user.socket.emit("validationError", {
+                target: "#cs-afk_timeout",
+                message: "AFK timeout must be between 1 and 86400 seconds (or 0 to disable)"
             });
+        } else {
+            user.socket.emit("validationPassed", {
+                target: "#cs-afk_timeout",
+            });
+
+            var same = tm === this.opts.afk_timeout;
+            this.opts.afk_timeout = tm;
+            if (!same) {
+                this.channel.users.forEach(function (u) {
+                    u.autoAFK();
+                });
+            }
+            sendUpdate = true;
         }
-        sendUpdate = true;
     }
 
     if ("pagetitle" in data && user.account.effectiveRank >= 3) {

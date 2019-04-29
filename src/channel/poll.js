@@ -187,9 +187,19 @@ PollModule.prototype.handleNewPoll = function (user, data, ack) {
         return;
     }
 
+    if (data.hasOwnProperty("timeout") &&
+        (isNaN(data.timeout) || data.timeout < 1 || data.timeout > 86400)) {
+        ack({
+            error: {
+                message: "Poll timeout must be between 1 and 86400 seconds"
+            }
+        });
+        return;
+    }
+
     var poll = new Poll(user.getName(), data.title, data.opts, data.obscured);
     var self = this;
-    if (data.hasOwnProperty("timeout") && !isNaN(data.timeout) && data.timeout > 0) {
+    if (data.hasOwnProperty("timeout")) {
         poll.timer = setTimeout(function () {
             if (self.poll === poll) {
                 self.handleClosePoll({
