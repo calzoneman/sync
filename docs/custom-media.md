@@ -1,6 +1,8 @@
 CyTube Custom Content Metadata
 ==============================
 
+*Last updated: 2019-05-05*
+
 ## Purpose ##
 
 CyTube currently supports adding custom audio/video content by allowing the user
@@ -23,6 +25,22 @@ supported media providers, namely:
 This document specifies a new supported media provider which allows users to
 provide a JSON manifest specifying the metadata for custom content in a way that
 avoids the above issues and is more flexible for extension.
+
+## Custom Manifest URLs ##
+
+Custom media manifests are added to CyTube by adding a link to a public URL
+hosting the JSON metadata manifest.  Pasting the JSON directly into CyTube is
+not supported.  Valid JSON manifests must:
+
+  * Have a URL path ending with the file extension `.json` (not counting
+    querystring parameters)
+  * Be served with the `Content-Type` header set to `application/json`
+  * Be retrievable at any time while the item is on the playlist (CyTube may
+    re-request the metadata for an item already on the playlist to revalidate)
+  * Respond to valid requests with a 200 OK HTTP response code (redirects are
+    not supported)
+  * Respond within 10 seconds
+  * Not exceed 100 KiB in size
 
 ## Manifest Format ##
 
