@@ -264,6 +264,9 @@ Callbacks = {
                     .attr("rel", "stylesheet")
                     .attr("href", opts.externalcss)
                     .attr("id", "chanexternalcss")
+                    .on("load", function () {
+                        handleVideoResize();
+                    })
                     .appendTo($("head"));
             }
         }
@@ -308,6 +311,9 @@ Callbacks = {
                 $("<style/>").attr("type", "text/css")
                     .attr("id", "chancss")
                     .text(data.css)
+                    .on("load", function () {
+                        handleVideoResize();
+                    })
                     .appendTo($("head"));
             }
 
