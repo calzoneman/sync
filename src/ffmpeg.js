@@ -336,7 +336,14 @@ exports.ffprobe = function ffprobe(filename, cb) {
     var childErr;
     var args = ["-show_streams", "-show_format", filename];
     if (USE_JSON) args = ["-of", "json"].concat(args);
-    var child = spawn(Config.get("ffmpeg.ffprobe-exec"), args);
+    let child;
+    try {
+        child = spawn(Config.get("ffmpeg.ffprobe-exec"), args);
+    } catch (error) {
+        LOGGER.error("Unable to spawn() ffprobe process: %s", error.stack);
+        cb(error);
+        return;
+    }
     var stdout = "";
     var stderr = "";
     var timer = setTimeout(function () {
