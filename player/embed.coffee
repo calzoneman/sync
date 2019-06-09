@@ -59,6 +59,7 @@ window.EmbedPlayer = class EmbedPlayer extends Player
             iframe = $('<iframe/>').attr(
                 src: embed.src
                 frameborder: '0'
+                allow: 'autoplay'
                 allowfullscreen: '1'
             )
 
