@@ -282,6 +282,12 @@ User.prototype.autoAFK = function () {
 };
 
 User.prototype.kick = function (reason) {
+    LOGGER.info(
+        '%s (%s) was kicked: "%s"',
+        this.realip,
+        this.getName(),
+        reason
+    );
     this.socket.emit("kick", { reason: reason });
     this.socket.disconnect();
 };
