@@ -748,6 +748,8 @@ PlaylistModule.prototype.handleShuffle = function (user) {
     this.channel.logger.log("[playlist] " + user.getName() + " shuffled the playlist");
 
     var pl = this.items.toArray(false);
+    let currentUid = this.current ? this.current.uid : null;
+    let currentTime = this.current ? this.current.media.currentTime : undefined;
     this.items.clear();
     this.semaphore.reset();
     while (pl.length > 0) {
@@ -758,7 +760,12 @@ PlaylistModule.prototype.handleShuffle = function (user) {
             queueby: pl[i].queueby
         });
 
-        this.items.append(item);
+        if (pl[i].uid === currentUid) {
+            this.items.prepend(item);
+        } else {
+            this.items.append(item);
+        }
+
         pl.splice(i, 1);
     }
     this._listDirty = true;
@@ -772,7 +779,7 @@ PlaylistModule.prototype.handleShuffle = function (user) {
             u.socket.emit("playlist", pl);
         }
     });
-    this.startPlayback();
+    this.startPlayback(currentTime);
 };
 
 /**
