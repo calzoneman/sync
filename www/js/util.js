@@ -1655,13 +1655,18 @@ function addChatMessage(data) {
 
     var isHighlight = false;
     if (CLIENT.name && data.username != CLIENT.name) {
-        if (data.msg.toLowerCase().indexOf(CLIENT.name.toLowerCase()) != -1) {
+        if (highlightsMe(data.msg)) {
             div.addClass("nick-highlight");
             isHighlight = true;
         }
     }
 
     pingMessage(isHighlight, data.username, $(div.children()[2]).text());
+}
+
+function highlightsMe(message) {
+    // TODO: distinguish between text and HTML attributes as noted in #819
+    return message.match(new RegExp("(^|\\b)" + CLIENT.name + "($|\\b)", "gi"));
 }
 
 function trimChatBuffer() {
