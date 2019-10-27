@@ -118,7 +118,7 @@ function migrate(src, dest, opts) {
                 }
             }
 
-            return src.load(name).then(data => {
+            return src.load(-1, name).then(data => {
                 data = fixOldChandump(data);
                 Object.keys(data).forEach(key => {
                     if (opts.keyWhitelist.length > 0 &&
