@@ -6,6 +6,8 @@ import { DatabaseStore } from './dbstore';
 import { sanitizeHTML } from '../xss';
 import { ChannelNotFoundError } from '../errors';
 
+const lookupAsync = Promise.promisify(require('../database/channels').lookup);
+
 /* eslint no-console: off */
 
 const EXPECTED_KEYS = [
@@ -118,7 +120,11 @@ function migrate(src, dest, opts) {
                 }
             }
 
-            return src.load(-1, name).then(data => {
+            let id;
+            return lookupAsync(name).then(chan => {
+                id = chan.id;
+                return src.load(id, name);
+            }).then(data => {
                 data = fixOldChandump(data);
                 Object.keys(data).forEach(key => {
                     if (opts.keyWhitelist.length > 0 &&
@@ -129,7 +135,7 @@ function migrate(src, dest, opts) {
                         delete data[key];
                     }
                 });
-                return dest.save(name, data);
+                return dest.save(id, name, data);
             }).then(() => {
                 console.log(`Migrated /${chanPath}/${name}`);
             }).catch(ChannelNotFoundError, _err => {
