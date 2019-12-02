@@ -45,12 +45,12 @@
   },
   "scripts": {
     "build-player": "./bin/build-player.js",
-    "build-server": "babel -D --source-maps --loose es6.destructuring,es6.forOf --out-dir lib/ src/",
+    "build-server": "babel -D --source-maps --out-dir lib/ src/",
     "flow": "flow",
     "lint": "eslint src",
     "pretest": "npm run lint",
     "postinstall": "./postinstall.sh",
-    "server-dev": "babel -D --watch --source-maps --loose es6.destructuring,es6.forOf --verbose --out-dir lib/ src/",
+    "server-dev": "babel -D --watch --source-maps --verbose --out-dir lib/ src/",
     "generate-userscript": "$npm_node_execpath gdrive-userscript/generate-userscript $@ > www/js/cytube-google-drive.user.js",
     "test": "mocha --recursive --exit test",
     "integration-test": "mocha --recursive --exit integration_test"
