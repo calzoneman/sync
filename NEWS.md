@@ -1,3 +1,12 @@
+2019-12-01
+==========
+
+In accordance with node v8 LTS becoming end-of-life on 2019-12-31, CyTube no
+longer supports v8.
+
+Please upgrade to v10 or v12 (active LTS); refer to
+https://nodejs.org/en/about/releases/ for the node.js support timelines.
+
 2018-12-07
 ==========
 

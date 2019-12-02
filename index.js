@@ -2,10 +2,10 @@
 
 const ver = process.version.match(/v(\d+)\.\d+\.\d+/);
 
-if (parseInt(ver[1], 10) < 8) {
+if (parseInt(ver[1], 10) < 10) {
     console.error(
         `node.js ${process.version} is not supported. ` +
-        'CyTube requires node v6 or later.'
+        'CyTube requires node v10 or later.'
     )
     process.exit(1);
 }
