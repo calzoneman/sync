@@ -84,7 +84,9 @@ function initFFLog() {
 }
 
 function fixRedirectIfNeeded(urldata, redirect) {
-    if (!/^https:/.test(redirect)) {
+    let parsedRedirect = urlparse.parse(redirect);
+    if (parsedRedirect.host === null) {
+        // Relative path, munge it to absolute
         redirect = urldata.protocol + "//" + urldata.host + redirect;
     }
 
@@ -135,6 +137,13 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
     const { redirCount, cookie } = params;
     var data = urlparse.parse(url);
     if (!/https:/.test(data.protocol)) {
+        if (redirCount > 0) {
+            // If the original URL redirected, the user is probably not aware
+            // that the link they entered (which was HTTPS) is redirecting to a
+            // non-HTTPS endpoint
+            return cb(`Unexpected redirect to a non-HTTPS link: ${url}`);
+        }
+
         return cb("Only links starting with 'https://' are supported " +
                   "for raw audio/video support");
     }
