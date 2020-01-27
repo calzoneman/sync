@@ -46,8 +46,11 @@ Media.prototype = {
         /*
          * 2018-03-05: Remove GDrive metadata from saved playlists to save
          * space since this is no longer used.
+         *
+         * 2020-01-26: Remove Twitch clip metadata since their API changed
+         * and no longer uses direct links
          */
-        if (this.type !== "gd") {
+        if (this.type !== "gd" && this.type !== "tc") {
             result.meta.direct = this.meta.direct;
         }
 

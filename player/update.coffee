@@ -18,7 +18,7 @@ TYPE_MAP =
     vm: VideoJSPlayer
     hl: HLSPlayer
     sb: StreamablePlayer
-    tc: VideoJSPlayer
+    tc: TwitchClipPlayer
     cm: VideoJSPlayer
     mx: MixerPlayer
 
