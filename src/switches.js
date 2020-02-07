@@ -1,5 +1,6 @@
 const switches = {
-    plDirtyCheck: true
+    plDirtyCheck: true,
+    ytCache: true
 };
 
 export function isActive(switchName) {

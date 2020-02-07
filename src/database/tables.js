@@ -142,4 +142,17 @@ export async function initTables() {
         t.timestamps(/* useTimestamps */ true, /* defaultToNow */ true);
         t.index('created_at');
     });
+
+    await ensureTable('media_metadata_cache', t => {
+        // The types of id and type are chosen for compatibility
+        // with the existing channel_libraries table.
+        // TODO in the future schema, revisit the ID layout for different media types.
+        t.string('id', 255).notNullable();
+        t.string('type', 2).notNullable();
+        t.text('metadata').notNullable();
+        t.timestamps(/* useTimestamps */ true, /* defaultToNow */ true);
+
+        t.primary(['type', 'id']);
+        t.index('updated_at');
+    });
 }
