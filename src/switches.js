@@ -1,5 +1,4 @@
 const switches = {
-    plDirtyCheck: true,
     ytCache: true
 };
 

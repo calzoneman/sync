@@ -1,6 +1,5 @@
 import Config from './config';
 import * as Switches from './switches';
-import { isIP as validIP } from 'net';
 import { eventlog } from './logger';
 require('source-map-support').install();
 
@@ -20,8 +19,6 @@ if (!Config.get('debug')) {
         sv.shutdown();
     });
 }
-
-let profileName = null;
 
 // TODO: this can probably just be part of servsock.js
 // servsock should also be refactored to send replies instead of
@@ -44,29 +41,6 @@ function handleLine(line) {
         }
     } else if (line.indexOf('/reload-partitions') === 0) {
         sv.reloadPartitionMap();
-    } else if (line.indexOf('/globalban') === 0) {
-        const args = line.split(/\s+/); args.shift();
-        if (args.length >= 2 && validIP(args[0]) !== 0) {
-            const ip = args.shift();
-            const comment = args.join(' ');
-            // TODO: this is broken by the knex refactoring
-            require('./database').globalBanIP(ip, comment, function (err, _res) {
-                if (!err) {
-                    eventlog.log('[acp] ' + 'SYSTEM' + ' global banned ' + ip);
-                }
-            });
-        }
-    } else if (line.indexOf('/unglobalban') === 0) {
-        var args = line.split(/\s+/); args.shift();
-        if (args.length >= 1 && validIP(args[0]) !== 0) {
-            var ip = args.shift();
-            // TODO: this is broken by the knex refactoring
-            require('./database').globalUnbanIP(ip, function (err, _res) {
-                if (!err) {
-                    eventlog.log('[acp] ' + 'SYSTEM' + ' un-global banned ' + ip);
-                }
-            });
-        }
     } else if (line.indexOf('/save') === 0) {
         sv.forceSave();
     } else if (line.indexOf('/unloadchan') === 0) {
@@ -83,40 +57,6 @@ function handleLine(line) {
         }
     } else if (line.indexOf('/reloadcert') === 0) {
         sv.reloadCertificateData();
-    } else if (line.indexOf('/profile') === 0) {
-        try {
-            const fs = require('fs');
-            const path = require('path');
-            const profiler = require('v8-profiler');
-
-            if (profileName !== null) {
-                const filename = path.resolve(
-                    __dirname,
-                    '..',
-                    `${profileName}.cpuprofile`
-                );
-                const profile = profiler.stopProfiling(profileName);
-                profileName = null;
-
-                const stream = profile.export();
-                stream.on('error', error => {
-                    LOGGER.error('Error exporting profile: %s', error);
-                    profile.delete();
-                });
-                stream.on('finish', () => {
-                    LOGGER.info('Exported profile to %s', filename);
-                    profile.delete();
-                });
-
-                stream.pipe(fs.createWriteStream(filename));
-            } else {
-                profileName = `prof_${Date.now()}`;
-                profiler.startProfiling(profileName, true);
-                LOGGER.info('Started CPU profile');
-            }
-        } catch (error) {
-            LOGGER.error('Unable to record CPU profile: %s', error);
-        }
     }
 }
 

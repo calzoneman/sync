@@ -10,7 +10,6 @@ var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
 import counters from '../counters';
 import { Counter } from 'prom-client';
-import * as Switches from '../switches';
 
 const LOGGER = require('@calzoneman/jsli')('playlist');
 
@@ -118,7 +117,7 @@ PlaylistModule.prototype = Object.create(ChannelModule.prototype);
 
 Object.defineProperty(PlaylistModule.prototype, "dirty", {
     get() {
-        return this._positionDirty || this._listDirty || !Switches.isActive("plDirtyCheck");
+        return this._positionDirty || this._listDirty;
     },
 
     set(val) {
@@ -214,17 +213,13 @@ PlaylistModule.prototype.save = function (data) {
         time = this.current.media.currentTime;
     }
 
-    if (Switches.isActive("plDirtyCheck")) {
-        data.playlistPosition = {
-            index: pos,
-            time
-        };
+    data.playlistPosition = {
+        index: pos,
+        time
+    };
 
-        if (this._listDirty) {
-            data.playlist = { pl: arr, pos, time, externalPosition: true };
-        }
-    } else {
-        data.playlist = { pl: arr, pos, time };
+    if (this._listDirty) {
+        data.playlist = { pl: arr, pos, time, externalPosition: true };
     }
 };
 
