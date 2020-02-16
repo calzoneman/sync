@@ -1,7 +1,5 @@
 var db = require("../database");
 var valid = require("../utilities").isValidChannelName;
-var fs = require("fs");
-var path = require("path");
 var Flags = require("../flags");
 var util = require("../utilities");
 import { createMySQLDuplicateKeyUpdate } from '../util/on-duplicate-key-update';
@@ -196,14 +194,6 @@ module.exports = {
             module.exports.deleteAllRanks(name, function (err) {
                 if (err) {
                     LOGGER.error("Failed to delete ranks for " + name + ": " + err);
-                }
-            });
-
-            fs.unlink(path.join(__dirname, "..", "..", "chandump", name),
-                      function (err) {
-                if (err && err.code !== "ENOENT") {
-                    LOGGER.error("Deleting chandump failed:");
-                    LOGGER.error(err);
                 }
             });
 

@@ -1,4 +1,3 @@
-import { FileStore } from './filestore';
 import { DatabaseStore } from './dbstore';
 import Config from '../config';
 import Promise from 'bluebird';
@@ -26,11 +25,12 @@ export function save(id, channelName, data) {
 }
 
 function loadChannelStore() {
-    switch (Config.get('channel-storage.type')) {
-        case 'database':
-            return new DatabaseStore();
-        case 'file':
-        default:
-            return new FileStore();
+    if (Config.get('channel-storage.type') === 'file') {
+        throw new Error(
+            'channel-storage type "file" is no longer supported.  Please see ' +
+            'NEWS.md for instructions on upgrading.'
+        );
     }
+
+    return new DatabaseStore();
 }

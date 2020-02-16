@@ -7,7 +7,6 @@ const LOGGER = require('@calzoneman/jsli')('setuid');
 
 var needPermissionsFixed = [
     path.join(__dirname, "..", "chanlogs"),
-    path.join(__dirname, "..", "chandump"),
     path.join(__dirname, "..", "google-drive-subtitles")
 ];
 

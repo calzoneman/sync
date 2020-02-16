@@ -65,9 +65,6 @@ var defaults = {
     "channel-blacklist": [],
     "channel-path": "r",
     "channel-save-interval": 5,
-    "channel-storage": {
-        type: "file"
-    },
     "max-channels-per-user": 5,
     "max-accounts-per-ip": 5,
     "guest-login-delay": 60,
@@ -435,6 +432,10 @@ function preprocessConfig(cfg) {
     cfg.io.throttle = Object.assign({
         'bucket-capacity': cfg.io.throttle['in-rate-limit']
     }, cfg.io.throttle);
+
+    if (!cfg['channel-storage']) {
+        cfg['channel-storage'] = { type: undefined };
+    }
 
     return cfg;
 }

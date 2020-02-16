@@ -1,3 +1,33 @@
+2020-02-15
+==========
+
+Old versions of CyTube defaulted to storing channel state in flatfiles located
+in the `chandump` directory.  The default was changed a while ago, and the
+flatfile storage mechanism has now been removed.
+
+Admins who have not already migrated their installation to the "database"
+channel storage type can do so by following these instructions:
+
+  1. Run `git checkout e3a9915b454b32e49d3871c94c839899f809520a` to temporarily
+     switch to temporarily revert to the previous version of the code that
+     supports the "file" channel storage type
+  2. Run `npm run build-server` to build the old version
+  3. Run `node lib/channel-storage/migrator.js |& tee migration.log` to migrate
+     channel state from files to the database
+  4. Inspect the output of the migration tool for errors
+  5. Set `channel-storage`/`type` to `"database"` in `config.yaml` and start the
+     server.  Load a channel to verify the migration worked as expected
+  6. Upgrade back to the latest version with `git checkout 3.0` and `npm run
+     build-server`
+  7. Remove the `channel-storage` block from `config.yaml` and remove the
+     `chandump` directory since it is no longer needed (you may wish to archive
+     it somewhere in case you later discover the migration didn't work as
+     expected).
+
+If you encounter any errors during the process, please file an issue on GitHub
+and attach the output of the migration tool (which if you use the above commands
+will be written to `migration.log`).
+
 2019-12-01
 ==========
 

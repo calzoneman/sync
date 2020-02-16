@@ -15,11 +15,6 @@ module.exports = {
             exists || fs.mkdirSync(chanlogpath);
         });
 
-        var chandumppath = path.join(__dirname, "../chandump");
-        fs.exists(chandumppath, function (exists) {
-            exists || fs.mkdirSync(chandumppath);
-        });
-
         var gdvttpath = path.join(__dirname, "../google-drive-subtitles");
         fs.exists(gdvttpath, function (exists) {
             exists || fs.mkdirSync(gdvttpath);

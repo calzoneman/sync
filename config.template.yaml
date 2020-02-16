@@ -133,9 +133,6 @@ channel-path: 'r'
 channel-blacklist: []
 # Minutes between saving channel state to disk
 channel-save-interval: 5
-# Determines channel data storage mechanism.
-channel-storage:
-  type: 'database'
 
 # Configure periodic clearing of old alias data
 aliases:
