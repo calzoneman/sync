@@ -122,12 +122,11 @@ CyTube.chatTabCompleteData = {
     context: {}
 };
 
-function chatTabComplete() {
+function chatTabComplete(chatline) {
     if (!CyTube.tabCompleteMethods) {
         console.error('Missing CyTube.tabCompleteMethods!');
         return;
     }
-    var chatline = document.getElementById("chatline");
     var currentText = chatline.value;
     var currentPosition = chatline.selectionEnd;
     if (typeof currentPosition !== 'number' || !chatline.setSelectionRange) {
@@ -199,7 +198,7 @@ $("#chatline").keydown(function(ev) {
     }
     else if(ev.keyCode == 9) { // Tab completion
         try {
-            chatTabComplete();
+            chatTabComplete(ev.target);
         } catch (error) {
             console.error(error);
         }
