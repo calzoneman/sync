@@ -776,7 +776,7 @@ function applyOpts() {
         else {
             USEROPTS.notifications = "never";
         }
-    }    
+    }
 }
 
 function parseTimeout(t) {
@@ -2814,6 +2814,14 @@ function initPm(user) {
                 meta: meta
             });
             input.val("");
+        } else if(ev.keyCode == 9) { // Tab completion
+            try {
+                chatTabComplete(ev.target);
+            } catch (error) {
+                console.error(error);
+            }
+            ev.preventDefault();
+            return false;
         }
     });
 
