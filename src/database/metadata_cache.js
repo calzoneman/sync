@@ -1,5 +1,4 @@
 import { createMySQLDuplicateKeyUpdate } from '../util/on-duplicate-key-update';
-const Switches = require('../switches');
 
 const Media = require('cytube-mediaquery/lib/media');
 
@@ -28,8 +27,6 @@ class MetadataCacheDB {
     }
 
     async put(media) {
-        if (!Switches.isActive('ytCache')) return;
-
         media = new Media(media);
         media.type = mediaquery2cytube(media.type);
         return this.db.runTransaction(async tx => {
@@ -37,10 +34,11 @@ class MetadataCacheDB {
                 .insert({
                     id: media.id,
                     type: media.type,
-                    metadata: JSON.stringify(media)
+                    metadata: JSON.stringify(media),
+                    updated_at: tx.raw('CURRENT_TIMESTAMP')
                 });
             let update = tx.raw(createMySQLDuplicateKeyUpdate(
-                ['metadata']
+                ['metadata', 'updated_at']
             ));
 
             return tx.raw(insert.toString() + update.toString());
@@ -48,8 +46,6 @@ class MetadataCacheDB {
     }
 
     async get(id, type) {
-        if (!Switches.isActive('ytCache')) return null;
-
         return this.db.runTransaction(async tx => {
             let row = await tx.table('media_metadata_cache')
                 .where({ id, type })

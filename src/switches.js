@@ -1,5 +1,4 @@
 const switches = {
-    ytCache: true
 };
 
 export function isActive(switchName) {
