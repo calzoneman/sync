@@ -110,10 +110,6 @@ LibraryModule.prototype.handleSearchMedia = function (user, data) {
             librarySearchResultSize.labels('library')
                     .observe(res.length, new Date());
 
-            if (res.length === 0) {
-                return searchYT();
-            }
-
             res.sort(function (a, b) {
                 var x = a.title.toLowerCase();
                 var y = b.title.toLowerCase();
