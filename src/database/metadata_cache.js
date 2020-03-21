@@ -1,6 +1,8 @@
+import { Summary } from 'prom-client';
 import { createMySQLDuplicateKeyUpdate } from '../util/on-duplicate-key-update';
 
 const Media = require('cytube-mediaquery/lib/media');
+const LOGGER = require('@calzoneman/jsli')('metadata-cache');
 
 // TODO: these fullname-vs-shortcode hacks really need to be abolished
 function mediaquery2cytube(type) {
@@ -20,6 +22,11 @@ function cytube2mediaquery(type) {
             throw new Error(`cytube2mediaquery: no mapping for ${type}`);
     }
 }
+
+const cachedResultAge = new Summary({
+    name: 'cytube_yt_cache_result_age_seconds',
+    help: 'Age (in seconds) of cached record'
+});
 
 class MetadataCacheDB {
     constructor(db) {
@@ -53,6 +60,15 @@ class MetadataCacheDB {
 
             if (row === undefined || row === null) {
                 return null;
+            }
+
+            try {
+                let age = (Date.now() - row.updated_at.getTime())/1000;
+                if (age > 0) {
+                    cachedResultAge.observe(age);
+                }
+            } catch (error) {
+                LOGGER.error('Failed to record cachedResultAge metric: %s', error.stack);
             }
 
             let metadata = JSON.parse(row.metadata);
