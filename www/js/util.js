@@ -2097,11 +2097,20 @@ function waitUntilDefined(obj, key, fn) {
     fn();
 }
 
-function chatDialog(div) {
+/*
+    God I hate supporting IE11
+    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters
+    https://caniuse.com/#search=default%20function
+
+    This would be the ideal:
+    function chatDialog(div, zin = "auto") {
+*/
+function chatDialog(div, zin) {
+    if(!zin){ zin = 'auto'; }
     var parent = $("<div/>").addClass("profile-box")
         .css({
             padding: "10px",
-            "z-index": "auto",
+            "z-index": zin,
             position: "absolute"
         })
         .appendTo($("#chatwrap"));

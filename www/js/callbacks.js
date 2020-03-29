@@ -139,7 +139,7 @@ Callbacks = {
             .css("margin-top", "5px")
             .text("Submit")
             .appendTo(div);
-        var parent = chatDialog(div);
+        var parent = chatDialog(div, '9999');
         parent.attr("id", "needpw");
         var sendpw = function () {
             socket.emit("channelPassword", pwbox.val());
