@@ -817,7 +817,7 @@ $("#cs-emotes-import").click(function () {
 
 var toggleUserlist = function () {
     var direction = !USEROPTS.layout.match(/synchtube/) ? "glyphicon-chevron-right" : "glyphicon-chevron-left"
-    if ($("#userlist").css("display") === "none") {
+    if ($("#userlist")[0].style.display === "none") {
         $("#userlist").show();
         $("#userlisttoggle").removeClass(direction).addClass("glyphicon-chevron-down");
     } else {
