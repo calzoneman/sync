@@ -147,6 +147,7 @@ export async function initTables() {
         // The types of id and type are chosen for compatibility
         // with the existing channel_libraries table.
         // TODO in the future schema, revisit the ID layout for different media types.
+        t.charset('utf8');
         t.string('id', 255).notNullable();
         t.string('type', 2).notNullable();
         t.text('metadata').notNullable();
