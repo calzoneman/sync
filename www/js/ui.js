@@ -15,7 +15,7 @@ $(window).focus(CyTube.ui.onPageFocus).blur(CyTube.ui.onPageBlur);
 $(".modal").focus(CyTube.ui.onPageFocus);
 
 $("#togglemotd").click(function () {
-    var hidden = $("#motd").css("display") === "none";
+    var hidden = $("#motd")[0].style.display === "none";
     $("#motd").toggle();
     if (hidden) {
         $("#togglemotd").find(".glyphicon-plus")
