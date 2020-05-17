@@ -444,6 +444,13 @@ Channel.prototype.acceptUser = function (user) {
     });
 
     this.sendUserlist([user]);
+
+    // Managing this from here is not great, but due to the sequencing involved
+    // and the limitations of the existing design, it'll have to do.
+    if (this.modules.playlist.leader !== null) {
+        user.socket.emit("setLeader", this.modules.playlist.leader.getName());
+    }
+
     this.broadcastUsercount();
     if (!this.is(Flags.C_REGISTERED)) {
         user.socket.emit("channelNotRegistered");
