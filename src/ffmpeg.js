@@ -8,6 +8,8 @@ var path = require("path");
 
 import { callOnce } from './util/call-once';
 
+const CYTUBE_VERSION = require('../package.json').version;
+
 const LOGGER = require('@calzoneman/jsli')('ffmpeg');
 const ECODE_MESSAGES = {
     ENOTFOUND: e => (
@@ -155,8 +157,11 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
 
     var transport = (data.protocol === "https:") ? https : http;
     data.method = "HEAD";
+    data.headers = {
+        'User-Agent': `CyTube/${CYTUBE_VERSION}`
+    };
     if (cookie) {
-        data.headers = { 'Cookie': cookie };
+        data.headers['Cookie'] = cookie;
     }
 
     try {
@@ -170,6 +175,7 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
                               "on the website hosting the link.  For best results, use " +
                               "a direct link.  See https://git.io/vrE75 for details.");
                 }
+
                 const nextParams = {
                     redirCount: redirCount + 1,
                     cookie: cookie + getCookie(res)
