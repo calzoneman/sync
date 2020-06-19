@@ -164,6 +164,7 @@ RankModule.prototype.handleRankChange = function (user, data) {
                 user.socket.emit("channelRankFail", {
                     msg: "Updating user rank failed: " + err
                 });
+                return;
             }
             self.channel.logger.log("[mod] " + user.getName() + " set " + data.name +
                                     "'s rank to " + rank);
