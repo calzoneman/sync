@@ -125,3 +125,7 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
             when '360' then '380'
             when 'best' then '1080'
             else 'auto'
+
+    destroy: ->
+        if @dm
+            @dm.destroy('ytapiplayer')
