@@ -1,3 +1,10 @@
+window.TWITCH_PARAMS_ERROR = 'The Twitch embed player now uses parameters which only
+work if the following requirements are met: (1) The embedding website uses
+HTTPS; (2) The embedding website uses the default port (443) and is accessed
+via https://example.com instead of https://example.com:port.  I have no
+control over this -- see <a href="https://discuss.dev.twitch.tv/t/twitch-embedded-player-migration-timeline-update/25588" rel="noopener noreferrer" target="_blank">this Twitch post</a>
+for details'
+
 window.TwitchPlayer = class TwitchPlayer extends Player
     constructor: (data) ->
         if not (this instanceof TwitchPlayer)
@@ -12,14 +19,29 @@ window.TwitchPlayer = class TwitchPlayer extends Player
 
     init: (data) ->
         removeOld()
+
+        if location.hostname != location.host or location.protocol != 'https:'
+            alert = makeAlert(
+                'Twitch API Parameters',
+                window.TWITCH_PARAMS_ERROR,
+                'alert-danger'
+            ).removeClass('col-md-12')
+            removeOld(alert)
+            @twitch = null
+            return
+
+        options =
+            parent: [location.hostname]
+            width: $('#ytapiplayer').width()
+            height: $('#ytapiplayer').height()
+
         if data.type is 'tv'
             # VOD
-            options =
-                video: data.id
+            options.video = data.id
         else
             # Livestream
-            options =
-                channel: data.id
+            options.channel = data.id
+
         @twitch = new Twitch.Player('ytapiplayer', options)
         @twitch.addEventListener(Twitch.Player.READY, =>
             @setVolume(VOLUME)
