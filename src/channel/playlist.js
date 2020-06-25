@@ -594,7 +594,7 @@ PlaylistModule.prototype.handleDelete = function (user, data) {
     var plitem = this.items.find(data);
     self.channel.refCounter.ref("PlaylistModule::handleDelete");
     this.semaphore.queue(function (lock) {
-        if (self._delete(data)) {
+        if (self._delete(data, user.getName())) {
             self.channel.logger.log("[playlist] " + user.getName() + " deleted " +
                                     plitem.media.title);
         }
@@ -694,7 +694,7 @@ PlaylistModule.prototype.handleJumpTo = function (user, data) {
         this.channel.logger.log("[playlist] " + user.getName() + " skipped " + title);
 
         if (old && old.temp && old !== to) {
-            this._delete(old.uid);
+            this._delete(old.uid, user.getName());
         }
     }
 };
@@ -874,7 +874,7 @@ PlaylistModule.prototype.handleUpdate = function (user, data) {
  * == Internal playlist manipulation ==
  */
 
-PlaylistModule.prototype._delete = function (uid) {
+PlaylistModule.prototype._delete = function (uid, username) {
     var self = this;
     var perms = this.channel.modules.permissions;
 
@@ -892,7 +892,13 @@ PlaylistModule.prototype._delete = function (uid) {
         self.meta.time = util.formatTime(self.meta.rawTime);
         self.channel.users.forEach(function (u) {
             if (perms.canSeePlaylist(u)) {
+              //Allow users with delete perms to see who's deleting things.
+              //If they don't have those perms, send a nameless frame.
+              if (perms.canDeleteVideo(u)) {
+                u.socket.emit("delete", { uid: uid, username: username });
+              } else {
                 u.socket.emit("delete", { uid: uid });
+              }
             }
             u.socket.emit("setPlaylistMeta", self.meta);
         });
@@ -1046,7 +1052,7 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         if (this.items.insertAfter(item, this.current.uid)) {
             if (existing && !allowDuplicates) {
                 item.temp = existing.temp;
-                this._delete(existing.uid);
+                this._delete(existing.uid, "[server]");
             }
             return success();
         } else {
@@ -1182,18 +1188,18 @@ PlaylistModule.prototype._playNext = function () {
 
     if (this.current.temp) {
         /* The _delete handler will take care of starting the next video */
-        this._delete(this.current.uid);
+        this._delete(this.current.uid, "[server]");
     } else if (next) {
         this.current = next;
         this.startPlayback();
     }
 };
 
-PlaylistModule.prototype.clean = function (test) {
+PlaylistModule.prototype.clean = function (test, username) {
     var self = this;
     var matches = self.items.findAll(test);
     matches.forEach(function (m) {
-        self._delete(m.uid);
+        self._delete(m.uid, username);
     });
 };
 
@@ -1251,7 +1257,7 @@ PlaylistModule.prototype.handleClean = function (user, msg, _meta) {
         cleanfn = function (item) { return target.exec(item.media.title) !== null; };
     }
 
-    this.clean(cleanfn);
+    this.clean(cleanfn, user.getName());
 };
 
 /**
