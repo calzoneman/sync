@@ -45,10 +45,11 @@ html(lang="en")
                 span#modflair.label.label-default.pull-right.pointer Name Color
               #userlist
               #messagebuffer.linewrap
-              input#chatline.form-control(type="text", maxlength="320", style="display: none")
-              #guestlogin.input-group
-                span.input-group-addon Guest login
-                input#guestname.form-control(type="text", placeholder="Name")
+              form(action="javascript:void(0)")
+                input#chatline.form-control(type="text", maxlength="320", style="display: none")
+                #guestlogin.input-group
+                  span.input-group-addon Guest login
+                  input#guestname.form-control(type="text", placeholder="Name")
             #videowrap.col-lg-7.col-md-7
               p#videowrap-header
                 span#resize-video-smaller.glyphicon.glyphicon-minus.pointer(title="Make the video smaller")
