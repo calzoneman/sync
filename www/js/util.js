@@ -144,7 +144,7 @@ function formatUserlistItem(div) {
         $("<strong/>").text(data.name).appendTo(profile);
 
         var meta = div.data("meta") || {};
-        if (meta.ip) {
+        if (meta.ip && !USEROPTS.disable_ip_tooltip) {
             $("<br/>").appendTo(profile);
             $("<em/>").text(meta.ip).appendTo(profile);
         }
@@ -668,6 +668,7 @@ function saveUserOptions() {
     USEROPTS.layout               = $("#us-layout").val();
     USEROPTS.ignore_channelcss    = $("#us-no-channelcss").prop("checked");
     USEROPTS.ignore_channeljs     = $("#us-no-channeljs").prop("checked");
+    USEROPTS.disable_ip_tooltip   = $("#us-no-ip-on-hover").prop("checked");
 
     USEROPTS.synch                = $("#us-synch").prop("checked");
     USEROPTS.sync_accuracy        = parseFloat($("#us-synch-accuracy").val()) || 2;
