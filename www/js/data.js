@@ -137,7 +137,8 @@ var USEROPTS = {
     no_emotes            : getOrDefault("no_emotes", false),
     strip_image          : getOrDefault("strip_image", false),
     chat_tab_method      : getOrDefault("chat_tab_method", "Cycle options"),
-    notifications        : getOrDefault("notifications", "never")
+    notifications        : getOrDefault("notifications", "never"),
+    show_ip_in_tooltip   : getOrDefault("show_ip_in_tooltip", true)
 };
 
 /* Backwards compatibility check */
