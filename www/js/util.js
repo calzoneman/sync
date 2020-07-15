@@ -144,7 +144,7 @@ function formatUserlistItem(div) {
         $("<strong/>").text(data.name).appendTo(profile);
 
         var meta = div.data("meta") || {};
-        if (meta.ip && !USEROPTS.disable_ip_tooltip) {
+        if (meta.ip && USEROPTS.show_ip_in_tooltip) {
             $("<br/>").appendTo(profile);
             $("<em/>").text(meta.ip).appendTo(profile);
         }
@@ -655,6 +655,7 @@ function showUserOptions() {
 
     $("#us-modflair").prop("checked", USEROPTS.modhat);
     $("#us-shadowchat").prop("checked", USEROPTS.show_shadowchat);
+    $("#us-show-ip-in-tooltip").prop("checked", USEROPTS.show_ip_in_tooltip);
 
     formatScriptAccessPrefs();
 
@@ -668,7 +669,7 @@ function saveUserOptions() {
     USEROPTS.layout               = $("#us-layout").val();
     USEROPTS.ignore_channelcss    = $("#us-no-channelcss").prop("checked");
     USEROPTS.ignore_channeljs     = $("#us-no-channeljs").prop("checked");
-    USEROPTS.disable_ip_tooltip   = $("#us-no-ip-on-hover").prop("checked");
+    USEROPTS.show_ip_in_tooltip   = $("#us-show-ip-in-tooltip").prop("checked");
 
     USEROPTS.synch                = $("#us-synch").prop("checked");
     USEROPTS.sync_accuracy        = parseFloat($("#us-synch-accuracy").val()) || 2;
