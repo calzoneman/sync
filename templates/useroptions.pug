@@ -101,6 +101,10 @@ mixin us-chat
       +rcheckbox("us-sort-afk", "Sort AFKers to bottom")
       .col-sm-4
       .col-sm-8
+        p.text-info The following option only applies if you have permission to see IP addresses in the first place.
+      +rcheckbox("us-no-ip-on-hover", "Disable revealing user IP addresses in profile tooltip")
+      .col-sm-4
+      .col-sm-8
         p.text-info The following 3 options apply to how and when you will be notified if a new chat message is received while CyTube is not the active window.
       .form-group
         label.control-label.col-sm-4(for="#us-blink-title") Blink page title on new messages
