@@ -159,9 +159,10 @@ PlaylistModule.prototype.load = function (data) {
             }
         } else if (item.media.type === "gd") {
             delete item.media.meta.gpdirect;
-        } else if (["vm", "jw"].includes(item.media.type)) {
+        } else if (["vm", "jw", "mx"].includes(item.media.type)) {
             // JW has been deprecated for a long time
             // VM shut down in December 2017
+            // Mixer shut down in July 2020
             LOGGER.warn(
                 "Dropping playlist item with deprecated type %s",
                 item.media.type

@@ -5,7 +5,6 @@ TYPE_MAP =
     gd: GoogleDrivePlayer
     gp: VideoJSPlayer
     fi: FilePlayer
-    jw: FilePlayer
     sc: SoundCloudPlayer
     li: LivestreamPlayer
     tw: TwitchPlayer
@@ -15,12 +14,10 @@ TYPE_MAP =
     hb: SmashcastPlayer
     us: UstreamPlayer
     im: ImgurPlayer
-    vm: VideoJSPlayer
     hl: HLSPlayer
     sb: StreamablePlayer
     tc: TwitchClipPlayer
     cm: VideoJSPlayer
-    mx: MixerPlayer
 
 window.loadMediaPlayer = (data) ->
     try

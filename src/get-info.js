@@ -9,7 +9,6 @@ const Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
 const Streamable = require("cytube-mediaquery/lib/provider/streamable");
 const TwitchVOD = require("cytube-mediaquery/lib/provider/twitch-vod");
 const TwitchClip = require("cytube-mediaquery/lib/provider/twitch-clip");
-const Mixer = require("cytube-mediaquery/lib/provider/mixer");
 import { Counter } from 'prom-client';
 import { lookup as lookupCustomMetadata } from './custom-media';
 
@@ -546,23 +545,10 @@ var Getters = {
 
     /* mixer.com */
     mx: function (id, callback) {
-        let m = id.match(/^[\w-]+$/);
-        if (!m) {
-            process.nextTick(callback, "Invalid mixer.com ID");
-            return;
-        }
-
-        Mixer.lookup(id).then(stream => {
-            process.nextTick(callback, null, new Media(
-                stream.id,
-                stream.title,
-                "--:--",
-                "mx",
-                stream.meta
-            ));
-        }).catch(error => {
-            process.nextTick(callback, error.message || error, null);
-        });
+        process.nextTick(
+            callback,
+            "As of July 2020, Mixer is no longer in service."
+        );
     }
 };
 

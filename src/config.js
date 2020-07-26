@@ -407,16 +407,6 @@ function preprocessConfig(cfg) {
             "for more information on registering a client ID");
     }
 
-    if (cfg["mixer-client-id"]) {
-        require("cytube-mediaquery/lib/provider/mixer").setClientID(
-                cfg["mixer-client-id"]
-        );
-    } else {
-        LOGGER.warn("No Mixer Client ID set.  Mixer.com links will " +
-            "not work.  See mixer-client-id in config.template.yaml " +
-            "for more information on registering a client ID");
-    }
-
     // Remove calzoneman from contact config (old default)
     cfg.contacts = cfg.contacts.filter(contact => {
         return contact.name !== 'calzoneman';

@@ -1409,6 +1409,7 @@ function parseMediaLink(url) {
         };
     }
 
+    // Deprecated as of December 2017
     if ((m = url.match(/vid\.me\/embedded\/([\w-]+)/)) ||
         (m = url.match(/vid\.me\/([\w-]+)/))) {
         return {
@@ -1431,6 +1432,7 @@ function parseMediaLink(url) {
         };
     }
 
+    // Deprecated as of July 2020
     if ((m = url.match(/\bmixer\.com\/([\w-]+)/))) {
         return {
             id: m[1],
