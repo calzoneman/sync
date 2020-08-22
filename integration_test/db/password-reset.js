@@ -1,6 +1,7 @@
 const assert = require('assert');
 const PasswordResetDB = require('../../lib/db/password-reset').PasswordResetDB;
 const testDB = require('../testutil/db').testDB;
+const { o } = require('../testutil/o');
 
 const passwordResetDB = new PasswordResetDB(testDB);
 
@@ -27,7 +28,7 @@ describe('PasswordResetDB', () => {
                         .select();
             }).then(rows => {
                 assert.strictEqual(rows.length, 1);
-                assert.deepStrictEqual(rows[0], params);
+                assert.deepStrictEqual(o(rows[0]), params);
             });
         });
 
@@ -45,7 +46,7 @@ describe('PasswordResetDB', () => {
                         .select();
             }).then(rows => {
                 assert.strictEqual(rows.length, 1);
-                assert.deepStrictEqual(rows[0], params);
+                assert.deepStrictEqual(o(rows[0]), params);
             });
         });
     });
@@ -65,7 +66,7 @@ describe('PasswordResetDB', () => {
 
         it('gets a password reset by hash', () => {
             return passwordResetDB.get(reset.hash).then(result => {
-                assert.deepStrictEqual(result, reset);
+                assert.deepStrictEqual(o(result), reset);
             });
         });
 
@@ -136,7 +137,7 @@ describe('PasswordResetDB', () => {
                         .select();
             }).then(rows => {
                 assert.strictEqual(rows.length, 1);
-                assert.deepStrictEqual(rows[0], reset2);
+                assert.deepStrictEqual(o(rows[0]), reset2);
             });
         });
     });

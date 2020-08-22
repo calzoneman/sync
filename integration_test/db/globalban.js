@@ -1,6 +1,7 @@
 const assert = require('assert');
 const GlobalBanDB = require('../../lib/db/globalban').GlobalBanDB;
 const testDB = require('../testutil/db').testDB;
+const { o } = require('../testutil/o');
 
 const globalBanDB = new GlobalBanDB(testDB);
 const testBan = { ip: '8.8.8.8', reason: 'test' };
@@ -35,7 +36,7 @@ describe('GlobalBanDB', () => {
                 assert.deepStrictEqual([{
                     ip: '8.8.8.8',
                     reason: 'test'
-                }], bans);
+                }], bans.map(o));
             });
         });
     });
