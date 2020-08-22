@@ -12,7 +12,7 @@ rules:
     - 1tbs
     - allowSingleLine: true
   indent:
-    - off # temporary... a lot of stuff needs to be reformatted
+    - off # temporary... a lot of stuff needs to be reformatted | 2020-08-21: I guess it's not so temporary...
     - 4
     - SwitchCase: 1
   linebreak-style:
@@ -20,6 +20,8 @@ rules:
     - unix
   no-control-regex:
     - off
+  no-prototype-builtins:
+    - off # should consider cleaning up the code and turning this back on at some point
   no-trailing-spaces:
     - error
   no-unused-vars:

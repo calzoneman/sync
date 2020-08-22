@@ -1,3 +1,10 @@
+2020-08-21
+==========
+
+Some of CyTube's dependencies depends on features in newer versions of node.js.
+Accordingly, node 10 is no longer supported.  Administrators are recommended to
+use node 12 (the active LTS), or node 14 (the current version).
+
 2020-06-22
 ==========
 
