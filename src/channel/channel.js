@@ -554,7 +554,7 @@ Channel.prototype.sendUserMeta = function (users, user, minrank) {
     var self = this;
     var userdata = self.packUserData(user);
     users.filter(function (u) {
-        return typeof minrank !== "number" || u.account.effectiveRank > minrank;
+        return typeof minrank !== "number" || u.account.effectiveRank >= minrank;
     }).forEach(function (u) {
         if (u.account.globalRank >= 255)  {
             u.socket.emit("setUserMeta", {
