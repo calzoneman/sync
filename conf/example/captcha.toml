@@ -1,0 +1,9 @@
+[hcaptcha]
+# Site key from hCaptcha.  The value here by default is the dummy test key for local testing
+site-key = "10000000-ffff-ffff-ffff-000000000001"
+# Secret key from hCaptcha.  The value here by default is the dummy test key for local testing
+secret = "0x0000000000000000000000000000000000000000"
+
+[register]
+# Whether to require a captcha for registration
+enabled = true

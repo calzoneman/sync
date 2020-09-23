@@ -150,10 +150,17 @@ function handleLogout(req, res) {
     }
 }
 
+function getHcaptchaSiteKey(captchaConfig) {
+    if (captchaConfig.isEnabled())
+        return captchaConfig.getHcaptcha().getSiteKey();
+    else
+        return null;
+}
+
 /**
  * Handles a GET request for /register
  */
-function handleRegisterPage(req, res) {
+function handleRegisterPage(captchaConfig, req, res) {
     if (res.locals.loggedIn) {
         sendPug(res, "register", {});
         return;
@@ -161,14 +168,15 @@ function handleRegisterPage(req, res) {
 
     sendPug(res, "register", {
         registered: false,
-        registerError: false
+        registerError: false,
+        hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
     });
 }
 
 /**
  * Processes a registration request.
  */
-function handleRegister(req, res) {
+function handleRegister(captchaConfig, captchaController, req, res) {
     csrf.verify(req);
 
     var name = req.body.name;
@@ -178,15 +186,26 @@ function handleRegister(req, res) {
         email = "";
     }
     var ip = req.realIP;
+    let captchaToken = req.body['h-captcha-response'];
 
     if (typeof name !== "string" || typeof password !== "string") {
         res.sendStatus(400);
         return;
     }
 
+    if (captchaConfig.isEnabled() &&
+        (typeof captchaToken !== 'string' || captchaToken === '')) {
+        sendPug(res, "register", {
+            registerError: "Missing CAPTCHA",
+            hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
+        });
+        return;
+    }
+
     if (name.length === 0) {
         sendPug(res, "register", {
-            registerError: "Username must not be empty"
+            registerError: "Username must not be empty",
+            hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
         });
         return;
     }
@@ -198,14 +217,16 @@ function handleRegister(req, res) {
             name
         );
         sendPug(res, "register", {
-            registerError: "That username is reserved"
+            registerError: "That username is reserved",
+            hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
         });
         return;
     }
 
     if (password.length === 0) {
         sendPug(res, "register", {
-            registerError: "Password must not be empty"
+            registerError: "Password must not be empty",
+            hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
         });
         return;
     }
@@ -214,37 +235,63 @@ function handleRegister(req, res) {
 
     if (email.length > 0 && !$util.isValidEmail(email)) {
         sendPug(res, "register", {
-            registerError: "Invalid email address"
+            registerError: "Invalid email address",
+            hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
         });
         return;
     }
 
-    db.users.register(name, password, email, ip, function (err) {
-        if (err) {
-            sendPug(res, "register", {
-                registerError: err
+    if (captchaConfig.isEnabled()) {
+        let captchaSuccess = true;
+        captchaController.verifyToken(captchaToken)
+            .catch(error => {
+                LOGGER.warn('CAPTCHA failed for registration %s: %s', name, error.message);
+                captchaSuccess = false;
+                sendPug(res, "register", {
+                    registerError: 'CAPTCHA verification failed: ' + error.message,
+                    hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
+                });
+            }).then(() => {
+                if (captchaSuccess)
+                    doRegister();
             });
-        } else {
-            Logger.eventlog.log("[register] " + ip + " registered account: " + name +
-                             (email.length > 0 ? " <" + email + ">" : ""));
-            sendPug(res, "register", {
-                registered: true,
-                registerName: name,
-                redirect: req.body.redirect
-            });
-        }
-    });
+    } else {
+        doRegister();
+    }
+
+    function doRegister() {
+        db.users.register(name, password, email, ip, function (err) {
+            if (err) {
+                sendPug(res, "register", {
+                    registerError: err,
+                    hCaptchaSiteKey: getHcaptchaSiteKey(captchaConfig)
+                });
+            } else {
+                Logger.eventlog.log("[register] " + ip + " registered account: " + name +
+                                 (email.length > 0 ? " <" + email + ">" : ""));
+                sendPug(res, "register", {
+                    registered: true,
+                    registerName: name,
+                    redirect: req.body.redirect
+                });
+            }
+        });
+    }
 }
 
 module.exports = {
     /**
      * Initializes auth callbacks
      */
-    init: function (app) {
+    init: function (app, captchaConfig, captchaController) {
         app.get("/login", handleLoginPage);
         app.post("/login", handleLogin);
         app.post("/logout", handleLogout);
-        app.get("/register", handleRegisterPage);
-        app.post("/register", handleRegister);
+        app.get("/register", (req, res) => {
+            handleRegisterPage(captchaConfig, req, res);
+        });
+        app.post("/register", (req, res) => {
+            handleRegister(captchaConfig, captchaController, req, res);
+        });
     }
 };

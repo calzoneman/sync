@@ -36,6 +36,11 @@ block content
           p
             | Providing an email address is optional and will allow you to recover your account via email if you forget your password.
             strong &nbsp;&nbsp;If you do not provide an email address, you will not be able to recover a lost account!
+        if hCaptchaSiteKey
+          noscript
+            .text-danger This website requires JavaScript in order to display a CAPTCHA.
+          .form-group
+            div.h-captcha(data-sitekey=hCaptchaSiteKey)
         button#registerbtn.btn.btn-success.btn-block(type="submit") Register
   else
     .col-lg-6.col-lg-offset-3.col-md-6.col-md-offset-3
@@ -44,6 +49,8 @@ block content
         p Thanks for registering, #{registerName}!  Now you can <a href="/login">Login</a> to use your account.
 
 append footer
+  if hCaptchaSiteKey
+    script(src="https://hcaptcha.com/1/api.js" async defer)
   script(type="text/javascript").
     function verify() {
       var valid = checkUsername();

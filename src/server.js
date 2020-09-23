@@ -46,6 +46,7 @@ import { LegacyModule } from './legacymodule';
 import { PartitionModule } from './partition/partitionmodule';
 import { Gauge } from 'prom-client';
 import { EmailController } from './controller/email';
+import { CaptchaController } from './controller/captcha';
 
 var Server = function () {
     var self = this;
@@ -102,6 +103,10 @@ var Server = function () {
         Config.getEmailConfig()
     );
 
+    const captchaController = new CaptchaController(
+        Config.getCaptchaConfig()
+    );
+
     // webserver init -----------------------------------------------------
     const ioConfig = IOConfiguration.fromOldConfig(Config);
     const webConfig = WebConfiguration.fromOldConfig(Config);
@@ -126,7 +131,9 @@ var Server = function () {
             session,
             globalMessageBus,
             Config.getEmailConfig(),
-            emailController
+            emailController,
+            Config.getCaptchaConfig(),
+            captchaController
     );
 
     // http/https/sio server init -----------------------------------------

@@ -6,6 +6,7 @@ import { loadFromToml } from './configuration/configloader';
 import { CamoConfig } from './configuration/camoconfig';
 import { PrometheusConfig } from './configuration/prometheusconfig';
 import { EmailConfig } from './configuration/emailconfig';
+import { CaptchaConfig } from './configuration/captchaconfig';
 
 const LOGGER = require('@calzoneman/jsli')('config');
 
@@ -129,6 +130,7 @@ var cfg = defaults;
 let camoConfig = new CamoConfig();
 let prometheusConfig = new PrometheusConfig();
 let emailConfig = new EmailConfig();
+let captchaConfig = new CaptchaConfig();
 
 /**
  * Initializes the configuration from the given YAML file
@@ -176,6 +178,7 @@ exports.load = function (file) {
     loadCamoConfig();
     loadPrometheusConfig();
     loadEmailConfig();
+    loadCaptchaConfig();
 };
 
 function checkLoadConfig(configClass, filename) {
@@ -235,6 +238,18 @@ function loadEmailConfig() {
     } else {
         emailConfig = conf;
         LOGGER.info('Loaded email configuration from conf/email.toml.');
+    }
+}
+
+function loadCaptchaConfig() {
+    const conf = checkLoadConfig(Object, 'captcha.toml');
+
+    if (conf === null) {
+        LOGGER.info('No captcha configuration found, defaulting to disabled');
+        captchaConfig.load();
+    } else {
+        captchaConfig.load(conf);
+        LOGGER.info('Loaded captcha configuration from conf/captcha.toml.');
     }
 }
 
@@ -486,4 +501,8 @@ exports.getPrometheusConfig = function getPrometheusConfig() {
 
 exports.getEmailConfig = function getEmailConfig() {
     return emailConfig;
+};
+
+exports.getCaptchaConfig = function getCaptchaConfig() {
+    return captchaConfig;
 };
