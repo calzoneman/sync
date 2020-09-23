@@ -157,7 +157,7 @@ module.exports = {
         require('./middleware/x-forwarded-for').initialize(app, webConfig);
         app.use(bodyParser.urlencoded({
             extended: false,
-            limit: '8kb' // No POST data should ever exceed this size under normal usage
+            limit: '32kb' // No POST data should ever exceed this size under normal usage
         }));
         app.use(bodyParser.json({
             limit: '8kb'
