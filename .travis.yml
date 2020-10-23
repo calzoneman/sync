@@ -4,10 +4,10 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
+      - gcc-9
+      - g++-9
 env:
-  - CXX="g++-4.8"
+  - CXX="g++-9"
 node_js:
   - "15"
   - "14"

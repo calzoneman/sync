@@ -20,7 +20,7 @@
     "cookie-parser": "^1.4.0",
     "create-error": "^0.3.1",
     "csrf": "^3.0.0",
-    "cytubefilters": "github:calzoneman/cytubefilters#b8b515fb749a38a830d3439c59363a62b35a180c",
+    "cytubefilters": "github:calzoneman/cytubefilters#c67b2dab2dc5cc5ed11018819f71273d0f8a1bf5",
     "express": "^4.16.2",
     "express-minify": "^1.0.0",
     "graceful-fs": "^4.1.2",
