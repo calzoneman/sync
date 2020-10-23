@@ -1,7 +1,7 @@
 import { Summary } from 'prom-client';
 import { createMySQLDuplicateKeyUpdate } from '../util/on-duplicate-key-update';
 
-const Media = require('cytube-mediaquery/lib/media');
+const Media = require('@cytube/mediaquery/lib/media');
 const LOGGER = require('@calzoneman/jsli')('metadata-cache');
 
 // TODO: these fullname-vs-shortcode hacks really need to be abolished

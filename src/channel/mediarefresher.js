@@ -1,4 +1,4 @@
-var Vimeo = require("cytube-mediaquery/lib/provider/vimeo");
+var Vimeo = require("@cytube/mediaquery/lib/provider/vimeo");
 var ChannelModule = require("./module");
 var Config = require("../config");
 

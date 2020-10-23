@@ -85,7 +85,7 @@ module.exports.init = function (newDB) {
             .then(() => {
                 require('./database/update').checkVersion();
                 module.exports.loadAnnouncement();
-                require('cytube-mediaquery/lib/provider/youtube').setCache(
+                require('@cytube/mediaquery/lib/provider/youtube').setCache(
                     new MetadataCacheDB(db)
                 );
             }).catch(error => {
