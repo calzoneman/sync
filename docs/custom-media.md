@@ -119,6 +119,8 @@ Each text track entry is a JSON object with the following keys:
     [`text/vtt`](https://developer.mozilla.org/en-US/docs/Web/API/WebVTT_API).
   * `name`: A name for the text track.  This is displayed in the menu for the
     viewer to select a text track.
+  * `default`: Enable track by default.  Optional boolean attribute to enable
+    a subtitle track to the user by default.
 
 **Important note regarding text tracks and CORS:**
 
@@ -148,7 +150,8 @@ for more information about setting this header.
         {
           "url": "https://example.com/subtitles.vtt",
           "contentType": "text/vtt",
-          "name": "English Subtitles"
+          "name": "English Subtitles",
+          "default": true
         }
       ]
     }
