@@ -96,12 +96,16 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
             if data.meta.textTracks
                 data.meta.textTracks.forEach((track) ->
                     label = track.name
-                    $('<track/>').attr(
+                    attrs =
                         src: track.url
                         kind: 'subtitles'
                         type: track.type
                         label: label
-                    ).appendTo(video)
+
+                    if track.default? and track.default
+                        attrs.default = ''
+
+                    $('<track/>').attr(attrs).appendTo(video)
                 )
 
             @player = videojs(video[0],

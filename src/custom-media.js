@@ -209,6 +209,7 @@ function validateTextTracks(textTracks) {
     if (!Array.isArray(textTracks))
         throw new ValidationError('textTracks must be a list');
 
+    let default_count = 0;
     for (let track of textTracks) {
         if (typeof track.url !== 'string')
             throw new ValidationError('text track URL must be a string');
@@ -223,6 +224,15 @@ function validateTextTracks(textTracks) {
             throw new ValidationError('text track name must be a string');
         if (!track.name)
             throw new ValidationError('text track name must be nonempty');
+
+        if (typeof track.default !== 'undefined') {
+            if (default_count > 0)
+                throw new ValidationError('only one default text track is allowed');
+            else if (typeof track.default !== 'boolean' || track.default !== true)
+                throw new ValidationError('text default attribute must be set to boolean true');
+            else
+                default_count++;
+        }
     }
 }
 
