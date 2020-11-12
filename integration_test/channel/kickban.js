@@ -16,10 +16,6 @@ describe('KickbanModule', () => {
     beforeEach(() => {
         mockChannel = {
             name: channelName,
-            refCounter: {
-                ref() { },
-                unref() { }
-            },
             logger: {
                 log() { }
             },
@@ -69,11 +65,22 @@ describe('KickbanModule', () => {
         });
     });
 
+    function patch(fn, after) {
+        let existing = kickban[fn];
+        kickban[fn] = async function () {
+            try {
+                await existing.apply(this, arguments)
+            } finally {
+                after();
+            }
+        };
+    }
+
     describe('#handleCmdBan', () => {
         it('inserts a valid ban', done => {
             let kicked = false;
 
-            mockChannel.refCounter.unref = () => {
+            patch('banName', () => {
                 assert(kicked, 'Expected user to be kicked');
 
                 database.getDB().runTransaction(async tx => {
@@ -90,7 +97,7 @@ describe('KickbanModule', () => {
 
                     done();
                 });
-            };
+            });
 
             mockChannel.users = [{
                 getLowerName() {
@@ -247,7 +254,7 @@ describe('KickbanModule', () => {
             let firstUserKicked = false;
             let secondUserKicked = false;
 
-            mockChannel.refCounter.unref = () => {
+            patch('banAll', () => {
                 assert(firstUserKicked, 'Expected banned user to be kicked');
                 assert(
                     secondUserKicked,
@@ -279,7 +286,7 @@ describe('KickbanModule', () => {
 
                     done();
                 });
-            };
+            });
 
             mockChannel.users = [{
                 getLowerName() {
@@ -313,7 +320,7 @@ describe('KickbanModule', () => {
         });
 
         it('inserts a valid range ban', done => {
-            mockChannel.refCounter.unref = () => {
+            patch('banIP', () => {
                 database.getDB().runTransaction(async tx => {
                     const ipBan = await tx.table('channel_bans')
                             .where({
@@ -328,7 +335,7 @@ describe('KickbanModule', () => {
 
                     done();
                 });
-            };
+            });
 
             kickban.handleCmdIPBan(
                 mockUser,
@@ -338,7 +345,7 @@ describe('KickbanModule', () => {
         });
 
         it('inserts a valid wide-range ban', done => {
-            mockChannel.refCounter.unref = () => {
+            patch('banIP', () => {
                 database.getDB().runTransaction(async tx => {
                     const ipBan = await tx.table('channel_bans')
                             .where({
@@ -353,7 +360,7 @@ describe('KickbanModule', () => {
 
                     done();
                 });
-            };
+            });
 
             kickban.handleCmdIPBan(
                 mockUser,
@@ -365,7 +372,7 @@ describe('KickbanModule', () => {
         it('inserts a valid IPv6 ban', done => {
             const longIP = require('../../lib/utilities').expandIPv6('::abcd');
 
-            mockChannel.refCounter.unref = () => {
+            patch('banAll', () => {
                 database.getDB().runTransaction(async tx => {
                     const ipBan = await tx.table('channel_bans')
                             .where({
@@ -380,7 +387,7 @@ describe('KickbanModule', () => {
 
                     done();
                 });
-            };
+            });
 
             database.getDB().runTransaction(async tx => {
                 await tx.table('aliases')
@@ -546,7 +553,7 @@ describe('KickbanModule', () => {
         });
 
         it('still adds the IP ban even if the name is already banned', done => {
-            mockChannel.refCounter.unref = () => {
+            patch('banIP', () => {
                 database.getDB().runTransaction(async tx => {
                     const ipBan = await tx.table('channel_bans')
                             .where({
@@ -561,7 +568,7 @@ describe('KickbanModule', () => {
 
                     done();
                 });
-            };
+            });
 
             database.getDB().runTransaction(tx => {
                 return tx.table('channel_bans')

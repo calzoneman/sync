@@ -55,18 +55,15 @@ LibraryModule.prototype.handleUncache = function (user, data) {
     }
 
     const chan = this.channel;
-    chan.refCounter.ref("LibraryModule::handleUncache");
     db.channels.deleteFromLibrary(chan.name, data.id, function (err, _res) {
         if (chan.dead) {
             return;
         } else if (err) {
-            chan.refCounter.unref("LibraryModule::handleUncache");
             return;
         }
 
         chan.logger.log("[library] " + user.getName() + " deleted " + data.id +
                         "from the library");
-        chan.refCounter.unref("LibraryModule::handleUncache");
     });
 };
 
