@@ -34,8 +34,18 @@ const ECODE_MESSAGES = {
         "The remote server is unreachable from this server.  " +
         "Please contact the video server's administrator for assistance."
     ),
+    ENOMEM: _e => (
+        "An out of memory error caused the request to fail.  Please contact an " +
+        "administrator for assistance."
+    ),
 
     DEPTH_ZERO_SELF_SIGNED_CERT: _e => (
+        'The remote server provided an invalid ' +
+        '(self-signed) SSL certificate.  Raw file support requires a ' +
+        'trusted certificate.  See https://letsencrypt.org/ to get ' +
+        'a free, trusted certificate.'
+    ),
+    SELF_SIGNED_CERT_IN_CHAIN: _e => (
         'The remote server provided an invalid ' +
         '(self-signed) SSL certificate.  Raw file support requires a ' +
         'trusted certificate.  See https://letsencrypt.org/ to get ' +
@@ -49,6 +59,16 @@ const ECODE_MESSAGES = {
     CERT_HAS_EXPIRED: _e => (
         "The remote server's SSL certificate has expired.  Please contact " +
         "the administrator of the server to renew the certificate."
+    ),
+    ERR_TLS_CERT_ALTNAME_INVALID: _e => (
+        "The remote server's SSL connection is misconfigured and has served " +
+        "a certificate invalid for the given link."
+    ),
+
+    // node's http parser barfs when careless servers ignore RFC 2616 and send a
+    // response body in reply to a HEAD request
+    HPE_INVALID_CONSTANT: _e => (
+        "The remote server for this link is misconfigured."
     )
 };
 
@@ -208,22 +228,19 @@ function testUrl(url, cb, params = { redirCount: 0, cookie: '' }) {
                 return;
             }
 
-            // HPE_INVALID_CONSTANT comes from node's HTTP parser because
-            // facebook's CDN violates RFC 2616 by sending a body even though
-            // the request uses the HEAD method.
-            // Avoid logging this because it's a known issue.
-            if (!(err.code === 'HPE_INVALID_CONSTANT' && /fbcdn/.test(url))) {
-                LOGGER.error(
-                    "Error sending preflight request: %s (code=%s) (link: %s)",
-                    err.message,
-                    err.code,
-                    url
-                );
-            }
+            LOGGER.error(
+                "Error sending preflight request: %s (code=%s) (link: %s)",
+                err.message,
+                err.code,
+                url
+            );
 
             cb("An unexpected error occurred while trying to process the link.  " +
-               "Try again, and contact support for further troubleshooting if the " +
-               "problem continues." + (err.code ? (" Error code: " + err.code) : ""));
+               "If this link is hosted on a server you own, it is likely " +
+               "misconfigured and you can join community support for assistance.  " +
+               "If you are attempting to add links from third party websites, the " +
+               "developers do not provide support for this." +
+               (err.code ? (" Error code: " + err.code) : ""));
         });
 
         req.end();
