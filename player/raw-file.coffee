@@ -1,12 +1,13 @@
 codecToMimeType = (codec) ->
     switch codec
-        when 'mov/h264' then 'video/mp4'
+        when 'mov/h264', 'mov/av1' then 'video/mp4'
         when 'flv/h264' then 'video/flv'
-        when 'matroska/vp8', 'matroska/vp9' then 'video/webm'
+        when 'matroska/vp8', 'matroska/vp9', 'matroska/av1' then 'video/webm'
         when 'ogg/theora' then 'video/ogg'
         when 'mp3' then 'audio/mp3'
         when 'vorbis' then 'audio/ogg'
         when 'aac' then 'audio/aac'
+        when 'opus' then 'audio/opus'
         else 'video/flv'
 
 window.FilePlayer = class FilePlayer extends VideoJSPlayer
