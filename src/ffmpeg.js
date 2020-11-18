@@ -80,13 +80,16 @@ var acceptedCodecs = {
     "flv/h264": true,
     "matroska/vp8": true,
     "matroska/vp9": true,
-    "ogg/theora": true
+    "ogg/theora": true,
+    "mov/av1": true,
+    "matroska/av1": true
 };
 
 var acceptedAudioCodecs = {
     "mp3": true,
     "vorbis": true,
-    "aac": true
+    "aac": true,
+    "opus": true
 };
 
 var audioOnlyContainers = {
