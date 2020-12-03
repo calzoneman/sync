@@ -5,7 +5,15 @@ require('source-map-support').install();
 
 const LOGGER = require('@calzoneman/jsli')('main');
 
-Config.load('config.yaml');
+try {
+    Config.load('config.yaml');
+} catch (e) {
+    LOGGER.fatal(
+        "Failed to load configuration: %s",
+        e
+    );
+    process.exit(1);
+}
 
 const sv = require('./server').init();
 
@@ -26,7 +34,14 @@ if (!Config.get('debug')) {
 function handleLine(line) {
     if (line === '/reload') {
         LOGGER.info('Reloading config');
-        Config.load('config.yaml');
+        try {
+            Config.load('config.yaml');
+        } catch (e) {
+            LOGGER.error(
+                "Failed to load configuration: %s",
+                e
+            );
+        }
         require('./web/pug').clearCache();
     } else if (line.indexOf('/switch') === 0) {
         const args = line.split(' ');

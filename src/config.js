@@ -136,29 +136,19 @@ let captchaConfig = new CaptchaConfig();
  * Initializes the configuration from the given YAML file
  */
 exports.load = function (file) {
+    let absPath = path.join(__dirname, "..", file);
     try {
-        cfg = YAML.load(path.join(__dirname, "..", file));
+        cfg = YAML.load(absPath);
     } catch (e) {
         if (e.code === "ENOENT") {
-            LOGGER.info(file + " does not exist, assuming default configuration");
-            cfg = defaults;
-            return;
+            throw new Error(`No such file: ${absPath}`);
         } else {
-            LOGGER.error("Error loading config file " + file + ": ");
-            LOGGER.error(e);
-            if (e.stack) {
-                LOGGER.error(e.stack);
-            }
-            cfg = defaults;
-            return;
+            throw new Error(`Invalid config file ${absPath}: ${e}`);
         }
     }
 
     if (cfg == null) {
-        LOGGER.info(file + " is an Invalid configuration file, " +
-                          "assuming default configuration");
-        cfg = defaults;
-        return;
+        throw new Error("Configuration parser returned null");
     }
 
     if (cfg.mail) {
