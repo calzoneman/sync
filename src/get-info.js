@@ -71,6 +71,9 @@ var Getters = {
             if (video.meta.blocked) {
                 meta.restricted = video.meta.blocked;
             }
+            if (video.meta.ytRating) {
+                meta.rating = video.meta.ytRating;
+            }
 
             var media = new Media(video.id, video.title, video.duration, "yt", meta);
             callback(false, media);
