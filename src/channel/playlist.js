@@ -973,6 +973,10 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         }
     }
 
+    if (media.meta.rating) {
+        return qfail("Cannot add age restricted videos because google sucks");
+    }
+
     /* Warn about blocked countries */
     if (media.meta.restricted) {
         user.socket.emit("queueWarn", {
