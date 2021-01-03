@@ -10,7 +10,7 @@
   "dependencies": {
     "@calzoneman/express-babel-decorators": "^1.0.0",
     "@calzoneman/jsli": "^2.0.1",
-    "@cytube/mediaquery": "0.0.24",
+    "@cytube/mediaquery": "0.0.25",
     "bcrypt": "^5.0.0",
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
