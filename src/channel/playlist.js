@@ -974,7 +974,7 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
     }
 
     if (media.meta.rating) {
-        return qfail("Cannot add age restricted videos because google sucks");
+        return qfail("Cannot add age restricted videos. See: https://github.com/calzoneman/sync/wiki/Frequently-Asked-Questions#why-dont-age-restricted-youtube-videos-work");
     }
 
     /* Warn about blocked countries */
