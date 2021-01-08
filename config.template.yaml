@@ -116,7 +116,7 @@ io:
 # 5. Test your key (may take a few minutes to become active):
 #
 #    $ export YOUTUBE_API_KEY="your key here"
-#    $ curl "https://www.googleapis.com/youtube/v3/search?key=$YOUTUBE_API_KEY&part=id&maxResults=1&q=test+video&type=video"
+#    $ curl "https://youtube.googleapis.com/v3/search?key=$YOUTUBE_API_KEY&part=id&maxResults=1&q=test+video&type=video"
 youtube-v3-key: ''
 # Limit for the number of channels a user can register
 max-channels-per-user: 5
