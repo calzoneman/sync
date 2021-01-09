@@ -47,8 +47,9 @@ MediaRefresherModule.prototype.initVimeo = function (data, cb) {
     }
 
     const self = this;
+    self.channel.refCounter.ref("MediaRefresherModule::initVimeo");
     Vimeo.extract(data.id).then(function (direct) {
-        if (self.channel.dead) {
+        if (self.dead || self.channel.dead) {
             self.unload();
             return;
         }
@@ -62,11 +63,9 @@ MediaRefresherModule.prototype.initVimeo = function (data, cb) {
         if (cb) cb();
     }).catch(function (err) {
         LOGGER.error("Unexpected vimeo::extract() fail: " + err.stack);
-        if (self.channel.dead) {
-            self.unload();
-            return;
-        }
         if (cb) cb();
+    }).finally(() => {
+        self.channel.refCounter.unref("MediaRefresherModule::initVimeo");
     });
 };
 

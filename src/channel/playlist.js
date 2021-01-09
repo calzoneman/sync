@@ -511,19 +511,19 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
     };
 
     const self = this;
+    this.channel.refCounter.ref("PlaylistModule::queueStandard");
     counters.add("playlist:queue:count", 1);
     this.semaphore.queue(function (lock) {
         InfoGetter.getMedia(data.id, data.type, function (err, media) {
             if (err) {
                 error(XSS.sanitizeText(String(err)));
-                return lock.release();
-            }
-            if (self.channel.dead) {
+                self.channel.refCounter.unref("PlaylistModule::queueStandard");
                 return lock.release();
             }
 
             self._addItem(media, data, user, function () {
                 lock.release();
+                self.channel.refCounter.unref("PlaylistModule::queueStandard");
             });
         });
     });
@@ -546,7 +546,7 @@ PlaylistModule.prototype.queueYouTubePlaylist = function (user, data) {
                 return lock.release();
             }
 
-            if (self.channel.dead) {
+            if (self.dead) {
                 return lock.release();
             }
 
@@ -562,6 +562,8 @@ PlaylistModule.prototype.queueYouTubePlaylist = function (user, data) {
                 }
             }
 
+            self.channel.refCounter.ref("PlaylistModule::queueYouTubePlaylist");
+
             if (self.channel.modules.library && data.shouldAddToLibrary) {
                 self.channel.modules.library.cacheMediaList(vids);
                 data.shouldAddToLibrary = false;
@@ -571,6 +573,8 @@ PlaylistModule.prototype.queueYouTubePlaylist = function (user, data) {
                 data.link = util.formatLink(media.id, media.type);
                 self._addItem(media, data, user);
             });
+
+            self.channel.refCounter.unref("PlaylistModule::queueYouTubePlaylist");
 
             lock.release();
         });
@@ -589,6 +593,7 @@ PlaylistModule.prototype.handleDelete = function (user, data) {
     }
 
     var plitem = this.items.find(data);
+    self.channel.refCounter.ref("PlaylistModule::handleDelete");
     this.semaphore.queue(function (lock) {
         if (self._delete(data)) {
             self.channel.logger.log("[playlist] " + user.getName() + " deleted " +
@@ -596,6 +601,7 @@ PlaylistModule.prototype.handleDelete = function (user, data) {
         }
 
         lock.release();
+        self.channel.refCounter.unref("PlaylistModule::handleDelete");
     });
 };
 
@@ -631,24 +637,26 @@ PlaylistModule.prototype.handleMoveMedia = function (user, data) {
     }
 
     const self = this;
+    self.channel.refCounter.ref("PlaylistModule::handleMoveMedia");
     self.semaphore.queue(function (lock) {
-        if (self.channel.dead) {
-            return lock.release();
-        }
         if (!self.items.remove(data.from)) {
+            self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
             return lock.release();
         }
 
         if (data.after === "prepend") {
             if (!self.items.prepend(from)) {
+                self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
                 return lock.release();
             }
         } else if (data.after === "append") {
             if (!self.items.append(from)) {
+                self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
                 return lock.release();
             }
         } else {
             if (!self.items.insertAfter(from, data.after)) {
+                self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
                 return lock.release();
             }
         }
@@ -660,6 +668,7 @@ PlaylistModule.prototype.handleMoveMedia = function (user, data) {
                                 (after ? " after " + after.media.title : ""));
         self._listDirty = true;
         lock.release();
+        self.channel.refCounter.unref("PlaylistModule::handleMoveMedia");
     });
 };
 
@@ -1351,14 +1360,13 @@ PlaylistModule.prototype.handleQueuePlaylist = function (user, data) {
     };
 
     const self = this;
+    self.channel.refCounter.ref("PlaylistModule::handleQueuePlaylist");
     db.getUserPlaylist(user.getName(), data.name, function (err, pl) {
         if (err) {
+            self.channel.refCounter.unref("PlaylistModule::handleQueuePlaylist");
             return user.socket.emit("errorMsg", {
                 msg: "Playlist load failed: " + err
             });
-        }
-        if (self.channel.dead) {
-            return;
         }
 
         try {
@@ -1394,6 +1402,8 @@ PlaylistModule.prototype.handleQueuePlaylist = function (user, data) {
                 msg: "Internal error occurred when loading playlist.",
                 link: null
             });
+        } finally {
+            self.channel.refCounter.unref("PlaylistModule::handleQueuePlaylist");
         }
     });
 };

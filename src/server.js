@@ -357,9 +357,11 @@ Server.prototype.unloadChannel = function (chan, options) {
 
         LOGGER.info("Unloaded channel " + chan.name);
         chan.broadcastUsercount.cancel();
-        // Empty all outward references from the channel | TODO does this actually help?
+        // Empty all outward references from the channel
         Object.keys(chan).forEach(key => {
-            delete chan[key];
+            if (key !== "refCounter") {
+                delete chan[key];
+            }
         });
         chan.dead = true;
         promActiveChannels.dec();

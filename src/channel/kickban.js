@@ -77,11 +77,10 @@ KickBanModule.prototype.onUserPostJoin = function (user) {
     }
 
     const chan = this.channel;
+    const refCaller = "KickBanModule::onUserPostJoin";
     user.waitFlag(Flags.U_LOGGED_IN, function () {
+        chan.refCounter.ref(refCaller);
         db.channels.isNameBanned(chan.name, user.getName(), function (err, banned) {
-            if (chan.dead) {
-                return;
-            }
             if (!err && banned) {
                 user.kick("You are banned from this channel.");
                 if (chan.modules.chat) {
@@ -89,6 +88,7 @@ KickBanModule.prototype.onUserPostJoin = function (user) {
                                                      "name is banned)");
                 }
             }
+            chan.refCounter.unref(refCaller);
         });
     });
 
@@ -226,9 +226,14 @@ KickBanModule.prototype.handleCmdBan = function (user, msg, _meta) {
     var name = args.shift().toLowerCase();
     var reason = args.join(" ");
 
+    const chan = this.channel;
+    chan.refCounter.ref("KickBanModule::handleCmdBan");
+
     this.banName(user, name, reason).catch(error => {
         const message = error.message || error;
         user.socket.emit("errorMsg", { msg: message });
+    }).then(() => {
+        chan.refCounter.unref("KickBanModule::handleCmdBan");
     });
 };
 
@@ -252,9 +257,15 @@ KickBanModule.prototype.handleCmdIPBan = function (user, msg, _meta) {
     }
     var reason = args.join(" ");
 
+    const chan = this.channel;
+    chan.refCounter.ref("KickBanModule::handleCmdIPBan");
+
     this.banAll(user, name, range, reason).catch(error => {
+        //console.log('!!!', error.stack);
         const message = error.message || error;
         user.socket.emit("errorMsg", { msg: message });
+    }).then(() => {
+        chan.refCounter.unref("KickBanModule::handleCmdIPBan");
     });
 };
 
@@ -416,14 +427,13 @@ KickBanModule.prototype.handleUnban = function (user, data) {
     }
 
     var self = this;
+    this.channel.refCounter.ref("KickBanModule::handleUnban");
     db.channels.unbanId(this.channel.name, data.id, function (err) {
         if (err) {
+            self.channel.refCounter.unref("KickBanModule::handleUnban");
             return user.socket.emit("errorMsg", {
                 msg: err
             });
-        }
-        if (self.channel.dead) {
-            return;
         }
 
         self.sendUnban(self.channel.users, data);
@@ -435,6 +445,7 @@ KickBanModule.prototype.handleUnban = function (user, data) {
                 banperm
             );
         }
+        self.channel.refCounter.unref("KickBanModule::handleUnban");
     });
 };
 

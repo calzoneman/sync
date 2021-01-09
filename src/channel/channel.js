@@ -14,6 +14,67 @@ const LOGGER = require('@calzoneman/jsli')('channel');
 
 const USERCOUNT_THROTTLE = 10000;
 
+class ReferenceCounter {
+    constructor(channel) {
+        this.channel = channel;
+        this.channelName = channel.name;
+        this.refCount = 0;
+        this.references = {};
+    }
+
+    ref(caller) {
+        if (caller) {
+            if (this.references.hasOwnProperty(caller)) {
+                this.references[caller]++;
+            } else {
+                this.references[caller] = 1;
+            }
+        }
+
+        this.refCount++;
+    }
+
+    unref(caller) {
+        if (caller) {
+            if (this.references.hasOwnProperty(caller)) {
+                this.references[caller]--;
+                if (this.references[caller] === 0) {
+                    delete this.references[caller];
+                }
+            } else {
+                LOGGER.error("ReferenceCounter::unref() called by caller [" +
+                        caller + "] but this caller had no active references! " +
+                        `(channel: ${this.channelName})`);
+                return;
+            }
+        }
+
+        this.refCount--;
+        this.checkRefCount();
+    }
+
+    checkRefCount() {
+        if (this.refCount === 0) {
+            if (Object.keys(this.references).length > 0) {
+                LOGGER.error("ReferenceCounter::refCount reached 0 but still had " +
+                        "active references: " +
+                        JSON.stringify(Object.keys(this.references)) +
+                        ` (channel: ${this.channelName})`);
+                for (var caller in this.references) {
+                    this.refCount += this.references[caller];
+                }
+            } else if (this.channel.users && this.channel.users.length > 0) {
+                LOGGER.error("ReferenceCounter::refCount reached 0 but still had " +
+                        this.channel.users.length + " active users" +
+                        ` (channel: ${this.channelName})`);
+                this.refCount = this.channel.users.length;
+            } else {
+                this.channel.emit("empty");
+            }
+        }
+    }
+}
+
 function Channel(name) {
     this.name = name;
     this.uniqueName = name.toLowerCase();
@@ -24,6 +85,7 @@ function Channel(name) {
         )
     );
     this.users = [];
+    this.refCounter = new ReferenceCounter(this);
     this.flags = 0;
     this.id = 0;
     this.ownerName = null;
@@ -220,16 +282,17 @@ Channel.prototype.saveState = async function () {
 
 Channel.prototype.checkModules = function (fn, args, cb) {
     const self = this;
+    const refCaller = `Channel::checkModules/${fn}`;
     this.waitFlag(Flags.C_READY, function () {
         if (self.dead) return;
 
+        self.refCounter.ref(refCaller);
         var keys = Object.keys(self.modules);
         var next = function (err, result) {
-            if (self.dead) return;
-
             if (result !== ChannelModule.PASSTHROUGH) {
                 /* Either an error occured, or the module denied the user access */
                 cb(err, result);
+                self.refCounter.unref(refCaller);
                 return;
             }
 
@@ -237,6 +300,7 @@ Channel.prototype.checkModules = function (fn, args, cb) {
             if (m === undefined) {
                 /* No more modules to check */
                 cb(null, ChannelModule.PASSTHROUGH);
+                self.refCounter.unref(refCaller);
                 return;
             }
 
@@ -275,32 +339,28 @@ Channel.prototype.notifyModules = function (fn, args) {
 Channel.prototype.joinUser = function (user, data) {
     const self = this;
 
+    self.refCounter.ref("Channel::user");
     self.waitFlag(Flags.C_READY, function () {
+
         /* User closed the connection before the channel finished loading */
         if (user.socket.disconnected) {
-            return;
-        }
-
-        if (self.dead) {
-            user.kick('Channel is not loaded');
+            self.refCounter.unref("Channel::user");
             return;
         }
 
         user.channel = self;
         user.waitFlag(Flags.U_LOGGED_IN, () => {
             if (self.dead) {
-                user.kick('Channel is not loaded');
+                LOGGER.warn(
+                    'Got U_LOGGED_IN for %s after channel already unloaded',
+                    user.getName()
+                );
                 return;
             }
 
             if (user.is(Flags.U_REGISTERED)) {
                 db.channels.getRank(self.name, user.getName(), (error, rank) => {
                     if (!error) {
-                        if (self.dead) {
-                            user.kick('Channel is not loaded');
-                            return;
-                        }
-
                         user.setChannelRank(rank);
                         user.setFlag(Flags.U_HAS_CHANNEL_RANK);
                         if (user.inChannel()) {
@@ -314,6 +374,13 @@ Channel.prototype.joinUser = function (user, data) {
             }
         });
 
+        if (user.socket.disconnected) {
+            self.refCounter.unref("Channel::user");
+            return;
+        } else if (self.dead) {
+            return;
+        }
+
         self.checkModules("onUserPreJoin", [user, data], function (err, result) {
             if (result === ChannelModule.PASSTHROUGH) {
                 user.channel = self;
@@ -322,6 +389,7 @@ Channel.prototype.joinUser = function (user, data) {
                 user.channel = null;
                 user.account.channelRank = 0;
                 user.account.effectiveRank = user.account.globalRank;
+                self.refCounter.unref("Channel::user");
             }
         });
     });
@@ -425,8 +493,8 @@ Channel.prototype.partUser = function (user) {
     });
     this.broadcastUsercount();
 
+    this.refCounter.unref("Channel::user");
     user.die();
-    if (this.users.length === 0) this.emit('empty');
 };
 
 Channel.prototype.maybeResendUserlist = function maybeResendUserlist(user, newRank, oldRank) {
@@ -587,13 +655,12 @@ Channel.prototype.sendUserJoin = function (users, user) {
 Channel.prototype.readLog = function (cb) {
     const maxLen = 102400;
     const file = this.logger.filename;
+    this.refCounter.ref("Channel::readLog");
     const self = this;
     fs.stat(file, function (err, data) {
         if (err) {
+            self.refCounter.unref("Channel::readLog");
             return cb(err, null);
-        }
-        if (self.dead) {
-            return cb(new Error('Channel unloaded'), null);
         }
 
         const start = Math.max(data.size - maxLen, 0);
@@ -610,6 +677,7 @@ Channel.prototype.readLog = function (cb) {
         });
         read.on("end", function () {
             cb(null, buffer);
+            self.refCounter.unref("Channel::readLog");
         });
     });
 };
@@ -674,6 +742,10 @@ Channel.prototype.packInfo = function (isAdmin) {
             }
             data.users.push(name);
         }
+    }
+
+    if (isAdmin) {
+        data.activeLockCount = this.refCounter.refCount;
     }
 
     var self = this;

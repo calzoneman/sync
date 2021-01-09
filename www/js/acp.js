@@ -422,6 +422,10 @@ function showChannelDetailModal(c) {
     $("<td/>").text(c.public).appendTo(tr);
 
     tr = $("<tr/>").appendTo(table);
+    $("<td/>").text("ActiveLock Count").appendTo(tr);
+    $("<td/>").text(c.activeLockCount).appendTo(tr);
+
+    tr = $("<tr/>").appendTo(table);
     $("<td/>").text("Chat Filter Count").appendTo(tr);
     $("<td/>").text(c.chatFilterCount).appendTo(tr);
 
