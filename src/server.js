@@ -29,14 +29,15 @@ module.exports = {
     }
 };
 
-var path = require("path");
-var fs = require("fs");
-var https = require("https");
-var express = require("express");
-var Channel = require("./channel/channel");
-var db = require("./database");
-var Flags = require("./flags");
-var sio = require("socket.io");
+const path = require("path");
+const fs = require("fs");
+const http = require("http");
+const https = require("https");
+const express = require("express");
+const Channel = require("./channel/channel");
+const db = require("./database");
+const Flags = require("./flags");
+const sio = require("socket.io");
 import LocalChannelIndex from './web/localchannelindex';
 import { PartitionChannelIndex } from './partition/partitionchannelindex';
 import IOConfiguration from './configuration/ioconfig';
@@ -162,8 +163,10 @@ var Server = function () {
         }
 
         if (bind.https && Config.get("https.enabled")) {
-            self.servers[id] = https.createServer(opts, self.express)
-                                    .listen(bind.port, bind.ip);
+            self.servers[id] = https.createServer(opts, self.express);
+            // 2 minute default copied from node <= 12.x
+            self.servers[id].timeout = 120000;
+            self.servers[id].listen(bind.port, bind.ip);
             self.servers[id].on("error", error => {
                 if (error.code === "EADDRINUSE") {
                     LOGGER.fatal(
@@ -174,17 +177,13 @@ var Server = function () {
                         id
                     );
                     process.exit(1);
-                }
-            });
-            self.servers[id].on("clientError", function (err, socket) {
-                try {
-                    socket.destroy();
-                } catch (e) {
-                    // Ignore
                 }
             });
         } else if (bind.http) {
-            self.servers[id] = self.express.listen(bind.port, bind.ip);
+            self.servers[id] = http.createServer(self.express);
+            // 2 minute default copied from node <= 12.x
+            self.servers[id].timeout = 120000;
+            self.servers[id].listen(bind.port, bind.ip);
             self.servers[id].on("error", error => {
                 if (error.code === "EADDRINUSE") {
                     LOGGER.fatal(
@@ -195,13 +194,6 @@ var Server = function () {
                         id
                     );
                     process.exit(1);
-                }
-            });
-            self.servers[id].on("clientError", function (err, socket) {
-                try {
-                    socket.destroy();
-                } catch (e) {
-                    // Ignore
                 }
             });
         }
