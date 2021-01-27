@@ -45,7 +45,7 @@ const ALLOWED_SCHEMES = [
 var ATTRIBUTE_MAP = {
     a: ["href", "name", "target"],
     font: ["size"],
-    img: ["src"],
+    img: ["src", "alt"],
     marquee: ["behavior", "behaviour", "direction", "scrollamount"],
     table: ["cellpadding", "cellspacing"],
     th: ["colspan", "rowspan"],
