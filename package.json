@@ -37,7 +37,7 @@
     "socket.io": "^2.0.3",
     "source-map-support": "^0.5.19",
     "toml": "^3.0.0",
-    "uuid": "^3.2.1",
+    "uuid": "^8.3.2",
     "yamljs": "^0.2.8"
   },
   "scripts": {

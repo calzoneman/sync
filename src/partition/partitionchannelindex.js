@@ -1,5 +1,5 @@
 import Promise from 'bluebird';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 const LOGGER = require('@calzoneman/jsli')('partitionchannelindex');
 
@@ -9,7 +9,7 @@ const CACHE_EXPIRE_DELAY = 40 * 1000;
 
 class PartitionChannelIndex {
     constructor(pubClient, subClient, channel) {
-        this.id = uuid.v4();
+        this.id = uuidv4();
         this.pubClient = pubClient;
         this.subClient = subClient;
         this.channel = channel;
