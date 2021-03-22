@@ -13,7 +13,7 @@
     "bcrypt": "^5.0.1",
     "bluebird": "^3.7.2",
     "body-parser": "^1.19.0",
-    "cheerio": "^1.0.0-rc.2",
+    "cheerio": "^1.0.0-rc.5",
     "clone": "^2.1.2",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
