@@ -5,7 +5,6 @@ import { parse as parseURL } from 'url';
 const LOGGER = require('@calzoneman/jsli')('prometheus-server');
 
 let server = null;
-let defaultMetricsTimer = null;
 
 export function init(prometheusConfig) {
     if (server !== null) {
@@ -14,7 +13,7 @@ export function init(prometheusConfig) {
         return;
     }
 
-    defaultMetricsTimer = collectDefaultMetrics();
+    collectDefaultMetrics();
 
     server = http.createServer((req, res) => {
         if (req.method !== 'GET'
@@ -24,10 +23,18 @@ export function init(prometheusConfig) {
             return;
         }
 
-        res.writeHead(200, {
-            'Content-Type': register.contentType
+        register.metrics().then(metrics => {
+            res.writeHead(200, {
+                'Content-Type': register.contentType
+            });
+            res.end(metrics);
+        }).catch(error => {
+            LOGGER.error('Error generating prometheus metrics: %s', error.stack);
+            res.writeHead(500, {
+                'Content-Type': 'text/plain'
+            });
+            res.end('Internal Server Error');
         });
-        res.end(register.metrics());
     });
 
     server.on('error', error => {
@@ -47,6 +54,4 @@ export function init(prometheusConfig) {
 export function shutdown() {
     server.close();
     server = null;
-    clearInterval(defaultMetricsTimer);
-    defaultMetricsTimer = null;
 }
