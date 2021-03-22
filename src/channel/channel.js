@@ -1,6 +1,6 @@
 var ChannelModule = require("./module");
 var Flags = require("../flags");
-var fs = require("graceful-fs");
+var fs = require("fs");
 var path = require("path");
 var sio = require("socket.io");
 var db = require("../database");

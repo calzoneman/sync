@@ -1,4 +1,4 @@
-var fs = require("graceful-fs");
+var fs = require("fs");
 var path = require("path");
 import { Logger as JsliLogger, LogLevel } from '@calzoneman/jsli';
 import jsli from '@calzoneman/jsli';
