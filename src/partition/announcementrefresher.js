@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 
 const LOGGER = require('@calzoneman/jsli')('announcementrefresher');
 
@@ -9,7 +9,7 @@ class AnnouncementRefresher {
         this.pubClient = pubClient;
         this.subClient = subClient;
         this.channel = channel;
-        this.uuid = uuid.v4();
+        this.uuid = uuidv4();
         process.nextTick(this.init.bind(this));
     }
 
