@@ -51,6 +51,29 @@ describe('AccountsDatabase', () => {
             );
         });
 
+        it('verifies a correct login with an older hash', done => {
+            testDB.knex.table('users')
+                    .where({ name: user })
+                    .update({
+                        // 'test' hashed with old version of bcrypt module
+                        password: '$2b$10$2oCG7O9FFqie7T8O33yQDugFPS0NqkgbQjtThTs7Jr8E1QOzdRruK'
+                    })
+                    .then(() => {
+                accounts.verifyLogin(
+                    user,
+                    'test',
+                    (error, res) => {
+                        if (error) {
+                            throw error;
+                        }
+
+                        assert.strictEqual(res.name, user);
+                        done();
+                    }
+                );
+            });
+        });
+
         it('rejects an incorrect login', done => {
             accounts.verifyLogin(
                 user,
