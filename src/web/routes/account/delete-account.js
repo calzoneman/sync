@@ -68,7 +68,7 @@ export default function initialize(
 
         try {
             await userDb.requestAccountDeletion(user.id);
-            eventlog.log(`[account] ${req.ip} requested account deletion for ${user.name}`);
+            eventlog.log(`[account] ${req.realIP} requested account deletion for ${user.name}`);
         } catch (error) {
             LOGGER.error('Unknown error in requestAccountDeletion: %s', error.stack);
             await showDeletePage(res, { internalError: true });
