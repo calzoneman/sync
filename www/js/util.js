@@ -214,26 +214,28 @@ function addUserDropdown(entry) {
     var btngroup = $("<div/>").addClass("btn-group-vertical").appendTo(menu);
 
     /* ignore button */
-    var ignore = $("<button/>").addClass("btn btn-xs btn-default")
-        .appendTo(btngroup)
-        .click(function () {
-            if(IGNORED.indexOf(name) == -1) {
-                ignore.text("Unignore User");
-                IGNORED.push(name);
-                entry.addClass("userlist-ignored");
-            } else {
-                ignore.text("Ignore User");
-                IGNORED.splice(IGNORED.indexOf(name), 1);
-                entry.removeClass("userlist-ignored");
-            }
-            setOpt("ignorelist", IGNORED);
-        });
-    if(IGNORED.indexOf(name) == -1) {
-        entry.removeClass("userlist-ignored");
-        ignore.text("Ignore User");
-    } else {
-        entry.addClass("userlist-ignored");
-        ignore.text("Unignore User");
+    if (name !== CLIENT.name) {
+        var ignore = $("<button/>").addClass("btn btn-xs btn-default")
+            .appendTo(btngroup)
+            .click(function () {
+                if(IGNORED.indexOf(name) == -1) {
+                    ignore.text("Unignore User");
+                    IGNORED.push(name);
+                    entry.addClass("userlist-ignored");
+                } else {
+                    ignore.text("Ignore User");
+                    IGNORED.splice(IGNORED.indexOf(name), 1);
+                    entry.removeClass("userlist-ignored");
+                }
+                setOpt("ignorelist", IGNORED);
+            });
+        if(IGNORED.indexOf(name) == -1) {
+            entry.removeClass("userlist-ignored");
+            ignore.text("Ignore User");
+        } else {
+            entry.addClass("userlist-ignored");
+            ignore.text("Unignore User");
+        }
     }
 
     /* pm button */
