@@ -24,6 +24,7 @@ const SOURCE_CONTENT_TYPES = new Set([
     'audio/aac',
     'audio/ogg',
     'audio/mpeg',
+    'audio/opus',
     'video/mp4',
     'video/ogg',
     'video/webm'
