@@ -37,10 +37,10 @@ VoteskipModule.prototype.handleVoteskip = function (user) {
     }
 
     if (!this.poll) {
-        this.poll = new Poll("[server]", "voteskip", ["skip"], false);
+        this.poll = Poll.create("[server]", "voteskip", ["skip"]);
     }
 
-    if (!this.poll.vote(user.realip, 0)) {
+    if (!this.poll.countVote(user.realip, 0)) {
         // Vote was already recorded for this IP, no update needed
         return;
     }
@@ -62,7 +62,7 @@ VoteskipModule.prototype.unvote = function(ip) {
         return;
     }
 
-    this.poll.unvote(ip);
+    this.poll.uncountVote(ip);
 };
 
 VoteskipModule.prototype.update = function () {
@@ -78,10 +78,11 @@ VoteskipModule.prototype.update = function () {
         return;
     }
 
+    const { counts } = this.poll.toUpdateFrame(false);
     const { total, eligible, noPermission, afk } = this.calcUsercounts();
     const need = Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"));
-    if (this.poll.counts[0] >= need) {
-        const info = `${this.poll.counts[0]}/${eligible} skipped; ` +
+    if (counts[0] >= need) {
+        const info = `${counts[0]}/${eligible} skipped; ` +
             `eligible voters: ${eligible} = total (${total}) - AFK (${afk}) ` +
             `- no permission (${noPermission}); ` +
             `ratio = ${this.channel.modules.options.get("voteskip_ratio")}`;
@@ -107,11 +108,20 @@ VoteskipModule.prototype.update = function () {
 
 VoteskipModule.prototype.sendVoteskipData = function (users) {
     const { eligible } = this.calcUsercounts();
-    var data = {
-        count: this.poll ? this.poll.counts[0] : 0,
-        need: this.poll ? Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"))
-                        : 0
-    };
+    let data;
+
+    if (this.poll) {
+        const { counts } = this.poll.toUpdateFrame(false);
+        data = {
+            count: counts[0],
+            need: Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"))
+        };
+    } else {
+        data = {
+            count: 0,
+            need: 0
+        };
+    }
 
     var perms = this.channel.modules.permissions;
 

@@ -77,7 +77,9 @@ describe('VoteskipModule', () => {
             };
 
             voteskipModule.poll = {
-                counts: [1]
+                toUpdateFrame() {
+                    return { counts: [1] };
+                }
             };
             voteskipModule.update();
             assert.equal(voteskipModule.poll, false, 'Expected voteskip poll to be reset to false');
@@ -93,7 +95,9 @@ describe('VoteskipModule', () => {
                 sentMessage = true;
             };
             voteskipModule.poll = {
-                counts: [1]
+                toUpdateFrame() {
+                    return { counts: [1] };
+                }
             };
             voteskipModule.update();
             assert(sentMessage, 'Expected voteskip passed message');
