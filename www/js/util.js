@@ -1898,7 +1898,7 @@ function chatOnly() {
         .text("Emote List")
         .appendTo($("#chatheader"))
         .click(function () {
-            EMOTELIST.show();
+            EMOTELISTMODAL.modal();
         });
     setVisible("#showchansettings", CLIENT.rank >= 2);
 
