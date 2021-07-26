@@ -23,7 +23,6 @@ var order = [
     'smashcast.coffee',
     'ustream.coffee',
     'imgur.coffee',
-    'gdrive-youtube.coffee',
     'hls.coffee',
     'twitchclip.coffee',
     'update.coffee'
