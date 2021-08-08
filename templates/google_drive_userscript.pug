@@ -3,18 +3,21 @@ extends layout.pug
 block content
   .col-md-8.col-md-offset-2
     h1 Google Drive Userscript
-    h2 Why?
-    p.
-      Since Google Drive support was launched in early 2014, it has broken
-      at least 4-5 times, requiring increasing effort to get it working again
-      and disrupting many channels.  This is because there is no official API
-      for it like there is for YouTube videos, which means support for it
-      relies on undocumented tricks.  In August 2016, the decision was made
-      to phase out the native support for Google Drive and instead require
-      users to install a userscript, which allows to bypass certain browser
-      restrictions and make the code easier, simpler, and less prone to failure
-      (it could still break due to future Google Drive changes, but is less
-      likely to be difficult to fix).
+    h2 Disclaimer
+    .alert.alert-danger.messagebox
+      strong Unsupported
+      p.
+        This functionality is provided <strong>as-is</strong> for backwards
+        compatibility for existing users for whom it already is known to work.
+        There are many reasons, known and unknown, for which it may
+        <strong>not</strong> work for you; please note the staff in CyTube
+        support channels cannot provide any troubleshooting assistance and you
+        will be asked to simply use a different video provider.
+      p.
+        This functionality was originally added so that users could share their
+        own personal videos stored in their Drive.  No support whatsoever will
+        be provided to users attempting to use it to circumvent copyright
+        restrictions on third-party video hosts.
     h2 How It Works
     p.
       The userscript is a short script that you can install using a browser
