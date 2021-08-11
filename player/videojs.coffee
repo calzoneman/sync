@@ -59,7 +59,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 width: '100%'
                 height: '100%'
 
-            if @mediaType == 'cm' and data.meta.textTracks
+            if @mediaType == 'cm' and data.meta.textTracks != null && data.meta.textTracks.length > 0
                 attrs.crossorigin = 'anonymous'
 
             video = $('<video/>')
