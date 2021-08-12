@@ -8,6 +8,7 @@ const TYPE_NEW_POLL = {
     title: "string",
     timeout: "number,optional",
     obscured: "boolean",
+    retainVotes: "boolean,optional",
     opts: "array"
 };
 
@@ -84,7 +85,7 @@ PollModule.prototype.addUserToPollRoom = function (user) {
 };
 
 PollModule.prototype.onUserPart = function(user) {
-    if (this.poll && this.poll.uncountVote(user.realip)) {
+    if (this.poll && !this.poll.retainVotes && this.poll.uncountVote(user.realip)) {
         this.broadcastPoll(false);
     }
 };
@@ -183,7 +184,15 @@ PollModule.prototype.handleNewPoll = function (user, data, ack) {
         return;
     }
 
-    var poll = Poll.create(user.getName(), data.title, data.opts, { hideVotes: data.obscured });
+    var poll = Poll.create(
+        user.getName(),
+        data.title,
+        data.opts,
+        {
+            hideVotes: data.obscured,
+            retainVotes: data.retainVotes === undefined ? false : data.retainVotes
+        }
+    );
     var self = this;
     if (data.hasOwnProperty("timeout")) {
         poll.timer = setTimeout(function () {

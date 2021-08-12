@@ -837,6 +837,12 @@ function showPollMenu() {
     var hidden = $("<input/>").attr("type", "checkbox")
         .prependTo(lbl);
 
+    var retainVotesOuter = $("<div/>").addClass("checkbox").appendTo(menu);
+    var retainVotesLbl = $("<label/>").text("Keep poll vote after user leaves")
+        .appendTo(retainVotesOuter);
+    var retainVotes = $("<input/>").attr("type", "checkbox")
+        .prependTo(retainVotesLbl);
+
     $("<strong/>").text("Options").appendTo(menu);
 
     var addbtn = $("<button/>").addClass("btn btn-sm btn-default")
@@ -885,6 +891,7 @@ function showPollMenu() {
                 title: title.val(),
                 opts: opts,
                 obscured: hidden.prop("checked"),
+                retainVotes: retainVotes.prop("checked"),
                 timeout: t
             }, function ack(result) {
                 if (result.error) {
