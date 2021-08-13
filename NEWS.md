@@ -1,6 +1,15 @@
 2021-08-12
 ==========
 
+The legacy metrics recorder (`counters.log` file) has been removed.  For over 4
+years now, CyTube has integrated with [Prometheus](https://prometheus.io/),
+which provides a superior way to monitor the application.  Copy
+`conf/example/prometheus.toml` to `conf/prometheus.toml` and edit it to
+configure CyTube's Prometheus support.
+
+2021-08-12
+==========
+
 Due to changes in Soundcloud's authorization scheme, support has been dropped
 from core due to requiring each server owner to register an API key (which is
 currently impossible as they have not accepted new API key registrations for
