@@ -1,3 +1,15 @@
+2021-08-12
+==========
+
+Due to changes in Soundcloud's authorization scheme, support has been dropped
+from core due to requiring each server owner to register an API key (which is
+currently impossible as they have not accepted new API key registrations for
+*years*).
+
+If you happen to already have an API key registered, or if Soundcloud reopens
+registration at some point in the future, feel free to reach out to me for
+patches to reintroduce support for it.
+
 2020-08-21
 ==========
 

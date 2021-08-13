@@ -204,102 +204,12 @@ var Getters = {
         });
     },
 
-    /* soundcloud.com */
+    /* soundcloud.com - see https://github.com/calzoneman/sync/issues/916 */
     sc: function (id, callback) {
-        /* TODO: require server owners to register their own API key, put in config */
-        const SC_CLIENT = "2e0c82ab5a020f3a7509318146128abd";
-
-        var m = id.match(/([\w-/.:]+)/);
-        if (m) {
-            id = m[1];
-        } else {
-            callback("Invalid ID", null);
-            return;
-        }
-
-        var options = {
-            host: "api.soundcloud.com",
-            port: 443,
-            path: "/resolve.json?url=" + id + "&client_id=" + SC_CLIENT,
-            method: "GET",
-            dataType: "jsonp",
-            timeout: 1000
-        };
-
-        urlRetrieve(https, options, function (status, data) {
-            switch (status) {
-                case 200:
-                case 302:
-                    break; /* Request is OK, skip to handling data */
-                case 400:
-                    return callback("Invalid request", null);
-                case 403:
-                    return callback("Private sound", null);
-                case 404:
-                    return callback("Sound not found", null);
-                case 500:
-                case 503:
-                    return callback("Service unavailable", null);
-                default:
-                    return callback("HTTP " + status, null);
-            }
-
-            var track = null;
-            try {
-                data = JSON.parse(data);
-                track = data.location;
-            } catch(e) {
-                callback(e, null);
-                return;
-            }
-
-            var options2 = {
-                host: "api.soundcloud.com",
-                port: 443,
-                path: track,
-                method: "GET",
-                dataType: "jsonp",
-                timeout: 1000
-            };
-
-            /**
-             * There has got to be a way to directly get the data I want without
-             * making two requests to Soundcloud...right?
-             * ...right?
-             */
-            urlRetrieve(https, options2, function (status, data) {
-                switch (status) {
-                    case 200:
-                        break; /* Request is OK, skip to handling data */
-                    case 400:
-                        return callback("Invalid request", null);
-                    case 403:
-                        return callback("Private sound", null);
-                    case 404:
-                        return callback("Sound not found", null);
-                    case 500:
-                    case 503:
-                        return callback("Service unavailable", null);
-                    default:
-                        return callback("HTTP " + status, null);
-                }
-
-                try {
-                    data = JSON.parse(data);
-                    var seconds = data.duration / 1000;
-                    var title = data.title;
-                    var meta = {};
-                    if (data.sharing === "private" && data.embeddable_by === "all") {
-                        meta.scuri = data.uri;
-                    }
-                    var media = new Media(id, title, seconds, "sc", meta);
-                    callback(false, media);
-                } catch(e) {
-                    callback(e, null);
-                }
-            });
-
-        });
+        callback(
+            "Soundcloud is not supported anymore due to requiring OAuth but not " +
+            "accepting new API key registrations."
+        );
     },
 
     /* livestream.com */
