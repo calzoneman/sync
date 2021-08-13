@@ -9,7 +9,6 @@ import morgan from 'morgan';
 import csrf from './csrf';
 import * as HTTPStatus from './httpstatus';
 import { CSRFError, HTTPError } from '../errors';
-import counters from '../counters';
 import { Summary, Counter } from 'prom-client';
 import session from '../session';
 const verifySessionAsync = require('bluebird').promisify(session.verifySession);
@@ -150,10 +149,6 @@ module.exports = {
         const chanPath = Config.get('channel-path');
 
         initPrometheus(app);
-        app.use((req, res, next) => {
-            counters.add("http:request", 1);
-            next();
-        });
         require('./middleware/x-forwarded-for').initialize(app, webConfig);
         app.use(bodyParser.urlencoded({
             extended: false,

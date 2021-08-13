@@ -7,7 +7,6 @@ const cookieParser = require("cookie-parser")(Config.get("http.cookie-secret"));
 import typecheck from 'json-typecheck';
 import { isTorExit } from '../tor';
 import session from '../session';
-import counters from '../counters';
 import { verifyIPSessionCookie } from '../web/middleware/ipsessioncookie';
 import Promise from 'bluebird';
 const verifySession = Promise.promisify(session.verifySession);
@@ -228,7 +227,6 @@ class IOServer {
         emitMetrics(socket);
 
         LOGGER.info('Accepted socket from %s', socket.context.ipAddress);
-        counters.add('socket.io:accept', 1);
         socket.once('disconnect', (reason, reasonDetail) => {
             LOGGER.info(
                 '%s disconnected (%s%s)',
@@ -236,7 +234,6 @@ class IOServer {
                 reason,
                 reasonDetail ? ` - ${reasonDetail}` : ''
             );
-            counters.add('socket.io:disconnect', 1);
         });
 
         const user = new User(socket, socket.context.ipAddress, socket.context.user);

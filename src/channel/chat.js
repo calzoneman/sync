@@ -3,7 +3,6 @@ var XSS = require("../xss");
 var ChannelModule = require("./module");
 var util = require("../utilities");
 var Flags = require("../flags");
-var counters = require("../counters");
 import { transformImgTags } from '../camo';
 import { Counter } from 'prom-client';
 
@@ -157,7 +156,6 @@ const chatIncomingCount = new Counter({
 });
 ChatModule.prototype.handleChatMsg = function (user, data) {
     var self = this;
-    counters.add("chat:incoming");
     chatIncomingCount.inc(1, new Date());
 
     if (!this.channel || !this.channel.modules.permissions.canChat(user)) {
@@ -358,7 +356,6 @@ ChatModule.prototype.processChatMsg = function (user, data) {
         return;
     }
     this.sendMessage(msgobj);
-    counters.add("chat:sent");
     chatSentCount.inc(1, new Date());
 };
 

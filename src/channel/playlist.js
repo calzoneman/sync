@@ -8,7 +8,6 @@ var Flags = require("../flags");
 var db = require("../database");
 var CustomEmbedFilter = require("../customembed").filter;
 var XSS = require("../xss");
-import counters from '../counters';
 import { Counter } from 'prom-client';
 
 const LOGGER = require('@calzoneman/jsli')('playlist');
@@ -512,7 +511,6 @@ PlaylistModule.prototype.queueStandard = function (user, data) {
 
     const self = this;
     this.channel.refCounter.ref("PlaylistModule::queueStandard");
-    counters.add("playlist:queue:count", 1);
     this.semaphore.queue(function (lock) {
         InfoGetter.getMedia(data.id, data.type, function (err, media) {
             if (err) {

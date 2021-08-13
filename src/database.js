@@ -1,6 +1,5 @@
 var Config = require("./config");
 var tables = require("./database/tables");
-import * as Metrics from './metrics/metrics';
 import knex from 'knex';
 import { GlobalBanDB } from './db/globalban';
 import { MetadataCacheDB } from './database/metadata_cache';
@@ -53,14 +52,12 @@ class Database {
     }
 
     runTransaction(fn) {
-        const timer = Metrics.startTimer('db:queryTime');
         const end = queryLatency.startTimer();
         return this.knex.transaction(fn).catch(error => {
             queryErrorCount.inc(1);
             throw error;
         }).finally(() => {
             end();
-            Metrics.stopTimer(timer);
             queryCount.inc(1);
         });
     }
@@ -110,7 +107,6 @@ module.exports.getGlobalBanDB = function getGlobalBanDB() {
  * Execute a database query
  */
 module.exports.query = function (query, sub, callback) {
-    const timer = Metrics.startTimer('db:queryTime');
     // 2nd argument is optional
     if (typeof sub === "function") {
         callback = sub;
@@ -157,7 +153,6 @@ module.exports.query = function (query, sub, callback) {
             process.nextTick(callback, 'Database failure', null);
         }).finally(() => {
             end();
-            Metrics.stopTimer(timer);
             queryCount.inc(1);
         });
 };
