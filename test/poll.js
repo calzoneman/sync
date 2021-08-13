@@ -232,6 +232,7 @@ describe('Poll', () => {
 
             // New code does not store null votes
             data.votes = { '5.6.7.8': 1 };
+            data.retainVotes = false;
             assert.deepStrictEqual(poll.toChannelData(), data);
         });
 
