@@ -1,3 +1,19 @@
+2021-08-14
+==========
+
+CyTube has been upgraded to socket.io v4 (from v2).
+
+**Breaking change:** Newer versions of socket.io require CORS to validate the
+origin initiating the socket connection.  CyTube allows the origins specified in
+the `io.domain` and `https.domain` configuration keys by default, which should
+work for many use cases, however, if you host your website on a different domain
+than the socket connection, you will need to configure the allowed origins (see
+config.template.yaml under `io.cors`).
+
+CyTube enables the `allowEIO3` configuration in socket.io by default, which
+means that existing clients and bots using socket.io-client v2 should continue
+to work.
+
 2021-08-12
 ==========
 
