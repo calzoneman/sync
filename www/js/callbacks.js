@@ -1249,7 +1249,8 @@ function ioServerConnect(socketConfig) {
     }
 
     var opts = {
-        secure: chosenServer.secure
+        secure: chosenServer.secure,
+        withCredentials: true // enable cookies for auth
     };
 
     window.socket = io(chosenServer.url, opts);

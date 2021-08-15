@@ -107,6 +107,10 @@ io:
   default-port: 1337
   # limit the number of concurrent socket connections per IP address
   ip-connection-limit: 10
+  cors:
+    # Additional origins to allow socket connections from (io.domain and
+    # https.domain are included implicitly).
+    allowed-origins: []
 
 # YouTube v3 API key
 # 1. Go to https://console.developers.google.com/, create a new "project" (or choose an existing one)
