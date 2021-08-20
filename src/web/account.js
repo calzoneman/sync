@@ -631,7 +631,45 @@ function handlePasswordReset(req, res) {
 /**
  * Handles a request for /account/passwordrecover/<hash>
  */
-function handlePasswordRecover(req, res) {
+function handleGetPasswordRecover(req, res) {
+    var hash = req.params.hash;
+    if (typeof hash !== "string") {
+        res.send(400);
+        return;
+    }
+
+    var ip = req.realIP;
+
+    db.lookupPasswordReset(hash, function (err, row) {
+        if (err) {
+            sendPug(res, "account-passwordrecover", {
+                recovered: false,
+                recoverErr: err
+            });
+            return;
+        }
+
+        if (Date.now() >= row.expire) {
+            sendPug(res, "account-passwordrecover", {
+                recovered: false,
+                recoverErr: "This password recovery link has expired.  Password " +
+                            "recovery links are valid only for 24 hours after " +
+                            "submission."
+            });
+            return;
+        }
+
+        sendPug(res, "account-passwordrecover", {
+            confirm: true,
+            recovered: false
+        });
+    });
+}
+
+/**
+ * Handles a POST request for /account/passwordrecover/<hash>
+ */
+function handlePostPasswordRecover(req, res) {
     var hash = req.params.hash;
     if (typeof hash !== "string") {
         res.send(400);
@@ -703,7 +741,8 @@ module.exports = {
         app.post("/account/profile", handleAccountProfile);
         app.get("/account/passwordreset", handlePasswordResetPage);
         app.post("/account/passwordreset", handlePasswordReset);
-        app.get("/account/passwordrecover/:hash", handlePasswordRecover);
+        app.get("/account/passwordrecover/:hash", handleGetPasswordRecover);
+        app.post("/account/passwordrecover/:hash", handlePostPasswordRecover);
         app.get("/account", function (req, res) {
             res.redirect("/login");
         });
