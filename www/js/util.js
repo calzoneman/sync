@@ -54,6 +54,8 @@ function formatURL(data) {
             return "https://clips.twitch.tv/" + data.id;
         case "cm":
             return data.id;
+        case "cu":
+            return data.meta.embed.src;
         default:
             return "#";
     }
