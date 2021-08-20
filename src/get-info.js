@@ -340,23 +340,6 @@ var Getters = {
         callback(false, media);
     },
 
-    /* imgur.com albums */
-    im: function (id, callback) {
-        /**
-         * TODO: Consider deprecating this in favor of custom embeds
-         */
-        var m = id.match(/([\w-]+)/);
-        if (m) {
-            id = m[1];
-        } else {
-            callback("Invalid ID", null);
-            return;
-        }
-        var title = "Imgur Album - " + id;
-        var media = new Media(id, title, "--:--", "im");
-        callback(false, media);
-    },
-
     /* custom embed */
     cu: function (id, callback) {
         var media;

@@ -24,26 +24,9 @@ window.EmbedPlayer = class EmbedPlayer extends Player
             console.error('EmbedPlayer::load(): missing meta.embed')
             return
 
-        if embed.tag == 'object'
-            @player = @loadObject(embed)
-        else
-            @player = @loadIframe(embed)
+        @player = @loadIframe(embed)
 
         removeOld(@player)
-
-    loadObject: (embed) ->
-        object = $('<object/>').attr(
-            type: 'application/x-shockwave-flash'
-            data: embed.src
-            wmode: 'opaque'
-        )
-        genParam('allowfullscreen', 'true').appendTo(object)
-        genParam('allowscriptaccess', 'always').appendTo(object)
-
-        for key, value of embed.params
-            genParam(key, value).appendTo(object)
-
-        return object
 
     loadIframe: (embed) ->
         if embed.src.indexOf('http:') == 0 and location.protocol == 'https:'

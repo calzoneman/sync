@@ -38,8 +38,6 @@ function formatURL(data) {
             return "https://twitch.tv/" + data.id;
         case "rt":
             return data.id;
-        case "im":
-            return "https://imgur.com/a/" + data.id;
         case "us":
             return "https://ustream.tv/channel/" + data.id;
         case "gd":
@@ -56,8 +54,6 @@ function formatURL(data) {
             return "https://clips.twitch.tv/" + data.id;
         case "cm":
             return data.id;
-        case "mx":
-            return "https://mixer.com/" + data.meta.mixer.channelToken;
         default:
             return "#";
     }
@@ -1401,13 +1397,6 @@ function parseMediaLink(url) {
         };
     }
 
-    if((m = url.match(/imgur\.com\/a\/([^\?&#]+)/))) {
-        return {
-            id: m[1],
-            type: "im"
-        };
-    }
-
     if((m = url.match(/soundcloud\.com\/([^\?&#]+)/))) {
         return {
             id: url,
@@ -1423,15 +1412,6 @@ function parseMediaLink(url) {
         };
     }
 
-    // Deprecated as of December 2017
-    if ((m = url.match(/vid\.me\/embedded\/([\w-]+)/)) ||
-        (m = url.match(/vid\.me\/([\w-]+)/))) {
-        return {
-            id: m[1],
-            type: "vm"
-        };
-    }
-
     if ((m = url.match(/(.*\.m3u8)/))) {
         return {
             id: url,
@@ -1443,14 +1423,6 @@ function parseMediaLink(url) {
         return {
             id: m[1],
             type: "sb"
-        };
-    }
-
-    // Deprecated as of July 2020
-    if ((m = url.match(/\bmixer\.com\/([\w-]+)/))) {
-        return {
-            id: m[1],
-            type: "mx"
         };
     }
 

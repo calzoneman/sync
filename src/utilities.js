@@ -177,7 +177,7 @@
         };
     },
 
-    root.formatLink = function (id, type, meta) {
+    root.formatLink = function (id, type, _meta) {
         switch (type) {
             case "yt":
                 return "https://youtu.be/" + id;
@@ -193,8 +193,6 @@
                 return "https://twitch.tv/" + id;
             case "rt":
                 return id;
-            case "im":
-                return "https://imgur.com/a/" + id;
             case "us":
                 return "https://ustream.tv/channel/" + id;
             case "gd":
@@ -211,12 +209,6 @@
                 return "https://clips.twitch.tv/" + id;
             case "cm":
                 return id;
-            case "mx":
-                if (meta !== null) {
-                    return `https://mixer.com/${meta.mixer.channelToken}`;
-                } else {
-                    return `https://mixer.com/${id}`;
-                }
             default:
                 return "";
         }
@@ -229,10 +221,8 @@
             case "us":
             case "rt":
             case "cu":
-            case "im":
             case "hb":
             case "hl":
-            case "mx":
                 return true;
             default:
                 return false;
