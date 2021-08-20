@@ -638,8 +638,6 @@ function handleGetPasswordRecover(req, res) {
         return;
     }
 
-    var ip = req.realIP;
-
     db.lookupPasswordReset(hash, function (err, row) {
         if (err) {
             sendPug(res, "account-passwordrecover", {
