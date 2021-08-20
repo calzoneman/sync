@@ -944,8 +944,10 @@ Callbacks = {
                     option: i
                 });
                 poll.find(".option button").each(function() {
-                    $(this).attr("disabled", "disabled");
+                    $(this).removeClass("active");
+                    $(this).parent().removeClass("option-selected");
                 });
+                $(this).addClass("active");
                 $(this).parent().addClass("option-selected");
             }
             $("<button/>").addClass("btn btn-default btn-sm").text(data.counts[i])
