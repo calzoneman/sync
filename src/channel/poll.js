@@ -97,7 +97,6 @@ PollModule.prototype.sendPoll = function (user) {
 
     var perms = this.channel.modules.permissions;
 
-    user.socket.emit("closePoll");
     if (perms.canViewHiddenPoll(user)) {
         var unobscured = this.poll.toUpdateFrame(true);
         user.socket.emit("newPoll", unobscured);
@@ -116,9 +115,6 @@ PollModule.prototype.broadcastPoll = function (isNewPoll) {
     var unobscured = this.poll.toUpdateFrame(true);
 
     const event = isNewPoll ? "newPoll" : "updatePoll";
-    if (isNewPoll) {
-        this.channel.broadcastAll("closePoll");
-    }
 
     this.channel.broadcastToRoom(event, unobscured, this.roomViewHidden);
     this.channel.broadcastToRoom(event, obscured, this.roomNoViewHidden);
@@ -151,6 +147,9 @@ PollModule.prototype.handleNewPoll = function (user, data, ack) {
     if (!this.channel.modules.permissions.canControlPoll(user)) {
         return;
     }
+
+    // Ensure any existing poll is closed
+    this.handleClosePoll(user);
 
     ack = ackOrErrorMsg(ack, user);
 
@@ -251,6 +250,9 @@ PollModule.prototype.handlePollCmd = function (obscured, user, msg, _meta) {
     if (!this.channel.modules.permissions.canControlPoll(user)) {
         return;
     }
+
+    // Ensure any existing poll is closed
+    this.handleClosePoll(user);
 
     msg = msg.replace(/^\/h?poll/, "");
 

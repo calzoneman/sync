@@ -97,7 +97,10 @@ describe('PollModule', () => {
                 }
             }
         };
-        let pollModule = new PollModule(fakeChannel);
+        let pollModule;
+        beforeEach(() => {
+            pollModule = new PollModule(fakeChannel);
+        });
 
         it('creates a valid poll', () => {
            let sentNewPoll = false;
@@ -122,8 +125,52 @@ describe('PollModule', () => {
            }, (ackResult) => {
                assert(!ackResult.error, `Unexpected error: ${ackResult.error}`);
            });
-           assert(sentClosePoll, 'Expected broadcast of closePoll event');
+           assert(!sentClosePoll, 'Unexpected broadcast of closePoll event');
            assert(sentNewPoll, 'Expected broadcast of newPoll event');
+        });
+
+        it('closes an existing poll when a new one is created', () => {
+           let sentNewPoll = 0;
+           let sentClosePoll = 0;
+           let sentUpdatePoll = 0;
+           fakeChannel.broadcastToRoom = (event, data, room) => {
+               if (room === 'testChannel:viewHidden' && event === 'newPoll') {
+                   sentNewPoll++;
+               }
+           };
+           fakeChannel.broadcastAll = (event, data) => {
+               if (event === 'closePoll') {
+                   sentClosePoll++;
+               } else if (event === 'updatePoll') {
+                   sentUpdatePoll++;
+                   assert.deepStrictEqual(data.counts, [0, 0]);
+               }
+           };
+           pollModule.handleNewPoll(fakeUser, {
+               title: 'test poll',
+               opts: [
+                   'option 1',
+                   'option 2'
+               ],
+               obscured: true
+           }, (ackResult) => {
+               assert(!ackResult.error, `Unexpected error: ${ackResult.error}`);
+           });
+
+           pollModule.handleNewPoll(fakeUser, {
+               title: 'poll 2',
+               opts: [
+                   'option 3',
+                   'option 4'
+               ],
+               obscured: false
+           }, (ackResult) => {
+               assert(!ackResult.error, `Unexpected error: ${ackResult.error}`);
+           });
+
+           assert.strictEqual(sentClosePoll, 1, 'Expected 1 broadcast of closePoll event');
+           assert.strictEqual(sentUpdatePoll, 1, 'Expected 1 broadcast of updatePoll event');
+           assert.strictEqual(sentNewPoll, 2, 'Expected 2 broadcasts of newPoll event');
         });
 
         it('rejects an invalid poll', () => {
