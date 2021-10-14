@@ -1309,6 +1309,14 @@ function parseMediaLink(url) {
         };
     }
 
+    // YouTube shorts
+    if((m = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/))) {
+        return {
+            id: m[1],
+            type: "yt"
+        };
+    }
+
     if((m = url.match(/youtu\.be\/([^\?&#]+)/))) {
         return {
             id: m[1],
