@@ -2,7 +2,7 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.82.6",
+  "version": "3.82.7",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
@@ -53,14 +53,14 @@
     "integration-test": "mocha --recursive --exit integration_test"
   },
   "devDependencies": {
-    "@babel/cli": "^7.13.14",
-    "@babel/core": "^7.13.14",
-    "@babel/eslint-parser": "^7.13.14",
-    "@babel/preset-env": "^7.13.12",
+    "@babel/cli": "^7.15.7",
+    "@babel/core": "^7.15.8",
+    "@babel/eslint-parser": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
     "babel-plugin-add-module-exports": "^1.0.4",
     "coffeescript": "^1.9.2",
-    "eslint": "^7.23.0",
-    "mocha": "^8.3.2",
+    "eslint": "^7.32.0",
+    "mocha": "^8.4.0",
     "sinon": "^10.0.0"
   },
   "babel": {
