@@ -46,6 +46,10 @@ waitUntilDefined(window, 'videojs', =>
     videojs.options.flash.swf = '/video-js.swf'
 )
 
+hasAnyTextTracks = (data) ->
+    ntracks = data?.meta?.textTracks?.length ? 0
+    return ntracks > 0
+
 window.VideoJSPlayer = class VideoJSPlayer extends Player
     constructor: (data) ->
         if not (this instanceof VideoJSPlayer)
@@ -59,7 +63,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                 width: '100%'
                 height: '100%'
 
-            if @mediaType == 'cm' and data.meta.textTracks != null && data.meta.textTracks.length > 0
+            if @mediaType == 'cm' and hasAnyTextTracks(data)
                 attrs.crossorigin = 'anonymous'
 
             video = $('<video/>')
