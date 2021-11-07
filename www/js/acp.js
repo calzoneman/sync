@@ -2,7 +2,8 @@
     var chosenServer = IO_SERVERS[0]; // Is the array even necessary for the ACP?
 
     var opts = {
-        secure: chosenServer.secure
+        secure: chosenServer.secure,
+        withCredentials: true // needed for sio cookie to work
     };
 
     window.socket = io.connect(chosenServer.url, opts);
