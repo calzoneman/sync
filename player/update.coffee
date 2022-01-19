@@ -3,7 +3,6 @@ TYPE_MAP =
     vi: VimeoPlayer
     dm: DailymotionPlayer
     gd: GoogleDrivePlayer
-    gp: VideoJSPlayer
     fi: FilePlayer
     sc: SoundCloudPlayer
     li: LivestreamPlayer
@@ -11,9 +10,6 @@ TYPE_MAP =
     tv: TwitchPlayer
     cu: CustomEmbedPlayer
     rt: RTMPPlayer
-    hb: SmashcastPlayer
-    us: UstreamPlayer
-    im: ImgurPlayer
     hl: HLSPlayer
     sb: StreamablePlayer
     tc: TwitchClipPlayer

@@ -20,9 +20,6 @@ var order = [
     'livestream.com.coffee',
     'custom-embed.coffee',
     'rtmp.coffee',
-    'smashcast.coffee',
-    'ustream.coffee',
-    'imgur.coffee',
     'hls.coffee',
     'twitchclip.coffee',
     'update.coffee'

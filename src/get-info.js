@@ -278,47 +278,6 @@ var Getters = {
         });
     },
 
-    /* ustream.tv */
-    us: function (id, callback) {
-        var m = id.match(/(channel\/[^?&#]+)/);
-        if (m) {
-            id = m[1];
-        } else {
-            callback("Invalid ID", null);
-            return;
-        }
-
-        var options = {
-            host: "www.ustream.tv",
-            port: 443,
-            path: "/" + id,
-            method: "GET",
-            timeout: 1000
-        };
-
-        urlRetrieve(https, options, function (status, data) {
-            if(status !== 200) {
-                callback("Ustream HTTP " + status, null);
-                return;
-            }
-
-            /*
-             * Yes, regexing this information out of the HTML sucks.
-             * No, there is not a better solution -- it seems IBM
-             * deprecated the old API (or at least replaced with an
-             * enterprise API marked "Contact sales") so fuck it.
-             */
-            var m = data.match(/https:\/\/www\.ustream\.tv\/embed\/(\d+)/);
-            if (m) {
-                var title = "Ustream.tv - " + id;
-                var media = new Media(m[1], title, "--:--", "us");
-                callback(false, media);
-            } else {
-                callback("Channel ID not found", null);
-            }
-        });
-    },
-
     /* rtmp stream */
     rt: function (id, callback) {
         var title = "Livestream";
@@ -391,28 +350,6 @@ var Getters = {
         });
     },
 
-    /* hitbox.tv / smashcast.tv */
-    hb: function (id, callback) {
-        var m = id.match(/([\w-]+)/);
-        if (m) {
-            id = m[1];
-        } else {
-            callback("Invalid ID", null);
-            return;
-        }
-        var title = "Smashcast - " + id;
-        var media = new Media(id, title, "--:--", "hb");
-        callback(false, media);
-    },
-
-    /* vid.me */
-    vm: function (id, callback) {
-        process.nextTick(
-            callback,
-            "As of December 2017, vid.me is no longer in service."
-        );
-    },
-
     /* streamable */
     sb: function (id, callback) {
         if (!/^[\w-]+$/.test(id)) {
@@ -439,13 +376,6 @@ var Getters = {
         }
     },
 
-    /* mixer.com */
-    mx: function (id, callback) {
-        process.nextTick(
-            callback,
-            "As of July 2020, Mixer is no longer in service."
-        );
-    }
 };
 
 module.exports = {

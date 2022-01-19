@@ -158,11 +158,14 @@ PlaylistModule.prototype.load = function (data) {
             }
         } else if (item.media.type === "gd") {
             delete item.media.meta.gpdirect;
-        } else if (["vm", "jw", "mx", "im"].includes(item.media.type)) {
+        } else if (["vm", "jw", "mx", "im", "gp", "us", "hb"].includes(item.media.type)) {
             // JW has been deprecated for a long time
             // VM shut down in December 2017
             // Mixer shut down in July 2020
-            // Dunno when imgur album embeds stopped working but they don't work either
+            // Imgur replaced albums with a feature called galleries in 2019
+            // Picasa shut down in 2016
+            // Ustream was sunset by IBM in September 2018
+            // SmashCast (Hitbox) seemed to just vanish November 2020
             LOGGER.warn(
                 "Dropping playlist item with deprecated type %s",
                 item.media.type
