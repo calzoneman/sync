@@ -1270,220 +1270,132 @@ function playlistMove(from, after, cb) {
     }
 }
 
-function extractQueryParam(query, param) {
-    var params = {};
-    query.split("&").forEach(function (kv) {
-        kv = kv.split("=");
-        params[kv[0]] = kv[1];
-    });
-
-    return params[param];
-}
 
 function parseMediaLink(url) {
-    if(typeof url != "string") {
+    function parseShortCode(url){
+        const type = url.slice(0,2);
+        let id = url.slice(3);
+
+        switch(type){
+            // So we still trim DailyMotion URLs
+            case 'dm':
+                return { type, id: id.match(/([^\?&#_]+)/)[1] };
+            // Raw files need to keep the query string
+            case 'fi':
+            case 'cm':
+                return { type, id };
+            // Generic for the rest.
+            default:
+                return { type, id: id.match(/([^\?&#]+)/)[1] };
+        }
+    }
+    const indeterminable = ()=>{
+        return new Error(
+            'Could not determine video type. ' +
+            'Check https://git.io/fjtOK for a list of supported media providers.'
+        );
+    }
+    const livestream = ()=>{
+        return new Error(
+            'This format of Livestream.com link is not supported. ' +
+            'You must use one that has the numeric account ID.'
+        );
+    }
+
+    if(typeof url != 'string') {
         return {
             id: null,
             type: null
         };
     }
-    url = url.trim();
-    url = url.replace("feature=player_embedded&", "");
-
-    if(url.indexOf("rtmp://") == 0) {
-        return {
-            id: url,
-            type: "rt"
-        };
-    }
-
-    var m;
-    if((m = url.match(/youtube\.com\/watch\?([^#]+)/))) {
-        return {
-            id: extractQueryParam(m[1], "v"),
-            type: "yt"
-        };
-    }
-
-    // YouTube shorts
-    if((m = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/))) {
-        return {
-            id: m[1],
-            type: "yt"
-        };
-    }
-
-    if((m = url.match(/youtu\.be\/([^\?&#]+)/))) {
-        return {
-            id: m[1],
-            type: "yt"
-        };
-    }
-
-    if((m = url.match(/youtube\.com\/playlist\?([^#]+)/))) {
-        return {
-            id: extractQueryParam(m[1], "list"),
-            type: "yp"
-        };
-    }
-
-    if ((m = url.match(/clips\.twitch\.tv\/([A-Za-z]+)/))) {
-        return {
-            id: m[1],
-            type: "tc"
-        };
-    }
-
-    // #790
-    if ((m = url.match(/twitch\.tv\/(?:.*?)\/clip\/([A-Za-z]+)/))) {
-        return {
-            id: m[1],
-            type: "tc"
-        }
-    }
-
-    if((m = url.match(/twitch\.tv\/(?:.*?)\/([cv])\/(\d+)/))) {
-        return {
-            id: m[1] + m[2],
-            type: "tv"
-        };
-    }
-
-    /**
-     * 2017-02-23
-     * Twitch changed their URL pattern for recorded videos, apparently.
-     * https://github.com/calzoneman/sync/issues/646
-     */
-    if((m = url.match(/twitch\.tv\/videos\/(\d+)/))) {
-        return {
-            id: "v" + m[1],
-            type: "tv"
-        };
-    }
-
-    if((m = url.match(/twitch\.tv\/([\w-]+)/))) {
-        return {
-            id: m[1],
-            type: "tw"
-        };
-    }
-
-    if((m = url.match(/livestream\.com\/([^\?&#]+)/))) {
-        return {
-            id: m[1],
-            type: "li"
-        };
-    }
-
-    if((m = url.match(/ustream\.tv\/([^\?&#]+)/))) {
-        return {
-            id: m[1],
-            type: "us"
-        };
-    }
-
-    if ((m = url.match(/(?:hitbox|smashcast)\.tv\/([^\?&#]+)/))) {
-        return {
-            id: m[1],
-            type: "hb"
-        };
-    }
-
-    if((m = url.match(/vimeo\.com\/([^\?&#]+)/))) {
-        return {
-            id: m[1],
-            type: "vi"
-        };
-    }
-
-    if((m = url.match(/dailymotion\.com\/video\/([^\?&#_]+)/))) {
-        return {
-            id: m[1],
-            type: "dm"
-        };
-    }
-
-    if((m = url.match(/soundcloud\.com\/([^\?&#]+)/))) {
-        return {
-            id: url,
-            type: "sc"
-        };
-    }
-
-    if ((m = url.match(/(?:docs|drive)\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)) ||
-        (m = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/))) {
-        return {
-            id: m[1],
-            type: "gd"
-        };
-    }
-
-    if ((m = url.match(/(.*\.m3u8)/))) {
-        return {
-            id: url,
-            type: "hl"
-        };
-    }
-
-    if((m = url.match(/streamable\.com\/([\w-]+)/))) {
-        return {
-            id: m[1],
-            type: "sb"
-        };
-    }
-
     /*  Shorthand URIs  */
-    // So we still trim DailyMotion URLs
-    if((m = url.match(/^dm:([^\?&#_]+)/))) {
-        return {
-            id: m[1],
-            type: "dm"
-        };
+    if(url.match(/^[a-z]{2}:/)){
+        return parseShortCode(url);
     }
-    // Raw files need to keep the query string
-    if ((m = url.match(/^fi:(.*)/))) {
+
+    var data
+    try {
+        data = new URL(url);
+    } catch(err){
+        throw indeterminable();
+    }
+
+    if(data.protocol == 'rtmp:') {
+        return { type: 'rt', id: url };
+    }
+    if (data.pathname.match(/\.m3u8$/)) {
+        return { type: 'hl', id: url };
+    }
+    if (data.pathname.match(/\.json$/)) {
+        return { type: 'cm', id: url };
+    }
+
+    switch(data.hostname.replace('www.', '')){
+        case 'youtube.com':
+            if(data.pathname == '/watch'){
+                return { type: 'yt', id: data.searchParams.get('v') }
+            }
+            if(data.pathname.startsWith('/shorts/')){
+                return { type: 'yt', id: data.pathname.slice(8,19) }
+            }
+            if(data.pathname == '/playlist'){
+                return { type: 'yp', id: data.searchParams.get('list') }
+            }
+        case 'youtu.be':
+            return { type: 'yt', id: data.pathname.slice(1) }
+
+        case 'twitch.tv':
+            if(data.pathname.includes('/clip/')){
+                return { type: 'tc', id: data.pathname.split('/').pop() }
+            }
+            if(data.pathname.startsWith('/videos/')){
+                return { type: 'tv', id: `v${data.pathname.split('/').pop()}` }
+            }
+            return { type: 'tw', id: data.pathname.slice(1) }
+        case 'clips.twitch.tv':
+            return { type: 'tc', id: data.pathname.slice(1) }
+
+        case 'livestream.com':
+            if(data.pathname.startsWith('/accounts/')){
+                const pattern = new RegExp('/accounts/(?<account>[0-9]+)/events/(?<event>[0-9]+)');
+                const m = data.pathname.match(pattern);
+                if(m.groups.account && m.groups.event){
+                    return { type: 'li', id: `${m.groups.account};${m.groups.event}` };
+                }
+            } else {
+                throw livestream();
+            }
+
+        case 'vimeo.com':
+            return { type: 'vi', id: data.pathname.slice(1) }
+        case 'dailymotion.com':
+            return { type: 'dm', id: data.pathname.slice('7') }
+        case 'soundcloud.com':
+            return { type: 'sc', id: url }
+        case 'streamable.com':
+            return { type: 'sb', id: data.pathname.slice(1) }
+
+        case 'docs.google.com':
+        case 'drive.google.com':
+            if(data.pathname.startsWith('/file/')){
+                return { type: 'gd', id: data.pathname.slice('8').split('/').shift() }
+            }
+            if(data.pathname == '/open'){
+                return { type: 'gd', id: data.searchParams.get('id') }
+            }
+    }
+
+    /* Raw file (server will check) */
+    if (data.protocol.match(/^http/)) {
         return {
-            id: m[1],
+            id: url,
             type: "fi"
         };
     }
-    if ((m = url.match(/^cm:(.*)/))) {
-        return {
-            id: m[1],
-            type: "cm"
-        };
-    }
-    // Generic for the rest.
-    if ((m = url.match(/^([a-z]{2}):([^\?&#]+)/))) {
-        return {
-            id: m[2],
-            type: m[1]
-        };
-    }
 
-    /* Raw file */
-    var tmp = url.split("?")[0];
-    if (tmp.match(/^https?:\/\//)) {
-        if (tmp.match(/\.json$/)) {
-            // Custom media manifest format
-            return {
-                id: url,
-                type: "cm"
-            };
-        } else {
-            // Assume raw file (server will check)
-            return {
-                id: url,
-                type: "fi"
-            };
-        }
-    }
-
-    throw new Error(
-        'Could not determine video type.  Check https://git.io/fjtOK for a list ' +
-        'of supported media providers.'
-    );
+    throw indeterminable();
 }
+
 
 function sendVideoUpdate() {
     if (!CLIENT.leader) {
