@@ -205,6 +205,9 @@
                 return "https://clips.twitch.tv/" + id;
             case "cm":
                 return id;
+            case "pt":
+                const [domain,uuid] = id.split(';');
+                return `https://${domain}/videos/watch/${uuid}`;
             default:
                 return "";
         }

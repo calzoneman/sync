@@ -22,6 +22,7 @@ var order = [
     'rtmp.coffee',
     'hls.coffee',
     'twitchclip.coffee',
+    'peertube.coffee',
     'update.coffee'
 ];
 
