@@ -6,6 +6,7 @@ const ffmpeg = require("./ffmpeg");
 const mediaquery = require("@cytube/mediaquery");
 const YouTube = require("@cytube/mediaquery/lib/provider/youtube");
 const Vimeo = require("@cytube/mediaquery/lib/provider/vimeo");
+const PeerTube = require("@cytube/mediaquery/lib/provider/peertube");
 const Streamable = require("@cytube/mediaquery/lib/provider/streamable");
 const TwitchVOD = require("@cytube/mediaquery/lib/provider/twitch-vod");
 const TwitchClip = require("@cytube/mediaquery/lib/provider/twitch-clip");
@@ -363,6 +364,16 @@ var Getters = {
             process.nextTick(callback, false, media);
         }).catch(function (err) {
             callback(err.message || err, null);
+        });
+    },
+
+    /* PeerTube network */
+    pt: function (id, callback) {
+        PeerTube.lookup(id).then(video => {
+            video = new Media(video.id, video.title, video.duration, "pt", video.meta);
+            callback(null, video);
+        }).catch(error => {
+            callback(error.message || error);
         });
     },
 

@@ -52,6 +52,12 @@ function formatURL(data) {
             return data.id;
         case "cu":
             return data.meta.embed.src;
+        case "pt":
+            if(data.meta.embed.onlyLong){
+                return `https://${data.meta.embed.domain}/videos/watch/${data.meta.embed.uuid}`;
+            } else {
+                return `https://${data.meta.embed.domain}/w/${data.meta.embed.short}`;
+            }
         default:
             return "#";
     }
@@ -1383,6 +1389,19 @@ function parseMediaLink(url) {
             if(data.pathname == '/open'){
                 return { type: 'gd', id: data.searchParams.get('id') }
             }
+    }
+
+    /* PeerTubes */
+    if(data.pathname.match('^/w/|^/videos/watch/')){
+        const regLong = [8, 4, 4, 4, 12].map(x => `[0-9a-f]{${x}}`).join('-');
+        const regShort = '[a-zA-Z0-9]{22}';
+        const pattern = new RegExp(`(?:/w/|/videos/watch/)(?:(?<short>${regShort})|(?<long>${regLong}))`);
+        if((m = data.pathname.match(pattern))) {
+            return {
+                id: `${data.hostname};${m.groups.short || m.groups.long}`,
+                type: "pt"
+            };
+        }
     }
 
     /* Raw file (server will check) */
