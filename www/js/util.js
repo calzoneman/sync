@@ -38,14 +38,10 @@ function formatURL(data) {
             return "https://twitch.tv/" + data.id;
         case "rt":
             return data.id;
-        case "us":
-            return "https://ustream.tv/channel/" + data.id;
         case "gd":
             return "https://docs.google.com/file/d/" + data.id;
         case "fi":
             return data.id;
-        case "hb":
-            return "https://www.smashcast.tv/" + data.id;
         case "hl":
             return data.id;
         case "sb":
@@ -2097,16 +2093,7 @@ function waitUntilDefined(obj, key, fn) {
     fn();
 }
 
-/*
-    God I hate supporting IE11
-    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters
-    https://caniuse.com/#search=default%20function
-
-    This would be the ideal:
-    function chatDialog(div, zin = "auto") {
-*/
-function chatDialog(div, zin) {
-    if(!zin){ zin = 'auto'; }
+function chatDialog(div, zin = 'auto') {
     var parent = $("<div/>").addClass("profile-box")
         .css({
             padding: "10px",
@@ -3286,15 +3273,6 @@ function startQueueSpinner(data) {
 }
 
 function stopQueueSpinner(data) {
-    // TODO: this is a temp hack, need to replace media ID check with
-    // a passthrough request ID (since media ID from API is not necessarily
-    // the same as the URL "ID" from the user)
-    if (data && data.type === "us") {
-        data = { id: data.title.match(/Ustream.tv - (.*)/)[1] };
-    } else if (data && data.type === "mx") {
-        data = { id: data.meta.mixer.channelToken };
-    }
-
     var shouldRemove = (data !== null &&
                         typeof data === 'object' &&
                         $("#queueprogress").data("queue-id") === data.id);

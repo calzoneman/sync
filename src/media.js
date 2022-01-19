@@ -38,8 +38,7 @@ Media.prototype = {
                 scuri: this.meta.scuri,
                 embed: this.meta.embed,
                 gdrive_subtitles: this.meta.gdrive_subtitles,
-                textTracks: this.meta.textTracks,
-                mixer: this.meta.mixer
+                textTracks: this.meta.textTracks
             }
         };
 

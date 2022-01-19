@@ -193,14 +193,10 @@
                 return "https://twitch.tv/" + id;
             case "rt":
                 return id;
-            case "us":
-                return "https://ustream.tv/channel/" + id;
             case "gd":
                 return "https://docs.google.com/file/d/" + id;
             case "fi":
                 return id;
-            case "hb":
-                return "https://www.smashcast.tv/" + id;
             case "hl":
                 return id;
             case "sb":
@@ -218,10 +214,8 @@
         switch (type) {
             case "li":
             case "tw":
-            case "us":
             case "rt":
             case "cu":
-            case "hb":
             case "hl":
                 return true;
             default:
