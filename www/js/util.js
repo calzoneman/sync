@@ -2891,17 +2891,36 @@ function formatScriptAccessPrefs() {
     });
 }
 
-function EmoteList(selector, emoteClickCallback) {
-    this.elem = $(selector);
-    this.initSearch();
-    this.initSortOption();
-    this.table = this.elem.find(".emotelist-table")[0];
-    this.paginatorContainer = this.elem.find(".emotelist-paginator-container");
-    this.cols = 5;
-    this.itemsPerPage = 25;
-    this.emotes = [];
-    this.page = 0;
-    this.emoteClickCallback = emoteClickCallback || function(){};
+
+class EmoteList {
+    constructor(selector, emoteClickCallback){
+        this._cols = 5;
+        this._itemsPerPage = 25;
+        this.elem = $(selector);
+        this.initSearch();
+        this.initSortOption();
+        this.table = this.elem.find(".emotelist-table")[0];
+        this.paginatorContainer = this.elem.find(".emotelist-paginator-container");
+        this.emotes = [];
+        this.page = 0;
+        this.emoteClickCallback = emoteClickCallback || function(){};
+    }
+    set itemsPerPage(val) {
+        this.page = 0;
+        this._itemsPerPage = val;
+        this.handleChange();
+    }
+    get itemsPerPage() {
+        return this._itemsPerPage;
+    }
+    set cols(val) {
+        this.page = 0;
+        this._cols = val;
+        this.handleChange();
+    }
+    get cols() {
+        return this._cols;
+    }
 }
 
 EmoteList.prototype.initSearch = function () {
@@ -3019,11 +3038,11 @@ function onEmoteClicked(emote) {
 window.EMOTELIST = new EmoteList("#emotelist", onEmoteClicked);
 window.EMOTELIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
-function CSEmoteList(selector) {
-    EmoteList.call(this, selector);
+class CSEmoteList extends EmoteList {
+    constructor(selector) {
+        super(selector);
+    }
 }
-
-CSEmoteList.prototype = Object.create(EmoteList.prototype);
 
 CSEmoteList.prototype.loadPage = function (page) {
     var tbody = this.table.children[1];
