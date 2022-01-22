@@ -1,3 +1,4 @@
+/*eslint no-unused-vars: "off"*/
 var CL_VERSION = 3.0;
 var GS_VERSION = 1.7; // Google Drive Userscript
 
