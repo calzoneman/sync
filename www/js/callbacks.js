@@ -1173,18 +1173,25 @@ Callbacks = {
     }
 }
 
-var SOCKET_DEBUG = localStorage.getItem('cytube_socket_debug') === 'true';
+var SOCKET_DEBUG = {
+    enabled: (localStorage.getItem('cytube_socket_debug') === 'true'),
+    omit: (((data)=>{
+        const frames = data === null ? [] : JSON.parse(data);
+        return frames;
+    })(localStorage.getItem('cytube_socket_omissions')))
+}
+
 setupCallbacks = function() {
     for(var key in Callbacks) {
         (function(key) {
             socket.on(key, function(data) {
-                if (SOCKET_DEBUG) {
+                if (SOCKET_DEBUG.enabled && !SOCKET_DEBUG.omit.includes(key)) {
                     console.log(key, data);
                 }
                 try {
                     Callbacks[key](data);
                 } catch (e) {
-                    if (SOCKET_DEBUG) {
+                    if (SOCKET_DEBUG.enabled) {
                         console.log("EXCEPTION: " + e + "\n" + e.stack);
                     }
                 }
