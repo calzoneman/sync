@@ -1,4 +1,4 @@
-Callbacks = {
+const Callbacks = {
     /* fired when socket connection completes */
     connect: function() {
         HAS_CONNECTED_BEFORE = true;
@@ -658,8 +658,7 @@ Callbacks = {
             }
             $("#drinkcount").text(text);
             $("#drinkbar").show();
-        }
-        else {
+        } else {
             $("#drinkbar").hide();
         }
     },
@@ -752,8 +751,7 @@ Callbacks = {
             if(data.temp) {
                 btn.html(btn.html().replace("Make Temporary",
                                             "Make Permanent"));
-            }
-            else {
+            } else {
                 btn.html(btn.html().replace("Make Permanent",
                                             "Make Temporary"));
             }
@@ -867,8 +865,7 @@ Callbacks = {
             $("#qlockbtn").find("span")
                 .removeClass("glyphicon-lock")
                 .addClass("glyphicon-ok");
-        }
-        else {
+        } else {
             $("#qlockbtn").removeClass("btn-success")
                 .addClass("btn-danger")
                 .attr("title", "Playlist Locked");
@@ -932,7 +929,7 @@ Callbacks = {
             $("<button/>").addClass("btn btn-danger btn-sm pull-right").text("End Poll")
                 .appendTo(poll)
                 .on('click', function() {
-                    socket.emit("closePoll")
+                    socket.emit("closePoll");
                 });
         }
 
@@ -949,7 +946,7 @@ Callbacks = {
                 });
                 $(this).addClass("active");
                 $(this).parent().addClass("option-selected");
-            }
+            };
             $("<button/>").addClass("btn btn-default btn-sm").text(data.counts[i])
                 .prependTo($("<div/>").addClass("option").html(data.options[i])
                         .appendTo(poll))
@@ -981,7 +978,7 @@ Callbacks = {
                 $(this).attr("disabled", true);
             });
             poll.find(".btn-danger").each(function() {
-                $(this).remove()
+                $(this).remove();
             });
         }
     },
@@ -1000,14 +997,14 @@ Callbacks = {
     updateEmote: function (data) {
         data.regex = new RegExp(data.source, "gi");
         var found = false;
-        for (var i = 0; i < CHANNEL.emotes.length; i++) {
+        for (let i = 0; i < CHANNEL.emotes.length; i++) {
             if (CHANNEL.emotes[i].name === data.name) {
                 found = true;
                 CHANNEL.emotes[i] = data;
                 break;
             }
         }
-        for (var i = 0; i < CHANNEL.badEmotes.length; i++) {
+        for (let i = 0; i < CHANNEL.badEmotes.length; i++) {
             if (CHANNEL.badEmotes[i].name === data.name) {
                 CHANNEL.badEmotes[i] = data;
                 break;
@@ -1050,22 +1047,20 @@ Callbacks = {
             if(!badBefore){
                 CHANNEL.badEmotes.push(data);
                 delete CHANNEL.emoteMap[oldName];
-            }
             // Was bad before too: Update
-            else {
-                for (var i = 0; i < CHANNEL.badEmotes.length; i++) {
+            } else {
+                for (let i = 0; i < CHANNEL.badEmotes.length; i++) {
                     if (CHANNEL.badEmotes[i].name === oldName) {
                         CHANNEL.badEmotes[i] = data;
                         break;
                     }
                 }
             }
-        }
         // Not bad now
-        else {
+        } else {
             // But was bad before: Drop from list
             if(badBefore){
-                for (var i = 0; i < CHANNEL.badEmotes.length; i++) {
+                for (let i = 0; i < CHANNEL.badEmotes.length; i++) {
                     if (CHANNEL.badEmotes[i].name === oldName) {
                         CHANNEL.badEmotes.splice(i, 1);
                         break;
@@ -1083,7 +1078,7 @@ Callbacks = {
 
     removeEmote: function (data) {
         var found = -1;
-        for (var i = 0; i < CHANNEL.emotes.length; i++) {
+        for (let i = 0; i < CHANNEL.emotes.length; i++) {
             if (CHANNEL.emotes[i].name === data.name) {
                 found = i;
                 break;
@@ -1093,9 +1088,9 @@ Callbacks = {
         if (found !== -1) {
             var row = $("code:contains('" + data.name + "')").parent().parent();
             row.hide("fade", row.remove.bind(row));
-            CHANNEL.emotes.splice(i, 1);
+            CHANNEL.emotes.splice(found, 1);
             delete CHANNEL.emoteMap[data.name];
-            for (var i = 0; i < CHANNEL.badEmotes.length; i++) {
+            for (let i = 0; i < CHANNEL.badEmotes.length; i++) {
                 if (CHANNEL.badEmotes[i].name === data.name) {
                     CHANNEL.badEmotes.splice(i, 1);
                     break;
@@ -1171,7 +1166,7 @@ Callbacks = {
             $("#voteskip").attr("disabled", false);
         }
     }
-}
+};
 
 var SOCKET_DEBUG = {
     enabled: (localStorage.getItem('cytube_socket_debug') === 'true'),
@@ -1179,9 +1174,9 @@ var SOCKET_DEBUG = {
         const frames = data === null ? [] : JSON.parse(data);
         return frames;
     })(localStorage.getItem('cytube_socket_omissions')))
-}
+};
 
-setupCallbacks = function() {
+function setupCallbacks() {
     for(var key in Callbacks) {
         (function(key) {
             socket.on(key, function(data) {
@@ -1218,7 +1213,7 @@ setupCallbacks = function() {
                 .appendTo($("#announcements"));
         }
     });
-};
+}
 
 function ioServerConnect(socketConfig) {
     if (socketConfig.error) {
@@ -1300,7 +1295,7 @@ function initSocketIO(socketConfig) {
 
 function checkLetsEncrypt(socketConfig, nonLetsEncryptError) {
     var servers = socketConfig.servers.filter(function (server) {
-        return !server.secure && !server.ipv6Only
+        return !server.secure && !server.ipv6Only;
     });
 
     if (servers.length === 0) {
