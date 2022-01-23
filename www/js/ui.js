@@ -903,25 +903,28 @@ $("#fullscreenbtn").on('click', function () {
 
 function handleCSSJSTooLarge(selector) {
     if (this.value.length > 20000) {
-        var warning = $(selector);
-        if (warning.length > 0) {
+        let notice = document.querySelector(selector);
+        if (notice !== null) {
             return;
         }
 
-        warning = makeAlert("Maximum Size Exceeded", "Inline CSS and JavaScript are " +
+        notice = makeAlert("Maximum Size Exceeded", "Inline CSS and JavaScript are " +
                 "limited to 20,000 characters or less.  If you need more room, you " +
                 "need to use the external CSS or JavaScript option.", "alert-danger")
                 .attr("id", selector.replace(/#/, ""));
-        warning.insertBefore(this);
+
+        // makeAlert returns jQuery
+        this.parentNode.insertBefore(notice[0], this);
     } else {
-        $(selector).remove();
+        let notice = document.querySelector(selector);
+        notice.remove();
     }
 }
 
-$("#cs-csstext").bind("input", handleCSSJSTooLarge.bind($("#cs-csstext")[0],
-        "#cs-csstext-too-big"));
-$("#cs-jstext").bind("input", handleCSSJSTooLarge.bind($("#cs-jstext")[0],
-        "#cs-jstext-too-big"));
+['#cs-csstext', '#cs-jstext'].forEach((selector)=>{
+    elem = document.querySelector(selector);
+    elem.addEventListener('input', handleCSSJSTooLarge.bind(elem, `${selector}-too-big`));
+});
 
 $("#resize-video-larger").on('click', function () {
     try {
