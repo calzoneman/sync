@@ -7,6 +7,7 @@ const mediaquery = require("@cytube/mediaquery");
 const YouTube = require("@cytube/mediaquery/lib/provider/youtube");
 const Vimeo = require("@cytube/mediaquery/lib/provider/vimeo");
 const PeerTube = require("@cytube/mediaquery/lib/provider/peertube");
+const BitChute = require("@cytube/mediaquery/lib/provider/bitchute");
 const Streamable = require("@cytube/mediaquery/lib/provider/streamable");
 const TwitchVOD = require("@cytube/mediaquery/lib/provider/twitch-vod");
 const TwitchClip = require("@cytube/mediaquery/lib/provider/twitch-clip");
@@ -385,6 +386,16 @@ var Getters = {
         } catch (error) {
             process.nextTick(callback, error.message);
         }
+    },
+
+    /* BitChute */
+    bc: function (id, callback) {
+        BitChute.lookup(id).then(video => {
+            video = new Media(video.id, video.title, video.duration, "bc", video.meta);
+            callback(null, video);
+        }).catch(error => {
+            callback(error.message || error);
+        });
     },
 
 };

@@ -208,6 +208,8 @@
             case "pt":
                 const [domain,uuid] = id.split(';');
                 return `https://${domain}/videos/watch/${uuid}`;
+            case "bc":
+                return `https://www.bitchute.com/video/${id}/`;
             default:
                 return "";
         }
