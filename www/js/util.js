@@ -13,7 +13,7 @@ function makeAlert(title, text, klass, textOnly) {
     $("<br/>").prependTo(al);
     $("<strong/>").text(title).prependTo(al);
     $("<button/>").addClass("close pull-right").html("&times;")
-        .click(function() {
+        .on('click', function() {
             al.hide("fade", function() {
                 wrap.remove();
             });
@@ -125,7 +125,7 @@ function formatUserlistItem(div) {
     name.unbind("mousemove");
     name.unbind("mouseleave");
 
-    name.mouseenter(function(ev) {
+    name.on('mouseenter', function(ev) {
         if (profile)
             profile.remove();
 
@@ -158,7 +158,7 @@ function formatUserlistItem(div) {
         if ($("body").hasClass("synchtube")) horiz -= profile.outerWidth();
         profile.css("left", horiz + "px")
     });
-    name.mousemove(function(ev) {
+    name.on('mousemove', function(ev) {
         var top = ev.clientY + 5;
         var horiz = ev.clientX;
 
@@ -166,7 +166,7 @@ function formatUserlistItem(div) {
         profile.css("left", horiz + "px")
             .css("top", top + "px");
     });
-    name.mouseleave(function() {
+    name.on('mouseleave', function() {
         profile.remove();
     });
     var icon = div.children()[0];
@@ -217,7 +217,7 @@ function addUserDropdown(entry) {
     if (name !== CLIENT.name) {
         var ignore = $("<button/>").addClass("btn btn-xs btn-default")
             .appendTo(btngroup)
-            .click(function () {
+            .on('click', function () {
                 if(IGNORED.indexOf(name) == -1) {
                     ignore.text("Unignore User");
                     IGNORED.push(name);
@@ -243,7 +243,7 @@ function addUserDropdown(entry) {
         var pm = $("<button/>").addClass("btn btn-xs btn-default")
             .text("Private Message")
             .appendTo(btngroup)
-            .click(function () {
+            .on('click', function () {
                 initPm(name).find(".panel-heading").click();
                 menu.hide();
             });
@@ -255,14 +255,14 @@ function addUserDropdown(entry) {
             .appendTo(btngroup);
         if(leader) {
             ldr.text("Remove Leader");
-            ldr.click(function () {
+            ldr.on('click', function () {
                 socket.emit("assignLeader", {
                     name: ""
                 });
             });
         } else {
             ldr.text("Give Leader");
-            ldr.click(function () {
+            ldr.on('click', function () {
                 socket.emit("assignLeader", {
                     name: name
                 });
@@ -274,7 +274,7 @@ function addUserDropdown(entry) {
     if(hasPermission("kick")) {
         $("<button/>").addClass("btn btn-xs btn-default")
             .text("Kick")
-            .click(function () {
+            .on('click', function () {
                 var reason = prompt("Enter kick reason (optional)");
                 if (reason === null) {
                     return;
@@ -291,7 +291,7 @@ function addUserDropdown(entry) {
     if (hasPermission("mute")) {
         var mute = $("<button/>").addClass("btn btn-xs btn-default")
             .text("Mute")
-            .click(function () {
+            .on('click', function () {
                 socket.emit("chatMsg", {
                     msg: "/mute " + name,
                     meta: {}
@@ -300,7 +300,7 @@ function addUserDropdown(entry) {
             .appendTo(btngroup);
         var smute = $("<button/>").addClass("btn btn-xs btn-default")
             .text("Shadow Mute")
-            .click(function () {
+            .on('click', function () {
                 socket.emit("chatMsg", {
                     msg: "/smute " + name,
                     meta: {}
@@ -309,7 +309,7 @@ function addUserDropdown(entry) {
             .appendTo(btngroup);
         var unmute = $("<button/>").addClass("btn btn-xs btn-default")
             .text("Unmute")
-            .click(function () {
+            .on('click', function () {
                 socket.emit("chatMsg", {
                     msg: "/unmute " + name,
                     meta: {}
@@ -328,7 +328,7 @@ function addUserDropdown(entry) {
     if(hasPermission("ban")) {
         $("<button/>").addClass("btn btn-xs btn-default")
             .text("Name Ban")
-            .click(function () {
+            .on('click', function () {
                 var reason = prompt("Enter ban reason (optional)");
                 if (reason === null) {
                     return;
@@ -341,7 +341,7 @@ function addUserDropdown(entry) {
             .appendTo(btngroup);
         $("<button/>").addClass("btn btn-xs btn-default")
             .text("IP Ban")
-            .click(function () {
+            .on('click', function () {
                 var reason = prompt("Enter ban reason (optional)");
                 if (reason === null) {
                     return;
@@ -523,7 +523,7 @@ function addQueueButtons(li) {
     if(hasPermission("playlistjump")) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-play")
             .html("<span class='glyphicon glyphicon-play'></span>Play")
-            .click(function() {
+            .on('click', function() {
                 socket.emit("jumpTo", li.data("uid"));
             })
             .appendTo(menu);
@@ -532,7 +532,7 @@ function addQueueButtons(li) {
     if(hasPermission("playlistmove")) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-next")
             .html("<span class='glyphicon glyphicon-share-alt'></span>Queue Next")
-            .click(function() {
+            .on('click', function() {
                 socket.emit("moveMedia", {
                     from: li.data("uid"),
                     after: PL_CURRENT
@@ -545,7 +545,7 @@ function addQueueButtons(li) {
         var tempstr = li.data("temp")?"Make Permanent":"Make Temporary";
         $("<button/>").addClass("btn btn-xs btn-default qbtn-tmp")
             .html("<span class='glyphicon glyphicon-flag'></span>" + tempstr)
-            .click(function() {
+            .on('click', function() {
                 socket.emit("setTemp", {
                     uid: li.data("uid"),
                     temp: !li.data("temp")
@@ -557,7 +557,7 @@ function addQueueButtons(li) {
     if(hasPermission("playlistdelete")) {
         $("<button/>").addClass("btn btn-xs btn-default qbtn-delete")
             .html("<span class='glyphicon glyphicon-trash'></span>Delete")
-            .click(function() {
+            .on('click', function() {
                 socket.emit("delete", li.data("uid"));
             })
             .appendTo(menu);
@@ -661,7 +661,7 @@ function showUserOptions() {
 
     formatScriptAccessPrefs();
 
-    $("a[href='#us-general']").click();
+    $("a[href='#us-general']").trigger("click");
     $("#useroptions").modal();
 }
 
@@ -750,7 +750,7 @@ function applyOpts() {
             .text("Send")
             .attr("id", "chatbtn")
             .appendTo($("#chatwrap"));
-        btn.click(function() {
+        btn.on('click', function() {
             if($("#chatline").val().trim()) {
                 socket.emit("chatMsg", {
                     msg: $("#chatline").val(),
@@ -807,7 +807,7 @@ function showPollMenu() {
     $("<button/>").addClass("btn btn-sm btn-danger pull-right")
         .text("Cancel")
         .appendTo(menu)
-        .click(function() {
+        .on('click', function() {
             menu.remove();
         });
 
@@ -864,7 +864,7 @@ function showPollMenu() {
     $("<button/>").addClass("btn btn-default btn-block")
         .text("Open Poll")
         .appendTo(menu)
-        .click(function() {
+        .on('click', function() {
             var t = timeout.val().trim();
             if (t) {
                 try {
@@ -1037,7 +1037,7 @@ function handlePermissionChange() {
             $("<button/>").addClass("btn btn-primary")
                 .text("Dismiss")
                 .appendTo(al.find(".alert"))
-                .click(function() {
+                .on('click', function() {
                     USEROPTS.first_visit = false;
                     storeOpts();
                     al.hide("fade", function() {
@@ -1078,7 +1078,7 @@ function handlePermissionChange() {
             $("<button/>").addClass("btn btn-danger pull-right")
                 .text("End Poll")
                 .insertAfter(poll.find(".close"))
-                .click(function() {
+                .on('click', function() {
                     socket.emit("closePoll");
                 });
         }
@@ -1134,7 +1134,7 @@ function addLibraryButtons(li, item, source) {
         if(hasPermission("playlistnext")) {
             $("<button/>").addClass("btn btn-xs btn-default")
                 .text("Next")
-                .click(function() {
+                .on('click', function() {
                     socket.emit("queue", {
                         id: id,
                         pos: "next",
@@ -1146,7 +1146,7 @@ function addLibraryButtons(li, item, source) {
         }
         $("<button/>").addClass("btn btn-xs btn-default")
             .text("End")
-            .click(function() {
+            .on('click', function() {
                 socket.emit("queue", {
                     id: id,
                     pos: "end",
@@ -1159,7 +1159,7 @@ function addLibraryButtons(li, item, source) {
     if(hasPermission("deletefromchannellib") && source === "library") {
         $("<button/>").addClass("btn btn-xs btn-danger")
             .html("<span class='glyphicon glyphicon-trash'></span>")
-            .click(function() {
+            .on('click', function() {
                 socket.emit("uncache", {
                     id: id
                 });
@@ -1536,10 +1536,10 @@ function addChatMessage(data) {
     var safeUsername = data.username.replace(/[^\w-]/g, '\\$');
     div.addClass("chat-msg-" + safeUsername);
     div.appendTo(msgBuf);
-    div.mouseover(function() {
+    div.on('mouseover', function() {
         $(".chat-msg-" + safeUsername).addClass("nick-hover");
     });
-    div.mouseleave(function() {
+    div.on('mouseleave', function() {
         $(".nick-hover").removeClass("nick-hover");
     });
     var oldHeight = msgBuf.prop("scrollHeight");
@@ -1559,7 +1559,7 @@ function addChatMessage(data) {
             $("<span/>").text("New Messages Below").appendTo(bgHack);
             $("<span/>").addClass("glyphicon glyphicon-chevron-down")
                     .appendTo(bgHack);
-            newMessageDiv.click(function () {
+            newMessageDiv.on('click', function () {
                 SCROLLCHAT = true;
                 scrollChat();
             });
@@ -1802,18 +1802,18 @@ function chatOnly() {
     $("<span/>").addClass("label label-default pull-right pointer")
         .text("User Options")
         .appendTo($("#chatheader"))
-        .click(showUserOptions);
+        .on('click', showUserOptions);
     $("<span/>").addClass("label label-default pull-right pointer")
         .attr("id", "showchansettings")
         .text("Channel Settings")
         .appendTo($("#chatheader"))
-        .click(function () {
+        .on('click', function () {
             $("#channeloptions").modal();
         });
     $("<span/>").addClass("label label-default pull-right pointer")
         .text("Emote List")
         .appendTo($("#chatheader"))
-        .click(function () {
+        .on('click', function () {
             EMOTELISTMODAL.modal();
         });
     setVisible("#showchansettings", CLIENT.rank >= 2);
@@ -1857,7 +1857,7 @@ function handleVideoResize() {
     else intv = setInterval(resize, 500);
 }
 
-$(window).resize(handleWindowResize);
+$(window).on('resize', handleWindowResize);
 handleWindowResize();
 
 function removeVideo(event) {
@@ -1994,7 +1994,7 @@ function genPermissionsEditor() {
     var sgroupinner = $("<div/>").addClass("col-sm-8 col-sm-offset-4").appendTo(sgroup);
     var submit = $("<button/>").addClass("btn btn-primary").appendTo(sgroupinner);
     submit.text("Save");
-    submit.click(function() {
+    submit.on('click', function() {
         var perms = {};
         form.find("select").each(function() {
             perms[$(this).data("key")] = parseFloat($(this).val());
@@ -2053,7 +2053,7 @@ function errDialog(err) {
     $("<button/>").addClass("btn btn-xs btn-default")
         .css("width", "100%")
         .text("OK")
-        .click(function () { div.remove(); })
+        .on('click', function () { div.remove(); })
         .appendTo(div);
     var cw = $("#chatwrap").width();
     var ch = $("#chatwrap").height();
@@ -2150,7 +2150,7 @@ function queueMessage(data, type) {
                     .text(data.link)
                     .appendTo(morelinks);
                 $("<br/>").appendTo(morelinks);
-                tag.click(function () {
+                tag.on('click', function () {
                     morelinks.toggle();
                 });
             }
@@ -2298,7 +2298,7 @@ function formatCSModList() {
                 .text(r.name)
                 .appendTo(li);
             if (r.rank !== entry.rank) {
-                a.click(function () {
+                a.on('click', function () {
                     socket.emit("setChannelRank", {
                         name: entry.name,
                         rank: r.rank
@@ -2355,7 +2355,7 @@ function formatCSBanlist() {
         }
         var unban = $("<button/>").addClass("btn btn-xs btn-danger")
             .appendTo($("<td/>").appendTo(tr));
-        unban.click(function () {
+        unban.on('click', function () {
             socket.emit("unban", {
                 id: entry.id,
                 name: entry.name
@@ -2379,7 +2379,7 @@ function formatCSBanlist() {
             $("<span/>").addClass("glyphicon glyphicon-list").appendTo(showmore);
             showmore.appendTo(first.find("td")[1]);
 
-            showmore.click(function () {
+            showmore.on('click', function () {
                 if (showmore.data("elems")) {
                     showmore.data("elems").forEach(function (e) {
                         e.remove();
@@ -2432,7 +2432,7 @@ function formatCSChatFilterList() {
         var del = $("<button/>").addClass("btn btn-xs btn-danger")
             .appendTo(controlgroup);
         $("<span/>").addClass("glyphicon glyphicon-trash").appendTo(del);
-        del.click(function () {
+        del.on('click', function () {
             socket.emit("removeFilter", f);
         });
         var name = $("<code/>").text(f.name).appendTo($("<td/>").appendTo(tr));
@@ -2440,7 +2440,7 @@ function formatCSChatFilterList() {
         var active = $("<input/>").attr("type", "checkbox")
             .prop("checked", f.active)
             .appendTo(activetd)
-            .change(function () {
+            .on('change', function () {
                 f.active = $(this).prop("checked");
                 socket.emit("updateFilter", f);
             });
@@ -2455,7 +2455,7 @@ function formatCSChatFilterList() {
             }
         };
 
-        control.click(function () {
+        control.on('click', function () {
             if (control.data("editor")) {
                 return reset();
             }
@@ -2490,7 +2490,7 @@ function formatCSChatFilterList() {
                 .attr("title", "Save changes")
                 .insertAfter(control);
             $("<span/>").addClass("glyphicon glyphicon-floppy-save").appendTo(save);
-            save.click(function () {
+            save.on('click', function () {
                 f.source = regex.val();
                 var entcheck = checkEntitiesInStr(f.source);
                 if (entcheck) {
@@ -2574,7 +2574,7 @@ function formatUserPlaylistList() {
             $("<button/>").addClass("btn btn-xs btn-default")
                 .text("End")
                 .appendTo(btns)
-                .click(function () {
+                .on('click', function () {
                     socket.emit("queuePlaylist", {
                         name: pl.name,
                         pos: "end",
@@ -2587,7 +2587,7 @@ function formatUserPlaylistList() {
             $("<button/>").addClass("btn btn-xs btn-default")
                 .text("Next")
                 .prependTo(btns)
-                .click(function () {
+                .on('click', function () {
                     socket.emit("queuePlaylist", {
                         name: pl.name,
                         pos: "next",
@@ -2600,7 +2600,7 @@ function formatUserPlaylistList() {
             .html("<span class='glyphicon glyphicon-trash'></span>")
             .attr("title", "Delete playlist")
             .appendTo(btns)
-            .click(function () {
+            .on('click', function () {
                 var really = confirm("Are you sure you want to delete" +
                     " this playlist? This cannot be undone.");
                 if (!really) {
@@ -2687,14 +2687,14 @@ function initPm(user) {
     var title = $("<div/>").addClass("panel-heading").text(user).appendTo(pm);
     var close = $("<button/>").addClass("close pull-right")
         .html("&times;")
-        .appendTo(title).click(function () {
+        .appendTo(title).on('click', function () {
             pm.remove();
             $("#pm-placeholder-" + user).remove();
         });
 
     var body = $("<div/>").addClass("panel-body").appendTo(pm).hide();
     var placeholder;
-    title.click(function () {
+    title.on('click', function () {
         body.toggle();
         pm.removeClass("panel-primary").addClass("panel-default");
         if (!body.is(":hidden")) {
@@ -2794,13 +2794,13 @@ function checkScriptAccess(viewSource, type, cb) {
                     "</label></div>");
         var dialog = chatDialog(div);
 
-        close.click(function () {
+        close.on('click', function () {
             dialog.remove();
             /* Implicit denial of script access */
             cb("DENY");
         });
 
-        $("#chanjs-allow").click(function () {
+        $("#chanjs-allow").on('click', function () {
             var save = $("#chanjs-save-pref").is(":checked");
             dialog.remove();
             if (save) {
@@ -2810,7 +2810,7 @@ function checkScriptAccess(viewSource, type, cb) {
             cb("ALLOW");
         });
 
-        $("#chanjs-deny").click(function () {
+        $("#chanjs-deny").on('click', function () {
             var save = $("#chanjs-save-pref").is(":checked");
             dialog.remove();
             if (save) {
@@ -2883,7 +2883,7 @@ function formatScriptAccessPrefs() {
         var clearpref = $("<button/>").addClass("btn btn-sm btn-danger")
             .text("Clear Preference")
             .appendTo($("<td/>").appendTo(tr))
-            .click(function () {
+            .on('click', function () {
                 delete JSPREF[channel];
                 setOpt("channel_js_pref", JSPREF);
                 tr.remove();
@@ -3085,7 +3085,7 @@ CSEmoteList.prototype.loadPage = function (page) {
             row.appendChild(tdName);
 
             var $nameDisplay = $(nameDisplay);
-            $nameDisplay.click(function (clickEvent) {
+            $nameDisplay.on('click', function (clickEvent) {
                 $nameDisplay.detach();
 
                 var editInput = document.createElement("input");
@@ -3155,7 +3155,7 @@ CSEmoteList.prototype.loadPage = function (page) {
             });
 
             // Change the image for an emote
-            $urlDisplay.click(function (clickEvent) {
+            $urlDisplay.on('click', function (clickEvent) {
                 $(tdImage).find(".popover").remove();
                 $urlDisplay.detach();
 

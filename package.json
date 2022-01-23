@@ -60,6 +60,7 @@
     "babel-plugin-add-module-exports": "^1.0.4",
     "coffeescript": "^1.9.2",
     "eslint": "^7.32.0",
+    "eslint-plugin-no-jquery": "^2.7.0",
     "mocha": "^9.2.2",
     "sinon": "^10.0.0"
   },

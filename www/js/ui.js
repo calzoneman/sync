@@ -10,11 +10,11 @@ CyTube.ui.onPageBlur = function (event) {
     FOCUSED = false;
 };
 
-$(window).focus(CyTube.ui.onPageFocus).blur(CyTube.ui.onPageBlur);
+$(window).on('focus', CyTube.ui.onPageFocus).on('blur', CyTube.ui.onPageBlur);
 // See #783
-$(".modal").focus(CyTube.ui.onPageFocus);
+$(".modal").on('focus', CyTube.ui.onPageFocus);
 
-$("#togglemotd").click(function () {
+$("#togglemotd").on('click', function () {
     var hidden = $("#motd")[0].style.display === "none";
     $("#motd").toggle();
     if (hidden) {
@@ -30,7 +30,7 @@ $("#togglemotd").click(function () {
 
 /* chatbox */
 
-$("#modflair").click(function () {
+$("#modflair").on('click', function () {
     var m = $("#modflair");
     if (m.hasClass("label-success")) {
         USEROPTS.modhat = false;
@@ -54,7 +54,7 @@ $("#modflair").click(function () {
     setOpt('modhat', USEROPTS.modhat);
 });
 
-$("#usercount").mouseenter(function (ev) {
+$("#usercount").on('mouseenter', function (ev) {
     var breakdown = calcUserBreakdown();
     // re-using profile-box class for convenience
     var popup = $("<div/>")
@@ -72,7 +72,7 @@ $("#usercount").mouseenter(function (ev) {
     popup.html(contents);
 });
 
-$("#usercount").mousemove(function (ev) {
+$("#usercount").on('mousemove', function (ev) {
     var popup = $("#usercount").find(".profile-box");
     if(popup.length == 0)
         return;
@@ -81,11 +81,11 @@ $("#usercount").mousemove(function (ev) {
     popup.css("left", (ev.clientX) + "px");
 });
 
-$("#usercount").mouseleave(function () {
+$("#usercount").on('mouseleave', function () {
     $("#usercount").find(".profile-box").remove();
 });
 
-$("#messagebuffer").scroll(function (ev) {
+$("#messagebuffer").on('scroll', function (ev) {
     if (IGNORE_SCROLL_EVENT) {
         // Skip event, this was triggered by scrollChat() and not by a user action.
         // Reset for next event.
@@ -109,7 +109,7 @@ $("#messagebuffer").scroll(function (ev) {
     }
 });
 
-$("#guestname").keydown(function (ev) {
+$("#guestname").on('keydown', function (ev) {
     if (ev.keyCode === 13) {
         socket.emit("login", {
             name: $("#guestname").val()
@@ -165,7 +165,7 @@ function chatTabComplete(chatline) {
     chatline.setSelectionRange(result.newPosition, result.newPosition);
 }
 
-$("#chatline").keydown(function(ev) {
+$("#chatline").on('keydown', function(ev) {
     // Enter/return
     if(ev.keyCode == 13) {
         if (CHATTHROTTLE) {
@@ -229,10 +229,10 @@ $("#chatline").keydown(function(ev) {
 });
 
 /* poll controls */
-$("#newpollbtn").click(showPollMenu);
+$("#newpollbtn").on('click', showPollMenu);
 
 /* search controls */
-$("#library_search").click(function() {
+$("#library_search").on('click', function() {
     if (!hasPermission("seeplaylist")) {
         $("#searchcontrol .alert").remove();
         var al = makeAlert("Permission Denied",
@@ -248,7 +248,7 @@ $("#library_search").click(function() {
     });
 });
 
-$("#library_query").keydown(function(ev) {
+$("#library_query").on('keydown', function(ev) {
     if(ev.keyCode == 13) {
         if (!hasPermission("seeplaylist")) {
             $("#searchcontrol .alert").remove();
@@ -266,7 +266,7 @@ $("#library_query").keydown(function(ev) {
     }
 });
 
-$("#youtube_search").click(function () {
+$("#youtube_search").on('click', function () {
     var query = $("#library_query").val().toLowerCase();
     try {
         parseMediaLink(query);
@@ -285,7 +285,7 @@ $("#youtube_search").click(function () {
 
 /* user playlists */
 
-$("#userpl_save").click(function() {
+$("#userpl_save").on('click', function() {
     if($("#userpl_name").val().trim() == "") {
         makeAlert("Invalid Name", "Playlist name cannot be empty", "alert-danger")
             .insertAfter($("#userpl_save").parent());
@@ -298,7 +298,7 @@ $("#userpl_save").click(function() {
 
 /* video controls */
 
-$("#mediarefresh").click(function() {
+$("#mediarefresh").on('click', function() {
     PLAYER.mediaType = "";
     PLAYER.mediaId = "";
     // playerReady triggers the server to send a changeMedia.
@@ -459,12 +459,12 @@ function queue(pos, src) {
     }
 }
 
-$("#queue_next").click(queue.bind(this, "next", "url"));
-$("#queue_end").click(queue.bind(this, "end", "url"));
-$("#ce_queue_next").click(queue.bind(this, "next", "customembed"));
-$("#ce_queue_end").click(queue.bind(this, "end", "customembed"));
+$("#queue_next").on('click', queue.bind(this, "next", "url"));
+$("#queue_end").on('click', queue.bind(this, "end", "url"));
+$("#ce_queue_next").on('click', queue.bind(this, "next", "customembed"));
+$("#ce_queue_end").on('click', queue.bind(this, "end", "customembed"));
 
-$("#mediaurl").keyup(function(ev) {
+$("#mediaurl").on('keyup', function(ev) {
     if (ev.keyCode === 13) {
         queue("end", "url");
     } else {
@@ -487,7 +487,7 @@ $("#mediaurl").keyup(function(ev) {
                 $("<input/>").addClass("form-control")
                     .attr("type", "text")
                     .attr("id", "addfromurl-title-val")
-                    .keydown(function (ev) {
+                    .on('keydown', function (ev) {
                         if (ev.keyCode === 13) {
                             queue("end", "url");
                         }
@@ -500,22 +500,22 @@ $("#mediaurl").keyup(function(ev) {
     }
 });
 
-$("#customembed-content").keydown(function(ev) {
+$("#customembed-content").on('keydown', function(ev) {
     if (ev.keyCode === 13) {
         queue("end", "customembed");
     }
 });
 
-$("#qlockbtn").click(function() {
+$("#qlockbtn").on('click', function() {
     socket.emit("togglePlaylistLock");
 });
 
-$("#voteskip").click(function() {
+$("#voteskip").on('click', function() {
     socket.emit("voteskip");
     $("#voteskip").attr("disabled", true);
 });
 
-$("#getplaylist").click(function() {
+$("#getplaylist").on('click', function() {
     var callback = function(data) {
         var idx = socket.listeners("errorMsg").indexOf(errCallback);
         if (idx >= 0) {
@@ -574,14 +574,14 @@ $("#getplaylist").click(function() {
     socket.emit("requestPlaylist");
 });
 
-$("#clearplaylist").click(function() {
+$("#clearplaylist").on('click', function() {
     var clear = confirm("Are you sure you want to clear the playlist?");
     if(clear) {
         socket.emit("clearPlaylist");
     }
 });
 
-$("#shuffleplaylist").click(function() {
+$("#shuffleplaylist").on('click', function() {
     var shuffle = confirm("Are you sure you want to shuffle the playlist?");
     if(shuffle) {
         socket.emit("shufflePlaylist");
@@ -596,13 +596,13 @@ function chanrankSubmit(rank) {
         rank: rank
     });
 }
-$("#cs-chanranks-mod").click(chanrankSubmit.bind(this, 2));
-$("#cs-chanranks-adm").click(chanrankSubmit.bind(this, 3));
-$("#cs-chanranks-owner").click(chanrankSubmit.bind(this, 4));
+$("#cs-chanranks-mod").on('click', chanrankSubmit.bind(this, 2));
+$("#cs-chanranks-adm").on('click', chanrankSubmit.bind(this, 3));
+$("#cs-chanranks-owner").on('click', chanrankSubmit.bind(this, 4));
 
 ["#showmediaurl", "#showsearch", "#showcustomembed", "#showplaylistmanager"]
     .forEach(function (id) {
-    $(id).click(function () {
+    $(id).on('click', function () {
         var wasActive = $(id).hasClass("active");
         $(".plcontrol-collapse").collapse("hide");
         $("#plcontrol button.active").button("toggle");
@@ -616,7 +616,7 @@ $("#plcontrol button").button("hide");
 $(".plcontrol-collapse").collapse();
 $(".plcontrol-collapse").collapse("hide");
 
-$(".cs-checkbox").change(function () {
+$(".cs-checkbox").on('change', function () {
     var box = $(this);
     var key = box.attr("id").replace("cs-", "");
     var value = box.prop("checked");
@@ -625,7 +625,7 @@ $(".cs-checkbox").change(function () {
     socket.emit("setOptions", data);
 });
 
-$(".cs-textbox").keyup(function () {
+$(".cs-textbox").on('keyup', function () {
     var box = $(this);
     var key = box.attr("id").replace("cs-", "");
     var value = box.val();
@@ -652,7 +652,7 @@ $(".cs-textbox").keyup(function () {
     }, 1000);
 });
 
-$(".cs-textbox-timeinput").keyup(function (event) {
+$(".cs-textbox-timeinput").on('keyup', function (event) {
     var box = $(this);
     var key = box.attr("id").replace("cs-", "");
     var value = box.val();
@@ -682,31 +682,31 @@ $(".cs-textbox-timeinput").keyup(function (event) {
     }, 1000);
 });
 
-$("#cs-chanlog-refresh").click(function () {
+$("#cs-chanlog-refresh").on('click', function () {
     socket.emit("readChanLog");
 });
 
-$("#cs-chanlog-filter").change(filterChannelLog);
+$("#cs-chanlog-filter").on('change', filterChannelLog);
 
-$("#cs-motdsubmit").click(function () {
+$("#cs-motdsubmit").on('click', function () {
     socket.emit("setMotd", {
         motd: $("#cs-motdtext").val()
     });
 });
 
-$("#cs-csssubmit").click(function () {
+$("#cs-csssubmit").on('click', function () {
     socket.emit("setChannelCSS", {
         css: $("#cs-csstext").val()
     });
 });
 
-$("#cs-jssubmit").click(function () {
+$("#cs-jssubmit").on('click', function () {
     socket.emit("setChannelJS", {
         js: $("#cs-jstext").val()
     });
 });
 
-$("#cs-chatfilters-newsubmit").click(function () {
+$("#cs-chatfilters-newsubmit").on('click', function () {
     var name = $("#cs-chatfilters-newname").val();
     var regex = $("#cs-chatfilters-newregex").val();
     var flags = $("#cs-chatfilters-newflags").val();
@@ -735,7 +735,7 @@ $("#cs-chatfilters-newsubmit").click(function () {
     });
 });
 
-$("#cs-emotes-newsubmit").click(function () {
+$("#cs-emotes-newsubmit").on('click', function () {
     var name = $("#cs-emotes-newname").val();
     var image = $("#cs-emotes-newimage").val();
 
@@ -748,7 +748,7 @@ $("#cs-emotes-newsubmit").click(function () {
     $("#cs-emotes-newimage").val("");
 });
 
-$("#cs-chatfilters-export").click(function () {
+$("#cs-chatfilters-export").on('click', function () {
     var callback = function (data) {
         socket.listeners("chatFilters").splice(
             socket.listeners("chatFilters").indexOf(callback)
@@ -761,7 +761,7 @@ $("#cs-chatfilters-export").click(function () {
     socket.emit("requestChatFilters");
 });
 
-$("#cs-chatfilters-import").click(function () {
+$("#cs-chatfilters-import").on('click', function () {
     var text = $("#cs-chatfilters-exporttext").val();
     var choose = confirm("You are about to import filters from the contents of the textbox below the import button.  If this is empty, it will clear all of your filters.  Are you sure you want to continue?");
     if (!choose) {
@@ -783,7 +783,7 @@ $("#cs-chatfilters-import").click(function () {
     socket.emit("importFilters", data);
 });
 
-$("#cs-emotes-export").click(function () {
+$("#cs-emotes-export").on('click', function () {
     var em = CHANNEL.emotes.map(function (f) {
         return {
             name: f.name,
@@ -793,7 +793,7 @@ $("#cs-emotes-export").click(function () {
     $("#cs-emotes-exporttext").val(JSON.stringify(em));
 });
 
-$("#cs-emotes-import").click(function () {
+$("#cs-emotes-import").on('click', function () {
     var text = $("#cs-emotes-exporttext").val();
     var choose = confirm("You are about to import emotes from the contents of the textbox below the import button.  If this is empty, it will clear all of your emotes.  Are you sure you want to continue?");
     if (!choose) {
@@ -827,10 +827,10 @@ var toggleUserlist = function () {
     scrollChat();
 };
 
-$("#usercount").click(toggleUserlist);
-$("#userlisttoggle").click(toggleUserlist);
+$("#usercount").on('click', toggleUserlist);
+$("#userlisttoggle").on('click', toggleUserlist);
 
-$(".add-temp").change(function () {
+$(".add-temp").on('change', function () {
     $(".add-temp").prop("checked", $(this).prop("checked"));
 });
 
@@ -878,7 +878,7 @@ applyOpts();
 })();
 
 var EMOTELISTMODAL = $("#emotelist");
-$("#emotelistbtn").click(function () {
+$("#emotelistbtn").on('click', function () {
     EMOTELISTMODAL.modal();
 });
 
@@ -888,7 +888,7 @@ EMOTELISTMODAL.find(".emotelist-alphabetical").change(function () {
 });
 EMOTELISTMODAL.find(".emotelist-alphabetical").prop("checked", USEROPTS.emotelist_sort);
 
-$("#fullscreenbtn").click(function () {
+$("#fullscreenbtn").on('click', function () {
     var elem = document.querySelector("#videowrap .embed-responsive");
     // this shit is why frontend web development sucks
     var fn = elem.requestFullscreen ||
@@ -923,7 +923,7 @@ $("#cs-csstext").bind("input", handleCSSJSTooLarge.bind($("#cs-csstext")[0],
 $("#cs-jstext").bind("input", handleCSSJSTooLarge.bind($("#cs-jstext")[0],
         "#cs-jstext-too-big"));
 
-$("#resize-video-larger").click(function () {
+$("#resize-video-larger").on('click', function () {
     try {
         CyTube.ui.changeVideoWidth(1);
     } catch (error) {
@@ -931,7 +931,7 @@ $("#resize-video-larger").click(function () {
     }
 });
 
-$("#resize-video-smaller").click(function () {
+$("#resize-video-smaller").on('click', function () {
     try {
         CyTube.ui.changeVideoWidth(-1);
     } catch (error) {

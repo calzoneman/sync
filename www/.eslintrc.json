@@ -46,5 +46,14 @@
         "getOpt": "writable",
         "setOpt": "writable",
         "socket": "writable"
+    },
+    "plugins": [
+        "no-jquery"
+    ],
+    "extends": [
+        "plugin:no-jquery/deprecated"
+    ],
+    "rules": {
+        "no-jquery/no-event-shorthand": "error"
     }
 }
