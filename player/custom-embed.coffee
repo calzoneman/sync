@@ -21,7 +21,7 @@ window.CustomEmbedPlayer = class CustomEmbedPlayer extends EmbedPlayer
             .removeClass('col-md-12')
         $('<button/>').addClass('btn btn-default')
             .text('Embed')
-            .click(=>
+            .on('click', =>
                 super(data)
             )
             .appendTo(alert.find('.alert'))

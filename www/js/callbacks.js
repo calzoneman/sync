@@ -82,7 +82,7 @@ Callbacks = {
         var announcement = makeAlert(data.title, data.text + signature)
             .appendTo($("#announcements"));
         if (data.id) {
-            announcement.find(".close").click(function suppressThisAnnouncement() {
+            announcement.find(".close").on('click', function suppressThisAnnouncement() {
                 CyTube.ui.suppressedAnnouncementId = data.id;
                 setOpt("suppressed_announcement_id", data.id);
             });
@@ -179,7 +179,7 @@ Callbacks = {
 
         $("<button/>").addClass("close pull-right")
             .appendTo(div)
-            .click(function () {
+            .on('click', function () {
                 div.parent().remove();
             })
             .html("&times;");
@@ -444,7 +444,7 @@ Callbacks = {
                 var li = $("<li/>").appendTo(menu);
                 $("<a/>").attr("href", "javascript:void(0)")
                     .html(disp)
-                    .click(function() {
+                    .on('click', function() {
                         socket.emit("borrow-rank", r);
                     })
                     .appendTo(li);
@@ -886,7 +886,7 @@ Callbacks = {
             .css("margin-left", "0")
             .attr("id", "search_clear")
             .text("Clear Results")
-            .click(function() {
+            .on('click', function() {
                 clearSearchResults();
             })
             .insertBefore($("#library"));
@@ -927,11 +927,11 @@ Callbacks = {
         var poll = $("<div/>").addClass("well active").prependTo($("#pollwrap"));
         $("<button/>").addClass("close pull-right").html("&times;")
             .appendTo(poll)
-            .click(function() { poll.remove(); });
+            .on('click', function() { poll.remove(); });
         if(hasPermission("pollctl")) {
             $("<button/>").addClass("btn btn-danger btn-sm pull-right").text("End Poll")
                 .appendTo(poll)
-                .click(function() {
+                .on('click', function() {
                     socket.emit("closePoll")
                 });
         }
@@ -953,7 +953,7 @@ Callbacks = {
             $("<button/>").addClass("btn btn-default btn-sm").text(data.counts[i])
                 .prependTo($("<div/>").addClass("option").html(data.options[i])
                         .appendTo(poll))
-                .click(callback);
+                .on('click', callback);
             })(i);
 
         }

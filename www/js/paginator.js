@@ -34,7 +34,7 @@
             var li = $("<li/>").appendTo(ul);
             $("<a/>").attr("href", "javascript:void(0)")
                 .html("&laquo;")
-                .click(function () {
+                .on('click', function () {
                     this.loadPage(0);
                 }.bind(this))
                 .appendTo(li);
@@ -57,7 +57,7 @@
                 li.addClass("active");
             $("<a/>").attr("href", "javascript:void(0)")
                 .text(i + 1)
-                .click(function () {
+                .on('click', function () {
                     this.loadPage(i);
                 }.bind(this))
                 .appendTo(li);
@@ -75,7 +75,7 @@
             var li = $("<li/>").appendTo(ul);
             $("<a/>").attr("href", "javascript:void(0)")
                 .html("&raquo;")
-                .click(function () {
+                .on('click', function () {
                     this.loadPage(pages - 1);
                 }.bind(this))
                 .appendTo(li);
