@@ -58,6 +58,8 @@ function formatURL(data) {
             } else {
                 return `https://${data.meta.embed.domain}/w/${data.meta.embed.short}`;
             }
+        case "bc":
+            return `https://www.bitchute.com/video/${data.id}/`;
         default:
             return "#";
     }
@@ -1389,6 +1391,12 @@ function parseMediaLink(url) {
             if(data.pathname == '/open'){
                 return { type: 'gd', id: data.searchParams.get('id') }
             }
+
+        case 'bitchute.com':
+            if(data.pathname.startsWith('/video/')){
+                return { type: 'bc', id: `${data.pathname.slice(7).split('/').shift()}` }
+            }
+
     }
 
     /* PeerTubes */
