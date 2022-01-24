@@ -3216,6 +3216,9 @@ function startQueueSpinner(data) {
     if (data.type === "yp") {
         id = "$any";
     }
+    if (data.type === "pt") {
+        id = data.id.split(';').shift()
+    }
 
     var progress = $("<div/>").addClass("progress").attr("id", "queueprogress")
             .data("queue-id", id);
@@ -3232,12 +3235,14 @@ function startQueueSpinner(data) {
 }
 
 function stopQueueSpinner(data) {
-    var shouldRemove = (data !== null &&
-                        typeof data === 'object' &&
-                        $("#queueprogress").data("queue-id") === data.id);
-    shouldRemove = shouldRemove || data === null;
-    shouldRemove = shouldRemove || $("#queueprogress").data("queue-id") === "$any";
-    if (shouldRemove) {
+    const qid = $("#queueprogress").data("queue-id");
+    switch (true){
+        case data === null:
+        case qid === "$any":
+        case qid === data?.id:
+            return $("#queueprogress").remove();
+    }
+    if (data?.type === "pt" && new RegExp(qid).test(data?.id)) {
         $("#queueprogress").remove();
     }
 }
