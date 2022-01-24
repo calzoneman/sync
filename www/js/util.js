@@ -33,7 +33,8 @@ function formatURL(data) {
         case "sc":
             return data.id;
         case "li":
-            return "https://livestream.com/" + data.id;
+            const [account,event] = data.id.split(';');
+            return `https://livestream.com/accounts/${account}/events/${event}`;
         case "tw":
             return "https://twitch.tv/" + data.id;
         case "rt":

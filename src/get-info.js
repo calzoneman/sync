@@ -216,14 +216,12 @@ var Getters = {
 
     /* livestream.com */
     li: function (id, callback) {
-        var m = id.match(/([\w-]+)/);
-        if (m) {
-            id = m[1];
-        } else {
+        if (!id.match(/^\d+;\d+$/)) {
             callback("Invalid ID", null);
             return;
         }
-        var title = "Livestream.com - " + id;
+
+        var title = "Livestream.com";
         var media = new Media(id, title, "--:--", "li");
         callback(false, media);
     },
