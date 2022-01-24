@@ -6,6 +6,8 @@ PEERTUBE_EMBED_WARNING = 'This channel is embedding PeerTube content from %link%
     third parties on your behalf.<br><br> If you understand the risks, wish to assume all liability, and continue to
     the content, click "Embed" below to allow the content to be embedded.<hr>'
 
+PEERTUBE_RISK = false
+
 window.PeerPlayer = class PeerPlayer extends Player
     constructor: (data) ->
         if not (this instanceof PeerPlayer)
@@ -14,6 +16,9 @@ window.PeerPlayer = class PeerPlayer extends Player
         @warn(data)
 
     warn: (data) ->
+        if USEROPTS.peertube_risk or PEERTUBE_RISK
+            return @load(data)
+
         site = new URL(document.URL).hostname
         embedSrc = data.meta.embed.domain
         link = "<a href=\"http://#{embedSrc}\" target=\"_blank\"><strong>#{embedSrc}</strong></a>"
@@ -23,6 +28,13 @@ window.PeerPlayer = class PeerPlayer extends Player
         $('<button/>').addClass('btn btn-default')
             .text('Embed')
             .on('click', =>
+                @load(data)
+            )
+            .appendTo(alert.find('.alert'))
+        $('<button/>').addClass('btn btn-default pull-right')
+            .text('Embed and dont ask again for this session')
+            .on('click', =>
+                PEERTUBE_RISK = true
                 @load(data)
             )
             .appendTo(alert.find('.alert'))

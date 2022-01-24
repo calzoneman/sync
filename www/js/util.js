@@ -646,6 +646,7 @@ function showUserOptions() {
     $("#us-playlistbuttons").prop("checked", USEROPTS.qbtn_hide);
     $("#us-oldbtns").prop("checked", USEROPTS.qbtn_idontlikechange);
     $("#us-default-quality").val(USEROPTS.default_quality || "auto");
+    $("#us-peertube").prop("checked", USEROPTS.peertube_risk);
 
     $("#us-chat-timestamp").prop("checked", USEROPTS.show_timestamps);
     $("#us-sort-rank").prop("checked", USEROPTS.sort_rank);
@@ -683,6 +684,7 @@ function saveUserOptions() {
     USEROPTS.qbtn_hide            = $("#us-playlistbuttons").prop("checked");
     USEROPTS.qbtn_idontlikechange = $("#us-oldbtns").prop("checked");
     USEROPTS.default_quality      = $("#us-default-quality").val();
+    USEROPTS.peertube_risk        = $("#us-peertube").prop("checked");
 
     USEROPTS.show_timestamps      = $("#us-chat-timestamp").prop("checked");
     USEROPTS.sort_rank            = $("#us-sort-rank").prop("checked");

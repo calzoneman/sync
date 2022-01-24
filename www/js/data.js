@@ -126,6 +126,7 @@ var USEROPTS = {
     default_quality      : getOrDefault("default_quality", "auto"),
     qbtn_hide            : getOrDefault("qbtn_hide", false),
     qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false),
+    peertube_risk        : getOrDefault("peertube_risk", false),
     // Chat tab
     show_timestamps      : getOrDefault("show_timestamps", true),
     sort_rank            : getOrDefault("sort_rank", true),
