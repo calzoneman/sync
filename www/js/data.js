@@ -113,33 +113,37 @@ function getOrDefault(k, def) {
 var IGNORED = getOrDefault("ignorelist", []);
 
 var USEROPTS = {
+    // General tab
     theme                : getOrDefault("theme", DEFAULT_THEME), // Set in head template
     layout               : getOrDefault("layout", "fluid"),
-    synch                : getOrDefault("synch", true),
-    hidevid              : getOrDefault("hidevid", false),
-    show_timestamps      : getOrDefault("show_timestamps", true),
-    modhat               : getOrDefault("modhat", false),
-    blink_title          : getOrDefault("blink_title", "onlyping"),
-    sync_accuracy        : getOrDefault("sync_accuracy", 2),
-    wmode_transparent    : getOrDefault("wmode_transparent", true),
-    chatbtn              : getOrDefault("chatbtn", false),
-    altsocket            : getOrDefault("altsocket", false),
-    qbtn_hide            : getOrDefault("qbtn_hide", false),
-    qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false),
-    first_visit          : getOrDefault("first_visit", true),
     ignore_channelcss    : getOrDefault("ignore_channelcss", false),
     ignore_channeljs     : getOrDefault("ignore_channeljs", false),
+    // Playback tab
+    synch                : getOrDefault("synch", true),
+    sync_accuracy        : getOrDefault("sync_accuracy", 2),
+    hidevid              : getOrDefault("hidevid", false),
+    wmode_transparent    : getOrDefault("wmode_transparent", true),
+    default_quality      : getOrDefault("default_quality", "auto"),
+    qbtn_hide            : getOrDefault("qbtn_hide", false),
+    qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false),
+    // Chat tab
+    show_timestamps      : getOrDefault("show_timestamps", true),
     sort_rank            : getOrDefault("sort_rank", true),
     sort_afk             : getOrDefault("sort_afk", false),
-    default_quality      : getOrDefault("default_quality", "auto"),
+    blink_title          : getOrDefault("blink_title", "onlyping"),
     boop                 : getOrDefault("boop", "never"),
-    show_shadowchat      : getOrDefault("show_shadowchat", false),
-    emotelist_sort       : getOrDefault("emotelist_sort", true),
+    notifications        : getOrDefault("notifications", "never"),
+    chatbtn              : getOrDefault("chatbtn", false),
     no_emotes            : getOrDefault("no_emotes", false),
     strip_image          : getOrDefault("strip_image", false),
     chat_tab_method      : getOrDefault("chat_tab_method", "Cycle options"),
-    notifications        : getOrDefault("notifications", "never"),
-    show_ip_in_tooltip   : getOrDefault("show_ip_in_tooltip", true)
+    // Moderator tab
+    modhat               : getOrDefault("modhat", false),
+    show_shadowchat      : getOrDefault("show_shadowchat", false),
+    show_ip_in_tooltip   : getOrDefault("show_ip_in_tooltip", true),
+    // Elsewhere
+    first_visit          : getOrDefault("first_visit", true),
+    emotelist_sort       : getOrDefault("emotelist_sort", true),
 };
 
 /* Backwards compatibility check */
@@ -180,7 +184,6 @@ if (["never", "onlyping", "always"].indexOf(USEROPTS.boop) === -1) {
 
 var VOLUME = parseFloat(getOrDefault("volume", 1));
 
-var NO_WEBSOCKETS = USEROPTS.altsocket;
 var NO_VIMEO = Boolean(location.host.match("cytu.be"));
 
 var JSPREF = getOpt("channel_js_pref") || {};
