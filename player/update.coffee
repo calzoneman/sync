@@ -14,7 +14,7 @@ TYPE_MAP =
     sb: StreamablePlayer
     tc: TwitchClipPlayer
     cm: VideoJSPlayer
-    bc: VideoJSPlayer
+    bc: BitChutePlayer
     pt: PeerPlayer
 
 window.loadMediaPlayer = (data) ->
