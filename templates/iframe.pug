@@ -1,0 +1,36 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    meta(name="referrer", content="same-origin")
+    link(rel="stylesheet", href="/css/video-js.css")
+    link(rel="stylesheet", href="/css/videojs-resolution-switcher.css")
+    style.
+      body { overflow-y: hidden }
+  body
+    #wrap
+      #videowrap
+        #ytapiplayer
+    script.
+      const USEROPTS = {
+        default_quality: 'auto'
+      }
+      const CLIENT = {
+        leader: false
+      }
+      let VOLUME = 0;
+      function waitUntilDefined(obj, key, fn) {
+          if(typeof obj[key] === "undefined") {
+              setTimeout(function () {
+                  waitUntilDefined(obj, key, fn);
+              }, 100);
+              return;
+          }
+          fn();
+      }
+    script(src="/js/jquery-1.12.4.min.js")
+    script(src="/js/video.js")
+    script(src="/js/videojs-resolution-switcher.js")
+    script(src="/js/playerjs-0.0.12.js")
+    script(src="/js/player.js")

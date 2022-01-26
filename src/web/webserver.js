@@ -212,6 +212,7 @@ module.exports = {
         require('./acp').init(app, ioConfig);
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);
+        require('./routes/iframe')(app);
 
         app.use(serveStatic(path.join(__dirname, '..', '..', 'www'), {
             maxAge: webConfig.getCacheTTL()

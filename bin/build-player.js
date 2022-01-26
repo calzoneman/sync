@@ -23,6 +23,7 @@ var order = [
     'hls.coffee',
     'twitchclip.coffee',
     'peertube.coffee',
+    'bitchute.coffee',
     'update.coffee'
 ];
 
