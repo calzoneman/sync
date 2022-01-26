@@ -42,10 +42,6 @@ getSourceLabel = (source) ->
     else
         return "#{source.quality}p #{source.contentType.split('/')[1]}"
 
-waitUntilDefined(window, 'videojs', =>
-    videojs.options.flash.swf = '/video-js.swf'
-)
-
 hasAnyTextTracks = (data) ->
     ntracks = data?.meta?.textTracks?.length ? 0
     return ntracks > 0
