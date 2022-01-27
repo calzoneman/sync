@@ -119,6 +119,7 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
             @player.ready(=>
                 # Have to use updateSrc instead of <source> tags
                 # see: https://github.com/videojs/video.js/issues/3428
+                @player.poster(data.meta.thumbnail)
                 @player.updateSrc(@sources)
                 @player.on('error', =>
                     err = @player.error()
