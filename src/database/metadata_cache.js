@@ -9,6 +9,8 @@ function mediaquery2cytube(type) {
     switch (type) {
         case 'youtube':
             return 'yt';
+        case 'bitchute':
+            return 'bc';
         default:
             throw new Error(`mediaquery2cytube: no mapping for ${type}`);
     }
@@ -18,14 +20,17 @@ function cytube2mediaquery(type) {
     switch (type) {
         case 'yt':
             return 'youtube';
+        case 'bc':
+            return 'bitchute';
         default:
             throw new Error(`cytube2mediaquery: no mapping for ${type}`);
     }
 }
 
 const cachedResultAge = new Summary({
-    name: 'cytube_yt_cache_result_age_seconds',
-    help: 'Age (in seconds) of cached record'
+    name: 'cytube_media_cache_result_age_seconds',
+    help: 'Age (in seconds) of cached record',
+    labelNames: ['source']
 });
 
 class MetadataCacheDB {
@@ -62,10 +67,11 @@ class MetadataCacheDB {
                 return null;
             }
 
+            let age = 0;
             try {
-                let age = (Date.now() - row.updated_at.getTime())/1000;
+                age = (Date.now() - row.updated_at.getTime())/1000;
                 if (age > 0) {
-                    cachedResultAge.observe(age);
+                    cachedResultAge.labels(type).observe(age);
                 }
             } catch (error) {
                 LOGGER.error('Failed to record cachedResultAge metric: %s', error.stack);
@@ -73,6 +79,7 @@ class MetadataCacheDB {
 
             let metadata = JSON.parse(row.metadata);
             metadata.type = cytube2mediaquery(metadata.type);
+            metadata.meta.cacheAge = age;
             return new Media(metadata);
         });
     }
