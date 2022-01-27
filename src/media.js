@@ -53,6 +53,11 @@ Media.prototype = {
             result.meta.direct = this.meta.direct;
         }
 
+        // Only save thumbnails for items which can be audio track only
+        if (['bn','cm'].includes(this.type)) {
+            result.meta.thumbnail = this.meta.thumbnail;
+        }
+
         return result;
     },
 

@@ -14,8 +14,9 @@ TYPE_MAP =
     sb: StreamablePlayer
     tc: TwitchClipPlayer
     cm: VideoJSPlayer
-    bc: BitChutePlayer
     pt: PeerPlayer
+    bc: IframeChild
+    bn: IframeChild
 
 window.loadMediaPlayer = (data) ->
     try
