@@ -210,6 +210,9 @@
                 return `https://${domain}/videos/watch/${uuid}`;
             case "bc":
                 return `https://www.bitchute.com/video/${id}/`;
+            case "bn":
+                const [artist,track] = id.split(';');
+                return `https://${artist}.bandcamp.com/track/${track}`;
             default:
                 return "";
         }

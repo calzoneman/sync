@@ -1,7 +1,7 @@
-window.BitChutePlayer = class BitChutePlayer extends Player
+window.IframeChild = class IframeChild extends Player
     constructor: (data) ->
-        if not (this instanceof BitChutePlayer)
-            return new BitChutePlayer(data)
+        if not (this instanceof IframeChild)
+            return new IframeChild(data)
 
         @load(data)
 
@@ -57,6 +57,7 @@ window.BitChutePlayer = class BitChutePlayer extends Player
             iframe.contentWindow.document.querySelector('#ytapiplayer').classList.add('vjs-fluid')
             adapter = iframe.contentWindow.playerjs.VideoJSAdapter(iframe.contentWindow.PLAYER.player)
             adapter.ready()
+            typeof data?.meta?.thumbnail == 'string' and iframe.contentWindow.PLAYER.player.poster(data.meta.thumbnail)
         )
 
     play: ->

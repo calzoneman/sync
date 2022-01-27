@@ -61,6 +61,9 @@ function formatURL(data) {
             }
         case "bc":
             return `https://www.bitchute.com/video/${data.id}/`;
+        case "bn":
+            const [artist,track] = data.id.split(';');
+            return `https://${artist}.bandcamp.com/track/${track}`;
         default:
             return "#";
     }
@@ -1400,6 +1403,12 @@ function parseMediaLink(url) {
                 return { type: 'bc', id: `${data.pathname.slice(7).split('/').shift()}` }
             }
 
+    }
+
+    if(data.hostname.endsWith('.bandcamp.com') && data.pathname.startsWith('/track/')){
+        const artist = data.hostname.replace('.bandcamp.com','')
+        const track = data.pathname.replace('/track/','')
+        return { type: 'bn', id: `${artist};${track}` }
     }
 
     /* PeerTubes */
