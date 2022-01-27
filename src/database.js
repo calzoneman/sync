@@ -85,6 +85,9 @@ module.exports.init = function (newDB) {
                 require('@cytube/mediaquery/lib/provider/youtube').setCache(
                     new MetadataCacheDB(db)
                 );
+                require('@cytube/mediaquery/lib/provider/bitchute').setCache(
+                    new MetadataCacheDB(db)
+                );
             }).catch(error => {
                 LOGGER.error(error.stack);
                 process.exit(1);
