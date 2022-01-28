@@ -6,25 +6,28 @@ var path = require('path');
 
 var order = [
     'base.coffee',
+
+    'dailymotion.coffee',
+    'peertube.coffee',
+    'soundcloud.coffee',
+    'twitch.coffee',
     'vimeo.coffee',
     'youtube.coffee',
-    'dailymotion.coffee',
-    'videojs.coffee',
+
     'playerjs.coffee',
-    'streamable.coffee',
-    'gdrive-player.coffee',
-    'raw-file.coffee',
-    'soundcloud.coffee',
+        'iframechild.coffee',
+        'odysee.coffee',
+        'streamable.coffee',
     'embed.coffee',
-    'twitch.coffee',
-    'livestream.com.coffee',
-    'custom-embed.coffee',
-    'rtmp.coffee',
-    'hls.coffee',
-    'twitchclip.coffee',
-    'peertube.coffee',
-    'iframechild.coffee',
-    'odysee.coffee',
+        'custom-embed.coffee',
+        'livestream.com.coffee',
+        'twitchclip.coffee',
+    'videojs.coffee',
+        'gdrive-player.coffee',
+        'hls.coffee',
+        'raw-file.coffee',
+        'rtmp.coffee',
+
     'update.coffee'
 ];
 

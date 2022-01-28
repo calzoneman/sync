@@ -6,7 +6,30 @@ window.StreamablePlayer = class StreamablePlayer extends PlayerJSPlayer
         super(data)
 
     load: (data) ->
-        data.meta.playerjs =
-            src: "https://streamable.com/e/#{data.id}"
+        @ready = false
+        @finishing = false
+        @setMediaProperties(data)
 
-        super(data)
+        waitUntilDefined(window, 'playerjs', =>
+            iframe = $('<iframe/>')
+                    .attr(
+                        src: "https://streamable.com/e/#{data.id}"
+                        allow: 'autoplay; fullscreen'
+                    )
+
+            removeOld(iframe)
+            @setupPlayer(iframe[0])
+            @player.on('ready', =>
+                # Streamable does not implement ended event since it loops
+                # gotta use a timeupdate hack
+                @player.on('timeupdate', (time) =>
+                    if time.duration - time.seconds < 1 and not @finishing
+                        setTimeout(=>
+                            if CLIENT.leader
+                                socket.emit('playNext')
+                            @pause()
+                        , (time.duration - time.seconds) * 1000)
+                        @finishing = true
+                )
+            )
+        )
