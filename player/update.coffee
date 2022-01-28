@@ -17,6 +17,7 @@ TYPE_MAP =
     pt: PeerPlayer
     bc: IframeChild
     bn: IframeChild
+    od: OdyseePlayer
 
 window.loadMediaPlayer = (data) ->
     try

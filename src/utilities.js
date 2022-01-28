@@ -213,6 +213,9 @@
             case "bn":
                 const [artist,track] = id.split(';');
                 return `https://${artist}.bandcamp.com/track/${track}`;
+            case "od":
+                const [user,video] = id.split(';');
+                return `https://odysee.com/@${user}/${video}`;
             default:
                 return "";
         }
