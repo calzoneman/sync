@@ -64,6 +64,9 @@ function formatURL(data) {
         case "bn":
             const [artist,track] = data.id.split(';');
             return `https://${artist}.bandcamp.com/track/${track}`;
+        case "od":
+            const [user,video] = data.id.split(';');
+            return `https://odysee.com/@${user}/${video}`;
         default:
             return "#";
     }
@@ -1403,6 +1406,12 @@ function parseMediaLink(url) {
                 return { type: 'bc', id: `${data.pathname.slice(7).split('/').shift()}` }
             }
 
+        case 'odysee.com':
+            const format = new RegExp('/@(?<user>[^:]+)(?::\\w)?/(?<video>[^:]+)');
+            if(format.test(data.pathname)){
+                const {user,video} = (data.pathname.match(format)['groups']);
+                return { type: 'od', id: `${user};${video}` }
+            }
     }
 
     if(data.hostname.endsWith('.bandcamp.com') && data.pathname.startsWith('/track/')){

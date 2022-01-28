@@ -24,6 +24,7 @@ var order = [
     'twitchclip.coffee',
     'peertube.coffee',
     'iframechild.coffee',
+    'odysee.coffee',
     'update.coffee'
 ];
 

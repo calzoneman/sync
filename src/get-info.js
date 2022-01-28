@@ -6,6 +6,7 @@ const ffmpeg = require("./ffmpeg");
 const mediaquery = require("@cytube/mediaquery");
 const YouTube = require("@cytube/mediaquery/lib/provider/youtube");
 const Vimeo = require("@cytube/mediaquery/lib/provider/vimeo");
+const Odysee = require("@cytube/mediaquery/lib/provider/odysee");
 const PeerTube = require("@cytube/mediaquery/lib/provider/peertube");
 const BitChute = require("@cytube/mediaquery/lib/provider/bitchute");
 const BandCamp = require("@cytube/mediaquery/lib/provider/bandcamp");
@@ -391,6 +392,16 @@ var Getters = {
     bc: function (id, callback) {
         BitChute.lookup(id).then(video => {
             video = new Media(video.id, video.title, video.duration, "bc", video.meta);
+            callback(null, video);
+        }).catch(error => {
+            callback(error.message || error);
+        });
+    },
+
+    /* Odysee */
+    od: function (id, callback) {
+        Odysee.lookup(id).then(video => {
+            video = new Media(video.id, video.title, video.duration, "od", video.meta);
             callback(null, video);
         }).catch(error => {
             callback(error.message || error);
