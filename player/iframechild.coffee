@@ -25,7 +25,7 @@ window.IframeChild = class IframeChild extends PlayerJSPlayer
         iframe.addEventListener('load', =>
             iframe.contentWindow.VOLUME = VOLUME;
             iframe.contentWindow.loadMediaPlayer(Object.assign({}, data, { type: 'cm' } ))
-            iframe.contentWindow.document.querySelector('#ytapiplayer').classList.add('vjs-fluid')
+            iframe.contentWindow.document.querySelector('#ytapiplayer').classList.add('vjs-16-9')
             adapter = iframe.contentWindow.playerjs.VideoJSAdapter(iframe.contentWindow.PLAYER.player)
             adapter.ready()
             typeof data?.meta?.thumbnail == 'string' and iframe.contentWindow.PLAYER.player.poster(data.meta.thumbnail)
