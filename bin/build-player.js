@@ -8,6 +8,7 @@ var order = [
     'base.coffee',
 
     'dailymotion.coffee',
+    'niconico.coffee',
     'peertube.coffee',
     'soundcloud.coffee',
     'twitch.coffee',

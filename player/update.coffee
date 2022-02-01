@@ -18,6 +18,7 @@ TYPE_MAP =
     bc: IframeChild
     bn: IframeChild
     od: OdyseePlayer
+    nv: NicoPlayer
 
 window.loadMediaPlayer = (data) ->
     try
@@ -109,7 +110,8 @@ window.removeOld = (replace) ->
     $('#soundcloud-volume-holder').remove()
     replace ?= $('<div/>').addClass('embed-responsive-item')
     old = $('#ytapiplayer')
+    old.attr('id', 'ytapiplayer-old')
+    replace.attr('id', 'ytapiplayer')
     replace.insertBefore(old)
     old.remove()
-    replace.attr('id', 'ytapiplayer')
     return replace
