@@ -67,6 +67,8 @@ function formatURL(data) {
         case "od":
             const [user,video] = data.id.split(';');
             return `https://odysee.com/@${user}/${video}`;
+        case "nv":
+            return `https://www.nicovideo.jp/watch/${data.id}`;
         default:
             return "#";
     }
@@ -1404,6 +1406,11 @@ function parseMediaLink(url) {
         case 'bitchute.com':
             if(data.pathname.startsWith('/video/')){
                 return { type: 'bc', id: `${data.pathname.slice(7).split('/').shift()}` }
+            }
+
+        case 'nicovideo.jp':
+            if(data.pathname.startsWith('/watch/')){
+                return { type: 'nv', id: `${data.pathname.slice(7).split('/').shift()}` }
             }
 
         case 'odysee.com':

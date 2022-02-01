@@ -216,6 +216,8 @@
             case "od":
                 const [user,video] = id.split(';');
                 return `https://odysee.com/@${user}/${video}`;
+            case "nv":
+                return `https://www.nicovideo.jp/watch/${id}`;
             default:
                 return "";
         }

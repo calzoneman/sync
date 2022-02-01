@@ -10,6 +10,7 @@ const Odysee = require("@cytube/mediaquery/lib/provider/odysee");
 const PeerTube = require("@cytube/mediaquery/lib/provider/peertube");
 const BitChute = require("@cytube/mediaquery/lib/provider/bitchute");
 const BandCamp = require("@cytube/mediaquery/lib/provider/bandcamp");
+const Nicovideo = require("@cytube/mediaquery/lib/provider/nicovideo");
 const Streamable = require("@cytube/mediaquery/lib/provider/streamable");
 const TwitchVOD = require("@cytube/mediaquery/lib/provider/twitch-vod");
 const TwitchClip = require("@cytube/mediaquery/lib/provider/twitch-clip");
@@ -412,6 +413,16 @@ var Getters = {
     bn: function (id, callback) {
         BandCamp.lookup(id).then(video => {
             video = new Media(video.id, video.title, video.duration, "bn", video.meta);
+            callback(null, video);
+        }).catch(error => {
+            callback(error.message || error);
+        });
+    },
+
+    /* Niconico */
+    nv: function (id, callback) {
+        Nicovideo.lookup(id).then(video => {
+            video = new Media(video.id, video.title, video.duration, "nv", video.meta);
             callback(null, video);
         }).catch(error => {
             callback(error.message || error);
