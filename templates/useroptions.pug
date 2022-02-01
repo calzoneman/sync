@@ -68,11 +68,6 @@ mixin us-playback
     form.form-horizontal(action="javascript:void(0)")
       +rcheckbox("us-synch", "Synchronize video playback")
       +textbox("us-synch-accuracy", "Synch threshold (seconds)", "2")
-      +rcheckbox("us-wmode-transparent", "Set wmode=transparent")
-      .form-group
-        .col-sm-4
-        .col-sm-8
-          p.text-info Setting <code>wmode=transparent</code> allows objects to be displayed above the video player, but may cause performance issues on some systems.
       +rcheckbox("us-hidevideo", "Remove the video player")
       +rcheckbox("us-playlistbuttons", "Hide playlist buttons by default")
       +rcheckbox("us-oldbtns", "Old style playlist buttons")

@@ -12,7 +12,6 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
 
             params =
                 autoplay: 1
-                wmode: if USEROPTS.wmode_transparent then 'transparent' else 'opaque'
                 logo: 0
 
             quality = @mapQuality(USEROPTS.default_quality)

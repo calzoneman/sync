@@ -13,13 +13,8 @@ window.VimeoPlayer = class VimeoPlayer extends Player
             removeOld(video)
             video.attr(
                 src: "https://player.vimeo.com/video/#{data.id}"
-                webkitallowfullscreen: true
-                mozallowfullscreen: true
-                allowfullscreen: true
+                allow: 'autoplay; fullscreen'
             )
-
-            if USEROPTS.wmode_transparent
-                video.attr('wmode', 'transparent')
 
             @vimeo = new Vimeo.Player(video[0])
 

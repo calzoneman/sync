@@ -1168,6 +1168,8 @@ const Callbacks = {
     }
 };
 
+window.Callbacks = Callbacks;
+
 var SOCKET_DEBUG = {
     enabled: (localStorage.getItem('cytube_socket_debug') === 'true'),
     omit: (((data)=>{

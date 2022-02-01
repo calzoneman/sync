@@ -12,7 +12,6 @@ window.YouTubePlayer = class YouTubePlayer extends Player
             waitUntilDefined(YT, 'Player', =>
                 removeOld()
 
-                wmode = if USEROPTS.wmode_transparent then 'transparent' else 'opaque'
                 @yt = new YT.Player('ytapiplayer',
                     videoId: data.id
                     playerVars:
@@ -21,7 +20,6 @@ window.YouTubePlayer = class YouTubePlayer extends Player
                         controls: 1
                         iv_load_policy: 3 # iv_load_policy 3 indicates no annotations
                         rel: 0
-                        wmode: wmode
                     events:
                         onReady: @onReady.bind(this)
                         onStateChange: @onStateChange.bind(this)

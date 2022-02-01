@@ -122,7 +122,6 @@ var USEROPTS = {
     synch                : getOrDefault("synch", true),
     sync_accuracy        : getOrDefault("sync_accuracy", 2),
     hidevid              : getOrDefault("hidevid", false),
-    wmode_transparent    : getOrDefault("wmode_transparent", true),
     default_quality      : getOrDefault("default_quality", "auto"),
     qbtn_hide            : getOrDefault("qbtn_hide", false),
     qbtn_idontlikechange : getOrDefault("qbtn_idontlikechange", false),
