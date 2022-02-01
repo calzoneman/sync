@@ -917,7 +917,7 @@ function handleCSSJSTooLarge(selector) {
         this.parentNode.insertBefore(notice[0], this);
     } else {
         let notice = document.querySelector(selector);
-        notice.remove();
+        notice?.remove();
     }
 }
 

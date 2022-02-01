@@ -649,7 +649,6 @@ function showUserOptions() {
 
     $("#us-synch").prop("checked", USEROPTS.synch);
     $("#us-synch-accuracy").val(USEROPTS.sync_accuracy);
-    $("#us-wmode-transparent").prop("checked", USEROPTS.wmode_transparent);
     $("#us-hidevideo").prop("checked", USEROPTS.hidevid);
     $("#us-playlistbuttons").prop("checked", USEROPTS.qbtn_hide);
     $("#us-oldbtns").prop("checked", USEROPTS.qbtn_idontlikechange);
@@ -687,7 +686,6 @@ function saveUserOptions() {
 
     USEROPTS.synch                = $("#us-synch").prop("checked");
     USEROPTS.sync_accuracy        = parseFloat($("#us-synch-accuracy").val()) || 2;
-    USEROPTS.wmode_transparent    = $("#us-wmode-transparent").prop("checked");
     USEROPTS.hidevid              = $("#us-hidevideo").prop("checked");
     USEROPTS.qbtn_hide            = $("#us-playlistbuttons").prop("checked");
     USEROPTS.qbtn_idontlikechange = $("#us-oldbtns").prop("checked");

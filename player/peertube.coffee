@@ -51,9 +51,6 @@ window.PeerPlayer = class PeerPlayer extends Player
                 allow: 'autoplay; fullscreen'
             )
 
-            if USEROPTS.wmode_transparent
-                video.attr('wmode', 'transparent')
-
             @peertube = new PeerTubePlayer(video[0])
 
             @peertube.addEventListener('playbackStatusChange', (status) =>
