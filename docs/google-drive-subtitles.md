@@ -1,4 +1,8 @@
-Adding subtitles to Google Drive
+# Probably not working anymore
+
+According to recent bug reports, this feature no longer works.  Since I [no longer support Google Drive](https://github.com/calzoneman/sync/wiki/Frequently-Asked-Questions#why-dont-you-support-google-drive-anymore), I have no plans to fix this.
+
+~~Adding subtitles to Google Drive~~
 ================================
 
   1. Upload your video to Google Drive
@@ -8,10 +12,10 @@ Adding subtitles to Google Drive
     * I have verified that Google Drive will accept .srt and .vtt subtitles.  It
       might accept others as well, but I have not tested them.
 
-Once you have uploaded your subtitles, they should be available the next time
+~~Once you have uploaded your subtitles, they should be available the next time
 the video is refreshed by CyTube (either restart it or delete the playlist item
 and add it again).  On the video you should see a speech bubble icon in the
-controls, which will pop up a menu of available subtitle tracks.
+controls, which will pop up a menu of available subtitle tracks.~~
 
 ## Limitations ##
 
