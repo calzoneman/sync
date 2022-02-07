@@ -882,6 +882,7 @@ $("#emotelistbtn").on('click', function () {
     EMOTELISTMODAL.modal();
 });
 
+EMOTELISTMODAL.on('shown.bs.modal', function () { $('.emotelist-search').trigger('focus') });
 EMOTELISTMODAL.find(".emotelist-alphabetical").change(function () {
     USEROPTS.emotelist_sort = this.checked;
     setOpt("emotelist_sort", USEROPTS.emotelist_sort);
