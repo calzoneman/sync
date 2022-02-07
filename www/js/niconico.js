@@ -206,7 +206,7 @@ class NicovideoEmbed {
     }
 
     mute(state){
-        this.postMessage({ eventName: 'pause', data: { mute: state } });
+        this.postMessage({ eventName: 'mute', data: { mute: state } });
     }
 
     pause(){
@@ -226,7 +226,7 @@ class NicovideoEmbed {
     }
 
     volumeChange(volume){
-        this.postMessage({ eventName: 'pause', data: { volume } });
+        this.postMessage({ eventName: 'volumeChange', data: { volume } });
     }
 
 }
