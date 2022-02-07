@@ -1,6 +1,7 @@
-/*! videojs-resolution-switcher - 2015-7-26
+/*! videojs-resolution-switcher - 2022-02-07
  * Copyright (c) 2016 Kasper Moskwiak
  * Modified by Pierre Kraft and Derk-Jan Hartman
+ * Modified by Nisaba
  * Licensed under the Apache-2.0 license. */
 
 (function() {
@@ -58,11 +59,11 @@
         this.controlText('Quality');
 
         if(options.dynamicLabel){
-          videojs.addClass(this.label, 'vjs-resolution-button-label');
+          videojs.dom.addClass(this.label, 'vjs-resolution-button-label');
           this.el().appendChild(this.label);
         }else{
           var staticLabel = document.createElement('span');
-          videojs.addClass(staticLabel, 'vjs-menu-icon');
+          videojs.dom.addClass(staticLabel, 'vjs-menu-icon');
           this.el().appendChild(staticLabel);
         }
         player.on('updateSources', videojs.bind( this, this.update ) );
@@ -167,9 +168,7 @@
         }
 
         // Change player source and wait for loadeddata event, then play video
-        // loadedmetadata doesn't work right now for flash.
-        // Probably because of https://github.com/videojs/video-js-swf/issues/124
-        // If player preload is 'none' and then loadeddata not fired. So, we need timeupdate event for seek handle (timeupdate doesn't work properly with flash)
+        // If player preload is 'none' and then loadeddata not fired. So, we need timeupdate event for seek handle
         var handleSeekEvent = 'loadeddata';
         if(this.player_.techName_ !== 'Youtube' && this.player_.preload() === 'none' && this.player_.techName_ !== 'Flash') {
           handleSeekEvent = 'timeupdate';
@@ -178,10 +177,8 @@
           .setSourcesSanitized(sources, label, customSourcePicker || settings.customSourcePicker)
           .one(handleSeekEvent, function() {
             player.currentTime(currentTime);
-            player.handleTechSeeked_();
-            if(!isPaused){
-              // Start playing and hide loadingSpinner (flash issue ?)
-              player.play().handleTechSeeked_();
+            if (!isPaused && player.paused()) {
+              player.play()
             }
             player.trigger('resolutionchange');
           });
@@ -348,7 +345,7 @@
           };
         }
         if(player.options_.sources.length > 1){
-          // tech: Html5 and Flash
+          // tech: Html5
           // Create resolution switcher for videos form <source> tag inside <video>
           player.updateSrc(player.options_.sources);
         }
@@ -362,6 +359,6 @@
     };
 
     // register the plugin
-    videojs.plugin('videoJsResolutionSwitcher', videoJsResolutionSwitcher);
+    videojs.registerPlugin('videoJsResolutionSwitcher', videoJsResolutionSwitcher);
   })(window, videojs);
 })();
