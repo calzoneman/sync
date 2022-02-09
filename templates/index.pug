@@ -21,8 +21,15 @@ block content
 
 append footer
   script(type="text/javascript").
-    $("#channelname").keydown(function (ev) {
+    const entrance = document.querySelector('#channelname');
+    entrance.addEventListener('keydown', function (ev) {
       if (ev.keyCode === 13) {
-        location.href = "/#{channelPath}/" + $("#channelname").val();
+        const channel = `/${CHANNELPATH}/${entrance.value}`;
+        if (ev.shiftKey || ev.ctrlKey) {
+          window.open(channel, '_blank');
+          entrance.value = '';
+        } else {
+          location.href = channel;
+        }
       }
     });
