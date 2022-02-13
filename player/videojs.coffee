@@ -46,6 +46,10 @@ hasAnyTextTracks = (data) ->
     ntracks = data?.meta?.textTracks?.length ? 0
     return ntracks > 0
 
+hasAnyAudioTracks = (data) ->
+    ntracks = data?.meta?.audioTracks?.length ? 0
+    return ntracks > 0
+
 window.VideoJSPlayer = class VideoJSPlayer extends Player
     constructor: (data) ->
         if not (this instanceof VideoJSPlayer)
@@ -108,13 +112,21 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                     $('<track/>').attr(attrs).appendTo(video)
                 )
 
+            pluginData =
+                videoJsResolutionSwitcher:
+                    default: @sources[0].res
+
+            if hasAnyAudioTracks(data)
+                pluginData.audioSwitch =
+                    audioTracks: data.meta.audioTracks,
+                    volume: VOLUME
+
             @player = videojs(video[0],
                     # https://github.com/Dash-Industry-Forum/dash.js/issues/2184
                     autoplay: @sources[0].type != 'application/dash+xml',
                     controls: true,
-                    plugins:
-                        videoJsResolutionSwitcher:
-                            default: @sources[0].res
+                    plugins: pluginData
+
             )
             @player.ready(=>
                 # Have to use updateSrc instead of <source> tags
