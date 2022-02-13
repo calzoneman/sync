@@ -1563,6 +1563,14 @@ function addChatMessage(data) {
     if (data.meta.shadow && !USEROPTS.show_shadowchat) {
         return;
     }
+    // This is so we discard repeated messages
+    // which become annoying when the user is experiencing repeated socketio reconnects
+    if (data.time < LASTCHAT.time) {
+        return;
+    } else {
+        LASTCHAT.time = data.time;
+    }
+
     var msgBuf = $("#messagebuffer");
     var div = formatChatMessage(data, LASTCHAT);
     // Incoming: a bunch of crap for the feature where if you hover over
