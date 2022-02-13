@@ -477,7 +477,7 @@
         audio.currentTime = time;
     };
     function audioSwitchPlugin(options) {
-        const {audioElement, audioTracks, debugInterval, syncInterval, volume} = options;
+        const {audioElement, audioTracks, debugInterval, syncInterval, volume, handleDisposal} = options;
         const player = this;
         const checkAudioElement = () => {
             const videoElement = player.el_;
@@ -533,6 +533,13 @@
             audioTracks.forEach(track => audioTrackList.addTrack(new videojs.AudioTrack(track)));
             audio.setAttribute('src', audioTracks[0].url);
         }
+        player.on('dispose', () => {
+            this.audio.pause();
+            if(this.isOurAudio || handleDisposal){
+                this.audio.remove();
+                this.audioParent.remove();
+            }
+        });
         player.on('play', () => {
             syncTime(player, audio);
             if (audio.paused)
