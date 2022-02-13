@@ -49,7 +49,8 @@ var CHATMAXSIZE = 100;
 var SCROLLCHAT = true;
 var IGNORE_SCROLL_EVENT = false;
 var LASTCHAT = {
-    name: ""
+    name: "",
+    time: 0
 };
 var FOCUSED = true;
 var PAGETITLE = "CyTube";

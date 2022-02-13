@@ -1170,6 +1170,8 @@ const Callbacks = {
 
 window.Callbacks = Callbacks;
 
+// For sanity, do this
+//   localStorage.setItem('cytube_socket_omissions', '["mediaUpdate"]')
 var SOCKET_DEBUG = {
     enabled: (localStorage.getItem('cytube_socket_debug') === 'true'),
     omit: (((data)=>{
