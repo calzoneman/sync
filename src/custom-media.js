@@ -22,8 +22,9 @@ const SOURCE_CONTENT_TYPES = new Set([
     'application/dash+xml',
     'application/x-mpegURL',
     'audio/aac',
-    'audio/ogg',
+    'audio/mp4',
     'audio/mpeg',
+    'audio/ogg',
     'audio/opus',
     'video/mp4',
     'video/ogg',
@@ -36,8 +37,9 @@ const LIVE_ONLY_CONTENT_TYPES = new Set([
 
 const AUDIO_ONLY_CONTENT_TYPES = new Set([
     'audio/aac',
-    'audio/ogg',
+    'audio/mp4',
     'audio/mpeg',
+    'audio/ogg',
     'audio/opus'
 ]);
 
@@ -142,6 +144,7 @@ export function convert(id, data) {
 
     const meta = {
         direct: sources,
+        audioTracks: data.audioTracks,
         textTracks: data.textTracks,
         thumbnail: data.thumbnail, // Currently ignored by Media
         live: !!data.live          // Currently ignored by Media
@@ -170,11 +173,12 @@ export function validate(data) {
         validateURL(data.thumbnail);
     }
 
-    validateSources(data.sources);
+    validateSources(data.sources, data);
+    validateAudioTracks(data.audioTracks);
     validateTextTracks(data.textTracks);
 }
 
-function validateSources(sources) {
+function validateSources(sources, data) {
     if (!Array.isArray(sources))
         throw new ValidationError('sources must be a list');
     if (sources.length === 0)
@@ -206,6 +210,45 @@ function validateSources(sources) {
                 throw new ValidationError(
                     'source bitrate must be a non-negative finite number'
                 );
+        }
+    }
+}
+
+function validateAudioTracks(audioTracks) {
+    if (typeof audioTracks === 'undefined') {
+        return;
+    }
+
+    if (!Array.isArray(audioTracks)){
+        throw new ValidationError('audioTracks must be a list');
+    }
+
+    for (let track of audioTracks) {
+        if (typeof track.url !== 'string'){
+            throw new ValidationError('audio track URL must be a string');
+        }
+        validateURL(track.url);
+
+        if (!AUDIO_ONLY_CONTENT_TYPES.has(track.contentType)){
+            throw new ValidationError(
+                `unacceptable audio track contentType "${track.contentType}"`
+            );
+        }
+        if (typeof track.label !== 'string'){
+            throw new ValidationError('audio track label must be a string');
+        }
+        if (!track.label){
+            throw new ValidationError('audio track label must be nonempty');
+        }
+
+        if (typeof track.language !== 'string'){
+            throw new ValidationError('audio track language must be a string');
+        }
+        if (!track.language){
+            throw new ValidationError('audio track language must be nonempty');
+        }
+        if (!/^[a-z]{2,3}$/.test(track.language)){
+            throw new ValidationError('audio track language must be a two or three letter IETF BCP 47 subtag');
         }
     }
 }
