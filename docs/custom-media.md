@@ -1,7 +1,7 @@
 CyTube Custom Content Metadata
 ==============================
 
-*Last updated: 2019-05-05*
+*Last updated: 2022-02-12*
 
 ## Purpose ##
 
@@ -61,6 +61,8 @@ To add custom content, the user provides a JSON object with the following keys:
     playlist, but this functionality may be offered in the future.
   * `sources`: A nonempty list of playable sources for the content.  The format
     is described below.
+  * `audioTracks`: An optional list of audio tracks for using demuxed audio
+    and providing multiple audio selections. The format is described below.
   * `textTracks`: An optional list of text tracks for subtitles or closed
     captioning.  The format is described below.
 
@@ -99,18 +101,45 @@ The following MIME types are accepted for the `contentType` field:
       RTMP streams are only supported through the existing `rt:` media
       type.
   * `audio/aac`
-  * `audio/ogg`
+  * `audio/mp4`
   * `audio/mpeg`
+  * `audio/ogg`
 
 Other audio or video formats, such as AVI, MKV, and FLAC, are not supported due
 to lack of common support across browsers for playing these formats.  For more
 information, refer to
 [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Supported_media_formats#Browser_compatibility).
 
+### Audio Track Format ###
+
+Each audio track entry is a JSON object with the following keys:
+
+  * `label`: A label for the audio track.  This is displayed in the menu for the
+    viewer to select a text track.
+  * `language`: A two or three letter IETF BCP 47 subtype code indicating the
+    language of the audio track.
+  * `url`: A valid URL that browsers can use to retrieve the track.  The URL
+    must resolve to a publicly-routed IP address, and must use the `https:` scheme.
+  * `contentType`: A string representing the MIME type of the track at `url`.
+    Any type starting with `audio` from the list above is acceptable. However
+    the usage of audio/aac is known to cause audio syncrhonization problems
+    for some users. It is recommended to use an m4a file to wrap aac streams.
+
+**Important note regarding audio tracks:**
+
+Because of browsers trying to be too smart for their own good, you should
+include a silent audio stream in the video sources when using separate audio
+tracks. If you do not, the browser will automatically pause the video whenever
+the browser detects the page as not visible. There is no way to instruct it to
+not do so. You can readily accomplish the inclusion of a silent audio track
+with ffmpeg using the anullsrc filter like so:
+`ffmpeg -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=48000 -i input.mp4 -c:v copy -c:a aac -shortest output.mp4`
+It is recommended to match the sample rate and codec you intend to use in your
+audioTracks in your silent track.
+
 ### Text Track Format ###
 
 Each text track entry is a JSON object with the following keys:
-
 
   * `url`: A valid URL that browsers can use to retrieve the track.  The URL
     must resolve to a publicly-routed IP address, and must the `https:` scheme.
@@ -177,3 +206,5 @@ non-exhaustive.
     to the browser.
   * The manifest includes source URLs or text track URLs with expiration times,
     session IDs, etc. in the URL querystring.
+  * The manifest provides source URLs with non-silent audio as well as a list
+    of audioTracks.
