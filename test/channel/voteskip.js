@@ -102,6 +102,23 @@ describe('VoteskipModule', () => {
             voteskipModule.update();
             assert(sentMessage, 'Expected voteskip passed message');
         });
+
+        it('requires at least one vote to pass', () => {
+            let sentMessage = false;
+            fakeChannel.broadcastAll = (frame, data) => {
+                assert.strictEqual(frame, 'chatMsg');
+                assert(/voteskip passed/i.test(data.msg), 'Expected voteskip passed message')
+                sentMessage = true;
+            };
+            fakeUser.is = flag => (flag == Flags.U_AFK);
+            voteskipModule.poll = {
+                toUpdateFrame() {
+                    return { counts: [0] };
+                }
+            };
+            voteskipModule.update();
+            assert(!sentMessage, 'Expected voteskip not to pass');
+        });
     });
 
     describe('#calcUsercounts', () => {

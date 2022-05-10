@@ -80,7 +80,10 @@ VoteskipModule.prototype.update = function () {
 
     const { counts } = this.poll.toUpdateFrame(false);
     const { total, eligible, noPermission, afk } = this.calcUsercounts();
-    const need = Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"));
+    const need = Math.max(
+        1, // Require at least one vote, see #944
+        Math.ceil(eligible * this.channel.modules.options.get("voteskip_ratio"))
+    );
     if (counts[0] >= need) {
         const info = `${counts[0]}/${eligible} skipped; ` +
             `eligible voters: ${eligible} = total (${total}) - AFK (${afk}) ` +
