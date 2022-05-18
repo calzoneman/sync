@@ -90,15 +90,6 @@ describe('custom-media', () => {
             assert.throws(() => validate(invalid), /URL protocol must be HTTPS/);
         });
 
-        it('rejects non-live DASH', () => {
-            invalid.live = false;
-            invalid.sources[0].contentType = 'application/dash+xml';
-
-            assert.throws(
-                () => validate(invalid),
-                /contentType "application\/dash\+xml" requires live: true/
-            );
-        });
     });
 
     describe('#validateSources', () => {
