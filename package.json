@@ -2,7 +2,7 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.82.10",
+  "version": "3.82.11",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },

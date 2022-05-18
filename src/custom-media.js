@@ -30,10 +30,6 @@ const SOURCE_CONTENT_TYPES = new Set([
     'video/webm'
 ]);
 
-const LIVE_ONLY_CONTENT_TYPES = new Set([
-    'application/dash+xml'
-]);
-
 export function lookup(url, opts) {
     if (!opts) opts = {};
     if (!opts.hasOwnProperty('timeout')) opts.timeout = 10000;
@@ -163,11 +159,11 @@ export function validate(data) {
         validateURL(data.thumbnail);
     }
 
-    validateSources(data.sources, data);
+    validateSources(data.sources);
     validateTextTracks(data.textTracks);
 }
 
-function validateSources(sources, data) {
+function validateSources(sources) {
     if (!Array.isArray(sources))
         throw new ValidationError('sources must be a list');
     if (sources.length === 0)
@@ -181,11 +177,6 @@ function validateSources(sources, data) {
         if (!SOURCE_CONTENT_TYPES.has(source.contentType))
             throw new ValidationError(
                 `unacceptable source contentType "${source.contentType}"`
-            );
-
-        if (LIVE_ONLY_CONTENT_TYPES.has(source.contentType) && !data.live)
-            throw new ValidationError(
-                `contentType "${source.contentType}" requires live: true`
             );
 
         if (!SOURCE_QUALITIES.has(source.quality))
