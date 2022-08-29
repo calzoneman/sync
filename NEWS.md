@@ -1,3 +1,12 @@
+2022-08-28
+==========
+
+This release integrates Xaekai's added support for Bandcamp, BitChute, Odysee,
+and Nicovideo playback support into the main repository.  The updated support
+for custom fonts and audio tracks in custom media manifests is also included,
+but does not work out of the box -- it requires a separate channel script; this
+may be addressed in the future.
+
 2021-08-14
 ==========
 

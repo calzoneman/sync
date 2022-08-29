@@ -15,20 +15,26 @@ var order = [
     'vimeo.coffee',
     'youtube.coffee',
 
+    // playerjs-based players
     'playerjs.coffee',
-        'iframechild.coffee',
-        'odysee.coffee',
-        'streamable.coffee',
-    'embed.coffee',
-        'custom-embed.coffee',
-        'livestream.com.coffee',
-        'twitchclip.coffee',
-    'videojs.coffee',
-        'gdrive-player.coffee',
-        'hls.coffee',
-        'raw-file.coffee',
-        'rtmp.coffee',
+    'iframechild.coffee',
+    'odysee.coffee',
+    'streamable.coffee',
 
+    // iframe embed-based players
+    'embed.coffee',
+    'custom-embed.coffee',
+    'livestream.com.coffee',
+    'twitchclip.coffee',
+
+    // video.js-based players
+    'videojs.coffee',
+    'gdrive-player.coffee',
+    'hls.coffee',
+    'raw-file.coffee',
+    'rtmp.coffee',
+
+    // mediaUpdate handler
     'update.coffee'
 ];
 

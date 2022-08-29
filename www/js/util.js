@@ -3102,6 +3102,7 @@ CSEmoteList.prototype.loadPage = function (page) {
         var row = document.createElement("tr");
         tbody.appendChild(row);
 
+        // TODO: refactor this garbage
         (function (emote, row) {
             // Add delete button
             var tdDelete = document.createElement("td");
@@ -3201,25 +3202,58 @@ CSEmoteList.prototype.loadPage = function (page) {
                 $(tdImage).find(".popover").remove();
                 $urlDisplay.detach();
 
+                var inputGroup = document.createElement("div");
+                inputGroup.className = "input-group";
+
                 var editInput = document.createElement("input");
                 editInput.className = "form-control";
                 editInput.type = "text";
                 editInput.value = emote.image;
-                tdImage.appendChild(editInput);
+                inputGroup.appendChild(editInput);
+
+                var btnGroup = document.createElement("div");
+                btnGroup.className = "input-group-btn";
+
+                var saveBtn = document.createElement("button");
+                saveBtn.className = "btn btn-success";
+                saveBtn.textContent = "Save";
+                saveBtn.type = "button";
+                btnGroup.appendChild(saveBtn);
+
+                var cancelBtn = document.createElement("button");
+                cancelBtn.className = "btn btn-danger";
+                cancelBtn.textContent = "Cancel";
+                cancelBtn.type = "button";
+                btnGroup.appendChild(cancelBtn);
+
+                inputGroup.appendChild(btnGroup);
+                tdImage.appendChild(inputGroup);
+
                 editInput.focus();
 
                 function save() {
                     var val = editInput.value;
-                    tdImage.removeChild(editInput);
-                    tdImage.appendChild(urlDisplay);
+
+                    if (val === emote.image) {
+                        cleanup();
+                        return;
+                    }
 
                     socket.emit("updateEmote", {
                         name: emote.name,
                         image: val
                     });
+
+                    cleanup();
                 }
 
-                editInput.onblur = save;
+                function cleanup() {
+                    tdImage.removeChild(inputGroup);
+                    tdImage.appendChild(urlDisplay);
+                }
+
+                cancelBtn.onclick = cleanup;
+                saveBtn.onclick = save;
                 editInput.onkeyup = function (event) {
                     if (event.keyCode === 13) {
                         save();

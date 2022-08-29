@@ -3,6 +3,8 @@
  *    Written by Xaekai
  *    Copyright (c) 2022 Radiant Feather; Licensed AGPLv3
  *
+ *    Dual-licensed MIT when distributed with CyTube/sync.
+ *
  */
 class NicovideoEmbed {
     static origin = 'https://embed.nicovideo.jp';
@@ -65,6 +67,7 @@ class NicovideoEmbed {
             const source = new URL(`${NicovideoEmbed.origin}/watch/${videoId}`);
             source.search = new URLSearchParams({
                 jsapi: 1,
+                autoplay: 1,
                 playerId
             });
             iframe.setAttribute('src', source);

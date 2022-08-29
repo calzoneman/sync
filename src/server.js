@@ -204,6 +204,8 @@ var Server = function () {
     // background tasks init ----------------------------------------------
     require("./bgtask")(self);
 
+    require("./peertubelist").setupPeertubeDomains().then(() => {});
+
     // prometheus server
     const prometheusConfig = Config.getPrometheusConfig();
     if (prometheusConfig.isEnabled()) {

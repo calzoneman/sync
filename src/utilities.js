@@ -205,17 +205,20 @@
                 return "https://clips.twitch.tv/" + id;
             case "cm":
                 return id;
-            case "pt":
+            case "pt": {
                 const [domain,uuid] = id.split(';');
                 return `https://${domain}/videos/watch/${uuid}`;
+            }
             case "bc":
                 return `https://www.bitchute.com/video/${id}/`;
-            case "bn":
+            case "bn": {
                 const [artist,track] = id.split(';');
                 return `https://${artist}.bandcamp.com/track/${track}`;
-            case "od":
+            }
+            case "od": {
                 const [user,video] = id.split(';');
                 return `https://odysee.com/@${user}/${video}`;
+            }
             case "nv":
                 return `https://www.nicovideo.jp/watch/${id}`;
             default:
