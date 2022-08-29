@@ -233,7 +233,8 @@ describe('custom-media', () => {
                             contentType: 'text/vtt',
                             name: 'English Subtitles'
                         }
-                    ]
+                    ],
+                    thumbnail: 'https://example.com/thumb.jpg',
                 }
             };
         });
@@ -321,7 +322,8 @@ describe('custom-media', () => {
                             contentType: 'text/vtt',
                             name: 'English Subtitles'
                         }
-                    ]
+                    ],
+                    thumbnail: 'https://example.com/thumb.jpg',
                 }
             };
 

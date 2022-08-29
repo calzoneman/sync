@@ -176,6 +176,14 @@ export function validate(data) {
     validateSources(data.sources, data);
     validateAudioTracks(data.audioTracks);
     validateTextTracks(data.textTracks);
+    /*
+     * TODO: Xaekai's Octopus subtitle support uses a separate subTracks array
+     * in a slightly different format than textTracks.  That currently requires
+     * a channel script to use, but if that is integrated in core then it needs
+     * to be validated here (and ideally merged with textTracks so there is only
+     * one array).
+     */
+    validateFonts(data.fonts);
 }
 
 function validateSources(sources, data) {
@@ -198,8 +206,7 @@ function validateSources(sources, data) {
             throw new ValidationError(
                 `contentType "${source.contentType}" requires live: true`
             );
-
-        // TODO: This should be allowed
+        // TODO (Xaekai): This should be allowed
         if (/*!AUDIO_ONLY_CONTENT_TYPES.has(source.contentType) && */!SOURCE_QUALITIES.has(source.quality))
             throw new ValidationError(`unacceptable source quality "${source.quality}"`);
 
@@ -285,6 +292,20 @@ function validateTextTracks(textTracks) {
             else
                 default_count++;
         }
+    }
+}
+
+function validateFonts(fonts) {
+    if (typeof textTracks === 'undefined') {
+        return;
+    }
+
+    if (!Array.isArray(fonts))
+        throw new ValidationError('fonts must be a list of URLs');
+
+    for (let f of fonts) {
+        if (typeof f !== 'string')
+            throw new ValidationError('fonts must be a list of URLs');
     }
 }
 

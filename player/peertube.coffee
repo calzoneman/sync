@@ -21,7 +21,7 @@ window.PeerPlayer = class PeerPlayer extends Player
 
         site = new URL(document.URL).hostname
         embedSrc = data.meta.embed.domain
-        link = "<a href=\"http://#{embedSrc}\" target=\"_blank\"><strong>#{embedSrc}</strong></a>"
+        link = "<a href=\"http://#{embedSrc}\" target=\"_blank\" rel=\"noopener noreferer\"><strong>#{embedSrc}</strong></a>"
         alert = makeAlert('Privacy Advisory', PEERTUBE_EMBED_WARNING.replace('%link%', link).replace('%site%', site),
             'alert-warning')
             .removeClass('col-md-12')

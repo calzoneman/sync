@@ -196,7 +196,7 @@ class IOServer {
 
     handleConnection(socket) {
         if (!this.checkIPLimit(socket)) {
-            //return;
+            return;
         }
 
         patchTypecheckedFunctions(socket);
