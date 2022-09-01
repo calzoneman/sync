@@ -265,11 +265,21 @@ async function handleNewChannel(req, res) {
         });
     }
 
+    let banInfo = await db.channels.getBannedChannel(name);
+
     db.channels.listUserChannels(user.name, function (err, channels) {
         if (err) {
             sendPug(res, "account-channels", {
                 channels: [],
                 newChannelError: err
+            });
+            return;
+        }
+
+        if (banInfo !== null) {
+            sendPug(res, "account-channels", {
+                channels: channels,
+                newChannelError: `Cannot register "${name}": this channel is banned.`
             });
             return;
         }

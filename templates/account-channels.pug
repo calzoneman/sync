@@ -24,6 +24,7 @@ block content
           tbody
             for c in channels
               tr
+                // TODO: seems like it should be a <td>, lol
                 th
                   form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete " +c.name+ "?  This cannot be undone');")
                     input(type="hidden", name="_csrf", value=csrfToken)
@@ -32,6 +33,9 @@ block content
                     button.btn.btn-xs.btn-danger(type="submit") Delete
                       span.glyphicon.glyphicon-trash
                   a(href=`/${channelPath}/${c.name}`, style="margin-left: 5px")= c.name
+                  if c.banReason != null
+                    | &nbsp;
+                    span.label.label-danger Banned
     .col-lg-6.col-md-6
       h3 Register a new channel
       if newChannelError
