@@ -209,7 +209,9 @@ module.exports = {
             return;
         }
 
-        db.query("SELECT * FROM `channels` WHERE owner=?", [owner],
+        db.query("SELECT c.*, bc.external_reason as banReason " +
+                 "FROM channels c LEFT OUTER JOIN banned_channels bc " +
+                 "ON bc.channel_name = c.name WHERE c.owner=?", [owner],
         function (err, res) {
             if (err) {
                 callback(err, []);
@@ -245,13 +247,28 @@ module.exports = {
             return;
         }
 
-        db.query("SELECT * FROM `channels` WHERE name=?", chan.name, function (err, res) {
+        db.query("SELECT c.*, bc.external_reason as banReason " +
+                 "FROM channels c LEFT OUTER JOIN banned_channels bc " +
+                 "ON bc.channel_name = c.name WHERE c.name=? " +
+                 "UNION " +
+                 "SELECT c.*, bc.external_reason as banReason " +
+                 "FROM channels c RIGHT OUTER JOIN banned_channels bc " +
+                 "ON bc.channel_name = c.name WHERE bc.channel_name=? ",
+                [chan.name, chan.name],
+        function (err, res) {
             if (err) {
                 callback(err, null);
                 return;
             }
 
-            if (res.length === 0) {
+            if (res.length > 0 && res[0].banReason !== null) {
+                let banError = new Error(`Channel is banned: ${res[0].banReason}`);
+                banError.code = 'EBANNED';
+                callback(banError, null);
+                return;
+            }
+
+            if (res.length === 0 || res[0].id === null) {
                 callback("Channel is not registered", null);
                 return;
             }
@@ -703,6 +720,31 @@ module.exports = {
             if (error) {
                 LOGGER.error(`Failed to update owner_last_seen column for channel ID ${channelId}: ${error}`);
             }
+        });
+    },
+
+    getBannedChannel: async function getBannedChannel(name) {
+        if (!valid(name)) {
+            throw new Error("Invalid channel name");
+        }
+
+        return await db.getDB().runTransaction(async tx => {
+            let rows = await tx.table('banned_channels')
+                .where({ channel_name: name })
+                .select();
+
+            if (rows.length === 0) {
+                return null;
+            }
+
+            return {
+                channelName: rows[0].channel_name,
+                externalReason: rows[0].external_reason,
+                internalReason: rows[0].internal_reason,
+                bannedBy: rows[0].banned_by,
+                createdAt: rows[0].created_at,
+                updatedAt: rows[0].updated_at
+            };
         });
     }
 };

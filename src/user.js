@@ -102,10 +102,6 @@ User.prototype.handleJoinChannel = function handleJoinChannel(data) {
 
         if (!chan.is(Flags.C_READY)) {
             chan.once("loadFail", reason => {
-                this.socket.emit("errorMsg", {
-                    msg: reason,
-                    alert: true
-                });
                 this.kick(`Channel could not be loaded: ${reason}`);
             });
         }

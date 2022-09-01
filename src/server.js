@@ -71,6 +71,7 @@ var Server = function () {
     const globalMessageBus = this.initModule.getGlobalMessageBus();
     globalMessageBus.on('UserProfileChanged', this.handleUserProfileChange.bind(this));
     globalMessageBus.on('ChannelDeleted', this.handleChannelDelete.bind(this));
+    globalMessageBus.on('ChannelBanned', this.handleChannelBanned.bind(this));
     globalMessageBus.on('ChannelRegistered', this.handleChannelRegister.bind(this));
 
     // database init ------------------------------------------------------
@@ -546,6 +547,34 @@ Server.prototype.handleChannelDelete = function (event) {
         });
     } catch (error) {
         LOGGER.error('handleChannelDelete failed: %s', error);
+    }
+};
+
+Server.prototype.handleChannelBanned = function (event) {
+    try {
+        const lname = event.channel.toLowerCase();
+        const reason = event.externalReason;
+
+        this.channels.forEach(channel => {
+            if (channel.dead) return;
+
+            if (channel.uniqueName === lname) {
+                channel.clearFlag(Flags.C_REGISTERED);
+
+                const users = Array.prototype.slice.call(channel.users);
+                users.forEach(u => {
+                    u.kick(`Channel was banned: ${reason}`);
+                });
+
+                if (!channel.dead && !channel.dying) {
+                    channel.emit('empty');
+                }
+
+                LOGGER.info('Processed banned channel %s', lname);
+            }
+        });
+    } catch (error) {
+        LOGGER.error('handleChannelBanned failed: %s', error);
     }
 };
 

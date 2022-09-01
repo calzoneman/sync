@@ -94,7 +94,10 @@ function Channel(name) {
     }, USERCOUNT_THROTTLE);
     const self = this;
     db.channels.load(this, function (err) {
-        if (err && err !== "Channel is not registered") {
+        if (err && err.code === 'EBANNED') {
+            self.emit("loadFail", err.message);
+            self.setFlag(Flags.C_ERROR);
+        } else if (err && err !== "Channel is not registered") {
             self.emit("loadFail", "Failed to load channel data from the database.  Please try again later.");
             self.setFlag(Flags.C_ERROR);
         } else {

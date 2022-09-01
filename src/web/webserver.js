@@ -194,7 +194,13 @@ module.exports = {
             LOGGER.info('Enabled express-minify for CSS and JS');
         }
 
-        require('./routes/channel')(app, ioConfig, chanPath);
+        require('./routes/channel')(
+            app,
+            ioConfig,
+            chanPath,
+            async name => null
+            /*require('../database/channels').getBannedChannel*/
+        );
         require('./routes/index')(app, channelIndex, webConfig.getMaxIndexEntries());
         require('./routes/socketconfig')(app, clusterClient);
         require('./routes/contact')(app, webConfig);

@@ -156,4 +156,15 @@ export async function initTables() {
         t.primary(['type', 'id']);
         t.index('updated_at');
     });
+
+    await ensureTable('banned_channels', t => {
+        t.charset('utf8mb4');
+        t.string('channel_name', 30)
+            .notNullable()
+            .unique();
+        t.text('external_reason').notNullable();
+        t.text('internal_reason').notNullable();
+        t.string('banned_by', 20).notNullable();
+        t.timestamps(/* useTimestamps */ true, /* defaultToNow */ true);
+    });
 }
