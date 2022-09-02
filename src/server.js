@@ -48,6 +48,7 @@ import { PartitionModule } from './partition/partitionmodule';
 import { Gauge } from 'prom-client';
 import { EmailController } from './controller/email';
 import { CaptchaController } from './controller/captcha';
+import { BannedChannelsController } from './controller/banned-channels';
 
 var Server = function () {
     var self = this;
@@ -107,6 +108,11 @@ var Server = function () {
 
     const captchaController = new CaptchaController(
         Config.getCaptchaConfig()
+    );
+
+    self.bannedChannelsController = new BannedChannelsController(
+        self.db.channels,
+        globalMessageBus
     );
 
     // webserver init -----------------------------------------------------

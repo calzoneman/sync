@@ -2,6 +2,7 @@ var db = require("../database");
 var valid = require("../utilities").isValidChannelName;
 var Flags = require("../flags");
 var util = require("../utilities");
+// TODO: I think newer knex has native support for this
 import { createMySQLDuplicateKeyUpdate } from '../util/on-duplicate-key-update';
 import Config from '../config';
 
@@ -745,6 +746,27 @@ module.exports = {
                 createdAt: rows[0].created_at,
                 updatedAt: rows[0].updated_at
             };
+        });
+    },
+
+    putBannedChannel: async function putBannedChannel({ name, externalReason, internalReason, bannedBy }) {
+        if (!valid(name)) {
+            throw new Error("Invalid channel name");
+        }
+
+        return await db.getDB().runTransaction(async tx => {
+            let insert = tx.table('banned_channels')
+                .insert({
+                    channel_name: name,
+                    external_reason: externalReason,
+                    internal_reason: internalReason,
+                    banned_by: bannedBy
+                });
+            let update = tx.raw(createMySQLDuplicateKeyUpdate(
+                ['external_reason', 'internal_reason']
+            ));
+
+            return tx.raw(insert.toString() + update.toString());
         });
     }
 };

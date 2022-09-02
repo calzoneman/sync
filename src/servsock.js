@@ -34,7 +34,7 @@ export default class ServiceSocket {
                 delete this.connections[id];
             });
             stream.on('data', (msg) => {
-                this.handler(msg.toString());
+                this.handler(msg.toString(), stream);
             });
         }).listen(this.socket);
         process.on('exit', this.closeServiceSocket.bind(this));
