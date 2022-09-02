@@ -2,6 +2,7 @@ import Config from './config';
 import * as Switches from './switches';
 import { eventlog } from './logger';
 require('source-map-support').install();
+import * as bannedChannels from './cli/banned-channels';
 
 const LOGGER = require('@calzoneman/jsli')('main');
 
@@ -28,10 +29,33 @@ if (!Config.get('debug')) {
     });
 }
 
+async function handleCliCmd(cmd) {
+    try {
+        switch (cmd.command) {
+            case 'ban-channel':
+                return await bannedChannels.handleBanChannel(cmd);
+            default:
+                throw new Error(`Unrecognized command "${cmd.command}"`);
+        }
+    } catch (error) {
+        return { status: 'error', error: String(error) };
+    }
+}
+
 // TODO: this can probably just be part of servsock.js
 // servsock should also be refactored to send replies instead of
 // relying solely on tailing logs
-function handleLine(line) {
+function handleLine(line, client) {
+    try {
+        let cmd = JSON.parse(line);
+        handleCliCmd(cmd).then(res => {
+            client.write(JSON.stringify(res) + '\n');
+        }).catch(error => {
+            LOGGER.error(`Unexpected error in handleCliCmd: ${error.stack}`);
+        });
+    } catch (_error) {
+    }
+
     if (line === '/reload') {
         LOGGER.info('Reloading config');
         try {
@@ -81,9 +105,9 @@ if (Config.get('service-socket.enabled')) {
     const ServiceSocket = require('./servsock');
     const sock = new ServiceSocket();
     sock.init(
-        line => {
+        (line, client) => {
             try {
-                handleLine(line);
+                handleLine(line, client);
             } catch (error) {
                 LOGGER.error(
                     'Error in UNIX socket command handler: %s',
