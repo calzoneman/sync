@@ -49,24 +49,107 @@ let commands = [
             let [name, externalReason, internalReason] = args;
             let answer = await rl.question(`Ban ${name} with external reason "${externalReason}" and internal reason "${internalReason}"? `);
 
+            if (!/^[yY]$/.test(answer)) {
+                console.log('Aborted.');
+                process.exit(1);
+            }
 
-            if (/^[yY]$/.test(answer)) {
-                let res = await doCommand({
-                    command: 'ban-channel',
-                    name,
-                    externalReason,
-                    internalReason
-                });
+            let res = await doCommand({
+                command: 'ban-channel',
+                name,
+                externalReason,
+                internalReason
+            });
 
-                console.log(`Status: ${res.status}`);
-                if (res.status === 'error') {
+            switch (res.status) {
+                case 'error':
                     console.log('Error:', res.error);
                     process.exit(1);
-                } else {
+                    break;
+                case 'success':
+                    console.log('Ban succeeded.');
                     process.exit(0);
-                }
-            } else {
+                    break;
+                default:
+                    console.log(`Unknown result: ${res.status}`);
+                    process.exit(1);
+                    break;
+            }
+        }
+    },
+    {
+        command: 'unban-channel',
+        handler: async args => {
+            if (args.length !== 1) {
+                console.log('Usage: unban-channel <name>');
+                process.exit(1);
+            }
+
+            let [name] = args;
+            let answer = await rl.question(`Unban ${name}? `);
+
+            if (!/^[yY]$/.test(answer)) {
                 console.log('Aborted.');
+                process.exit(1);
+            }
+
+            let res = await doCommand({
+                command: 'unban-channel',
+                name
+            });
+
+            switch (res.status) {
+                case 'error':
+                    console.log('Error:', res.error);
+                    process.exit(1);
+                    break;
+                case 'success':
+                    console.log('Unban succeeded.');
+                    process.exit(0);
+                    break;
+                default:
+                    console.log(`Unknown result: ${res.status}`);
+                    process.exit(1);
+                    break;
+            }
+        }
+    },
+    {
+        command: 'show-banned-channel',
+        handler: async args => {
+            if (args.length !== 1) {
+                console.log('Usage: show-banned-channel <name>');
+                process.exit(1);
+            }
+
+            let [name] = args;
+
+            let res = await doCommand({
+                command: 'show-banned-channel',
+                name
+            });
+
+            switch (res.status) {
+                case 'error':
+                    console.log('Error:', res.error);
+                    process.exit(1);
+                    break;
+                case 'success':
+                    if (res.ban != null) {
+                            console.log(`Channel: ${name}`);
+                        console.log(`Ban issued: ${res.ban.createdAt}`);
+                        console.log(`Banned by: ${res.ban.bannedBy}`);
+                        console.log(`External reason:\n${res.ban.externalReason}`);
+                        console.log(`Internal reason:\n${res.ban.internalReason}`);
+                    } else {
+                        console.log(`Channel ${name} is not banned.`);
+                    }
+                    process.exit(0);
+                    break;
+                default:
+                    console.log(`Unknown result: ${res.status}`);
+                    process.exit(1);
+                    break;
             }
         }
     }

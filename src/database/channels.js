@@ -763,10 +763,22 @@ module.exports = {
                     banned_by: bannedBy
                 });
             let update = tx.raw(createMySQLDuplicateKeyUpdate(
-                ['external_reason', 'internal_reason']
+                ['external_reason', 'internal_reason', 'banned_by']
             ));
 
             return tx.raw(insert.toString() + update.toString());
+        });
+    },
+
+    removeBannedChannel: async function removeBannedChannel(name) {
+        if (!valid(name)) {
+            throw new Error("Invalid channel name");
+        }
+
+        return await db.getDB().runTransaction(async tx => {
+            await tx.table('banned_channels')
+                .where({ channel_name: name })
+                .delete();
         });
     }
 };
