@@ -33,7 +33,11 @@ async function handleCliCmd(cmd) {
     try {
         switch (cmd.command) {
             case 'ban-channel':
-                return await bannedChannels.handleBanChannel(cmd);
+                return bannedChannels.handleBanChannel(cmd);
+            case 'unban-channel':
+                return bannedChannels.handleUnbanChannel(cmd);
+            case 'show-banned-channel':
+                return bannedChannels.handleShowBannedChannel(cmd);
             default:
                 throw new Error(`Unrecognized command "${cmd.command}"`);
         }
@@ -52,6 +56,7 @@ function handleLine(line, client) {
             client.write(JSON.stringify(res) + '\n');
         }).catch(error => {
             LOGGER.error(`Unexpected error in handleCliCmd: ${error.stack}`);
+            client.write('{"status":"error","error":"internal error"}\n');
         });
     } catch (_error) {
     }

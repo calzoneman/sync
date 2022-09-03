@@ -66,7 +66,6 @@ var defaults = {
         }
     },
     "youtube-v3-key": "",
-    "channel-blacklist": [],
     "channel-path": "r",
     "channel-save-interval": 5,
     "max-channels-per-user": 5,
@@ -371,13 +370,6 @@ function preprocessConfig(cfg) {
             reserved[key] = false;
         }
     }
-
-    /* Convert channel blacklist to a hashtable */
-    var tbl = {};
-    cfg["channel-blacklist"].forEach(function (c) {
-        tbl[c.toLowerCase()] = true;
-    });
-    cfg["channel-blacklist"] = tbl;
 
     /* Check channel path */
     if(!/^[-\w]+$/.test(cfg["channel-path"])){

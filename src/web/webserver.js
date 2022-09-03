@@ -198,8 +198,8 @@ module.exports = {
             app,
             ioConfig,
             chanPath,
-            async name => null
-            /*require('../database/channels').getBannedChannel*/
+            // TODO: banController
+            require('../database/channels').getBannedChannel
         );
         require('./routes/index')(app, channelIndex, webConfig.getMaxIndexEntries());
         require('./routes/socketconfig')(app, clusterClient);
