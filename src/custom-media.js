@@ -31,10 +31,6 @@ const SOURCE_CONTENT_TYPES = new Set([
     'video/webm'
 ]);
 
-const LIVE_ONLY_CONTENT_TYPES = new Set([
-    'application/dash+xml'
-]);
-
 const AUDIO_ONLY_CONTENT_TYPES = new Set([
     'audio/aac',
     'audio/mp4',
@@ -202,10 +198,6 @@ function validateSources(sources, data) {
                 `unacceptable source contentType "${source.contentType}"`
             );
 
-        if (LIVE_ONLY_CONTENT_TYPES.has(source.contentType) && !data.live)
-            throw new ValidationError(
-                `contentType "${source.contentType}" requires live: true`
-            );
         // TODO (Xaekai): This should be allowed
         if (/*!AUDIO_ONLY_CONTENT_TYPES.has(source.contentType) && */!SOURCE_QUALITIES.has(source.quality))
             throw new ValidationError(`unacceptable source quality "${source.quality}"`);
