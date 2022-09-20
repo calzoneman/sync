@@ -11,7 +11,6 @@ export default function initialize(app, ioConfig, chanPath, getBannedChannel) {
                     'channel name.', { status: HTTPStatus.NOT_FOUND });
         }
 
-        // TODO: add a cache
         let banInfo = await getBannedChannel(req.params.channel);
         if (banInfo !== null) {
             sendPug(res, 'banned_channel', {

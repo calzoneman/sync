@@ -143,7 +143,8 @@ module.exports = {
         emailConfig,
         emailController,
         captchaConfig,
-        captchaController
+        captchaController,
+        bannedChannelsController
     ) {
         patchExpressToHandleAsync();
         const chanPath = Config.get('channel-path');
@@ -198,8 +199,7 @@ module.exports = {
             app,
             ioConfig,
             chanPath,
-            // TODO: banController
-            require('../database/channels').getBannedChannel
+            async name => bannedChannelsController.getBannedChannel(name)
         );
         require('./routes/index')(app, channelIndex, webConfig.getMaxIndexEntries());
         require('./routes/socketconfig')(app, clusterClient);
