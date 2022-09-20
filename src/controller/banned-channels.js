@@ -1,10 +1,15 @@
 import { eventlog } from '../logger';
+import { SimpleCache } from '../util/simple-cache';
 const LOGGER = require('@calzoneman/jsli')('BannedChannelsController');
 
 export class BannedChannelsController {
     constructor(dbChannels, globalMessageBus) {
         this.dbChannels = dbChannels;
         this.globalMessageBus = globalMessageBus;
+        this.cache = new SimpleCache({
+            maxElem: 1000,
+            maxAge: 5 * 60_000
+        });
     }
 
     /*
@@ -19,6 +24,8 @@ export class BannedChannelsController {
         if (banInfo !== null) {
             LOGGER.warn(`Channel ${name} is already banned, updating ban reason`);
         }
+
+        this.cache.delete(name);
 
         await this.dbChannels.putBannedChannel({
             name,
@@ -36,6 +43,7 @@ export class BannedChannelsController {
     async unbanChannel(name, unbannedBy) {
         LOGGER.info(`Unbanning channel ${name}`);
         eventlog.log(`[acp] ${unbannedBy} unbanned channel ${name}`);
+        this.cache.delete(name);
 
         this.globalMessageBus.emit(
             'ChannelUnbanned',
@@ -46,47 +54,14 @@ export class BannedChannelsController {
     }
 
     async getBannedChannel(name) {
-        // TODO: cache
-        return this.dbChannels.getBannedChannel(name);
-    }
-}
+        name = name.toLowerCase();
 
-class Cache {
-    constructor({ maxElem, maxAge }) {
-        this.maxElem = maxElem;
-        this.maxAge = maxAge;
-        this.cache = new Map();
-    }
-
-    put(key, value) {
-        this.cache.set(key, { value: value, at: Date.now() });
-
-        if (this.cache.size > this.maxElem) {
-            this.cache.delete(this.cache.keys().next());
+        let info = this.cache.get(name);
+        if (info === null) {
+            info = await this.dbChannels.getBannedChannel(name);
+            this.cache.put(name, info);
         }
-    }
 
-    get(key) {
-        let val = this.cache.get(key);
-
-        if (val != null) {
-            return val.value;
-        } else {
-            return null;
-        }
-    }
-
-    delete(key) {
-        this.cache.delete(key);
-    }
-
-    cleanup() {
-        let now = Date.now();
-
-        for (let [key, value] of this.cache) {
-            if (value.at < now - this.maxAge) {
-                this.cache.delete(key);
-            }
-        }
+        return info;
     }
 }

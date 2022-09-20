@@ -362,6 +362,7 @@ describe('KickbanModule', () => {
             );
         });
 
+        // TODO: for whatever reason, this test is flaky
         it('inserts a valid IPv6 ban', done => {
             const longIP = require('../../lib/utilities').expandIPv6('::abcd');
 

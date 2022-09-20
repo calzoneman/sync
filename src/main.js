@@ -59,6 +59,7 @@ function handleLine(line, client) {
             client.write('{"status":"error","error":"internal error"}\n');
         });
     } catch (_error) {
+        // eslint no-empty: off
     }
 
     if (line === '/reload') {

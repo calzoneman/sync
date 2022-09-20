@@ -141,7 +141,8 @@ var Server = function () {
             Config.getEmailConfig(),
             emailController,
             Config.getCaptchaConfig(),
-            captchaController
+            captchaController,
+            self.bannedChannelsController
     );
 
     // http/https/sio server init -----------------------------------------
