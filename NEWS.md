@@ -1,3 +1,24 @@
+2022-09-21
+==========
+
+**Upgrade intervention required**
+
+This release adds a feature to ban channels, replacing the earlier (hastily
+added) configuration-based `channel-blacklist`.  If you have any entries in
+`channel-blacklist` in your `config.yaml`, you will need to migrate them to the
+new bans table by using a command after upgrading (the ACP web interface hasn't
+been updated for this feature):
+
+    ./bin/admin.js ban-channel <channel-name> <external-reason> <internal-reason>
+
+The external reason will be displayed when users attempt to join the banned
+channel, while the internal reason is only displayed when using the
+`show-channel-ban` command.
+
+You can later use `unban-channel` to remove a ban.  The owner of the banned
+channel can still delete it, but the banned state will persist, so the channel
+cannot be re-registered later.
+
 2022-08-28
 ==========
 
