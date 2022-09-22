@@ -404,7 +404,12 @@ KickBanModule.prototype.banAll = async function banAll(
     );
 
     if (!await dbIsNameBanned(chan.name, name)) {
-        promises.push(this.banName(actor, name, reason));
+        promises.push(this.banName(actor, name, reason).catch(error => {
+            // TODO: banning should be made idempotent, not throw an error
+            if (!/already banned/.test(error.message)) {
+                throw error;
+            }
+        }));
     }
 
     await Promise.all(promises);
