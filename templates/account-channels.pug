@@ -24,8 +24,7 @@ block content
           tbody
             for c in channels
               tr
-                // TODO: seems like it should be a <td>, lol
-                th
+                td
                   form.form-inline.pull-right(action="/account/channels", method="post", onsubmit="return confirm('Are you sure you want to delete " +c.name+ "?  This cannot be undone');")
                     input(type="hidden", name="_csrf", value=csrfToken)
                     input(type="hidden", name="action", value="delete_channel")
