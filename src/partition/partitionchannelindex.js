@@ -6,6 +6,7 @@ const LOGGER = require('@calzoneman/jsli')('partitionchannelindex');
 var SERVER = null;
 const CACHE_REFRESH_INTERVAL = 30 * 1000;
 const CACHE_EXPIRE_DELAY = 40 * 1000;
+const WHITELISTED_CHANNELS = ['m60', 'liveonpatrol', 'kitchennightmares', 'supermarketsweep', 'court', 'food', 'debates', 'tomgoestothemayor', 'hoarders', 'unsolvedmysteries'];
 
 class PartitionChannelIndex {
     constructor(pubClient, subClient, channel) {
@@ -132,7 +133,12 @@ class PartitionChannelIndex {
     _updateCache() {
         let cache = [];
         for (let [id, instance] of this.id2instance) {
-            if (Date.now() - instance.lastUpdated.getTime() > CACHE_EXPIRE_DELAY) {
+            const channelNames = instance.channels.map((channel) => (
+                channel.name
+            ));
+            const isWhitelisted = channelNames.some((channelName) => WHITELISTED_CHANNELS.includes(channelName));
+            
+            if (!isWhitelisted && (Date.now() - instance.lastUpdated.getTime() > CACHE_EXPIRE_DELAY)) {
                 LOGGER.warn('Removing expired channel list instance: %s', id);
                 this.id2instance.delete(id);
             } else {
