@@ -169,7 +169,7 @@ export function validate(data) {
         validateURL(data.thumbnail);
     }
 
-    validateSources(data.sources, data);
+    validateSources(data.sources);
     validateAudioTracks(data.audioTracks);
     validateTextTracks(data.textTracks);
     /*
@@ -182,7 +182,7 @@ export function validate(data) {
     validateFonts(data.fonts);
 }
 
-function validateSources(sources, data) {
+function validateSources(sources) {
     if (!Array.isArray(sources))
         throw new ValidationError('sources must be a list');
     if (sources.length === 0)
