@@ -110,6 +110,25 @@ describe('KickbanModule', () => {
             );
         });
 
+        it('rejects if the username is invalid', done => {
+            mockUser.socket.emit = (frame, obj) => {
+                if (frame === 'errorMsg') {
+                    assert.strictEqual(
+                        obj.msg,
+                        'Invalid username'
+                    );
+
+                    done();
+                }
+            };
+
+            kickban.handleCmdBan(
+                mockUser,
+                '/ban test_user<>%$# because reasons',
+                {}
+            );
+        });
+
         it('rejects if the user does not have ban permission', done => {
             mockUser.socket.emit = (frame, obj) => {
                 if (frame === 'errorMsg') {

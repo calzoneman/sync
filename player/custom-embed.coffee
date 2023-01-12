@@ -15,8 +15,19 @@ window.CustomEmbedPlayer = class CustomEmbedPlayer extends EmbedPlayer
             return
 
         embedSrc = data.meta.embed.src
-        link = "<a href=\"#{embedSrc}\" target=\"_blank\"><strong>#{embedSrc}</strong></a>"
-        alert = makeAlert('Untrusted Content', CUSTOM_EMBED_WARNING.replace('%link%', link),
+
+        link = document.createElement('a')
+        link.href = embedSrc
+        link.target = '_blank'
+        link.rel = 'noopener noreferer'
+
+        strong = document.createElement('strong')
+        strong.textContent = embedSrc
+        link.appendChild(strong)
+
+        # TODO: Ideally makeAlert() would allow optionally providing a DOM
+        # element instead of requiring HTML text
+        alert = makeAlert('Untrusted Content', CUSTOM_EMBED_WARNING.replace('%link%', link.outerHTML),
             'alert-warning')
             .removeClass('col-md-12')
         $('<button/>').addClass('btn btn-default')

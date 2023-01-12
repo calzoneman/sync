@@ -4,6 +4,7 @@ var Flags = require("../flags");
 var util = require("../utilities");
 var Account = require("../account");
 import Promise from 'bluebird';
+const XSS = require("../xss");
 
 const dbIsNameBanned = Promise.promisify(db.channels.isNameBanned);
 const dbIsIPBanned = Promise.promisify(db.channels.isIPBanned);
@@ -261,7 +262,6 @@ KickBanModule.prototype.handleCmdIPBan = function (user, msg, _meta) {
     chan.refCounter.ref("KickBanModule::handleCmdIPBan");
 
     this.banAll(user, name, range, reason).catch(error => {
-        //console.log('!!!', error.stack);
         const message = error.message || error;
         user.socket.emit("errorMsg", { msg: message });
     }).then(() => {
@@ -276,6 +276,10 @@ KickBanModule.prototype.checkChannelAlive = function checkChannelAlive() {
 };
 
 KickBanModule.prototype.banName = async function banName(actor, name, reason) {
+    if (!util.isValidUserName(name)) {
+        throw new Error("Invalid username");
+    }
+
     reason = reason.substring(0, 255);
 
     var chan = this.channel;
@@ -323,6 +327,9 @@ KickBanModule.prototype.banName = async function banName(actor, name, reason) {
 };
 
 KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
+    if (!util.isValidUserName(name)) {
+        throw new Error("Invalid username");
+    }
     reason = reason.substring(0, 255);
     var masked = util.cloakIP(ip);
 
@@ -445,8 +452,9 @@ KickBanModule.prototype.handleUnban = function (user, data) {
         self.channel.logger.log("[mod] " + user.getName() + " unbanned " + data.name);
         if (self.channel.modules.chat) {
             var banperm = self.channel.modules.permissions.permissions.ban;
+            // TODO: quick fix, shouldn't trust name from unban frame.
             self.channel.modules.chat.sendModMessage(
-                user.getName() + " unbanned " + data.name,
+                user.getName() + " unbanned " + XSS.sanitizeText(data.name),
                 banperm
             );
         }
