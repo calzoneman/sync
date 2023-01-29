@@ -1,4 +1,55 @@
 /*eslint no-unused-vars: "off"*/
+
+(function() {
+    /**
+     * Test whether the browser supports nullish-coalescing operator.
+     *
+     * Users with old browsers will probably fail to load the client correctly
+     * because parsing this operator in older browsers results in a SyntaxError
+     * that aborts compilation of the entire script (not just an exception where
+     * it is used).  In particular, as of 2023-01-28, Utherverse ships with
+     * a rather old browser version (Chrome 76) and several users have reported
+     * it not working.
+     */
+    try {
+        try {
+            new Function('x?.y');
+        } catch (e) {
+            if (e.name === 'SyntaxError') {
+                /**
+                 * If we're at this point, we can't be sure what scripts have
+                 * actually loaded, so construct the error alert the old
+                 * fashioned way.
+                 */
+                var wrap = document.createElement('div');
+                wrap.className = 'col-md-12';
+                var al = document.createElement('div');
+                al.className = 'alert alert-danger';
+                var title = document.createElement('strong');
+                title.textContent = 'Unsupported Browser';
+                var msg = document.createElement('p');
+                msg.textContent = 'It looks like your browser does not support ' +
+                                  'the required JavaScript features to run ' +
+                                  'CyTube.  This is usually caused by ' +
+                                  'using an outdated browser version.  Please '+
+                                  'check if an update is available.  Your ' +
+                                  'browser version is reported as:';
+                var version = document.createElement('tt');
+                version.textContent = navigator.userAgent;
+
+                wrap.appendChild(al);
+                al.appendChild(title);
+                al.appendChild(msg);
+                al.appendChild(document.createElement('br'));
+                al.appendChild(version);
+                document.getElementById('motdrow').appendChild(wrap);
+            }
+        }
+    } catch (e) {
+        console.error('Error probing for feature support:', e.stack);
+    }
+})();
+
 var CL_VERSION = 3.0;
 var GS_VERSION = 1.7; // Google Drive Userscript
 
