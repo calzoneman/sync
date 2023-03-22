@@ -162,7 +162,7 @@ ChatModule.prototype.handleChatMsg = function (user, data) {
         return;
     }
 
-    data.msg = data.msg.substring(0, 320);
+    data.msg = data.msg.substring(0, Config.get("max-chat-msg-length"));
 
     // Restrict new accounts/IPs from chatting and posting links
     if (this.restrictNewAccount(user, data)) {
@@ -248,7 +248,7 @@ ChatModule.prototype.handlePm = function (user, data) {
     }
 
 
-    data.msg = data.msg.substring(0, 320);
+    data.msg = data.msg.substring(0, Config.get("max-chat-msg-length"));
     var to = null;
     for (var i = 0; i < this.channel.users.length; i++) {
         if (this.channel.users[i].getLowerName() === data.to) {

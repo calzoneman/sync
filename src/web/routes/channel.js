@@ -1,4 +1,5 @@
 import CyTubeUtil from '../../utilities';
+import Config from '../../config';
 import { sanitizeText } from '../../xss';
 import { sendPug } from '../pug';
 import * as HTTPStatus from '../httpstatus';
@@ -27,7 +28,8 @@ export default function initialize(app, ioConfig, chanPath, getBannedChannel) {
 
         sendPug(res, 'channel', {
             channelName: req.params.channel,
-            sioSource: `${socketBaseURL}/socket.io/socket.io.js`
+            sioSource: `${socketBaseURL}/socket.io/socket.io.js`,
+            maxMsgLen: Config.get("max-chat-msg-length")
         });
     });
 }
