@@ -128,7 +128,7 @@ max-channels-per-user: 5
 max-accounts-per-ip: 5
 # Minimum number of seconds between guest logins from the same IP
 guest-login-delay: 60
-# Maximum character length of a chat message
+# Maximum character length of a chat message, capped at 1000 characters
 max-chat-message-length: 320
 
 # Allows you to customize the path divider. The /r/ in http://localhost/r/yourchannel

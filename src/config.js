@@ -428,6 +428,11 @@ function preprocessConfig(cfg) {
         cfg['channel-storage'] = { type: undefined };
     }
 
+    if (cfg["max-chat-message-length"] > 1000) {
+        LOGGER.warn("Max chat message length was greater than 1000. Setting to 1000.");
+        cfg["max-chat-message-length"] = 1000;
+    }
+
     return cfg;
 }
 
