@@ -2,14 +2,14 @@
   "author": "Calvin Montgomery",
   "name": "CyTube",
   "description": "Online media synchronizer and chat",
-  "version": "3.85.1",
+  "version": "3.86.0",
   "repository": {
     "url": "http://github.com/calzoneman/sync"
   },
   "license": "MIT",
   "dependencies": {
     "@calzoneman/jsli": "^2.0.1",
-    "@cytube/mediaquery": "github:CyTube/mediaquery#524bf009ab3d6527da89f0544d8dfd5afae99f9c",
+    "@cytube/mediaquery": "github:CyTube/mediaquery#564d0c4615e80f72722b0f68ac81f837a4c5fc81",
     "bcrypt": "^5.0.1",
     "bluebird": "^3.7.2",
     "body-parser": "^1.20.1",

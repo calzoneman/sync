@@ -1287,6 +1287,11 @@ function playlistMove(from, after, cb) {
     }
 }
 
+function checkYP(id) {
+    if (!/^(PL[a-zA-Z0-9_-]{32}|PL[A-F0-9]{16}|OLA[a-zA-Z0-9_-]{38})$/.test(id)) {
+        throw new Error('Invalid YouTube Playlist ID.  Note that only regular user-created playlists are supported.');
+    }
+}
 
 function parseMediaLink(url) {
     function parseShortCode(url){
@@ -1300,6 +1305,9 @@ function parseMediaLink(url) {
             // Raw files need to keep the query string
             case 'fi':
             case 'cm':
+                return { type, id };
+            case 'yp':
+                checkYP(id);
                 return { type, id };
             // Generic for the rest.
             default:
@@ -1356,6 +1364,7 @@ function parseMediaLink(url) {
                 return { type: 'yt', id: data.pathname.slice(8,19) }
             }
             if(data.pathname == '/playlist'){
+                checkYP(data.searchParams.get('list'));
                 return { type: 'yp', id: data.searchParams.get('list') }
             }
         case 'youtu.be':
