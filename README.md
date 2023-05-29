@@ -37,6 +37,11 @@ General help with the software and the website is also available on the IRC
 channel at [irc.esper.net#cytube](http://webchat.esper.net/?channels=cytube)
 during US daytime hours.
 
+Docker
+------
+
+Instructions on how to deploy Cytube using Docker is in the `docs/docker.md` file.
+
 ## License
 
 Original source code in this repository is provided under the MIT license
