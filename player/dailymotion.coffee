@@ -18,7 +18,12 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
             if quality != 'auto'
                 params.quality = quality
 
-            @dm = DM.player('ytapiplayer',
+            @element = DM.$('ytapiplayer')
+            if not @element or @element.nodeType != Node.ELEMENT_NODE
+                throw new Error("Invalid player element in DailymotionPlayer(), requires an existing HTML element: " + @element)
+            if DM.Player._INSTANCES[@element.id] != undefined
+                @element = DM.Player.destroy(@element.id)
+            @dm = DM.Player.create(@element,
                 video: data.id
                 width: parseInt(VWIDTH, 10)
                 height: parseInt(VHEIGHT, 10)
