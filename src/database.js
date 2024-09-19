@@ -29,9 +29,19 @@ let globalBanDB = null;
 class Database {
     constructor(knexConfig = null) {
         if (knexConfig === null) {
-            knexConfig = {
-                client: 'mysql',
-                connection: {
+            let mysqlServer = Config.get('mysql.server');
+            let connection;
+            if (mysqlServer.startsWith('unix:')) {
+                connection = {
+                    socketPath: mysqlServer.slice(5),
+                    user: Config.get('mysql.user'),
+                    password: Config.get('mysql.password'),
+                    database: Config.get('mysql.database'),
+                    multipleStatements: true, // Legacy thing
+                    charset: 'utf8mb4'
+                }
+            } else {
+                connection = {
                     host: Config.get('mysql.server'),
                     port: Config.get('mysql.port'),
                     user: Config.get('mysql.user'),
@@ -39,7 +49,12 @@ class Database {
                     database: Config.get('mysql.database'),
                     multipleStatements: true, // Legacy thing
                     charset: 'utf8mb4'
-                },
+                }
+            }
+        
+            knexConfig = {
+                client: 'mysql',
+                connection,
                 pool: {
                     min: Config.get('mysql.pool-size'),
                     max: Config.get('mysql.pool-size')

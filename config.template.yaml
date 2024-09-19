@@ -1,5 +1,5 @@
 # MySQL server details
-# server: domain or IP of MySQL server
+# server: domain, IP or unix socket path of MySQL server. If a unix socket, it be like so `unix:/path/to/sock.sock`
 # database: a MySQL database that the user specified has read/write access to
 # user: username to authenticate as
 # password: password for user
