@@ -94,7 +94,7 @@ const CoolholeCallbacks = {
       class: "pollHeader",
     });
     const questionSpan = $("<span>", {
-      text: data.title,
+      html: data.title,
       css: {
         flex: 1,
         fontSize: "24px",
@@ -206,5 +206,5 @@ const CoolholeCallbacks = {
   },
   coolpointsVoteskipFail: function (response) {
     $("#voteskip").attr("disabled", false);
-  }
+  },
 };

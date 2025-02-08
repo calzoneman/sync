@@ -228,12 +228,16 @@ mixin ch-command-modal(title)
             case title
               when "Secretary"
                 +ch-secretary-modal-body
+              when "Poll"
+                +ch-poll-modal-body
               default
                 p No content. Ask a monkey incharge
           .modal-footer(id=`${modalId}-footer`)
             case title
               when "Secretary"
                 +ch-secretary-modal-footer
+              when "Poll"
+                +ch-poll-modal-footer
               default
                 p No content. Ask a monkey incharge
 
@@ -251,3 +255,17 @@ mixin ch-secretary-modal-body
 mixin ch-secretary-modal-footer 
   button.btn.btn-primary(type="button", data-dismiss="modal") Abort
   button#secretaryOption-send-btn.btn.btn-primary(type="button", data-dismiss="modal") Send
+
+mixin ch-poll-modal-body
+  h4 Gauge Public Opinion
+  form.form-horizontal(action="javascript:void(0)")
+    +textbox("pollOption-title", "Title")
+    +textbox("pollOption-options", "Options", "Option 1, Option 2, Option 3")
+    .form-group
+      .col-sm-8.col-sm-offset-4
+        span.text-info Seperate options with commas
+    +rcheckbox-auto("pollOption-allowGamble", "Allow Gambling")
+
+mixin ch-poll-modal-footer
+  button.btn.btn-primary(type="button", data-dismiss="modal") Abort
+  button#pollOption-send-btn.btn.btn-primary(type="button", data-dismiss="modal") Send

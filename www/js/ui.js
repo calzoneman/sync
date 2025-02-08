@@ -148,7 +148,12 @@ function chatTabComplete(chatline) {
         options.push(emote.name);
     });
 
-    // Coolhole addition to add commands to tab completion
+    // Coolhole addition to allow tab complete of cytube commands
+    options.push("/clear");
+    options.push("/poll");
+    options.push("/drink");
+
+    // Coolhole addition to add CP commands to tab completion
     CHANNEL.opts.cpOpts
       .map(
         (opt) =>
