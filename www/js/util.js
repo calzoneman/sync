@@ -854,6 +854,33 @@ function showPollMenu() {
     var retainVotes = $("<input/>").attr("type", "checkbox")
         .prependTo(retainVotesLbl);
 
+    /* Region: Coolhole gamble addition */
+    var gambleVotesOuter = $("<div/>").addClass("checkbox").appendTo(menu);
+    var gambleVotesLbl = $("<label/>")
+      .text("Make this a gamble poll")
+      .appendTo(gambleVotesOuter);
+    var gambleVotes = $("<input/>")
+      .attr("type", "checkbox")
+      .prependTo(gambleVotesLbl);
+    $("<p/>", {
+      text: "Gambled polls must retain votes when a user leaves and cannot have a timeout.",
+      class: "text-danger",
+    }).appendTo(menu);
+
+    gambleVotes.on("change", function () {
+      if (gambleVotes.prop("checked")) {
+        retainVotes.prop("checked", true);
+        retainVotes.prop("disabled", true);
+
+        timeout.val("");
+        timeout.prop("disabled", true);
+      } else {
+        retainVotes.prop("disabled", false);
+        timeout.prop("disabled", false);
+      }
+    });
+    /* End region */
+
     $("<strong/>").text("Options").appendTo(menu);
 
     var addbtn = $("<button/>").addClass("btn btn-sm btn-default")
@@ -903,6 +930,7 @@ function showPollMenu() {
                 opts: opts,
                 obscured: hidden.prop("checked"),
                 retainVotes: retainVotes.prop("checked"),
+                gamble: gambleVotes.prop("checked"),
                 timeout: t
             }, function ack(result) {
                 if (result.error) {

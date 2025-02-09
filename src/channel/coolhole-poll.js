@@ -9,11 +9,13 @@ const TYPE_NEW_POLL = {
   timeout: "number,optional",
   obscured: "boolean",
   retainVotes: "boolean,optional",
+  gamble: "boolean,optional",
   opts: "array",
 };
 
 const TYPE_VOTE = {
   option: "number",
+  wager: "number,optional",
 };
 
 const ROOM_VIEW_HIDDEN = ":viewHidden";
@@ -221,10 +223,11 @@ CoolholePollModule.prototype.handleNewPoll = function (user, data, ack) {
 
   var poll = CoolholePoll.create(user.getName(), data.title, data.opts, {
     hideVotes: data.obscured,
-    retainVotes: data.retainVotes === undefined ? false : data.retainVotes,
+    retainVotes: data.gamble ? true : data.retainVotes ?? false,
+    gamble: data.gamble ?? false,
   });
   var self = this;
-  if (data.hasOwnProperty("timeout")) {
+  if (data.hasOwnProperty("timeout") && !data.gamble) {
     poll.timer = setTimeout(function () {
       if (self.poll === poll) {
         self.handleClosePoll({
@@ -252,9 +255,19 @@ CoolholePollModule.prototype.handleVote = function (user, data) {
   }
 
   if (this.poll) {
-    if (this.poll.countVote(user.realip, data.option)) {
+    if (
+      this.poll.countVote(user.realip, {
+        option: data.option,
+        wager: data.wager,
+      })
+    ) {
       this.dirty = true;
       this.broadcastPoll(false);
+    } else if (this.poll.gamble) {
+      // HACK: Assumes that if countVote returned false and the poll is gambling, the user has already voted
+      user.socket.emit("errorMsg", {
+        msg: "Your neural imprint was already logged for this choice. Optimal or not, your choice is permanently encoded. Proceed with intent.",
+      });
     }
   }
 };
@@ -309,6 +322,7 @@ CoolholePollModule.prototype.handlePollCmd = function (
 
   var poll = CoolholePoll.create(user.getName(), title, options, {
     hideVotes: obscured,
+    retainVotes: gamble,
     gamble,
   });
   this.poll = poll;

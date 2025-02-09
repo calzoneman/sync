@@ -279,7 +279,8 @@ mixin ch-poll-wager-modal
           h4 Stake CoolPoints with CUM-Powered Precision 
         .modal-body
           form.form-horizontal(action="javascript:void(0)")
-            +textbox("pollWagerOption-wager", "What can you lose?", "1")
+            input#ch-poll-wager-option.form-control(type="hidden")
+            +textbox("ch-poll-wager-wager", "What can you lose?", "1")
             .form-group
               .col-sm-8.col-sm-offset-4
                 span.text-info Must be greater than 0
@@ -287,4 +288,4 @@ mixin ch-poll-wager-modal
                 span.text-danger.cp-legal Engaging in wagers beyond your available CoolPoint balance may trigger a Neurological Debt Cascade (NDC). This irreversible biofeedback loop, governed by NWO Regulation 7.12.4, could result in synaptic overclocking, prefrontal cortex depletion, and permanent forfeiture of future reward pathways. Cryptographic Ultra-Modulation (CUM) protocols will enforce immediate corrective measures, including but not limited to: cognitive throttling, asset retention, and potential temporal credit suspension. Bet responsibly—your neural equilibrium depends on it
         .modal-footer
           button.btn.btn-primary(type="button", data-dismiss="modal") Abort
-          button#pollWagerOption-send-btn.btn.btn-primary(type="button", data-dismiss="modal") Send
+          button#ch-poll-wager-send-btn.btn.btn-primary(type="button", data-dismiss="modal") Send

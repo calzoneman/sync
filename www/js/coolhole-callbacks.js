@@ -131,7 +131,9 @@ const CoolholeCallbacks = {
     const optionsWrapper = $("<div>", {
       class: "options",
     });
-    const totalVotes = data.counts.reduce((a, b) => a + b, 0);
+    const totalVotes = data.counts.some((c) => isNaN(c))
+      ? 0
+      : data.counts.reduce((a, b) => a + b, 0);
 
     data.options.forEach((option, i) => {
       const optionWrapper = $("<div>", {
@@ -142,6 +144,7 @@ const CoolholeCallbacks = {
       });
       optionButton.click(function () {
         if (data.gamble) {
+          $("#ch-poll-wager-option").val(i);
           $("#ch-poll-wager-modal").modal();
         } else {
           socket.emit("vote", {
@@ -155,7 +158,11 @@ const CoolholeCallbacks = {
         html: option, // html because we apparently return tags and encoded characters
       });
       const optionPercentage = $("<span>", {
-        text: `${data.counts[i]} (${toPercent(data.counts[i], totalVotes)})`,
+        text: `${data.counts[i]} (${
+          data.counts[i] !== "?" && !isNaN(data.counts[i])
+            ? toPercent(data.counts[i], totalVotes)
+            : "?%"
+        })`,
         class: "percentage",
       });
 
@@ -180,6 +187,38 @@ const CoolholeCallbacks = {
       },
     });
 
+    if (data.gamble) {
+      const wagerWrap = $("<div>", {
+        class: "wager-wrap",
+      });
+      const staticWagerText = $("<span>", {
+        class: "wager-text",
+      });
+      const wagerAmount = $("<span>", {
+        class: "text-lottery",
+      });
+      wagerWrap.append(staticWagerText, wagerAmount);
+      innerContentWrap.append(wagerWrap);
+
+      if (data.totalWagers ?? 0 > 0) {
+        staticWagerText.text("Total Wagers: ");
+        wagerAmount.text(`${data.totalWagers} CP`);
+      }
+
+      // bindings for gamble poll
+      $("#ch-poll-wager-send-btn")
+        .off("click")
+        .on("click", function () {
+          // TODO: prevent non-integer wagers with keydown event
+          const wager = parseInt($("#ch-poll-wager-wager").val());
+          const option = parseInt($("#ch-poll-wager-option").val());
+          socket.emit("vote", {
+            option,
+            wager,
+          });
+        });
+    }
+
     innerContentWrap.append(headerWrap, optionsWrapper, timestampSpan);
     well.append(innerContentWrap);
     pollWrap.append(well);
@@ -192,9 +231,17 @@ const CoolholeCallbacks = {
   updatePoll: function (data) {
     var poll = $("#pollwrap .active");
     const totalVotes = data.counts.reduce((a, b) => a + b, 0);
+    if (data.totalWagers ?? 0 > 0) {
+      poll.find(".wager-wrap span.wager-text").text("Total Wagers: ");
+      poll.find(".wager-wrap span.text-lottery").text(`${data.totalWagers} CP`);
+    }
     poll.find(".option button span.percentage").each(function (i) {
       $(this).text(
-        `${data.counts[i]} (${toPercent(data.counts[i], totalVotes)})`
+        `${data.counts[i]} (${
+          data.counts[i] !== "?" && !isNaN(data.counts[i])
+            ? toPercent(data.counts[i], totalVotes)
+            : "?%"
+        })`
       );
     });
   },

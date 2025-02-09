@@ -83,11 +83,20 @@ class CoolholePoll {
     };
   }
 
-  countVote(key, choiceId) {
-    if (choiceId < 0 || choiceId >= this.choices.length) return false;
+  countVote(key, choiceObj) {
+    if (choiceObj.option < 0 || choiceObj.option >= this.choices.length)
+      return false;
 
-    let changed = !this.votes.has(key) || this.votes.get(key) !== choiceId;
-    this.votes.set(key, choiceId);
+    let changed = false;
+    if (this.votes.has(key)) {
+      if (this.gamble) return false; // Cant change vote when gambling
+
+      const oldChoice = this.votes.get(key);
+      changed = oldChoice.option !== choiceObj.option;
+    } else {
+      changed = true;
+    }
+    this.votes.set(key, choiceObj);
     return changed;
   }
 
@@ -101,11 +110,14 @@ class CoolholePoll {
     let counts = new Array(this.choices.length);
     counts.fill(0);
 
-    this.votes.forEach((index) => counts[index]++);
+    this.votes.forEach((vote) => counts[vote.option]++);
+    const totalWagers = Array.from(this.votes.values()).reduce((acc, vote) => {
+      return acc + vote.wager;
+    }, 0);
 
     if (this.hideVotes) {
       counts = counts.map((c) => {
-        if (showHiddenVotes) return `${c}?`;
+        if (showHiddenVotes) return c;
         else return "?";
       });
     }
@@ -114,9 +126,11 @@ class CoolholePoll {
       title: this.title,
       options: this.choices,
       counts: counts,
+      totalWagers,
       initiator: this.createdBy,
       timestamp: this.createdAt.getTime(),
       gamble: this.gamble,
+      hideVotes: this.hideVotes,
     };
   }
 }
