@@ -37,6 +37,7 @@ class CoolholePoll {
     timestamp,
     obscured,
     retainVotes,
+    gamble,
   }) {
     let poll = new CoolholePoll();
     if (timestamp === undefined)
@@ -52,6 +53,7 @@ class CoolholePoll {
     });
     poll.hideVotes = obscured;
     poll.retainVotes = retainVotes || false;
+    poll.gamble = gamble || false;
     return poll;
   }
 
@@ -77,6 +79,7 @@ class CoolholePoll {
       obscured: this.hideVotes,
       retainVotes: this.retainVotes,
       timestamp: this.createdAt.getTime(),
+      gamble: this.gamble,
     };
   }
 

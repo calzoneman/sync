@@ -24,7 +24,7 @@ const updateCoolPoints = (data) => {
  * @returns A string showing the percentage of the count against the total ie. "1 (100%)"
  */
 const toPercent = (count, total) =>
-  total > 0 ? `${((count / total) * 100).toFixed(0)}%` : "0.00%";
+  total > 0 ? `${((count / total) * 100).toFixed(0)}%` : "0%";
 
 const CoolholeCallbacks = {
   channelCoolPointOpts: function (cpOpts) {
@@ -88,7 +88,7 @@ const CoolholeCallbacks = {
     });
     // add an additional wrapper for layered colors
     const innerContentWrap = $("<div>", {
-      class: "wrapInner",
+      class: "wrapInner" + (data.gamble ? " gamble" : ""),
     });
     const headerWrap = $("<div>", {
       class: "pollHeader",
@@ -96,32 +96,19 @@ const CoolholeCallbacks = {
     const questionSpan = $("<span>", {
       html: data.title,
       css: {
-        flex: 1,
+        flexGrow: 1,
         fontSize: "24px",
       },
     });
-    const timestampSpan = $("<span>", {
-      title: "Poll opened by " + data.initiator,
-      text: `Poll opened by ${data.initiator} - ${
-        new Date(data.timestamp).toTimeString().split(" ")[0]
-      }`,
-      data: {
-        timestamp: data.timestamp,
-        initiator: data.initiator,
-      },
-      css: {
-        fontSize: "12px",
-      },
-    });
 
-    headerWrap.append(questionSpan, timestampSpan);
+    headerWrap.append(questionSpan);
 
     if (hasPermission("pollctl")) {
       let endPollButton = $("<button>", {
         class: "btn btn-danger btn-sm",
         text: "End Poll",
         css: {
-          flex: 0,
+          flexGrow: 0,
           height: "30px",
         },
       });
@@ -154,9 +141,13 @@ const CoolholeCallbacks = {
         class: "btn",
       });
       optionButton.click(function () {
-        socket.emit("vote", {
-          option: i,
-        });
+        if (data.gamble) {
+          $("#ch-poll-wager-modal").modal();
+        } else {
+          socket.emit("vote", {
+            option: i,
+          });
+        }
         optionsWrapper.find(".option button").removeClass("active");
         $(this).addClass("active");
       });
@@ -173,7 +164,23 @@ const CoolholeCallbacks = {
       optionsWrapper.append(optionWrapper);
     });
 
-    innerContentWrap.append(headerWrap, optionsWrapper);
+    const timestampSpan = $("<span>", {
+      title: "Poll opened by " + data.initiator,
+      text: `Poll opened by ${data.initiator} - ${
+        new Date(data.timestamp).toTimeString().split(" ")[0]
+      }`,
+      data: {
+        timestamp: data.timestamp,
+        initiator: data.initiator,
+      },
+      css: {
+        textAlign: "center",
+        paddingTop: "10px",
+        fontSize: "12px",
+      },
+    });
+
+    innerContentWrap.append(headerWrap, optionsWrapper, timestampSpan);
     well.append(innerContentWrap);
     pollWrap.append(well);
 
