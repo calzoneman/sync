@@ -205,7 +205,7 @@ class Coolpoints extends ChannelModule {
     LOGGER.error(
       `Exception caught in ${callingFunction} for CoolPoints. Here's hopefully relevant data: ${JSON.stringify(
         data ? data : {}
-      )} Error:  ${errorObject.err}`
+      )} Error:  ${errorObject.err} \n Stack: ${errorObject.err.stack}`
     );
     if (user && returnSocket)
       // Return an empty array of point data... for now probably
@@ -405,11 +405,15 @@ class Coolpoints extends ChannelModule {
   handleSkipping(user) {
     try {
       // If the cp option is disabled, just exit early (allow the skip to proceed)
-      if(!this.channel.modules.coolholeactionspoints.get("skip").options.find((opt) => opt.optionName === "enabled").optionValue)
+      if (
+        !this.channel.modules.coolholeactionspoints
+          .get("skip")
+          .options.find((opt) => opt.optionName === "enabled").optionValue
+      )
         return true;
 
-      if(this.spend(user, "skip").success) {
-        return true
+      if (this.spend(user, "skip").success) {
+        return true;
       } else {
         user.socket.emit("coolpointsVoteskipFail"); // this re-enables the skip button
         return false;
@@ -420,34 +424,34 @@ class Coolpoints extends ChannelModule {
         callingFunction: "handleSkipping",
         returnSocket: "coolpointsFailure",
         err,
-        data: {user: user.getName() || "(anonymous)"},
+        data: { user: user.getName() || "(anonymous)" },
         userMessage: `Error: Unable to spend points. Let the head monkey in charge know`,
       });
       return true;
     }
   }
-  
+
   /**
    * @summary Handles when a user's video is skipped.
    * @param {Object} queueby username for submitted video.
    */
 
   /* 2025-01-29 Miles - HACK: Alot of this is duplicate code from `lose` and `isValidAction`.
-    * This function uses the "Losses" in point options. Losses are a bit different than the Earnings, 
-    * Expenditures, and Statuses in that the user MAY NOT be present when the losses occur. In this particular
-    * context, the user MAY NOT be present when his video is skipped. Most of the existing architecture at this time
-    * is built around assuming the user IS present when the Earning, Expenditure, and Status occurs. 
-    * Streeeggs was saying we might rearchitect the Earnings, Expenditures, and Statuses to also handle when the 
-    * user is currently not present. So, currently this function just gets it done; it and others may be rewritten in the future.
-    */
+   * This function uses the "Losses" in point options. Losses are a bit different than the Earnings,
+   * Expenditures, and Statuses in that the user MAY NOT be present when the losses occur. In this particular
+   * context, the user MAY NOT be present when his video is skipped. Most of the existing architecture at this time
+   * is built around assuming the user IS present when the Earning, Expenditure, and Status occurs.
+   * Streeeggs was saying we might rearchitect the Earnings, Expenditures, and Statuses to also handle when the
+   * user is currently not present. So, currently this function just gets it done; it and others may be rewritten in the future.
+   */
   handleSkipped(queueby) {
-    let user = this.channel.users.find(x => x.account.name === queueby);
+    let user = this.channel.users.find((x) => x.account.name === queueby);
     const action = "skipped";
     const callingFunction = "handleSkipped";
 
     try {
       // 1) check if channel is registered
-      this.channel.is(Flags.C_REGISTERED)
+      this.channel.is(Flags.C_REGISTERED);
 
       // 2) is action valid
       const pointData = this.get(queueby);
@@ -492,41 +496,33 @@ class Coolpoints extends ChannelModule {
       }
 
       // 3) subtract
-      const pointsToLose = actionData.options.find(
-        (opt) => opt.optionName === "points"
-      ).optionValue ?? 0;
+      const pointsToLose =
+        actionData.options.find((opt) => opt.optionName === "points")
+          .optionValue ?? 0;
 
       this.subtract(queueby, pointsToLose);
 
-      LOGGER.info(
-        `User ${queueby} lost ${pointsToLose} points for ${action}`
-      );
+      LOGGER.info(`User ${queueby} lost ${pointsToLose} points for ${action}`);
 
       this.channel.broadcastAll(
         "updateCoolPointsResponse",
         new ReturnMsg(
           `User ${queueby} lost ${pointsToLose} points for ${action}`,
           `${queueby} lost ${pointsToLose} points for ${action}`,
-          new ReturnPointData(
-            queueby,
-            -pointsToLose,
-            this.get(queueby).points
-          )
+          new ReturnPointData(queueby, -pointsToLose, this.get(queueby).points)
         )
       );
-      
     } catch (err) {
       this.logError({
         user,
         callingFunction: "handleSkipped",
         returnSocket: "coolpointsFailure",
         err,
-        data: {user: queueby || "(anonymous)"},
+        data: { user: queueby || "(anonymous)" },
         userMessage: `Error: Unable to lose points from video being skipped. Let the head monkey in charge know`,
       });
     }
   }
-
 
   /**
    * @summary Validates an action for a user
@@ -807,11 +803,16 @@ class Coolpoints extends ChannelModule {
    */
   checkStatuses(user) {
     const statuses = [];
-    this.channel.modules.coolholeactionspoints
+    this.channel.modules.coolholeactionspoints.coolpointsActions
       .filter((action) => action.actionType === ActionType.Statuses)
       .forEach((action) => {
         if (
-          this.isValidAction(user, action, ActionType.Statuses, "checkStatuses")
+          this.isValidAction(
+            user,
+            action.name,
+            ActionType.Statuses,
+            "checkStatuses"
+          )
         ) {
           statuses.push(action);
         }
@@ -827,61 +828,72 @@ class Coolpoints extends ChannelModule {
    * @returns {Object} chat message object with statuses applied
    */
   handleChatStatuses(user, chatObj) {
-    if (!this.isUserEligibleForPoints(user)) {
+    try {
+      if (!this.isUserEligibleForPoints(user)) {
+        this.logError({
+          user,
+          callingFunction: "handleChatStatuses",
+          returnSocket: "coolpointsFailure",
+          err: `User ${user.getName()} is not registered or logged in`,
+          data: user.getName(),
+          userMessage: `Error: You must join cause if you wish to participate.`,
+        });
+        return;
+      }
+
+      const statuses = this.checkStatuses(user);
+      let res = JSON.parse(JSON.stringify(chatObj));
+      let filters = [];
+      let attemptToApplyAd = false;
+
+      statuses.forEach((status) => {
+        switch (status.name) {
+          case "debtlvl0":
+            filters.push(STUTTER_FILTER);
+            break;
+          case "debtlvl1":
+            filters.push(LISP_FILTER);
+            break;
+          case "debtlvl2":
+            attemptToApplyAd = true;
+            break;
+          case "debtlvl3":
+            res.meta.coolholeMeta.otherClasses.push("shrink");
+            break;
+          case "debtlvl4":
+            MISSING_LETTERS_FILTER.source = randomLettersRegex();
+            filters.push(MISSING_LETTERS_FILTER);
+            break;
+          case "debtlvl5":
+            res.meta.coolholeMeta.otherClasses.push("criticality-accident");
+            break;
+          default:
+            break;
+        }
+      });
+
+      // Apply filters first to message
+      if (filters.length !== 0) {
+        const statusFilterList = new FilterList(filters);
+        res.msg = statusFilterList.filter(chatObj.msg);
+      }
+
+      // Then apply ad if needed
+      if (attemptToApplyAd) {
+        res.msg = this.maybeAppendAdToChat(res.msg);
+      }
+
+      return res;
+    } catch (err) {
       this.logError({
         user,
         callingFunction: "handleChatStatuses",
         returnSocket: "coolpointsFailure",
-        err: `User ${user.getName()} is not registered or logged in`,
+        err,
         data: user.getName(),
-        userMessage: `Error: You must join cause if you wish to participate.`,
+        userMessage: `Error: Unable to apply statuses. Let the head monkey in charge know`,
       });
-      return;
     }
-
-    const statuses = this.checkStatuses(user);
-    let res = JSON.parse(JSON.stringify(chatObj));
-    let filters = [];
-    let attemptToApplyAd = false;
-
-    statuses.forEach((status) => {
-      switch (status.name) {
-        case "debtlvl0":
-          filters.push(STUTTER_FILTER);
-          break;
-        case "debtlvl1":
-          filters.push(LISP_FILTER);
-          break;
-        case "debtlvl2":
-          attemptToApplyAd = true;
-          break;
-        case "debtlvl3":
-          res.coolholeMeta.otherClasses.push("shrink");
-          break;
-        case "debtlvl4":
-          MISSING_LETTERS_FILTER.source = randomLettersRegex();
-          filters.push(MISSING_LETTERS_FILTER);
-          break;
-        case "debtlvl5":
-          res.coolholeMeta.otherClasses.push("criticality-accident");
-          break;
-        default:
-          break;
-      }
-    });
-
-    // Apply filters first to message
-    if (filters.length !== 0) {
-      const statuFilterList = new FilterList(filters);
-      res.msg = statuFilterList.filter(chatObj.msg);
-    }
-
-    // Then apply ad if needed
-    if (attemptToApplyAd) {
-      res.msg = this.maybeAppendAdToChat(res.msg);
-    }
-
-    return res;
   }
 
   /**
