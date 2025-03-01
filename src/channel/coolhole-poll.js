@@ -258,20 +258,22 @@ CoolholePollModule.prototype.handleVote = function (user, data) {
     return;
   }
 
-  if (isNaN(data.wager) || data.wager < 1) {
-    user.socket.emit("validationError", {
-      target: "#ch-poll-wager-wager",
-      message: `Invalid wager amount of "${data.wager}"`,
-    });
-    return;
-  }
+  if (this.poll.gamble) {
+    if (isNaN(data.wager) || data.wager < 1) {
+      user.socket.emit("validationError", {
+        target: "#ch-poll-wager-wager",
+        message: `Invalid wager amount of "${data.wager}"`,
+      });
+      return;
+    }
 
-  if (data.wager > user.points + 10000) {
-    user.socket.emit("validationError", {
-      target: "#ch-poll-wager-wager",
-      message: `You do not have enough points to wager "${data.wager}"`,
-    });
-    return;
+    if (data.wager > user.points + 10000) {
+      user.socket.emit("validationError", {
+        target: "#ch-poll-wager-wager",
+        message: `You do not have enough points to wager "${data.wager}"`,
+      });
+      return;
+    }
   }
 
   if (this.poll) {
@@ -353,8 +355,13 @@ CoolholePollModule.prototype.handleChooseWinningPollOption = function (
 
   this.poll.winningOption = data.option;
   this.channel.modules.coolholepoints.payoutPoll(this.poll);
+  const votes = Array.from(this.poll.votes.values()).map((vote) => ({
+    ...vote,
+    isWinner: vote.option === data.option,
+  }));
   this.channel.broadcastAll("closeGamblePoll", {
     winningOption: this.poll.winningOption,
+    votes,
   });
   this.channel.logger.log(
     "[poll] " + user.getName() + " selected the winning option for the poll"

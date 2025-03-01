@@ -396,9 +396,10 @@ const CoolholeCallbacks = {
       poll.find(".btn-success").each(function () {
         $(this).remove();
       });
-      poll.find("div.option:nth-child(3)").each(function () {
-        $(this).css({ border: "red solid 1px" });
-      });
+      poll.find(".option").css("display", "block");
+      poll
+        .find(`div.option:nth-child(${data.winningOption + 1}) button`)
+        .css("background-color", "rgba(0, 255, 0, 0.5)");
     }
   },
 
