@@ -2139,7 +2139,7 @@ function chatDialog(div, zin = 'auto') {
 }
 
 function errDialog(err) {
-    var div = $("<div/>").addClass("profile-box")
+    var div = $("<div/>").addClass("profile-box error-dialog")
         .css("padding", "10px")
         .text(err)
         .appendTo($("body"));

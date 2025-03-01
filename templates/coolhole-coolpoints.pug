@@ -283,7 +283,11 @@ mixin ch-poll-wager-modal
             +textbox("ch-poll-wager-wager", "What can you lose?", "1")
             .form-group
               .col-sm-8.col-sm-offset-4
-                span.text-info Must be greater than 0
+                span.text-info Bets must be:
+                  ul 
+                    li Minimum of 1 CoolPoint
+                    li Maximum of your current balance + 10,000
+                    li Must have at least 1 CoolPoint in your balance
               .col-sm-8.col-sm-offset-4
                 span.text-danger.cp-legal Engaging in wagers beyond your available CoolPoint balance may trigger a Neurological Debt Cascade (NDC). This irreversible biofeedback loop, governed by NWO Regulation 7.12.4, could result in synaptic overclocking, prefrontal cortex depletion, and permanent forfeiture of future reward pathways. Cryptographic Ultra-Modulation (CUM) protocols will enforce immediate corrective measures, including but not limited to: cognitive throttling, asset retention, and potential temporal credit suspension. Bet responsibly—your neural equilibrium depends on it
         .modal-footer

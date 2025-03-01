@@ -34,7 +34,7 @@ function updateAnimation(id, animationName) {
   const el = document.getElementById(id);
   el.classList.add(animationName);
   Promise.all(
-    el.getAnimations({ subtree: true }).map((animation) => animation.finished),
+    el.getAnimations({ subtree: true }).map((animation) => animation.finished)
   )
     .then(() => el.classList.remove(animationName))
     .catch((error) => console.log(error));
@@ -75,8 +75,7 @@ function animatePointUpdate(ptEl, msgEl, diff, btnEl = null) {
   const glowAnimationName = isPositive ? "cpGlowGreen" : "cpGlowRed";
   const msgText = isPositive ? `+${diff}` : `${diff}`;
   msgEl.text(msgText);
-  if (btnEl) 
-    updateAnimation(btnEl.attr("id"), glowAnimationName);
+  if (btnEl) updateAnimation(btnEl.attr("id"), glowAnimationName);
   updateAnimation(ptEl.attr("id"), bounceAnimationName);
   updateAnimation(msgEl.attr("id"), fadeAnimationName);
 }
@@ -128,7 +127,7 @@ class CoolpointsUserList {
     //this.initSortOption();
     this.table = this.elem.find(".users-coolpoints-table")[0];
     this.paginatorContainer = this.elem.find(
-      ".users-coolpoints-paginator-container",
+      ".users-coolpoints-paginator-container"
     );
     this.users = [];
     this.page = 0;
@@ -172,8 +171,7 @@ CoolpointsUserList.prototype.initSearch = function () {
   });
 
   this.searchbar.keydown(function (e) {
-    if (e.key == "Enter")
-      e.preventDefault();
+    if (e.key == "Enter") e.preventDefault();
   });
 };
 
@@ -218,7 +216,7 @@ CoolpointsUserList.prototype.handleChange = function () {
   this.paginator = new NewPaginator(
     this.usersCoolPoints.length,
     this.itemsPerPage,
-    this.loadPage.bind(this),
+    this.loadPage.bind(this)
   );
   this.paginatorContainer.html("");
   this.paginatorContainer.append(this.paginator.elem);
@@ -337,7 +335,7 @@ CoolpointsUserList.prototype.loadPage = function (page) {
 
 // Initialize Coolpoints User List
 window.USERCOOLPOINTSLIST = new CoolpointsUserList(
-  "#cs-chancoolpoint-user-table",
+  "#cs-chancoolpoint-user-table"
 );
 //window.USERCOOLPOINTSLIST.sortAlphabetical = USEROPTS.emotelist_sort;
 
@@ -484,7 +482,7 @@ function handleCPOptionChanges() {
             setDisableOnRelatedOptions(
               `cp-${actionName}-${optionName}`,
               actionName,
-              !optionValue,
+              !optionValue
             );
             break;
           case "int":
@@ -534,7 +532,7 @@ function greatResetOnClick() {
 
   if (
     confirm(
-      "All points for all users will be set to 0. Are you sure about this?",
+      "All points for all users will be set to 0. Are you sure about this?"
     )
   ) {
     socket.emit("greatReset", {});

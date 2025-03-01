@@ -1094,8 +1094,18 @@ code.text-lottery {
 }
 
 .gamble {
-    border: 3px solid #f90;
     border-radius: 10px;
+    box-shadow:
+        0 0 2px rgba(203, 155, 81, 0.5),
+        /* #cb9b51 at 50% opacity */
+        0 0 5px rgba(203, 155, 81, 0.5),
+        0 0 7px rgba(255, 153, 0, 0.5),
+        /* #f90 at 50% opacity */
+        0 0 10px rgba(255, 153, 0, 0.5),
+        0 0 12px rgba(255, 153, 0, 0.5),
+        0 0 15px rgba(255, 153, 0, 0.5);
+    -webkit-animation: blink 1.5s ease-in-out infinite alternate;
+    animation: blink 1.5s ease-in-out infinite alternate;
 }
 
 .gamble .pollHeader::before {
@@ -1116,4 +1126,53 @@ code.text-lottery {
 
 .wager-wrap {
     text-align: center;
+}
+
+.error-dialog {
+    text-align: center;
+}
+
+.error-dialog::before {
+    content: "WARNING:";
+    display: block;
+    font-size: large;
+    font-weight: bold;
+    border-bottom: 1px solid;
+}
+
+.error-dialog button,
+.error-dialog button:hover {
+    border: 1px solid #3E97A2;
+}
+
+@keyframes blink {
+    0% {
+        box-shadow:
+            0 0 2px rgba(203, 155, 81, 0.3),
+            0 0 5px rgba(203, 155, 81, 0.3),
+            0 0 7px rgba(255, 153, 0, 0.3),
+            0 0 10px rgba(255, 153, 0, 0.3),
+            0 0 12px rgba(255, 153, 0, 0.3),
+            0 0 15px rgba(255, 153, 0, 0.3);
+    }
+
+    50% {
+        box-shadow:
+            0 0 3px rgba(203, 155, 81, 0.3),
+            0 0 7px rgba(203, 155, 81, 0.3),
+            0 0 10px rgba(255, 153, 0, 0.3),
+            0 0 13px rgba(255, 153, 0, 0.3),
+            0 0 16px rgba(255, 153, 0, 0.3),
+            0 0 20px rgba(255, 153, 0, 0.3);
+    }
+
+    100% {
+        box-shadow:
+            0 0 2px rgba(203, 155, 81, 0.3),
+            0 0 5px rgba(203, 155, 81, 0.3),
+            0 0 7px rgba(255, 153, 0, 0.3),
+            0 0 10px rgba(255, 153, 0, 0.3),
+            0 0 12px rgba(255, 153, 0, 0.3),
+            0 0 15px rgba(255, 153, 0, 0.3);
+    }
 }

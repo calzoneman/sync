@@ -26,6 +26,47 @@ const updateCoolPoints = (data) => {
 const toPercent = (count, total) =>
   total > 0 ? `${((count / total) * 100).toFixed(0)}%` : "0%";
 
+/**
+ * Validation Error code (stolen from validationerror callback)
+ * @param {String} message Error message
+ * @param {String} targetId Id for the field that caused the error
+ * @return nothing idiot
+ */
+const validationError = (message, targetId) => {
+  var target = $(targetId);
+  target.parent().find(".text-danger").remove();
+
+  var formGroup = target.parent();
+  while (!formGroup.hasClass("form-group") && formGroup.length > 0) {
+    formGroup = formGroup.parent();
+  }
+
+  if (formGroup.length > 0) {
+    formGroup.addClass("has-error");
+  }
+
+  $("<p/>").addClass("text-danger").text(message).insertAfter(target);
+};
+
+/**
+ * Validation Passed code (stolen from validationpassed callback)
+ * @param {String} targetId Id for the field that caused the error
+ * @return nothing idiot
+ */
+const validationPassed = (targetId) => {
+  var target = $(targetId);
+  target.parent().find(".text-danger").remove();
+
+  var formGroup = target.parent();
+  while (!formGroup.hasClass("form-group") && formGroup.length > 0) {
+    formGroup = formGroup.parent();
+  }
+
+  if (formGroup.length > 0) {
+    formGroup.removeClass("has-error");
+  }
+};
+
 const CoolholeCallbacks = {
   channelCoolPointOpts: function (cpOpts) {
     CHANNEL.opts.cpOpts = cpOpts;
@@ -34,9 +75,8 @@ const CoolholeCallbacks = {
   coolpointsInitResponse: function (response) {
     // Set points for client and all other users
     // Ideally this would be in data.js if this wasn't a fork
-    CLIENT.coolpoints = response.data.find(
-      (d) => d.user === CLIENT.name
-    ).points;
+    CLIENT.coolpoints =
+      response.data.find((d) => d.user === CLIENT.name)?.points ?? 0; // If the user doesn't exist, set to 0
     CHANNEL.usersCoolPoints = response.data;
 
     // Update the UI
@@ -72,6 +112,7 @@ const CoolholeCallbacks = {
   },
   /* REGION Polls */
   // Added to better style poll for Coolhole's "slate" theme
+  // TODO: Move to coolpoints-utils.js or something
   newPoll: function (data) {
     CoolholeCallbacks.closePoll();
     // Poll message
@@ -135,7 +176,7 @@ const CoolholeCallbacks = {
       ? 0
       : data.counts.reduce((a, b) => a + b, 0);
 
-    data.options.forEach((option, i) => {
+    for (const [i, option] of data.options.entries()) {
       const optionWrapper = $("<div>", {
         class: "option",
       });
@@ -145,6 +186,7 @@ const CoolholeCallbacks = {
       optionButton.click(function () {
         if (data.gamble) {
           $("#ch-poll-wager-option").val(i);
+          $("#ch-poll-wager-wager").val(1);
           $("#ch-poll-wager-modal").modal();
         } else {
           socket.emit("vote", {
@@ -156,6 +198,9 @@ const CoolholeCallbacks = {
       });
       const optionText = $("<span>", {
         html: option, // html because we apparently return tags and encoded characters
+        css: {
+          textWrap: "wrap",
+        },
       });
       const optionPercentage = $("<span>", {
         text: `${data.counts[i]} (${
@@ -169,7 +214,36 @@ const CoolholeCallbacks = {
       optionButton.append(optionText, optionPercentage);
       optionWrapper.append(optionButton);
       optionsWrapper.append(optionWrapper);
-    });
+
+      if (data.gamble && hasPermission("pollctl")) {
+        optionWrapper.css({
+          display: "grid",
+          gridTemplateColumns: "3.5fr 1fr",
+          gap: "10px",
+        });
+        const winningOptionButton = $("<button>", {
+          class: "btn btn-success btn-sm",
+          css: {
+            height: "100%",
+          },
+        });
+        winningOptionButton.click(function () {
+          socket.emit("chooseWinningPollOption", {
+            option: i,
+          });
+        });
+        const winningOptionText = $("<span>", {
+          text: "🏆",
+        });
+        const winningOptionsTotal = $("<span>", {
+          text: `${data.wagers[i]} CP`,
+          class: "percentage text-lottery",
+        });
+
+        winningOptionButton.append(winningOptionText, winningOptionsTotal);
+        optionWrapper.append(winningOptionButton);
+      }
+    }
 
     const timestampSpan = $("<span>", {
       title: "Poll opened by " + data.initiator,
@@ -205,18 +279,59 @@ const CoolholeCallbacks = {
         wagerAmount.text(`${data.totalWagers} CP`);
       }
 
-      // bindings for gamble poll
+      // bindings for wagering on gamble
       $("#ch-poll-wager-send-btn")
         .off("click")
         .on("click", function () {
-          // TODO: prevent non-integer wagers with keydown event
           const wager = parseInt($("#ch-poll-wager-wager").val());
           const option = parseInt($("#ch-poll-wager-option").val());
+          if (isNaN(wager) || isNaN(option) || wager < 0 || option < 0) {
+          }
+          // disable all buttons
+          $("#pollwrap .active .option button:not(.btn-success)").each(
+            function () {
+              $(this).attr("disabled", true);
+            }
+          );
+
           socket.emit("vote", {
             option,
             wager,
           });
         });
+      $("#ch-poll-wager-wager").keydown(function (e) {
+        if (
+          ![
+            "Backspace",
+            "Delete",
+            "Tab",
+            "Escape",
+            "Enter",
+            "ArrowLeft",
+            "ArrowRight",
+          ].includes(e.key) &&
+          isNaN(e.key)
+        ) {
+          e.preventDefault();
+        }
+      });
+      $("#ch-poll-wager-wager").on("focusout", function () {
+        if (
+          parseInt($(this).val()) === 0 ||
+          CLIENT.coolpoints + 10000 < parseInt($(this).val())
+        ) {
+          validationError(
+            `Invalid wager amount. Must be 1 ≤ and ≤ ${
+              CLIENT.coolpoints + 10000
+            }`,
+            "#ch-poll-wager-wager"
+          );
+          $("#ch-poll-wager-send-btn").attr("disabled", true);
+        } else {
+          validationPassed("#ch-poll-wager-wager");
+          $("#ch-poll-wager-send-btn").attr("disabled", false);
+        }
+      });
     }
 
     innerContentWrap.append(headerWrap, optionsWrapper, timestampSpan);
@@ -235,15 +350,24 @@ const CoolholeCallbacks = {
       poll.find(".wager-wrap span.wager-text").text("Total Wagers: ");
       poll.find(".wager-wrap span.text-lottery").text(`${data.totalWagers} CP`);
     }
-    poll.find(".option button span.percentage").each(function (i) {
-      $(this).text(
-        `${data.counts[i]} (${
-          data.counts[i] !== "?" && !isNaN(data.counts[i])
-            ? toPercent(data.counts[i], totalVotes)
-            : "?%"
-        })`
-      );
-    });
+    poll
+      .find(".option button span.percentage:not(.text-lottery)")
+      .each(function (i) {
+        $(this).text(
+          `${data.counts[i]} (${
+            data.counts[i] !== "?" && !isNaN(data.counts[i])
+              ? toPercent(data.counts[i], totalVotes)
+              : "?%"
+          })`
+        );
+      });
+    if (data.gamble && hasPermission("pollctl")) {
+      poll
+        .find(".option button span.percentage.text-lottery")
+        .each(function (i) {
+          $(this).text(`${data.wagers[i]} CP`);
+        });
+    }
   },
 
   closePoll: function () {
@@ -258,6 +382,26 @@ const CoolholeCallbacks = {
       });
     }
   },
+
+  closeGamblePoll: function (data) {
+    if ($("#pollwrap .active").length != 0) {
+      var poll = $("#pollwrap .active");
+      poll.removeClass("active").addClass("muted");
+      poll.find(".option button").each(function () {
+        $(this).attr("disabled", true);
+      });
+      poll.find(".btn-danger").each(function () {
+        $(this).remove();
+      });
+      poll.find(".btn-success").each(function () {
+        $(this).remove();
+      });
+      poll.find("div.option:nth-child(3)").each(function () {
+        $(this).css({ border: "red solid 1px" });
+      });
+    }
+  },
+
   coolpointsVoteskipFail: function (response) {
     $("#voteskip").attr("disabled", false);
   },

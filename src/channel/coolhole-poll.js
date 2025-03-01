@@ -87,6 +87,10 @@ CoolholePollModule.prototype.onUserPostJoin = function (user) {
     this.handleVote.bind(this, user)
   );
   user.socket.on("closePoll", this.handleClosePoll.bind(this, user));
+  user.socket.on(
+    "chooseWinningPollOption",
+    this.handleChooseWinningPollOption.bind(this, user)
+  );
   this.addUserToPollRoom(user);
   const self = this;
   user.on("effectiveRankChange", () => {
@@ -254,14 +258,35 @@ CoolholePollModule.prototype.handleVote = function (user, data) {
     return;
   }
 
+  if (isNaN(data.wager) || data.wager < 1) {
+    user.socket.emit("validationError", {
+      target: "#ch-poll-wager-wager",
+      message: `Invalid wager amount of "${data.wager}"`,
+    });
+    return;
+  }
+
+  if (data.wager > user.points + 10000) {
+    user.socket.emit("validationError", {
+      target: "#ch-poll-wager-wager",
+      message: `You do not have enough points to wager "${data.wager}"`,
+    });
+    return;
+  }
+
   if (this.poll) {
     if (
       this.poll.countVote(user.realip, {
         option: data.option,
         wager: data.wager,
+        user: user.getName(),
       })
     ) {
       this.dirty = true;
+      // FIX: Add back in if we want users to lose points after betting
+      // if (this.poll.gamble) {
+      //   this.channel.modules.coolholepoints.spend(user, data.wager);
+      // }
       this.broadcastPoll(false);
     } else if (this.poll.gamble) {
       // HACK: Assumes that if countVote returned false and the poll is gambling, the user has already voted
@@ -294,6 +319,48 @@ CoolholePollModule.prototype.handleClosePoll = function (user) {
     this.poll = null;
     this.dirty = true;
   }
+};
+
+CoolholePollModule.prototype.handleChooseWinningPollOption = function (
+  user,
+  data
+) {
+  if (!this.channel.modules.permissions.canControlPoll(user)) {
+    return;
+  }
+
+  if (!this.poll || !this.poll.gamble) {
+    return;
+  }
+
+  if (typeof data !== "object" || data === null) {
+    user.socket.emit("errorMsg", {
+      msg: "Invalid data received for poll option selection.",
+    });
+    return;
+  }
+
+  if (
+    isNaN(data.option) ||
+    data.option < 0 ||
+    data.option >= this.poll.choices.length
+  ) {
+    user.socket.emit("errorMsg", {
+      msg: "Invalid poll option selected.",
+    });
+    return;
+  }
+
+  this.poll.winningOption = data.option;
+  this.channel.modules.coolholepoints.payoutPoll(this.poll);
+  this.channel.broadcastAll("closeGamblePoll", {
+    winningOption: this.poll.winningOption,
+  });
+  this.channel.logger.log(
+    "[poll] " + user.getName() + " selected the winning option for the poll"
+  );
+  this.poll = null;
+  this.dirty = true;
 };
 
 CoolholePollModule.prototype.handlePollCmd = function (

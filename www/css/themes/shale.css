@@ -6575,17 +6575,16 @@ svg {
 #pollwrap .well .wrapInner .options {
   display: flex;
   flex-direction: column;
-  width: 95%;
+  width: 100%;
   align-self: center;
-}
-#pollwrap .well .wrapInner .options .option {
-  background: #212A2E;
+  padding: 0px 10px 0px 10px;
 }
 #pollwrap .well .wrapInner .options .option button {
+  background: #212A2E;
   display: flex;
   justify-content: space-between;
-  background: transparent;
   width: 100%;
+  margin-right: 0;
 }
 #pollwrap .well .wrapInner .options .option button.active {
   border: 1px solid #3E97A2;
@@ -6599,10 +6598,8 @@ svg {
 #pollwrap > .well.active .btn-default {
   background-color: #475151;
 }
-#pollwrap > .well.active .options .option:hover {
+#pollwrap > .well.active .options .option button:hover {
   background-color: #f5f5f5;
-}
-#pollwrap > .well.active .options .option:hover button:hover {
   color: #212a2e;
 }
 #pollwrap > .well.muted {

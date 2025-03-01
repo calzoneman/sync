@@ -25,6 +25,7 @@ class CoolholePoll {
     poll.retainVotes = options.retainVotes;
     poll.gamble = options.gamble;
     poll.votes = new Map();
+    poll.winningOption = -1;
     return poll;
   }
 
@@ -38,6 +39,7 @@ class CoolholePoll {
     obscured,
     retainVotes,
     gamble,
+    winningOption,
   }) {
     let poll = new CoolholePoll();
     if (timestamp === undefined)
@@ -54,6 +56,7 @@ class CoolholePoll {
     poll.hideVotes = obscured;
     poll.retainVotes = retainVotes || false;
     poll.gamble = gamble || false;
+    poll.winningOption = winningOption || -1;
     return poll;
   }
 
@@ -80,6 +83,7 @@ class CoolholePoll {
       retainVotes: this.retainVotes,
       timestamp: this.createdAt.getTime(),
       gamble: this.gamble,
+      winningOption: this.winningOption,
     };
   }
 
@@ -109,8 +113,11 @@ class CoolholePoll {
   toUpdateFrame(showHiddenVotes) {
     let counts = new Array(this.choices.length);
     counts.fill(0);
+    let wagers = new Array(this.choices.length);
+    wagers.fill(0);
 
     this.votes.forEach((vote) => counts[vote.option]++);
+    this.votes.forEach((vote) => (wagers[vote.option] += vote.wager));
     const totalWagers = Array.from(this.votes.values()).reduce((acc, vote) => {
       return acc + vote.wager;
     }, 0);
@@ -126,6 +133,7 @@ class CoolholePoll {
       title: this.title,
       options: this.choices,
       counts: counts,
+      wagers,
       totalWagers,
       initiator: this.createdBy,
       timestamp: this.createdAt.getTime(),
