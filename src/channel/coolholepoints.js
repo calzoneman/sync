@@ -395,7 +395,7 @@ class Coolpoints extends ChannelModule {
    */
   handleApplyPointsToUser(user, data) {
     try {
-      if (!this.isUserEligibleForPoints(user)) {
+      if (!this.isUserEligibleForPoints(user.getName())) {
         this.logError({
           username: user,
           callingFunction: "applyPointsToUser",
@@ -439,7 +439,7 @@ class Coolpoints extends ChannelModule {
       LOGGER.info(`${user.getName()} applied ${points} to user ${targetName}`);
     } catch (err) {
       this.logError({
-        username: user,
+        username: user.getName(),
         callingFunction: "applyPointsToUser",
         returnSocket: "coolpointsFailure",
         err,
