@@ -278,7 +278,7 @@ CoolholePollModule.prototype.handleVote = function (user, data) {
 
   if (this.poll) {
     if (
-      this.poll.countVote(user.realip, {
+      this.poll.countVote(Math.random() * 100, {
         option: data.option,
         wager: data.wager,
         user: user.getName(),

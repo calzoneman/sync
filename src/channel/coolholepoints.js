@@ -191,18 +191,17 @@ class Coolpoints extends ChannelModule {
     }
 
     const user = this.channel.users.find((x) => x.account.name === userName);
-    if (!user) {
-      LOGGER.error(`${userName} was not found in the channel user list.`);
-      return false;
-    }
+    if (user) {
+      LOGGER.info(`${userName} was not found in the channel user list.`);
 
-    if (!user.channel.is(Flags.C_REGISTERED)) {
-      LOGGER.error(`${userName} is not registered in the channel.`);
-      return false;
-    }
-    if (!user.is(Flags.U_REGISTERED)) {
-      LOGGER.error(`${userName} is not registered.`);
-      return false;
+      if (!user.channel.is(Flags.C_REGISTERED)) {
+        LOGGER.error(`${userName} is not registered in the channel.`);
+        return false;
+      }
+      if (!user.is(Flags.U_REGISTERED)) {
+        LOGGER.error(`${userName} is not registered.`);
+        return false;
+      }
     }
 
     return true; // HACK: If the user isn't in the channel, assume they're eligible
@@ -923,7 +922,7 @@ class Coolpoints extends ChannelModule {
         if (!this.isUserEligibleForPoints(userName)) {
           this.logError({
             userName,
-            callingFunction: "lose",
+            callingFunction: "payoutPoll",
             returnSocket: "coolpointsFailure",
             err: `User ${userName} is not registered`,
             data: userName,
