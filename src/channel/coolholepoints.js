@@ -192,7 +192,9 @@ class Coolpoints extends ChannelModule {
 
     const user = this.channel.users.find((x) => x.account.name === userName);
     if (user) {
-      LOGGER.info(`${userName} was not found in the channel user list.`);
+      this.channel.logger.log(
+        `${userName} was not found in the channel user list.`
+      );
 
       if (!user.channel.is(Flags.C_REGISTERED)) {
         LOGGER.error(`${userName} is not registered in the channel.`);
@@ -251,6 +253,11 @@ class Coolpoints extends ChannelModule {
       errorObject;
     LOGGER.error(
       `Exception caught in ${callingFunction} for CoolPoints. Here's hopefully relevant data: ${JSON.stringify(
+        data ? data : {}
+      )} Error:  ${errorObject.err}`
+    );
+    this.channel.logger.log(
+      `[coolpoints] Exception caught in ${callingFunction} for CoolPoints. Here's hopefully relevant data: ${JSON.stringify(
         data ? data : {}
       )} Error:  ${errorObject.err}`
     );
@@ -435,7 +442,9 @@ class Coolpoints extends ChannelModule {
         )
       );
 
-      LOGGER.info(`${user.getName()} applied ${points} to user ${targetName}`);
+      this.channel.logger.log(
+        `${user.getName()} applied ${points} to user ${targetName}`
+      );
     } catch (err) {
       this.logError({
         username: user.getName(),
@@ -739,7 +748,7 @@ class Coolpoints extends ChannelModule {
 
       this.subtract(userName, pointsToSpend);
 
-      LOGGER.info(
+      this.channel.logger.log(
         `User ${userName} spent ${
           actionData.options.find((opt) => opt.optionName === "points")
             ?.optionValue
@@ -811,7 +820,7 @@ class Coolpoints extends ChannelModule {
 
       this.add(userName, pointsToEarn);
 
-      LOGGER.info(
+      this.channel.logger.log(
         `User ${userName} was awarded ${pointsToEarn} points for ${action}`
       );
 
@@ -876,7 +885,9 @@ class Coolpoints extends ChannelModule {
 
       this.subtract(userName, pointsToLose);
 
-      LOGGER.info(`User ${userName} lost ${pointsToLose} points for ${action}`);
+      this.channel.logger.log(
+        `User ${userName} lost ${pointsToLose} points for ${action}`
+      );
 
       this.channel.broadcastAll(
         "updateCoolPointsResponse",
@@ -937,7 +948,7 @@ class Coolpoints extends ChannelModule {
 
         if (option !== winningOption) {
           this.subtract(userName, wager);
-          LOGGER.info(
+          this.channel.logger.log(
             `User ${userName} lost ${wager} points while betting on poll "${poll.title}"`
           );
           this.channel.broadcastAll(
@@ -956,7 +967,7 @@ class Coolpoints extends ChannelModule {
           );
           const shareOfThePot = (wager / totalWagersOfWinners) * totalWagers;
           this.add(userName, shareOfThePot);
-          LOGGER.info(
+          this.channel.logger.log(
             `User ${userName} earned ${shareOfThePot} points while betting on poll "${poll.title}"`
           );
           this.channel.broadcastAll(
@@ -1106,7 +1117,9 @@ class Coolpoints extends ChannelModule {
    */
   handleActive(user) {
     if (!user.is(Flags.U_REGISTERED) || !user.is(Flags.U_LOGGED_IN)) {
-      LOGGER.info(`Guest is not eligible for points. Skipping active check`);
+      this.channel.logger.log(
+        `Guest is not eligible for points. Skipping active check`
+      );
       return;
     }
     // If the channel is dead or malformed, consider the user that joined in a bad state and hopefully this will be called again later
@@ -1146,7 +1159,7 @@ class Coolpoints extends ChannelModule {
           .options.find((opt) => opt.optionName === "interval").optionValue *
         1000;
       if (curInterval !== activeInterval) {
-        LOGGER.info(
+        this.channel.logger.log(
           `Interval has changed. Clearing interval and restarting for ${user.getName()}`
         );
 
@@ -1177,7 +1190,7 @@ class Coolpoints extends ChannelModule {
    * @param {Object} user user object
    */
   cleanUpActive(user) {
-    LOGGER.info(`Clearing active interval for ${user.getName()}`);
+    this.channel.logger.log(`Clearing active interval for ${user.getName()}`);
     clearInterval(this.userActiveIntervalIds[user.getName()]);
     delete this.userActiveIntervalIds[user.getName()];
   }
