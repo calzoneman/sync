@@ -254,7 +254,7 @@ class Coolpoints extends ChannelModule {
     LOGGER.error(
       `Exception caught in ${callingFunction} for CoolPoints. Here's hopefully relevant data: ${JSON.stringify(
         data ? data : {}
-      )} Error:  ${errorObject.err}`
+      )} Error:  ${errorObject.err} \n Stack: ${errorObject.err.stack}`
     );
     this.channel.logger.log(
       `[coolpoints] Exception caught in ${callingFunction} for CoolPoints. Here's hopefully relevant data: ${JSON.stringify(
@@ -1010,11 +1010,16 @@ class Coolpoints extends ChannelModule {
    */
   checkStatuses(user) {
     const statuses = [];
-    this.channel.modules.coolholeactionspoints
+    this.channel.modules.coolholeactionspoints.coolpointsActions
       .filter((action) => action.actionType === ActionType.Statuses)
       .forEach((action) => {
         if (
-          this.isValidAction(user, action, ActionType.Statuses, "checkStatuses")
+          this.isValidAction(
+            user,
+            action.name,
+            ActionType.Statuses,
+            "checkStatuses"
+          )
         ) {
           statuses.push(action);
         }
@@ -1030,61 +1035,72 @@ class Coolpoints extends ChannelModule {
    * @returns {Object} chat message object with statuses applied
    */
   handleChatStatuses(user, chatObj) {
-    if (!this.isUserEligibleForPoints(user)) {
+    try {
+      if (!this.isUserEligibleForPoints(user)) {
+        this.logError({
+          user,
+          callingFunction: "handleChatStatuses",
+          returnSocket: "coolpointsFailure",
+          err: `User ${user.getName()} is not registered or logged in`,
+          data: user.getName(),
+          userMessage: `Error: You must join cause if you wish to participate.`,
+        });
+        return;
+      }
+
+      const statuses = this.checkStatuses(user);
+      let res = JSON.parse(JSON.stringify(chatObj));
+      let filters = [];
+      let attemptToApplyAd = false;
+
+      statuses.forEach((status) => {
+        switch (status.name) {
+          case "debtlvl0":
+            filters.push(STUTTER_FILTER);
+            break;
+          case "debtlvl1":
+            filters.push(LISP_FILTER);
+            break;
+          case "debtlvl2":
+            attemptToApplyAd = true;
+            break;
+          case "debtlvl3":
+            res.meta.coolholeMeta.otherClasses.push("shrink");
+            break;
+          case "debtlvl4":
+            MISSING_LETTERS_FILTER.source = randomLettersRegex();
+            filters.push(MISSING_LETTERS_FILTER);
+            break;
+          case "debtlvl5":
+            res.meta.coolholeMeta.otherClasses.push("criticality-accident");
+            break;
+          default:
+            break;
+        }
+      });
+
+      // Apply filters first to message
+      if (filters.length !== 0) {
+        const statusFilterList = new FilterList(filters);
+        res.msg = statusFilterList.filter(chatObj.msg);
+      }
+
+      // Then apply ad if needed
+      if (attemptToApplyAd) {
+        res.msg = this.maybeAppendAdToChat(res.msg);
+      }
+
+      return res;
+    } catch (err) {
       this.logError({
         username: user,
         callingFunction: "handleChatStatuses",
         returnSocket: "coolpointsFailure",
-        err: `User ${user.getName()} is not registered or logged in`,
+        err,
         data: user.getName(),
-        userMessage: `Error: You must join cause if you wish to participate.`,
+        userMessage: `Error: Unable to apply statuses. Let the head monkey in charge know`,
       });
-      return;
     }
-
-    const statuses = this.checkStatuses(user);
-    let res = JSON.parse(JSON.stringify(chatObj));
-    let filters = [];
-    let attemptToApplyAd = false;
-
-    statuses.forEach((status) => {
-      switch (status.name) {
-        case "debtlvl0":
-          filters.push(STUTTER_FILTER);
-          break;
-        case "debtlvl1":
-          filters.push(LISP_FILTER);
-          break;
-        case "debtlvl2":
-          attemptToApplyAd = true;
-          break;
-        case "debtlvl3":
-          res.coolholeMeta.otherClasses.push("shrink");
-          break;
-        case "debtlvl4":
-          MISSING_LETTERS_FILTER.source = randomLettersRegex();
-          filters.push(MISSING_LETTERS_FILTER);
-          break;
-        case "debtlvl5":
-          res.coolholeMeta.otherClasses.push("criticality-accident");
-          break;
-        default:
-          break;
-      }
-    });
-
-    // Apply filters first to message
-    if (filters.length !== 0) {
-      const statuFilterList = new FilterList(filters);
-      res.msg = statuFilterList.filter(chatObj.msg);
-    }
-
-    // Then apply ad if needed
-    if (attemptToApplyAd) {
-      res.msg = this.maybeAppendAdToChat(res.msg);
-    }
-
-    return res;
   }
 
   /**
