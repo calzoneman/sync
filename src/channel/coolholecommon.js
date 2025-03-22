@@ -34,6 +34,15 @@ class CoolholeCommonModule extends ChannelModule {
       resMsgObj.meta.coolholeMeta.otherClasses.push("text-lottery");
     }
 
+    // Process debt effects
+    let debtMsgObj = channel.modules?.coolholepoints.handleChatStatuses(
+      user,
+      resMsgObj
+    );
+    if (debtMsgObj) {
+      resMsgObj = debtMsgObj;
+    }
+
     // return cloned object
     return resMsgObj;
   }
