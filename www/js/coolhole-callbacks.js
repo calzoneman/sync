@@ -222,23 +222,37 @@ const CoolholeCallbacks = {
           gap: "10px",
         });
         const winningOptionButton = $("<button>", {
-          class: "btn btn-success btn-sm",
+          class: "btn btn-danger btn-sm",
           css: {
             height: "100%",
+            display: "flex",
+            flexDirection: "column",
           },
         });
         winningOptionButton.click(function () {
-          socket.emit("chooseWinningPollOption", {
-            option: i,
-          });
+          $("#ch-poll-winner-confirmation-title").text(
+            `Choose "${option}" as the winner?`
+          );
+          $("#ch-poll-winner-confirmation-text").text(
+            `Are you sure you want to end the poll with "${option}" as the winner?`
+          );
+          $("#ch-poll-winner-confirmation-option").val(i);
+          $("#ch-poll-winner-confirmation-modal").modal();
         });
         const winningOptionText = $("<span>", {
-          text: "🏆",
+          text: `End as winner`,
         });
         const winningOptionsTotal = $("<span>", {
-          text: `${data.wagers[i]} CP`,
+          text: `${data.wagers[i]} CP wagered`,
           class: "percentage text-lottery",
         });
+        $("#ch-poll-winner-confirmation-send-btn")
+          .off("click")
+          .on("click", function () {
+            socket.emit("chooseWinningPollOption", {
+              option: $("#ch-poll-winner-confirmation-option").val(),
+            });
+          });
 
         winningOptionButton.append(winningOptionText, winningOptionsTotal);
         optionWrapper.append(winningOptionButton);
@@ -288,7 +302,7 @@ const CoolholeCallbacks = {
           if (isNaN(wager) || isNaN(option) || wager < 0 || option < 0) {
           }
           // disable all buttons
-          $("#pollwrap .active .option button:not(.btn-success)").each(
+          $("#pollwrap .active .option button:not(.btn-danger)").each(
             function () {
               $(this).attr("disabled", true);
             }

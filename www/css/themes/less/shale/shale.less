@@ -227,16 +227,20 @@ svg {
 
         .option {
           button {
-            background: #212A2E;
             display: flex;
             justify-content: space-between;
             width: 100%;
             margin-right: 0;
+            align-items: center;
           }
 
           button.active {
             border: 1px solid #3E97A2;
             font-weight: bold;
+          }
+
+          button:not(.btn-danger) {
+            background: #212A2E;
           }
         }
       }

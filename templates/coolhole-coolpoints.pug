@@ -293,3 +293,18 @@ mixin ch-poll-wager-modal
         .modal-footer
           button.btn.btn-primary(type="button", data-dismiss="modal") Abort
           button#ch-poll-wager-send-btn.btn.btn-primary(type="button", data-dismiss="modal") Send
+
+  mixin ch-poll-winner-confirmation-modal
+    .modal.fade(id="ch-poll-winner-confirmation-modal" tabindex="-1" role="dialog" aria-hidden="true")
+      .modal-dialog.modal-dialog-nonfluid
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal", aria-hidden="true") &times;
+            h4#ch-poll-winner-confirmation-title 
+          .modal-body
+            .form-horizontal(action="javascript:void(0)")
+              #ch-poll-winner-confirmation-text
+              input#ch-poll-winner-confirmation-option.form-control(type="hidden")
+          .modal-footer
+            button.btn.btn-primary(type="button", data-dismiss="modal") Abort
+            button#ch-poll-winner-confirmation-send-btn.btn.btn-primary(type="button", data-dismiss="modal") Send

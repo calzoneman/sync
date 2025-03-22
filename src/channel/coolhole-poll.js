@@ -353,7 +353,7 @@ CoolholePollModule.prototype.handleChooseWinningPollOption = function (
     return;
   }
 
-  this.poll.winningOption = data.option;
+  this.poll.winningOption = parseInt(data.option);
   this.channel.modules.coolholepoints.payoutPoll(this.poll);
   const votes = Array.from(this.poll.votes.values()).map((vote) => ({
     ...vote,

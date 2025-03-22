@@ -6580,15 +6580,18 @@ svg {
   padding: 0px 10px 0px 10px;
 }
 #pollwrap .well .wrapInner .options .option button {
-  background: #212A2E;
   display: flex;
   justify-content: space-between;
   width: 100%;
   margin-right: 0;
+  align-items: center;
 }
 #pollwrap .well .wrapInner .options .option button.active {
   border: 1px solid #3E97A2;
   font-weight: bold;
+}
+#pollwrap .well .wrapInner .options .option button:not(.btn-danger) {
+  background: #212A2E;
 }
 #pollwrap > .well.active {
   width: 100%;
