@@ -114,6 +114,8 @@ const ADS = [
   "COOL FRIEND | GNCDE '''Satirical''' Alt-Right Indie-Rock https://youtu.be/hc801HuELUc",
   "ummm, uhhh, guys I can't hold it in anymore i- GRRRRRRRRRRR WOOF WOOF BARK BARK ARF BARK GRRRR WOOF SNARL HSSSS GRRRR WOOF WOOF BARK ARF GRRRR HSSSS WOOF WOOF BARK ARF GRRRRR HSSSSS BARK ARF GRRRR https://furrycons.com/calendar/",
   "GrubHub perks give you deals on the food you love. The kind of deals that make you boogie. Get the food you love, with perks from GrubHub! Grub what you love!",
+  "Hello, friend! I'm the Nicotine Monster, here to share my tragic tale. I once thrived in a garden, part of the ‘PESTICIDE’ team, defending fruits and veggies from pests—a noble life! But disaster struck when doctors visited the Human, leaving behind a gift box. Inside, I saw my kin twisted into unnatural forms—cigarettes, cigars, gums, patches, vape liquids… Horror! NicotineMonster.com or www.gd.games/misha_cao/nicotine-monster",
+  "Struggling with internet porn addiction? There's hope! Seek God's help through prayer, scripture, and accountability. Use practical tools like Covenant Eyes & X3watch. Overcoming is possible with God's strength. Learn more: https://www.gotquestions.org/overcome-internet-porn.html.",
 ];
 
 const randomLettersRegex = () => {

@@ -279,7 +279,7 @@ CoolholePollModule.prototype.handleVote = function (user, data) {
   if (this.poll) {
     if (
       this.poll.countVote(user.realip, {
-        option: data.option,
+        option: parseInt(data.option),
         wager: data.wager,
         user: user.getName(),
       })
@@ -357,7 +357,7 @@ CoolholePollModule.prototype.handleChooseWinningPollOption = function (
   this.channel.modules.coolholepoints.payoutPoll(this.poll);
   const votes = Array.from(this.poll.votes.values()).map((vote) => ({
     ...vote,
-    isWinner: vote.option === data.option,
+    isWinner: vote.option === this.poll.winningOption,
   }));
   this.channel.broadcastAll("closeGamblePoll", {
     winningOption: this.poll.winningOption,
