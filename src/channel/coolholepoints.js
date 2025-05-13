@@ -253,10 +253,12 @@ class Coolpoints extends ChannelModule {
   logError(errorObject) {
     const { userName, callingFunction, data, returnSocket, userMessage } =
       errorObject;
+
+    const stack = errorObject.err.stack ? errorObject.err.stack : Error().stack;
     LOGGER.error(
       `Exception caught in ${callingFunction} for CoolPoints. Here's hopefully relevant data: ${JSON.stringify(
         data ? data : {}
-      )} Error:  ${errorObject.err} \n Stack: ${errorObject.err.stack}`
+      )} Error:  ${errorObject.err} \n Stack: ${stack}`
     );
     this.channel.logger.log(
       `[coolpoints] Exception caught in ${callingFunction} for CoolPoints. Here's hopefully relevant data: ${JSON.stringify(
@@ -1007,24 +1009,21 @@ class Coolpoints extends ChannelModule {
 
   /**
    * @summary Check what statuses should be applied for a user
-   * @param {Object} user user object
+   * @param {Object} userName username
    * @returns {Array} statuses to apply
    */
-  checkStatuses(user) {
+  checkStatuses(userName) {
     const statuses = [];
     this.channel.modules.coolholeactionspoints.coolpointsActions
       .filter((action) => action.actionType === ActionType.Statuses)
       .forEach((action) => {
-        if (
-          this.isValidAction(
-            user,
-            action.name,
-            ActionType.Statuses,
-            "checkStatuses"
-          )
-        ) {
-          statuses.push(action);
-        }
+        const actionStatus = this.isValidAction(
+          userName,
+          action.name,
+          ActionType.Statuses,
+          "checkStatuses"
+        );
+        if (actionStatus.success) statuses.push(action);
       });
 
     return statuses;
@@ -1050,7 +1049,7 @@ class Coolpoints extends ChannelModule {
         return;
       }
 
-      const statuses = this.checkStatuses(user);
+      const statuses = this.checkStatuses(user.getName());
       let res = JSON.parse(JSON.stringify(chatObj));
       let filters = [];
       let attemptToApplyAd = false;
@@ -1187,15 +1186,13 @@ class Coolpoints extends ChannelModule {
       }
 
       // Check if the action is still valid/active. If not, just return since I don't wanna build a hook to start this up again when it's turned on
-      if (
-        !this.isValidAction(
-          user.getName(),
+      const actionStatus = this.isValidAction(
+        user.getName(),
           "active",
           ActionType.Earnings,
           "active"
-        )
-      )
-        return;
+      );
+      if (!actionStatus.success) return;
 
       if (user.is(Flags.U_AFK)) return;
 
