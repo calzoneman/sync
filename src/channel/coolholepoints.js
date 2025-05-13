@@ -1038,7 +1038,7 @@ class Coolpoints extends ChannelModule {
    */
   handleChatStatuses(user, chatObj) {
     try {
-      if (!this.isUserEligibleForPoints(user)) {
+      if (!this.isUserEligibleForPoints(user.getName())) {
         this.logError({
           user,
           callingFunction: "handleChatStatuses",
