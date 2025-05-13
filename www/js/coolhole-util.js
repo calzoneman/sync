@@ -144,7 +144,7 @@ function coolholeHandleMessageOutOfBuffer(data) {
  */
 function coolholeShouldOverrideMessageSend(msg) {
   const msgLower = msg.toLowerCase();
-  const commands = ["/secretary"];
+  const commands = ["/secretary", "/poll"];
   if (commands.some((command) => msgLower.startsWith(command))) {
     return true;
   }
@@ -176,6 +176,12 @@ function parseSecretaryMessage(msg) {
   return { msg: messageToSay, options };
 }
 
+function parsePollMessage(msg) {
+  const msgWithoutCommand = msg.replace("/poll", "").trim();
+  const [title, ...options] = msgWithoutCommand.split(",");
+  return { title, options: options.map((o) => o.trim()) };
+}
+
 /**
  * Parses a special chat message and returns the message and its options.
  * @param {String} msg Message to parse
@@ -202,52 +208,81 @@ function parseSpecialChatMessage(msg) {
  */
 function coolholeMessageOverride(msg, meta) {
   const msgLower = msg.toLowerCase();
-  if (msgLower.startsWith("/secretary")) {
-    // Prepopulate the message with the commands if provided in the message; otherwise use defaults
-    const { msg: parsedMessage, options } = parseSecretaryMessage(msg);
-    if (parsedMessage) SEC_MSG_INPUT.val(parsedMessage);
-    if (options["p"]) SEC_PITCH_INPUT.val(options["p"]);
-    if (options["r"]) SEC_RATE_INPUT.val(options["r"]);
-    if (options["v"]) {
-      const voiceFound = voices.some((voice) => voice.name === options["v"]);
-      if (voiceFound)
-        $(`#secretaryOption-voice option[value="${options["v"]}"]`).prop(
-          "selected",
-          true
+  switch (true) {
+    case msgLower.startsWith("/secretary"):
+      // Prepopulate the message with the commands if provided in the message; otherwise use defaults
+      const { msg: parsedMessage, options: secOptions } =
+        parseSecretaryMessage(msg);
+      if (parsedMessage) SEC_MSG_INPUT.val(parsedMessage);
+      if (secOptions["p"]) SEC_PITCH_INPUT.val(secOptions["p"]);
+      if (secOptions["r"]) SEC_RATE_INPUT.val(secOptions["r"]);
+      if (secOptions["v"]) {
+        const voiceFound = voices.some(
+          (voice) => voice.name === secOptions["v"]
         );
-    }
+        if (voiceFound)
+          $(`#secretaryOption-voice option[value="${secOptions["v"]}"]`).prop(
+            "selected",
+            true
+          );
+      }
 
-    // Unbind and rebind the click event to prevent multiple event bindings
-    $("#secretaryOption-send-btn")
-      .off("click")
-      .on("click", function () {
-        const msg = SEC_MSG_INPUT.val();
-        const pitch = SEC_PITCH_INPUT.val();
-        const rate = SEC_RATE_INPUT.val();
-        const voice = SEC_VOICE_INPUT.val();
+      // Unbind and rebind the click event to prevent multiple event bindings
+      $("#secretaryOption-send-btn")
+        .off("click")
+        .on("click", function () {
+          const msg = SEC_MSG_INPUT.val();
+          const pitch = SEC_PITCH_INPUT.val();
+          const rate = SEC_RATE_INPUT.val();
+          const voice = SEC_VOICE_INPUT.val();
 
-        let msgWithOptions = "/secretary";
-        if (pitch || rate || voice) {
-          msgWithOptions += " {";
-          if (pitch) {
-            msgWithOptions += `-p ${pitch} `;
+          let msgWithOptions = "/secretary";
+          if (pitch || rate || voice) {
+            msgWithOptions += " {";
+            if (pitch) {
+              msgWithOptions += `-p ${pitch} `;
+            }
+            if (rate) {
+              msgWithOptions += `-r ${rate} `;
+            }
+            if (voice) {
+              msgWithOptions += `-v "${voice}"`;
+            }
+            msgWithOptions += "}";
           }
-          if (rate) {
-            msgWithOptions += `-r ${rate} `;
-          }
-          if (voice) {
-            msgWithOptions += `-v "${voice}"`;
-          }
-          msgWithOptions += "}";
-        }
-        msgWithOptions += ` ${msg}`;
-        socket.emit("chatMsg", {
-          msg: msgWithOptions,
-          meta: meta,
+          msgWithOptions += ` ${msg}`;
+          socket.emit("chatMsg", {
+            msg: msgWithOptions,
+            meta: meta,
+          });
         });
-      });
 
-    $("#ch-secretary-modal").modal();
+      $("#ch-secretary-modal").modal();
+      break;
+    case msgLower.startsWith("/poll"):
+      const { title, options: pollOptions } = parsePollMessage(msg);
+      $("#pollOption-title").val(title);
+
+      const pollOptionsInput = $("#pollOption-options").val(pollOptions);
+
+      // Unbind and rebind the click event to prevent multiple event bindings
+      $("#pollOption-send-btn")
+        .off("click")
+        .on("click", function () {
+          // encodeURI to handle commas in the title and options
+          const title = $("#pollOption-title").val();
+          const options = pollOptionsInput.val();
+          const allowGamble = $("#pollOption-allowGamble").is(":checked");
+          socket.emit("chatMsg", {
+            msg: `/poll {${title}} -g {${allowGamble}} -o {${options}}`,
+            meta: meta,
+          });
+        });
+
+      $("#ch-poll-modal").modal();
+      break;
+    default:
+      break;
   }
   CHATHIST.push($("#chatline").val());
   CHATHISTIDX = CHATHIST.length;

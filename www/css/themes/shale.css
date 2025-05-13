@@ -4460,7 +4460,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
   line-height: 1.42857143;
   text-decoration: none;
   color: #5ca2b9;
-  background-color: #688591;
+  background-color: #161c1f;
   border: 1px solid #ddd;
   margin-left: -1px;
 }
@@ -4480,7 +4480,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pagination > li > a:focus,
 .pagination > li > span:focus {
   color: #3c788c;
-  background-color: #cad4d9;
+  background-color: #010101;
   border-color: #ddd;
 }
 .pagination > .active > a,
@@ -4549,14 +4549,14 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pager li > span {
   display: inline-block;
   padding: 5px 14px;
-  background-color: #688591;
+  background-color: #161c1f;
   border: 1px solid #ddd;
   border-radius: 15px;
 }
 .pager li > a:hover,
 .pager li > a:focus {
   text-decoration: none;
-  background-color: #cad4d9;
+  background-color: #010101;
 }
 .pager .next > a,
 .pager .next > span {
@@ -4571,7 +4571,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pager .disabled > a:focus,
 .pager .disabled > span {
   color: #ffffff;
-  background-color: #688591;
+  background-color: #161c1f;
   cursor: not-allowed;
 }
 .label {
@@ -6575,21 +6575,23 @@ svg {
 #pollwrap .well .wrapInner .options {
   display: flex;
   flex-direction: column;
-  width: 95%;
+  width: 100%;
   align-self: center;
-}
-#pollwrap .well .wrapInner .options .option {
-  background: #212A2E;
+  padding: 0px 10px 0px 10px;
 }
 #pollwrap .well .wrapInner .options .option button {
   display: flex;
   justify-content: space-between;
-  background: transparent;
   width: 100%;
+  margin-right: 0;
+  align-items: center;
 }
 #pollwrap .well .wrapInner .options .option button.active {
   border: 1px solid #3E97A2;
   font-weight: bold;
+}
+#pollwrap .well .wrapInner .options .option button:not(.btn-danger) {
+  background: #212A2E;
 }
 #pollwrap > .well.active {
   width: 100%;
@@ -6599,10 +6601,8 @@ svg {
 #pollwrap > .well.active .btn-default {
   background-color: #475151;
 }
-#pollwrap > .well.active .options .option:hover {
+#pollwrap > .well.active .options .option button:hover {
   background-color: #f5f5f5;
-}
-#pollwrap > .well.active .options .option:hover button:hover {
   color: #212a2e;
 }
 #pollwrap > .well.muted {

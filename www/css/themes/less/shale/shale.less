@@ -14,9 +14,11 @@ body {
 ::-webkit-scrollbar {
   background-color: transparent;
 }
+
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   border-radius: 10px;
   background-color: #3b4c5450;
@@ -219,22 +221,26 @@ svg {
       .options {
         display: flex;
         flex-direction: column;
-        width: 95%;
+        width: 100%;
         align-self: center;
+        padding: 0px 10px 0px 10px;
 
         .option {
-          background: #212A2E;
-
           button {
             display: flex;
             justify-content: space-between;
-            background: transparent;
             width: 100%;
+            margin-right: 0;
+            align-items: center;
           }
 
           button.active {
             border: 1px solid #3E97A2;
             font-weight: bold;
+          }
+
+          button:not(.btn-danger) {
+            background: #212A2E;
           }
         }
       }
@@ -251,12 +257,9 @@ svg {
     background-color: #475151;
   }
 
-  .options .option:hover {
+  .options .option button:hover {
     background-color: #f5f5f5;
-
-    button:hover {
-      color: #212a2e;
-    }
+    color: #212a2e;
   }
 }
 
@@ -457,7 +460,7 @@ input[type="checkbox"] {
   background-color: #181E22;
 }
 
-#chatline{
+#chatline {
   transition: box-shadow;
   transition-duration: 150ms;
   border: 0;
@@ -479,7 +482,8 @@ input[type="checkbox"] {
   background-color: #12151B;
   font-size: 16px;
   height: 50px;
-  > .form-control {
+
+  >.form-control {
     border: none;
     height: 50px;
   }
@@ -489,11 +493,11 @@ input[type="checkbox"] {
   box-shadow: inset 0 0 5px #439dc3;
 }
 
-#guestlogin > .form-control:focus {
+#guestlogin>.form-control:focus {
   box-shadow: inset 0 0 5px #439dc3;
 }
 
-#guestlogin > span {
+#guestlogin>span {
   border: none;
   color: #D6DBD6;
   background-color: #0d1015;
@@ -547,9 +551,11 @@ input[type="checkbox"] {
 #rightcontrols {
   padding: 0;
 }
+
 #leftcontrols {
   padding-left: 10px;
-  > .btn.btn-sm {
+
+  >.btn.btn-sm {
     margin: 0;
     margin-right: 1px;
   }
@@ -633,7 +639,7 @@ input[type="checkbox"] {
   margin-right: 5px;
 }
 
-#plonotification > div > .btn {
+#plonotification>div>.btn {
   border: none;
   background-color: #742c00;
 }

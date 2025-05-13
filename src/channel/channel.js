@@ -158,7 +158,7 @@ Channel.prototype.initModules = function () {
         "./playlist"      : "playlist",
         "./mediarefresher": "mediarefresher",
         "./voteskip"      : "voteskip",
-        "./poll"          : "poll",
+        "./coolhole-poll" : "poll", // Coolhole override
         "./kickban"       : "kickban",
         "./ranks"         : "rank",
         "./accesscontrol" : "password",
