@@ -1099,9 +1099,9 @@ class Coolpoints extends ChannelModule {
       // Check if the action is still valid/active. If not, just return since I don't wanna build a hook to start this up again when it's turned on
       const actionStatus = this.isValidAction(
         user.getName(),
-          "active",
-          ActionType.Earnings,
-          "active"
+        "active",
+        ActionType.Earnings,
+        "active"
       );
       if (!actionStatus.success) return;
 

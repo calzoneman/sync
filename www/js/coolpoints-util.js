@@ -350,6 +350,8 @@ function applyPointsToTable(pointData) {
 
   // Run animation
   const userPoints = $(`#${pointData.user}-userlist-points`);
+  if (userPoints.length === 0) return; // If the user's points isn't visible, do nothing
+
   userPoints.text(userCoolPointListItem.points);
   const userPointsMsg = $(`#${pointData.user}-userlist-points-msg`);
   animatePointUpdate(userPoints, userPointsMsg, pointData.points);
