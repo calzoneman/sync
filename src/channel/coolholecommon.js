@@ -35,12 +35,14 @@ class CoolholeCommonModule extends ChannelModule {
     }
 
     // Process debt effects
-    let debtMsgObj = channel.modules?.coolholepoints.handleChatStatuses(
-      user,
-      resMsgObj
-    );
-    if (debtMsgObj) {
-      resMsgObj = debtMsgObj;
+    if (user.getName()) {
+      let debtMsgObj = channel.modules?.coolholepoints.handleChatStatuses(
+        user,
+        resMsgObj
+      );
+      if (debtMsgObj) {
+        resMsgObj = debtMsgObj;
+      }
     }
 
     // return cloned object
