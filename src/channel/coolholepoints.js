@@ -483,6 +483,7 @@ class Coolpoints extends ChannelModule {
             return true; // if it fails for any other reason (or passes) allow skip to work as intended
         }
       }
+      return true;
     } catch (err) {
       this.logError({
         username: user,
@@ -502,7 +503,8 @@ class Coolpoints extends ChannelModule {
    */
   handleSkipped(queueby) {
     try {
-      this.lose(queueby, action);
+      // 2025-05-27 - miles: commented out temporarily to stop spamming logs.
+      //this.lose(queueby, action);
     } catch (err) {
       this.logError({
         username: null,
