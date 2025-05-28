@@ -359,7 +359,7 @@ class Coolpoints extends ChannelModule {
    */
   add(name, points) {
     const curPoints = this.get(name).points;
-    this.set(name, curPoints + points);
+    this.set(name, Math.round(curPoints + points));
     this.dirty = true;
   }
 
@@ -369,7 +369,7 @@ class Coolpoints extends ChannelModule {
    * @param {Number} points User's coolpoints
    */
   subtract(name, points) {
-    this.set(name, this.get(name).points - points);
+    this.set(name, Math.round(this.get(name).points - points));
     this.dirty = true;
   }
 
@@ -880,7 +880,8 @@ class Coolpoints extends ChannelModule {
               vote.option === winningOption ? acc + vote.wager : acc,
             0
           );
-          const shareOfThePot = (wager / totalWagersOfWinners) * totalWagers;
+          const shareOfThePot =
+            Math.round(wager / totalWagersOfWinners) * totalWagers;
           this.add(userName, shareOfThePot);
           this.channel.logger.log(
             `User ${userName} earned ${shareOfThePot} points while betting on poll "${poll.title}"`
