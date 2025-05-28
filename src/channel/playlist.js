@@ -1043,8 +1043,7 @@ PlaylistModule.prototype._addItem = function (media, data, user, cb) {
         }
 
         /* Update coolpoints */
-        // 2025-05-27 - Miles - commented out temporarily to stop spamming logs.
-        // self.channel.modules.coolholepoints.earn(user, "addingVid");
+        self.channel.modules.coolholepoints.earn(user.getName(), "addingVid");
 
         self._listDirty = true;
 
