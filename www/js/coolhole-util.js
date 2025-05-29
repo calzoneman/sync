@@ -12,6 +12,8 @@ const SEC_MSG_INPUT = $("#secretaryOption-message");
 const SEC_PITCH_INPUT = $("#secretaryOption-pitch");
 const SEC_RATE_INPUT = $("#secretaryOption-rate");
 const SEC_VOICE_INPUT = $("#secretaryOption-voice");
+const EMOTE_VOLUME_DEFAULT = 50; // Default volume for emotes
+const SEC_VOLUME_DEFAULT = 50; // Default volume for secretary messages
 
 const synth = window.speechSynthesis;
 let voices = [];
@@ -359,6 +361,9 @@ function secretaryMessageCallback(data) {
     if (speechObj.voiceObj) utterThis.voice = speechObj.voiceObj;
     if (speechObj.rate) utterThis.rate = speechObj.rate;
     if (speechObj.pitch) utterThis.pitch = speechObj.pitch;
+    const preferedVolume =
+      (localStorage.getItem("secVolume") ?? SEC_VOLUME_DEFAULT) / 100;
+    utterThis.volume = preferedVolume;
 
     // If there any sounds in the array...
     if (sounds && sounds.length > 0) {
@@ -783,6 +788,7 @@ function playSound(sfxLibItem) {
         typeof sfxLibItem.volume === "number"
       )
         audio.volume = sfxLibItem.volume;
+      else audio.volume = (localStorage.getItem("emoteVolume") ?? 50) / 100; // Default to 50% volume
 
       // If a playbackRate is set and it's a number, set it.
       if (
@@ -994,6 +1000,67 @@ const AUTO_RESIZE_MAX = 9; // 2024-07-12 - hardcoded to be 9 based on cytube's c
 const AUTO_RESIZE_MIN = 3; // 2024-07-12 - hardcoded to be 3 based on cytube's changeVideoWidth() function
 const AUTO_RESIZE_STORAGE_NAME = "autoResizeVideoWidth"; // auto resize key for local storage
 const AUTO_HIDE_USERLIST_STORAGE_NAME = "autoHideUserlist"; // hide userlist key for local storage
+
+// set default volume for emotes and secretary messages
+if (window.localStorage.getItem("emoteVolume") === null) {
+  window.localStorage.setItem("emoteVolume", EMOTE_VOLUME_DEFAULT);
+}
+if (window.localStorage.getItem("secVolume") === null) {
+  window.localStorage.setItem("secVolume", SEC_VOLUME_DEFAULT);
+}
+
+/**
+ * Event listener for slider changes.
+ */
+function setupSliderListener(itemName, sliderId, testCallback) {
+  try {
+    $(`#${sliderId}`).val(window.localStorage.getItem(itemName));
+    $(`#${sliderId}-value`).text(window.localStorage.getItem(itemName) + "%");
+    $(`#${sliderId}`).on("input change", function () {
+      const value = $(this).val();
+      window.localStorage.setItem(itemName, value);
+      $(`#${sliderId}-value`).text(value + "%");
+
+      if (testCallback && typeof testCallback === "function") {
+        testCallback(value);
+      }
+    });
+  } catch (e) {
+    console.error(`Error setting up slider listener for ${itemName}:`, e);
+  }
+}
+
+$(function () {
+  setupSliderListener(
+    "emoteVolume",
+    "chatOptions-sfx-emotevolume-cb",
+    (value) => {
+      // todo: dont play audio if audio is currently playing
+      const audio = new Audio(
+        "https://static.dontcodethis.com/sounds/tink.mp3"
+      );
+      audio.volume = value / 100;
+      audio.play();
+    }
+  );
+
+  setupSliderListener("secVolume", "chatOptions-sfx-secvolume-cb", (value) => {
+    if (!(synth.pending || synth.speaking)) {
+      var speechObj = {
+        rate: 1.2,
+        pitch: 1,
+        voiceObj:
+          voices.find(
+            (voice) => voice.name === "Microsoft Zira - English (United States)"
+          ) ?? voices[0],
+        message: `Test message with volume ${value} percent`,
+      };
+      var utterThis = new SpeechSynthesisUtterance(speechObj.message);
+      utterThis.volume = value / 100;
+      window.speechSynthesis.speak(utterThis);
+    }
+  });
+});
 
 /**
  * Sets up auto resizing functionality.
