@@ -788,7 +788,9 @@ function playSound(sfxLibItem) {
         typeof sfxLibItem.volume === "number"
       )
         audio.volume = sfxLibItem.volume;
-      else audio.volume = (localStorage.getItem("emoteVolume") ?? 50) / 100; // Default to 50% volume
+      else
+        audio.volume =
+          (localStorage.getItem("emoteVolume") ?? EMOTE_VOLUME_DEFAULT) / 100; // Default to 50% volume
 
       // If a playbackRate is set and it's a number, set it.
       if (
