@@ -35,7 +35,7 @@ class CoolholeCommonModule extends ChannelModule {
     }
 
     // Process debt effects
-    if (user.getName()) {
+    if (user?.getName()) {
       let debtMsgObj = channel.modules?.coolholepoints.handleChatStatuses(
         user,
         resMsgObj

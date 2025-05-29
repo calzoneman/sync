@@ -175,39 +175,12 @@ CoolpointsUserList.prototype.initSearch = function () {
   });
 };
 
-// TODO: Sort options?
-// CoolpointsUserList.prototype.initSortOption = function () {
-//   this.sortOption = this.elem.find(".emotelist-alphabetical");
-//   this.sortAlphabetical = false;
-//   var self = this;
-
-//   this.sortOption.change(function () {
-//     self.sortAlphabetical = this.checked;
-//     self.handleChange();
-//     self.loadPage(0);
-//   });
-// };
-
 /**
  * Handle change in users
  */
 CoolpointsUserList.prototype.handleChange = function () {
   this.usersCoolPoints = [...CHANNEL.usersCoolPoints];
-  // TODO: Sorting?
-  // if (this.sortAlphabetical) {
-  //   this.usersCoolPoints.sort(function (a, b) {
-  //     var x = a.name.toLowerCase();
-  //     var y = b.name.toLowerCase();
-
-  //     if (x < y) {
-  //       return -1;
-  //     } else if (x > y) {
-  //       return 1;
-  //     } else {
-  //       return 0;
-  //     }
-  //   });
-  // }
+  this.usersCoolPoints.sort((a, b) => b.points - a.points);
 
   if (this.filter) {
     this.usersCoolPoints = this.usersCoolPoints.filter(this.filter);
@@ -247,22 +220,24 @@ CoolpointsUserList.prototype.loadPage = function (page) {
       row.appendChild(userName);
 
       const userPointsTd = document.createElement("td");
-      userPointsTd.className = "cp-table-points-wrapper";
+      const userPointsWrapper = document.createElement("div");
+      userPointsWrapper.className = "cp-table-points-wrapper";
+      userPointsTd.appendChild(userPointsWrapper);
 
       // Actual points element
       const userPoints = document.createElement("div");
       userPoints.textContent = userData.points;
       userPoints.id = `${userData.user}-userlist-points`;
       // FIX: This sucks. It adds the coolpoints icon but we just use img tag instead of pseudo element
-      userPoints.className = "ch-icon ch-cp cp-table-points";
+      userPoints.className = "cp-table-points";
 
       // Message element that appears points change
       const userPointsMsg = document.createElement("span");
       userPointsMsg.id = `${userData.user}-userlist-points-msg`;
       userPointsMsg.className = "cp-table-points-msg";
 
-      userPointsTd.appendChild(userPoints);
-      userPointsTd.appendChild(userPointsMsg);
+      userPointsWrapper.appendChild(userPoints);
+      userPointsWrapper.appendChild(userPointsMsg);
       row.appendChild(userPointsTd);
 
       const userFates = document.createElement("td");
@@ -350,6 +325,8 @@ function applyPointsToTable(pointData) {
 
   // Run animation
   const userPoints = $(`#${pointData.user}-userlist-points`);
+  if (userPoints.length === 0) return; // If the user's points isn't visible, do nothing
+
   userPoints.text(userCoolPointListItem.points);
   const userPointsMsg = $(`#${pointData.user}-userlist-points-msg`);
   animatePointUpdate(userPoints, userPointsMsg, pointData.points);
