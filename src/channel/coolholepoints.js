@@ -559,6 +559,16 @@ class Coolpoints extends ChannelModule {
       actionData.options.find((opt) => opt.optionName === "enabled")
         .optionValue === false
     ) {
+        if (action !== "active")
+        // "Active" still runs even if it's inactive; no need to log
+        this.logError({
+          username: userName,
+          callingFunction,
+          returnSocket: "coolpointsFailure",
+          err: `Action ${action} is not enabled`,
+          data: { user: userName, action },
+          userMessage: `Error: Action ${action} has been deemed too powerful. It's been disabled for now.`,
+        });
       return new ActionResult(
         false,
         "Action is not enabled",
