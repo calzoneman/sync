@@ -116,7 +116,7 @@ CustomizationModule.prototype.handleSetCSS = function (user, data) {
 
     let oldHash = this.cssHash;
     // TODO: consider sending back an error instead of silently truncating
-    this.css = data.css.substring(0, 20000);
+    this.css = data.css.substring(0, 500000); // coolhole: increased from 20000 to 500000
 
     if (oldHash !== this.cssHash) {
         this.dirty = true;
@@ -132,7 +132,7 @@ CustomizationModule.prototype.handleSetJS = function (user, data) {
     }
 
     let oldHash = this.jsHash;
-    this.js = data.js.substring(0, 20000);
+    this.js = data.js.substring(0, 500000); // coolhole: increased from 20000 to 500000
 
     if (oldHash !== this.jsHash) {
         this.dirty = true;

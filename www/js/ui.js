@@ -925,14 +925,14 @@ $("#fullscreenbtn").on('click', function () {
 });
 
 function handleCSSJSTooLarge(selector) {
-    if (this.value.length > 20000) {
+    if (this.value.length > 500000) { //coolhole: increased from 20000 to 500000
         let notice = document.querySelector(selector);
         if (notice !== null) {
             return;
         }
 
         notice = makeAlert("Maximum Size Exceeded", "Inline CSS and JavaScript are " +
-                "limited to 20,000 characters or less.  If you need more room, you " +
+                "limited to 500,000 characters or less.  If you need more room, you " +
                 "need to use the external CSS or JavaScript option.", "alert-danger")
                 .attr("id", selector.replace(/#/, ""));
 
