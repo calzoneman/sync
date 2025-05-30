@@ -11,6 +11,7 @@ mixin slider(id, label)
     label.col-sm-3(for=id)= label
     .col-sm-9
       input(type="range", id=id, min="0", max="100", step="1")
+      span(id=id+"-value", class="slider-value") 50%
 mixin chat-general
     #ch-chat
         h4 Sound Effects
@@ -19,8 +20,8 @@ mixin chat-general
                 +checkbox("chatOptions-sfx-mod-cb", "Allow sounds from Moderator emotes")
                 +checkbox("chatOptions-sfx-global-cb", "Allow sounds anyone can use")
                 +checkbox("chatOptions-sfx-stack-cb", "Allow sound stacking")
-            .col-sm-2
-            .col-sm-10 
-                p.text-danger Warning: This can be very loud and may bring your browser to a crawl.
+                .col-sm-8.col-sm-offset-4
+                  p.text-danger Warning: This can be very loud and may bring your browser to a crawl.
             +slider("chatOptions-sfx-secvolume-cb", "Woman Volume")
+            +slider("chatOptions-sfx-emotevolume-cb", "Emote Volume")
             .clear
