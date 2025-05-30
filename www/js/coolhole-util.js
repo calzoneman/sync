@@ -1143,7 +1143,10 @@ applyAutoHideUserlist();
  */
 function coolholeAppendQueueTitle(item, video, li) {
   if(item.media.type === "gd") {
-    return $("<span/>").addClass("qe_title_disabled").appendTo(li)
+    return $("<span/>")
+      .addClass("qe_title")
+      .addClass("qe_title_disabled")
+      .appendTo(li)
       .text(video.title);
   } else {
     return $("<a/>").addClass("qe_title").appendTo(li)

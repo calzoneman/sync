@@ -1142,6 +1142,10 @@ code.text-lottery {
     border: 1px solid #3E97A2;
 }
 
+.qe_title_disabled {
+  opacity: 0.60;
+}
+
 @keyframes blink {
     0% {
         box-shadow:
