@@ -94,19 +94,19 @@ VoteskipModule.prototype.update = function () {
             `- no permission (${noPermission}); ` +
             `ratio = ${this.channel.modules.options.get("voteskip_ratio")}`;
         this.channel.logger.log(`[playlist] Voteskip passed: ${info}`);
-        this.channel.broadcastAll(
-            'chatMsg',
-            {
-                username: "[voteskip]",
-                msg: `Voteskip passed: ${info}`,
-                meta: {
-                    addClass: "server-whisper",
-                    addClassToNameAndTimestamp: true
-                },
-                time: Date.now()
-            }
-        );
 
+        let msgObj = {
+            username: "[voteskip]",
+            msg: `Voteskip passed: ${info}`,
+            meta: {
+                addClass: "server-whisper",
+                addClassToNameAndTimestamp: true
+            },
+            time: Date.now()
+        };
+
+        msgObj = this.channel.modules.coolholecommon.coolholePostProcessChatMessage(this.channel, null, null, msgObj);
+        this.channel.broadcastAll('chatMsg', msgObj);
         this.channel.modules.coolholepoints.handleSkipped(this.channel.modules.playlist.current.queueby);
 
         this.reset();
