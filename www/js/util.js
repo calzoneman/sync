@@ -490,10 +490,10 @@ function makeQueueEntry(item, addbtns) {
             .css("clear", "both")
             .appendTo(li);
     }
-    var title = $("<a/>").addClass("qe_title").appendTo(li)
-        .text(video.title)
-        .attr("href", formatURL(video))
-        .attr("target", "_blank");
+
+    // Coolhole addition to make google drive links unclickable in the queue
+    var title = coolholeAppendQueueTitle(item, video, li);
+
     var time = $("<span/>").addClass("qe_time").appendTo(li);
     time.text(video.duration);
     var clear = $("<div/>").addClass("qe_clear").appendTo(li);

@@ -1132,3 +1132,26 @@ applyAutoHideUserlist();
 //-----------------------------------------------------------
 // [END] CLIENT PREFERENCES
 //-----------------------------------------------------------
+
+
+//-----------------------------------------------------------
+// Other
+//-----------------------------------------------------------
+/**
+ * This makes google drive links unclickable.
+ * It is to avoid extraneous downloads that could flag videos to be taken down.
+ */
+function coolholeAppendQueueTitle(item, video, li) {
+  if(item.media.type === "gd") {
+    return $("<span/>")
+      .addClass("qe_title")
+      .addClass("qe_title_disabled")
+      .appendTo(li)
+      .text(video.title);
+  } else {
+    return $("<a/>").addClass("qe_title").appendTo(li)
+      .text(video.title)
+      .attr("href", formatURL(video))
+      .attr("target", "_blank");
+  }
+}
