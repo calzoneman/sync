@@ -616,47 +616,43 @@ const SFX = {
  */
 SFX.mod.sounds = {
   eugh: {
-    src: "https://static.dontcodethis.com/sounds/CH_Emote_SFX-eugh.wav",
+    src: "https://static.coolhole.org/sfx/CH_Emote_SFX-eugh.wav",
     emote: "/eugh",
   },
   gunshot: {
-    src: "https://dontcodethis.com/images/Shotgun_Blast.wav",
+    src: "https://static.coolhole.org/sfx/Shotgun_Blast.wav",
     emote: "/maths",
   },
   boogie: {
-    src: "https://dontcodethis.com/images/Boogie%20warning%20shot.wav",
+    src: "https://static.coolhole.org/sfx/Boogie%20warning%20shot.wav",
     emote: "bigiron",
   },
   fbi: {
-    src: "https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3",
+    src: "https://static.coolhole.org/sfx/fbi-open-up-sfx.mp3",
     emote: "/agent",
   },
   polis: {
-    src: "https://www.myinstants.com/media/sounds/11900601.mp3",
+    src: "https://static.coolhole.org/sfx/polis.mp3",
     emote: "/polis",
   },
   caw: {
-    src: "https://static.dontcodethis.com/sounds/caw.wav",
+    src: "https://static.coolhole.org/sfx/caw.wav",
     emote: "/Kaiattack",
   },
   horn: {
-    src: "https://static.dontcodethis.com/sounds/short-airhorn.mp3",
+    src: "https://static.coolhole.org/sfx/short-airhorn.mp3",
     emote: "/airhorn",
   },
   oh: {
-    src: "https://freesound.org/data/previews/179/179334_2888453-lq.mp3",
+    src: "https://static.coolhole.org/sfx/ayytone.mp3",
     emote: "/ayytone",
   },
-  allah: {
-    src: "https://media1.vocaroo.com/mp3/1nD49ViBCBfj",
-    emote: "JinnWick",
-  },
   reload: {
-    src: "https://static.dontcodethis.com/sounds/RELOAD.mp3",
+    src: "https://static.coolhole.org/sfx/RELOAD.mp3",
     emote: "/reload",
   },
   chirp: {
-    src: "https://static.dontcodethis.com/sounds/smoke-alarm-chirp.mp3",
+    src: "https://static.coolhole.org/sfx/smoke-alarm-chirp.mp3",
     emote: "/beep",
     condition: () =>
       $(
@@ -666,11 +662,11 @@ SFX.mod.sounds = {
 };
 SFX.global.sounds = {
   eugh: {
-    src: "https://ark.augint.net/CH_Emote_SFX-eugh/CH_Emote_SFX-eugh.wav",
+    src: "https://static.coolhole.org/sfx/CH_Emote_SFX-eugh.wav",
     emote: "/eugh",
   },
   chirp: {
-    src: "https://static.dontcodethis.com/sounds/smoke-alarm-chirp.mp3",
+    src: "https://static.coolhole.org/sfx/smoke-alarm-chirp.mp3",
     emote: "/beep",
     condition: () =>
       $(
@@ -680,27 +676,23 @@ SFX.global.sounds = {
 };
 SFX.secretary.sounds = {
   skelen: {
-    src: "https://ark.augint.net/bonearmor2/bonearmor2.wav",
+    src: "https://static.coolhole.org/sfx/bonearmor2.wav",
     emote: "/skelen",
   },
   "the dark lord": {
-    src: "https://ark.augint.net/laugh1/laugh1.wav",
+    src: "https://static.coolhole.org/sfx/laugh1.wav",
     emote: "the dark lord",
   },
   eugh: {
-    src: "https://ark.augint.net/CH_Emote_SFX-eugh/CH_Emote_SFX-eugh.wav",
+    src: "https://static.coolhole.org/sfx/CH_Emote_SFX-eugh.wav",
     emote: "/eugh",
   },
   "and then the door creaked open on its own": {
-    src: "https://ark.augint.net/ch_sfx-door_creek_spooky_knock_ahh/ch_sfx-door_creek_spooky_knock_ahh.mp3",
+    src: "https://static.coolhole.org/sfx/ch_sfx-door_creek_spooky_knock_ahh.mp3",
     emote: "and then the door creaked open on its own",
   },
-  eugh: {
-    src: "https://ark.augint.net/CH_Emote_SFX-eugh/CH_Emote_SFX-eugh.wav",
-    emote: "/eugh",
-  },
   chirp: {
-    src: "https://static.dontcodethis.com/sounds/smoke-alarm-chirp.mp3",
+    src: "https://static.coolhole.org/sfx/smoke-alarm-chirp.mp3",
     // Painful chrip. Uncomment at own risk. May break with stacking
     //src: "https://dl.sndup.net/xv2q/smoke-alarm-chirp.mp3",
     emote: "/beep",
