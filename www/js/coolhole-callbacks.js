@@ -261,7 +261,7 @@ const CoolholeCallbacks = {
         class: "option",
       });
       const optionButton = $("<button>", {
-        class: "btn",
+        class: "btn btn-default",
       });
       optionButton.click(function () {
         if (data.gamble) {
