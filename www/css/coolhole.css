@@ -493,9 +493,12 @@ code.text-lottery {
 
 /* CoolPoints User Styling */
 #cpPromptBtn {
-    grid-gap: 3px;
-    gap: 3px;
     height: 36px;
+}
+
+#cpPromptBtn>span>svg {
+    vertical-align: middle;
+    margin-bottom: 3px;
 }
 
 #cpModal {
@@ -1143,7 +1146,7 @@ code.text-lottery {
 }
 
 .qe_title_disabled {
-  opacity: 0.60;
+    opacity: 0.60;
 }
 
 @keyframes blink {
@@ -1450,4 +1453,55 @@ code.text-lottery {
     100% {
         opacity: 0;
     }
+}
+
+/* polls */
+#pollwrap {
+    padding-left: 0;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+#pollwrap .well .wrapInner {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 10px;
+}
+
+#pollwrap .well .wrapInner .pollHeader {
+    display: flex;
+    gap: 1.5em;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+#pollwrap .well .wrapInner .options {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-self: center;
+    padding: 0px 10px 0px 10px;
+}
+
+#pollwrap .well .wrapInner .options .option button {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-right: 0;
+    align-items: center;
+}
+
+#pollwrap .well .wrapInner .options .option button.active {
+    font-weight: bold;
+}
+
+#pollwrap>.well.active {
+    width: 100%;
+    padding: 10px;
+}
+
+#pollwrap>.well.muted {
+    padding: 10px;
 }
