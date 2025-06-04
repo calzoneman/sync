@@ -6549,49 +6549,16 @@ td > a:hover {
 #motdwrap {
   background-color: #212A2E;
 }
-#pollwrap {
-  padding-left: 0;
-  padding-right: 10px;
-  display: flex;
-  flex-direction: column-reverse;
-}
 #pollwrap .well .wrapInner {
-  display: flex;
-  flex-direction: column;
   background: #12151B;
-  padding-bottom: 10px;
-}
-#pollwrap .well .wrapInner .pollHeader {
-  display: flex;
-  gap: 1.5em;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-}
-#pollwrap .well .wrapInner .options {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  align-self: center;
-  padding: 0px 10px 0px 10px;
-}
-#pollwrap .well .wrapInner .options .option button {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  margin-right: 0;
-  align-items: center;
 }
 #pollwrap .well .wrapInner .options .option button.active {
   border: 1px solid #3E97A2;
-  font-weight: bold;
 }
 #pollwrap .well .wrapInner .options .option button:not(.btn-danger) {
   background: #212A2E;
 }
 #pollwrap > .well.active {
-  width: 100%;
-  padding: 10px;
   background-color: #181E22;
 }
 #pollwrap > .well.active .btn-default {
@@ -6602,7 +6569,6 @@ td > a:hover {
   color: #212a2e;
 }
 #pollwrap > .well.muted {
-  padding: 10px;
   background-color: #1C2124;
 }
 #pollwrap > .well.muted .btn-default {
