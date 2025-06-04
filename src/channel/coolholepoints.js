@@ -177,7 +177,8 @@ class Coolpoints extends ChannelModule {
     const coolpointUserObj = this.coolpoints.find((cp) => cp.user === userName);
     if (!coolpointUserObj) {
       LOGGER.error(
-        `${userName || "(anonymous)"} was not found in coolpoints user list.`);
+        `${userName || "(anonymous)"} was not found in coolpoints user list.`
+      );
       return false;
     }
     if (typeof coolpointUserObj.points !== "number") {
@@ -244,15 +245,35 @@ class Coolpoints extends ChannelModule {
    * @param {ErrorObject} errorObject Error information
    */
   logError(errorObject) {
-    const { userName, callingFunction, data, errMsg, errStack, returnSocket, userMessage } = errorObject;
+    const {
+      userName,
+      callingFunction,
+      data,
+      errMsg,
+      errStack,
+      returnSocket,
+      userMessage,
+    } = errorObject;
 
     if (errStack) {
-      LOGGER.error(`Exception caught in ${callingFunction}: ${errMsg}. Data: ${JSON.stringify(data ? data : {})}.\nStack: ${errStack}`);
+      LOGGER.error(
+        `Exception caught in ${callingFunction}: ${errMsg}. Data: ${JSON.stringify(
+          data ? data : {}
+        )}.\nStack: ${errStack}`
+      );
     } else {
-      LOGGER.error(`Error in ${callingFunction}: ${errMsg}. Data: ${JSON.stringify(data ? data : {})}`);
+      LOGGER.error(
+        `Error in ${callingFunction}: ${errMsg}. Data: ${JSON.stringify(
+          data ? data : {}
+        )}`
+      );
     }
-    this.channel.logger.log(`[coolpoints] Error in ${callingFunction}: ${errMsg}. Data: ${JSON.stringify(data ? data : {})}`);
-    
+    this.channel.logger.log(
+      `[coolpoints] Error in ${callingFunction}: ${errMsg}. Data: ${JSON.stringify(
+        data ? data : {}
+      )}`
+    );
+
     const user = this.channel.users.find((x) => x.account.name === userName);
     if (user && returnSocket)
       // Return an empty array of point data... for now probably
@@ -373,7 +394,9 @@ class Coolpoints extends ChannelModule {
         userName: user.getName(),
         callingFunction: "canUpdateOthersPoints",
         returnSocket: socketName,
-        errMsg: `User's rank does not allow ${user.getName() || "(anonymous)"} update other's points`,
+        errMsg: `User's rank does not allow ${
+          user.getName() || "(anonymous)"
+        } update other's points`,
         errStack: null,
         data: user.account.effectiveRank,
         userMessage:
@@ -416,10 +439,14 @@ class Coolpoints extends ChannelModule {
           userName: user.getName(),
           callingFunction: "applyPointsToUser",
           returnSocket: "coolpointsFailure",
-          errMsg: `User ${targetName || "(anonymous)"} not found to apply points to`,
+          errMsg: `User ${
+            targetName || "(anonymous)"
+          } not found to apply points to`,
           errStack: null,
           data: targetName || "(anonymous)",
-          userMessage: `Error: User ${targetName || "(anonymous)"} not found to apply points to`,
+          userMessage: `Error: User ${
+            targetName || "(anonymous)"
+          } not found to apply points to`,
         });
         return;
       }
@@ -448,7 +475,9 @@ class Coolpoints extends ChannelModule {
         errMsg: err,
         errStack: err.stack,
         data: { user: data.targetName || "(anonymous)", points: data.points },
-        userMessage: `Error: Unable to apply points to user ${data.targetName || "(anonymous)"}. Let the head monkey in charge know`,
+        userMessage: `Error: Unable to apply points to user ${
+          data.targetName || "(anonymous)"
+        }. Let the head monkey in charge know`,
       });
     }
   }
@@ -525,7 +554,9 @@ class Coolpoints extends ChannelModule {
         userName: userName,
         callingFunction,
         returnSocket: "coolpointsFailure",
-        errMsg: `User ${userName || "(anonymous)"} not found for point ${action}`,
+        errMsg: `User ${
+          userName || "(anonymous)"
+        } not found for point ${action}`,
         errStack: null,
         data: { user: userName || "(anonymous)", action },
         userMessage: `Error: You were not found eligible for CP... Good luck with that`,
@@ -559,13 +590,14 @@ class Coolpoints extends ChannelModule {
       actionData.options.find((opt) => opt.optionName === "enabled")
         .optionValue === false
     ) {
-        if (action !== "active")
+      if (action !== "active")
         // "Active" still runs even if it's inactive; no need to log
         this.logError({
           username: userName,
           callingFunction,
           returnSocket: "coolpointsFailure",
-          err: `Action ${action} is not enabled`,
+          errMsg: `Action ${action} is not enabled`,
+          errStack: null,
           data: { user: userName, action },
           userMessage: `Error: Action ${action} has been deemed too powerful. It's been disabled for now.`,
         });
@@ -587,7 +619,9 @@ class Coolpoints extends ChannelModule {
             userName: userName,
             callingFunction,
             returnSocket: "coolpointsFailure",
-            errMsg: `User ${userName || "(anonymous)"} does not have enough points to spend on ${action}`,
+            errMsg: `User ${
+              userName || "(anonymous)"
+            } does not have enough points to spend on ${action}`,
             errStack: null,
             data: { user: userName || "(anonymous)", action },
             userMessage: `Error: You have not done enough for society to earn ${action}`,
@@ -633,7 +667,9 @@ class Coolpoints extends ChannelModule {
           userName: userName,
           callingFunction: "spend",
           returnSocket: "coolpointsFailure",
-          errMsg: `User ${userName || "(anonymous)"} is not registered or has something wrong with their account`,
+          errMsg: `User ${
+            userName || "(anonymous)"
+          } is not registered or has something wrong with their account`,
           errStack: null,
           data: userName || "(anonymous)",
           userMessage: `Error: You must join cause if you wish to participate.`,
@@ -707,7 +743,9 @@ class Coolpoints extends ChannelModule {
           userName: userName,
           callingFunction: "earn",
           returnSocket: "coolpointsFailure",
-          errMsg: `User ${userName || "(anonymous)"} is not registered or has something wrong with their account`,
+          errMsg: `User ${
+            userName || "(anonymous)"
+          } is not registered or has something wrong with their account`,
           errStack: null,
           data: userName || "(anonymous)",
           userMessage: `Error: You must join cause if you wish to participate.`,
@@ -774,7 +812,9 @@ class Coolpoints extends ChannelModule {
           userName: userName,
           callingFunction: "lose",
           returnSocket: "coolpointsFailure",
-          errMsg: `User ${userName || "(anonymous)"} is not registered or has something wrong with their account`,
+          errMsg: `User ${
+            userName || "(anonymous)"
+          } is not registered or has something wrong with their account`,
           errStack: null,
           data: userName || "(anonymous)",
           userMessage: `Error: You must join cause if you wish to participate.`,
@@ -958,7 +998,9 @@ class Coolpoints extends ChannelModule {
           userName: user.getName(),
           callingFunction: "handleChatStatuses",
           returnSocket: "coolpointsFailure",
-          errMsg: `User ${user.getName() || "(anonymous)"} is not registered or logged in`,
+          errMsg: `User ${
+            user.getName() || "(anonymous)"
+          } is not registered or logged in`,
           errStack: null,
           data: user.getName() || "(anonymous)",
           userMessage: `Error: You must join cause if you wish to participate.`,
@@ -1144,7 +1186,9 @@ class Coolpoints extends ChannelModule {
         userName: user.getName(),
         callingFunction: "handleChatCommand",
         returnSocket: "coolpointsFailure",
-        errMsg: `User ${user.getName() || "(anonymous)"} is not registered or logged in`,
+        errMsg: `User ${
+          user.getName() || "(anonymous)"
+        } is not registered or logged in`,
         errStack: null,
         data: user.getName() || "(anonymous)",
         userMessage: `Error: You must join cause if you wish to participate.`,
