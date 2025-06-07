@@ -1505,3 +1505,8 @@ code.text-lottery {
 #pollwrap>.well.muted {
     padding: 10px;
 }
+/* Theme wide fix for the navbar-brand */
+.navbar-brand {
+    padding: 5px 10px  !important;
+    align-content: center;
+  }

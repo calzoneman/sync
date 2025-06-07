@@ -6420,8 +6420,11 @@ body {
 * {
   scrollbar-color: #3b4c5450 transparent;
 }
+.table-striped > tr > th {
+  border-bottom: none;
+}
 .table-striped > tbody > tr:nth-child(odd) {
-  background-color: #131B1D;
+  background-color: #1d2327;
 }
 td > a {
   color: #DCE1D7;
@@ -6430,7 +6433,7 @@ td > a:hover {
   color: #799482;
 }
 .navbar.navbar-inverse {
-  background-color: transparent;
+  background-color: #12151B;
   border: 0;
   font-size: 16px;
 }
@@ -6458,11 +6461,6 @@ td > a:hover {
   background-color: #425259;
   height: 2px;
   margin: 0;
-}
-.navbar.navbar-inverse .navbar-brand {
-  padding: 5px;
-  padding-left: 10px;
-  align-content: center;
 }
 /* Navbar is transparent by default */
 .navbar.navbar-inverse.navbar-transparent {
@@ -6539,8 +6537,7 @@ td > a:hover {
 }
 #modflair {
   align-content: center;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  border-radius: 0;
 }
 #modflair.label-default {
   align-content: center;
@@ -6569,14 +6566,10 @@ td > a:hover {
   color: #212a2e;
 }
 #pollwrap > .well.muted {
-  background-color: #1C2124;
+  background-color: #212527;
 }
 #pollwrap > .well.muted .btn-default {
   background-color: #0F1213;
-}
-#chatwrap,
-#videowrap {
-  padding: 0;
 }
 #chatwrap {
   padding-right: 10px;
@@ -6616,7 +6609,7 @@ div[class^="chat-msg-"] {
   padding-top: 3px;
   padding-bottom: 3px;
   border-bottom: 1px solid;
-  border-color: #05080C;
+  border-color: #181E22;
   text-wrap: nowrap;
 }
 .userlist_item > span {
@@ -6626,13 +6619,13 @@ div[class^="chat-msg-"] {
   margin-right: 2px;
 }
 .userlist_item:hover {
-  background-color: #05080C;
+  background-color: #29333a;
 }
 .nick-highlight {
   background-color: #555555;
 }
 .nick-hover {
-  background-color: #0E1418;
+  background-color: #29333a;
 }
 footer {
   background-color: transparent !important;
@@ -6691,7 +6684,7 @@ input[type="checkbox"] {
   background-color: #161a20;
 }
 .btn-default:hover {
-  background-color: #0D0F10;
+  background-color: #467d98;
 }
 .embed-responsive-item {
   background-color: #181E22;
@@ -6728,8 +6721,6 @@ input[type="checkbox"] {
   transition: box-shadow;
   transition-duration: 150ms;
   border: 0;
-  border-bottom-right-radius: 0px;
-  border-bottom-left-radius: 10px;
   color: #FDFDFD;
   background-color: #12151B;
   font-size: 16px;
@@ -6739,8 +6730,6 @@ input[type="checkbox"] {
   transition: box-shadow;
   transition-duration: 150ms;
   border: none;
-  border-bottom-right-radius: 0px;
-  border-bottom-left-radius: 10px;
   color: #FDFDFD;
   background-color: #12151B;
   font-size: 16px;
@@ -6751,10 +6740,10 @@ input[type="checkbox"] {
   height: 50px;
 }
 #chatline:focus {
-  box-shadow: inset 0 0 5px #439dc3;
+  box-shadow: inset 0 0 5px #5dceff;
 }
 #guestlogin > .form-control:focus {
-  box-shadow: inset 0 0 5px #439dc3;
+  box-shadow: inset 0 0 5px #5dceff;
 }
 #guestlogin > span {
   border: none;
@@ -6774,7 +6763,7 @@ input[type="checkbox"] {
 }
 #chatheader #userlisttoggle:hover,
 #videowrap-header #userlisttoggle:hover {
-  background-color: #3E97A2;
+  background-color: #467d98;
 }
 #videowrap-header {
   display: flex;
@@ -6799,19 +6788,9 @@ input[type="checkbox"] {
   margin-left: auto;
   margin-right: auto;
 }
-#leftcontrols,
-#rightcontrols {
-  padding: 0;
-}
-#leftcontrols {
-  padding-left: 10px;
-}
 #leftcontrols > .btn.btn-sm {
   margin: 0;
   margin-right: 1px;
-}
-#rightpane {
-  padding: 0;
 }
 .queue_entry {
   padding: 0;
@@ -6830,7 +6809,7 @@ input[type="checkbox"] {
   width: 100%;
 }
 .queue_entry > .btn-group > *:hover {
-  background-color: #3E97A2;
+  background-color: #467d98;
 }
 .queue_entry > .btn-group > .qbtn-delete:hover {
   background-color: #A6272D;
@@ -6857,9 +6836,10 @@ input[type="checkbox"] {
   background: rgba(0, 0, 0, 0.9);
 }
 .qe_title {
+  padding: 10px 0;
   margin-left: 10px;
   font-size: 16px;
-  color: #A4AFA9;
+  color: #f3f3f3;
 }
 .qe_title:hover {
   color: #e9edee;
@@ -6870,9 +6850,24 @@ input[type="checkbox"] {
   outline: none;
 }
 .qe_time {
-  margin-right: 5px;
+  padding: 10px 0;
+  margin-right: 10px;
 }
 #plonotification > div > .btn {
   border: none;
   background-color: #742c00;
+}
+#motdrow #motdwrap {
+  background-color: #181e21;
+  padding: 24px;
+}
+#mediaurl.form-control:focus {
+  background-image: linear-gradient(0deg, #0f2036, #1a1a1a);
+}
+/* Poll UI Themeing */
+.poll-menu > .btn:not(.btn-danger) {
+  background-color: #121312;
+}
+.poll-menu > .btn:not(.btn-danger):hover {
+  background-color: #3b5660;
 }
