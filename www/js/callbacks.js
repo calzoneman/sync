@@ -195,7 +195,7 @@ const Callbacks = {
         CHANNEL.motd = motd;
         $("#motd").html(motd);
         $("#cs-motdtext").val(motd);
-        if (motd != "") {
+        if (motd != "" && !localStorage.getItem("hide_motd")) {
             $("#motdwrap").show();
             $("#motd").show();
             $("#togglemotd").find(".glyphicon-plus")
