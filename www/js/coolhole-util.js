@@ -1194,8 +1194,6 @@ applyAutoHideUserlist();
 const HIDE_MOTD_STORAGE_NAME = "hide_motd";
 
 function toggleHideMotd() {
-    const motdDisplay = $("#motdwrap").css("display");
-
   const isHidden = localStorage.getItem(HIDE_MOTD_STORAGE_NAME) === "true";
   localStorage.setItem(HIDE_MOTD_STORAGE_NAME, !isHidden);
   applyHideMotd();
