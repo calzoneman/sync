@@ -1510,3 +1510,7 @@ code.text-lottery {
     padding: 5px 10px  !important;
     align-content: center;
   }
+
+#motdwrap #motd {
+    padding: 12px;
+}

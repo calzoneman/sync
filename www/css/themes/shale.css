@@ -886,7 +886,7 @@ html {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 body {
-  font-family: "Atkinson Hyperlegible", Helvetica, Arial, sans-serif;
+  font-family: "Public Sans", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.42857143;
   color: #ffffff;
@@ -5480,8 +5480,8 @@ a.list-group-item-danger.active:focus {
   min-height: 20px;
   padding: 19px;
   margin-bottom: 20px;
-  background-color: #f5f5f5;
-  border: 1px solid #e3e3e3;
+  background-color: #181d20;
+  border: 1px solid #1a2023;
   border-radius: 4px;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
@@ -5503,14 +5503,14 @@ a.list-group-item-danger.active:focus {
   font-size: 21px;
   font-weight: bold;
   line-height: 1;
-  color: #000;
+  color: #fff;
   text-shadow: 0 1px 0 #fff;
   opacity: 0.2;
   filter: alpha(opacity=20);
 }
 .close:hover,
 .close:focus {
-  color: #000;
+  color: #fff;
   text-decoration: none;
   cursor: pointer;
   opacity: 0.5;
@@ -5650,7 +5650,7 @@ button.close {
   z-index: 1070;
   display: block;
   visibility: visible;
-  font-family: "Atkinson Hyperlegible", Helvetica, Arial, sans-serif;
+  font-family: "Public Sans", Helvetica, Arial, sans-serif;
   font-size: 12px;
   font-weight: normal;
   line-height: 1.4;
@@ -5757,7 +5757,7 @@ button.close {
   display: none;
   max-width: 276px;
   padding: 1px;
-  font-family: "Atkinson Hyperlegible", Helvetica, Arial, sans-serif;
+  font-family: "Public Sans", Helvetica, Arial, sans-serif;
   font-size: 14px;
   font-weight: normal;
   line-height: 1.42857143;
@@ -6377,32 +6377,130 @@ button.close {
   }
 }
 @font-face {
-  font-family: 'Atkinson Hyperlegible';
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 100;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673tpRgQct.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 200;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673trRgAct.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673toPgAct.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
   font-style: italic;
   font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/atkinsonhyperlegible/v11/9Bt43C1KxNDXMspQ1lPyU89-1h6ONRlW45G055It.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673tpRgAct.ttf) format('truetype');
 }
 @font-face {
-  font-family: 'Atkinson Hyperlegible';
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673tpjgAct.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673tqPhwct.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
   font-style: italic;
   font-weight: 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/atkinsonhyperlegible/v11/9Bt93C1KxNDXMspQ1lPyU89-1h6ONRlW45G056qRdiWK.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673tq2hwct.ttf) format('truetype');
 }
 @font-face {
-  font-family: 'Atkinson Hyperlegible';
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673trRhwct.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwAs572Xtc6ZYQws9YVwnNDZpDyNjGolS673tr4hwct.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuFpi5ww.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymulpm5ww.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuSJm5ww.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/atkinsonhyperlegible/v11/9Bt23C1KxNDXMspQ1lPyU89-1h6ONRlW45GE5Q.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuFpm5ww.ttf) format('truetype');
 }
 @font-face {
-  font-family: 'Atkinson Hyperlegible';
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuJJm5ww.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuyJ65ww.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/atkinsonhyperlegible/v11/9Bt73C1KxNDXMspQ1lPyU89-1h6ONRlW45G8WbcNcw.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymu8Z65ww.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymulp65ww.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Public Sans';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/publicsans/v20/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuv565ww.ttf) format('truetype');
 }
 body {
   background-color: #212A2E;
@@ -6529,11 +6627,42 @@ td > a:hover {
 .well {
   border: none;
 }
+.wrapInner {
+  background-color: #12151B;
+}
 .poll-menu {
   background-color: #181E22;
 }
+.poll-menu > .btn:not(.btn-danger) {
+  background-color: #121312;
+}
+.poll-menu > .btn:not(.btn-danger):hover {
+  background-color: #3b5660;
+}
 .poll-menu-option {
   background-color: #DCE1D7;
+}
+#pollwrap > .well.active {
+  background-color: #1a2023;
+}
+#pollwrap > .well.active > .wrapInner {
+  background-color: #14181a;
+}
+#pollwrap > .well.active .options .option button:hover {
+  background-color: #f5f5f5;
+  color: #212a2e;
+}
+#pollwrap > .well.muted {
+  background-color: #283036;
+}
+#pollwrap > .well.muted > .wrapInner {
+  background-color: #353e45;
+}
+.options .option button.active {
+  border: 1px solid #3E97A2;
+}
+.options .option button:not(.btn-danger) {
+  background: #212A2E;
 }
 #modflair {
   align-content: center;
@@ -6544,32 +6673,7 @@ td > a:hover {
   background-color: #425259;
 }
 #motdwrap {
-  background-color: #212A2E;
-}
-#pollwrap .well .wrapInner {
-  background: #12151B;
-}
-#pollwrap .well .wrapInner .options .option button.active {
-  border: 1px solid #3E97A2;
-}
-#pollwrap .well .wrapInner .options .option button:not(.btn-danger) {
-  background: #212A2E;
-}
-#pollwrap > .well.active {
-  background-color: #181E22;
-}
-#pollwrap > .well.active .btn-default {
-  background-color: #475151;
-}
-#pollwrap > .well.active .options .option button:hover {
-  background-color: #f5f5f5;
-  color: #212a2e;
-}
-#pollwrap > .well.muted {
-  background-color: #212527;
-}
-#pollwrap > .well.muted .btn-default {
-  background-color: #0F1213;
+  background-color: #14181a;
 }
 #chatwrap {
   padding-right: 10px;
@@ -6794,14 +6898,12 @@ input[type="checkbox"] {
 }
 .queue_entry {
   padding: 0;
-  padding-top: 10px;
   border-color: #12151B;
   background-color: #272b30;
 }
 .queue_entry > .btn-group {
   display: flex;
   height: 30px;
-  margin-top: 10px;
 }
 .queue_entry > .btn-group > * {
   transition: all;
@@ -6838,7 +6940,7 @@ input[type="checkbox"] {
 .qe_title {
   padding: 10px 0;
   margin-left: 10px;
-  font-size: 16px;
+  font-size: 14px;
   color: #f3f3f3;
 }
 .qe_title:hover {
@@ -6857,17 +6959,7 @@ input[type="checkbox"] {
   border: none;
   background-color: #742c00;
 }
-#motdrow #motdwrap {
-  background-color: #181e21;
-  padding: 24px;
-}
 #mediaurl.form-control:focus {
   background-image: linear-gradient(0deg, #0f2036, #1a1a1a);
 }
-/* Poll UI Themeing */
-.poll-menu > .btn:not(.btn-danger) {
-  background-color: #121312;
-}
-.poll-menu > .btn:not(.btn-danger):hover {
-  background-color: #3b5660;
-}
+/* Poll Themeing */

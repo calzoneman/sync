@@ -1,7 +1,7 @@
 @import "../3.3.1/bootstrap.less";
 @import "./variables.less";
 
-@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
 // Tweaks and Changes go below
 
@@ -168,12 +168,48 @@ td>a:hover {
   border: none;
 }
 
+.wrapInner {
+  background-color: #12151B;
+}
+
 .poll-menu {
   background-color: #181E22;
+
+  >.btn:not(.btn-danger) {
+    background-color: #121312;
+  }
+
+  >.btn:not(.btn-danger):hover {
+    background-color: #3b5660;
+  }
 }
 
 .poll-menu-option {
   background-color: #DCE1D7;
+}
+
+#pollwrap > .well.active{
+  background-color: @well-border;
+  >.wrapInner{
+    background-color: @well-bg-dark
+  }
+  .options .option button:hover {
+    background-color: #f5f5f5;
+    color: #212a2e;
+  }
+}
+
+#pollwrap > .well.muted{
+  background-color: softlight(@gray-darker, @body-bg);
+  >.wrapInner{
+    background-color: softlight(@gray-dark, @body-bg);
+  }
+}
+.options .option button.active {
+  border: 1px solid #3E97A2;
+}
+.options .option button:not(.btn-danger) {
+  background: #212A2E;
 }
 
 #modflair {
@@ -187,40 +223,7 @@ td>a:hover {
 }
 
 #motdwrap {
-  background-color: #212A2E;
-}
-
-#pollwrap .well .wrapInner {
-  background: #12151B;
-  
-  .options .option button.active {
-    border: 1px solid #3E97A2;
-  }
-
-  .options .option button:not(.btn-danger) {
-    background: #212A2E;
-  }
-}
-
-#pollwrap>.well.active {
-  background-color: #181E22;
-  
-  .btn-default {
-    background-color: #475151;
-  }
-
-  .options .option button:hover {
-    background-color: #f5f5f5;
-    color: #212a2e;
-  }
-}
-
-#pollwrap>.well.muted {
-  background-color: #212527;
-
-  .btn-default {
-    background-color: #0F1213;
-  }
+  background-color: @well-bg-dark;
 }
 
 #chatwrap {
@@ -498,14 +501,12 @@ input[type="checkbox"] {
 
 .queue_entry {
   padding: 0;
-  padding-top: 10px;
   border-color: #12151B;
   background-color: #272b30;
 
   >.btn-group {
     display: flex;
     height: 30px;
-    margin-top: 10px;
 
     >* {
       transition: all;
@@ -553,7 +554,7 @@ input[type="checkbox"] {
 .qe_title {
   padding: 10px 0;
   margin-left: 10px;
-  font-size: 16px;
+  font-size: 14px;
   color: #f3f3f3;
 }
 
@@ -577,20 +578,15 @@ input[type="checkbox"] {
   background-color: #742c00;
 }
 
-#motdrow #motdwrap {
-    background-color: #181e21;
-    padding: 24px;
-}
-
 #mediaurl.form-control:focus {
     background-image: linear-gradient(0deg, #0f2036, #1a1a1a);
 }
 
-/* Poll UI Themeing */
-.poll-menu > .btn:not(.btn-danger) {
-    background-color: #121312;
-}
+/* Poll Themeing */
 
-.poll-menu > .btn:not(.btn-danger):hover {
-    background-color: #3b5660;
-}
+
+// #pollwrap .well .wrapInner {
+//   background: #12151B;
+
+// }
+
