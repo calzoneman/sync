@@ -1146,7 +1146,8 @@ code.text-lottery {
 }
 
 .qe_title_disabled {
-    opacity: 0.60;
+    color: #a3a3a380;
+    mix-blend-mode: difference;
 }
 
 @keyframes blink {
