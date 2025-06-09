@@ -889,7 +889,7 @@ body {
   font-family: "Public Sans", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.42857143;
-  color: #ffffff;
+  color: #d9dbdd;
   background-color: #212A2E;
 }
 input,
@@ -952,7 +952,7 @@ hr {
   margin-top: 20px;
   margin-bottom: 20px;
   border: 0;
-  border-top: 1px solid #ffffff;
+  border-top: 1px solid #d9dbdd;
 }
 .sr-only {
   position: absolute;
@@ -1202,7 +1202,7 @@ a.bg-danger:hover {
 .page-header {
   padding-bottom: 9px;
   margin: 40px 0 20px;
-  border-bottom: 1px solid #ffffff;
+  border-bottom: 1px solid #d9dbdd;
 }
 ul,
 ol {
@@ -1270,7 +1270,7 @@ blockquote {
   padding: 10px 20px;
   margin: 0 0 20px;
   font-size: 17.5px;
-  border-left: 5px solid #ffffff;
+  border-left: 5px solid #d9dbdd;
 }
 blockquote p:last-child,
 blockquote ul:last-child,
@@ -1294,7 +1294,7 @@ blockquote .small:before {
 blockquote.pull-right {
   padding-right: 15px;
   padding-left: 0;
-  border-right: 5px solid #ffffff;
+  border-right: 5px solid #d9dbdd;
   border-left: 0;
   text-align: right;
 }
@@ -2466,7 +2466,7 @@ output {
 .form-control[readonly],
 fieldset[disabled] .form-control {
   cursor: not-allowed;
-  background-color: #ffffff;
+  background-color: #d9dbdd;
   opacity: 1;
 }
 textarea.form-control {
@@ -3639,7 +3639,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   line-height: 1;
   color: #838990;
   text-align: center;
-  background-color: #ffffff;
+  background-color: #d9dbdd;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
@@ -3765,7 +3765,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   border-radius: 4px 4px 0 0;
 }
 .nav-tabs > li > a:hover {
-  border-color: #ffffff #ffffff #ddd;
+  border-color: #d9dbdd #d9dbdd #ddd;
 }
 .nav-tabs > li.active > a,
 .nav-tabs > li.active > a:hover,
@@ -4501,7 +4501,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pagination > .disabled > a,
 .pagination > .disabled > a:hover,
 .pagination > .disabled > a:focus {
-  color: #ffffff;
+  color: #d9dbdd;
   background-color: #1d2528;
   border-color: #ddd;
   cursor: not-allowed;
@@ -4570,7 +4570,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pager .disabled > a:hover,
 .pager .disabled > a:focus,
 .pager .disabled > span {
-  color: #ffffff;
+  color: #d9dbdd;
   background-color: #161c1f;
   cursor: not-allowed;
 }
@@ -4690,7 +4690,7 @@ a.badge:focus {
   padding: 30px 15px;
   margin-bottom: 30px;
   color: inherit;
-  background-color: #ffffff;
+  background-color: #d9dbdd;
 }
 .jumbotron h1,
 .jumbotron .h1 {
@@ -4702,7 +4702,7 @@ a.badge:focus {
   font-weight: 200;
 }
 .jumbotron > hr {
-  border-top-color: #e6e6e6;
+  border-top-color: #bec2c5;
 }
 .container .jumbotron,
 .container-fluid .jumbotron {
@@ -4749,7 +4749,7 @@ a.thumbnail.active {
 }
 .thumbnail .caption {
   padding: 9px;
-  color: #ffffff;
+  color: #d9dbdd;
 }
 .alert {
   padding: 15px;
@@ -4981,7 +4981,7 @@ a.list-group-item:focus {
 .list-group-item.disabled,
 .list-group-item.disabled:hover,
 .list-group-item.disabled:focus {
-  background-color: #ffffff;
+  background-color: #d9dbdd;
   color: #a6abb0;
   cursor: not-allowed;
 }
@@ -6531,7 +6531,6 @@ td > a:hover {
   color: #799482;
 }
 .navbar.navbar-inverse {
-  background-color: #12151B;
   border: 0;
   font-size: 16px;
 }
@@ -6962,4 +6961,3 @@ input[type="checkbox"] {
 #mediaurl.form-control:focus {
   background-image: linear-gradient(0deg, #0f2036, #1a1a1a);
 }
-/* Poll Themeing */

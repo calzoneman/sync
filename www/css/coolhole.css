@@ -1506,8 +1506,8 @@ code.text-lottery {
     padding: 10px;
 }
 /* Theme wide fix for the navbar-brand */
-.navbar-brand {
-    padding: 5px 10px  !important;
+.navbar.navbar-inverse .navbar-brand {
+    padding: 5px 10px;
     align-content: center;
   }
 
