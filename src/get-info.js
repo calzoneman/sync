@@ -281,6 +281,13 @@ var Getters = {
         });
     },
 
+    wp: function (id, callback) {
+        const streemId = new URL(id).pathname.split('/').filter(Boolean)[0];
+        var title = `${streemId}'s WHEP Livestream`;
+        var media = new Media(id, title, "--:--", "wp");
+        callback(false, media);
+    },
+
     /* rtmp stream */
     rt: function (id, callback) {
         var title = "Livestream";

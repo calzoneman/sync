@@ -18,6 +18,7 @@ TYPE_MAP =
     bc: IframeChild
     bn: IframeChild
     od: OdyseePlayer
+    wp: WhepPlayer
     nv: NicoPlayer
 
 window.loadMediaPlayer = (data) ->
