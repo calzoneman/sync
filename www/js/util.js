@@ -1347,7 +1347,7 @@ function parseMediaLink(url) {
 
     if(data.protocol == 'rtmp:') {
         return { type: 'rt', id: url };
-    }
+    }    
     if (data.pathname.match(/\.m3u8$/)) {
         return { type: 'hl', id: url };
     }
@@ -1356,6 +1356,8 @@ function parseMediaLink(url) {
     }
 
     switch(data.hostname.replace('www.', '')){
+        case 'streem.vereto.net':
+            return { type: 'wp', id: url }
         case 'youtube.com':
             if(data.pathname == '/watch'){
                 return { type: 'yt', id: data.searchParams.get('v') }

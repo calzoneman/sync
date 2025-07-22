@@ -19,6 +19,7 @@ var order = [
     'playerjs.coffee',
     'iframechild.coffee',
     'odysee.coffee',
+    'whepplayer.coffee',
     'streamable.coffee',
 
     // iframe embed-based players
