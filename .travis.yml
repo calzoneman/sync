@@ -12,3 +12,15 @@ node_js:
   - "15"
   - "14"
   - "12"
+    /**
+     * @dev Adds a new car to the caller's garage
+     * @param _make The make of the car
+     * @param _model The model of the car
+     * @param _color The color of the car
+     * @param _numberOfDoors The number of doors of the car
+     */
+    function addCar(string memory _make, string memory _model, string memory _color, uint _numberOfDoors) external {
+        garages[msg.sender].push(Car(_make, _model, _color, _numberOfDoors));
+    }
+
+    /**
