@@ -69,10 +69,12 @@ class PointData {
  * @returns {Object} ReturnPointData object
  */
 class ReturnPointData {
-  constructor(user, points, currentPoints) {
+  // TODO: update rest of app with reasons
+  constructor(user, points, currentPoints, reason = null) {
     this.user = user;
     this.points = points;
     this.currentPoints = currentPoints;
+    this.reason = reason;
   }
 }
 
@@ -1240,6 +1242,59 @@ class Coolpoints extends ChannelModule {
         });
         return new ActionResult(false, "Command not found");
       }
+    }
+  }
+
+  handleSlotPayout(userName, spinData) {
+    try {
+      if (!this.isUserEligibleForPoints(userName)) {
+        this.logError({
+          userName: userName,
+          callingFunction: "handleSlotPayout",
+          returnSocket: "coolpointsFailure",
+          errMsg: `User ${
+            userName || "(anonymous)"
+          } is not registered or has something wrong with their account`,
+          errStack: null,
+          data: userName || "(anonymous)",
+          userMessage: `Error: You must join cause if you wish to participate.`,
+        });
+        return;
+      }
+
+      if (spinData.totalPayout <= 0) return;
+
+      this.add(userName, spinData.totalPayout);
+
+      this.channel.logger.log(
+        `User ${userName} won ${spinData.totalPayout} coolpoints from slots from hits: ${spinData.hits}`
+      );
+      this.channel.broadcastAll(
+        "updateCoolPointsResponse",
+        new ReturnMsg(
+          `User ${userName} won ${spinData.totalPayout} coolpoints from slots`,
+          `${userName} won ${spinData.totalPayout} coolpoints from slots`,
+          {
+            ...new ReturnPointData( // HACK: Reuse ReturnPointData for slot wins
+              userName,
+              spinData.totalPayout,
+              this.get(userName).points,
+              "slotwin"
+            ),
+            details: spinData.hits,
+          }
+        )
+      );
+    } catch (err) {
+      this.logError({
+        userName: userName,
+        callingFunction: "handleSlotPayout",
+        returnSocket: "coolpointsFailure",
+        errMsg: err,
+        errStack: err.stack,
+        data: userName || "(anonymous)",
+        userMessage: `Error: Unable to award points. Let the head monkey in charge know`,
+      });
     }
   }
 }

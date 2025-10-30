@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "command": "npm",
+  "type": "shell",
+  "presentation": {
+    "reveal": "always"
+  },
+  "tasks": [
+    {
+      "label": "build",
+      "command": "npm",
+      "args": ["run", "build-server"],
+      "type": "shell",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

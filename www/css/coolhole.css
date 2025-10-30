@@ -1506,11 +1506,12 @@ code.text-lottery {
 #pollwrap>.well.muted {
     padding: 10px;
 }
+
 /* Theme wide fix for the navbar-brand */
 .navbar.navbar-inverse .navbar-brand {
     padding: 5px 10px;
     align-content: center;
-  }
+}
 
 #motdwrap #motd {
     padding: 12px;
