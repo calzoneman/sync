@@ -305,7 +305,10 @@ module.exports.saveUserPlaylist = function (pl, username, plname, callback) {
                 codec: pl[i].media.meta.codec,
                 bitrate: pl[i].media.meta.bitrate,
                 scuri: pl[i].media.meta.scuri,
-                embed: pl[i].media.meta.embed
+                embed: pl[i].media.meta.embed,
+                direct: pl[i].media.meta.direct,
+                textTracks: pl[i].media.meta.textTracks,
+                audioTracks: pl[i].media.meta.audioTracks
             }
         };
         time += pl[i].media.seconds || 0;
