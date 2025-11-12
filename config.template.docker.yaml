@@ -1,0 +1,241 @@
+# MySQL server details
+# server: domain or IP of MySQL server
+# database: a MySQL database that the user specified has read/write access to
+# user: username to authenticate as
+# password: password for user
+mysql:
+  server: '${MYSQL_HOST}'
+  port: ${MYSQL_PORT}
+  database: '${MYSQL_DATABASE}'
+  user: '${MYSQL_USER}'
+  password: '${MYSQL_PASSWORD}'
+  pool-size: 10
+
+# Define IPs/ports to listen on
+# Each entry MUST define ip and port (ip can be '' to bind all available addresses)
+# Each entry should set http, https, and/or io to true to listen for the corresponding
+# service on that port.  http/io and https/io can be combined, but if http and https
+# are both specified, only https will be bound to that port.
+#
+# If you don't specify a url, the url io.domain:port or https.domain:port will be assumed
+# for non-ssl and ssl websockets, respectively.  You can override this by specifying the
+# url for a websocket listener.
+listen:
+# Default HTTP server - default interface, port 8080
+  - ip: ''
+    port: ${ROOT_PORT}
+    http: true
+    io: true
+    url: ${ROOT_URL}
+# Uncomment below to enable HTTPS/SSL websockets
+# Note that you must also set https->enabled = true in the https definition
+#  - ip: ''
+#    port: 8443
+#    https: true
+#    io: true
+# Default Socket.IO server - default interface, port 1337
+  # - ip: ''
+  #   port: ${IO_ROOT_PORT}
+  #   io: true
+# Example of how to bind an extra port to HTTP and Socket.IO
+#  - ip: ''
+#    port: 8081
+#    http: true
+#    io: true
+#    url: 'http://my-other-thing.site.com:8081'
+
+# HTTP server details
+http:
+  # Even though you may specify multiple ports to listen on for HTTP above,
+  # one port must be specified as default for the purposes of generating
+  # links with the appropriate port
+  default-port: ${ROOT_PORT}
+  # Specifies the root domain for cookies.  If you have multiple domains
+  # e.g. a.example.com and b.example.com, the root domain is example.com
+  root-domain: '${ROOT_DOMAIN}'
+  # Specify alternate domains/hosts that are allowed to set the login cookie
+  # Leave out the http://
+  alt-domains:
+    - '127.0.0.1'
+  # Use express-minify to minify CSS and Javascript
+  minify: false
+  # Max-Age for caching.  Value should be an integer in milliseconds or a string accepted by
+  # the `ms` module.  Set to 0 to disable caching.
+  max-age: '7d'
+  # Set to false to disable gzip compression
+  gzip: true
+  # Customize the threshold byte size for applying gzip
+  gzip-threshold: 1024
+  # Secret used for signed cookies.  Can be anything, but make it unique and hard to guess
+  cookie-secret: '${COOKIE_SECRET}'
+  index:
+    # Maximum number of channels to display on the index page public channel list
+    max-entries: 50
+  # Configure trusted proxy addresses to map X-Forwarded-For to the client IP.
+  # See also: https://github.com/jshttp/proxy-addr
+  trust-proxies:
+  - loopback
+  - 103.21.244.0/22 # Cloudflare
+  - 103.22.200.0/22
+  - 103.31.4.0/22
+  - 104.16.0.0/13
+  - 104.24.0.0/14
+  - 108.162.192.0/18
+  - 131.0.72.0/22
+  - 141.101.64.0/18
+  - 162.158.0.0/15
+  - 172.64.0.0/13
+  - 173.245.48.0/20
+  - 188.114.96.0/20
+  - 190.93.240.0/20
+  - 197.234.240.0/22
+  - 198.41.128.0/17
+  - 2400:cb00::/32
+  - 2606:4700::/32
+  - 2803:f800::/32
+  - 2405:b500::/32
+  - 2405:8100::/32
+  - 2a06:98c0::/29
+  - 2c0f:f248::/32
+  - ${IMMEDIATE_PROXY}
+
+# HTTPS server details
+https:
+  enabled: ${HTTPS_ENABLED}
+  # Even though you may specify multiple ports to listen on for HTTPS above,
+  # one port must be specified as default for the purposes of generating
+  # links with the appropriate port
+  default-port: 8443
+  domain: '${ROOT_URL}'
+  keyfile: 'localhost.key'
+  passphrase: ''
+  certfile: 'localhost.cert'
+  cafile: ''
+  ciphers: 'HIGH:!DSS:!aNULL@STRENGTH'
+
+# Page template values
+# title goes in the upper left corner, description goes in a <meta> tag
+html-template:
+  title: '${SYNC_TITLE}'
+  description: '${SYNC_DESCRIPTION}'
+
+# Socket.IO server details
+io:
+  # In most cases this will be the same as the http.domain.
+  # However, if your HTTP traffic is going through a proxy (e.g. cloudflare)
+  # you will want to set up a passthrough domain for socket.io.
+  # If the root of this domain is not the same as the root of your HTTP domain
+  # (or HTTPS if SSL is enabled), logins won't work.
+  domain: '${IO_ROOT_URL}'
+  # Even though you may specify multiple ports to listen on for HTTP above,
+  # one port must be specified as default for the purposes of generating
+  # links with the appropriate port
+  default-port: ${IO_ROOT_PORT}
+  # limit the number of concurrent socket connections per IP address
+  ip-connection-limit: 10
+  cors:
+    # Additional origins to allow socket connections from (io.domain and
+    # https.domain are included implicitly).
+    allowed-origins: []
+
+# YouTube v3 API key
+# 1. Go to https://console.developers.google.com/, create a new "project" (or choose an existing one)
+# 2. Make sure the YouTube Data v3 API is "enabled" for your project: https://console.developers.google.com/apis/library/youtube.googleapis.com
+# 3. Go to "Credentials" on the sidebar of https://console.developers.google.com/, click "Create credentials" and choose type "API key"
+# 4. Optionally restrict the key for security, or just copy the key.
+# 5. Test your key (may take a few minutes to become active):
+#
+#    $ export YOUTUBE_API_KEY="your key here"
+#    $ curl "https://www.googleapis.com/youtube/v3/search?key=$YOUTUBE_API_KEY&part=id&maxResults=1&q=test+video&type=video"
+youtube-v3-key: '${YOUTUBE_KEY}'
+# Limit for the number of channels a user can register
+max-channels-per-user: 5
+# Limit for the number of accounts an IP address can register
+max-accounts-per-ip: 5
+# Minimum number of seconds between guest logins from the same IP
+guest-login-delay: 60
+
+# Allows you to customize the path divider. The /r/ in http://localhost/r/yourchannel
+# Acceptable characters are a-z A-Z 0-9 _ and -
+channel-path: 'r'
+# Allows you to blacklist certain channels.  Users will be automatically kicked
+# upon trying to join one.
+channel-blacklist: []
+# Minutes between saving channel state to disk
+channel-save-interval: 5
+
+# Configure periodic clearing of old alias data
+aliases:
+  # Interval (in milliseconds) between subsequent runs of clearing
+  purge-interval: 3600000
+  # Maximum age of an alias (in milliseconds) - default 1 month
+  max-age: 2592000000
+
+# Workaround for Vimeo blocking my domain
+vimeo-workaround: false
+
+# Regular expressions for defining reserved user and channel names and page titles
+# The list of regular expressions will be joined with an OR, and compared without
+# case sensitivity.
+#
+# Default: reserve any name containing "admin[istrator]" or "owner" as a word
+# but only if it is separated by a dash or underscore (e.g. dadmin is not reserved
+# but d-admin is)
+reserved-names:
+  usernames:
+    - '^(.*?[-_])?admin(istrator)?([-_].*)?$'
+    - '^(.*?[-_])?owner([-_].*)?$'
+  channels:
+    - '^(.*?[-_])?admin(istrator)?([-_].*)?$'
+    - '^(.*?[-_])?owner([-_].*)?$'
+  pagetitles: []
+
+# Provide a contact list for the /contact page
+# Example:
+# contacts:
+#   - name: 'my_name'
+#     title: 'administrator
+#     email: 'me@my.site'
+contacts: []
+
+playlist:
+  max-items: 4000
+  # How often (in seconds), mediaUpdate packets are broadcast to clients
+  update-interval: 5
+
+# If set to true, when the ipThrottle and lastguestlogin rate limiters are cleared
+# periodically, the garbage collector will be invoked immediately.
+# The server must be invoked with node --expose-gc index.js for this to have any effect.
+aggressive-gc: false
+
+# If you have ffmpeg installed, you can query metadata from raw files, allowing
+# server-synched raw file playback.  This requires the following:
+#   * ffmpeg must be installed on the server
+ffmpeg:
+  enabled: true
+# Executable name for ffprobe if it is not "ffprobe".  On Debian and Ubuntu (on which
+# libav is used rather than ffmpeg proper), this is "avprobe"
+  ffprobe-exec: 'ffprobe'
+
+link-domain-blacklist: []
+
+# Drop root if started as root!!
+setuid:
+  enabled: false
+  group: 'users'
+  user: 'user'
+# how long to wait in ms before changing uid/gid
+  timeout: 15
+
+# Allows for external services to access the system commandline
+# Useful for setups where stdin isn't available such as when using PM2
+service-socket:
+  enabled: false
+  socket: 'service.sock'
+
+# Twitch Client ID for the data API (used for VOD lookups)
+# https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup
+twitch-client-id: '${TWITCH_CLIENT_ID}'
+
+poll:
+  max-options: 50
