@@ -1,14 +1,13 @@
 $("#cp-slots-spin-btn").on("click", handleSpinButtonClick);
 
 function handleSpinButtonClick() {
-  const betAmount = parseInt($("#cp-slots-bet-input").val(), 10);
-  if (isNaN(betAmount) || betAmount <= 0) {
+  const bet = parseInt($("#cp-slots-bet-input").val(), 10);
+  if (isNaN(bet) || bet <= 0) {
     alert("Please enter a valid bet amount.");
     return;
   }
 
-  // Disable the spin button to prevent multiple clicks
-  $("#cp-slots-spin-btn").prop("disabled", true);
+  const data = { bet };
 
   socket.emit("coolholeSpinSlot", data);
 }

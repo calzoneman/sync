@@ -31,7 +31,7 @@ const horizontal = (grid, timesToMatch) => {
  */
 const vertical = (grid) => {
   const matches = [];
-  for (let x = 0; x <= grid[0].length; x++) {
+  for (let x = 0; x <= grid[0].length - 1; x++) {
     const col = grid.map((row, y) => ({ pos: [y, x], val: row[x] })); // recall grid is in draw order, not cartesian
     if (col.every(({ val }) => val === col[0].val)) {
       matches.push(...col.map(({ pos }) => pos));
@@ -372,7 +372,7 @@ class CoolholeSlots extends ChannelModule {
     return { totalPayout, hits };
   }
 
-  handleSpin(data, user) {
+  handleSpin(user, data) {
     LOGGER.debug("Handling slot spin for user " + user.name);
 
     // TODO: Check CP ops if slots are enabled
