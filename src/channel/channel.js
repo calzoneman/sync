@@ -167,6 +167,7 @@ Channel.prototype.initModules = function () {
         "./coolholegolds" : "coolholegolds",
         "./coolholepoints-actions-options" : "coolholeactionspoints",
         "./coolholepoints" : "coolholepoints",
+        "./coolhole-slots" : "coolholeSlots",
     };
 
     var self = this;

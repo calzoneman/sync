@@ -512,4 +512,14 @@ const CoolholeCallbacks = {
   coolpointsVoteskipFail: function (response) {
     $("#voteskip").attr("disabled", false);
   },
+
+  coolholeSlotsInitResponse: function (response) {
+    // Initialize slots data
+    buildReels(response);
+  },
+
+  coolholeSpinSlotResponse: function (response) {
+    $("#cp-slots-spin-btn").prop("disabled", false);
+    handleSlotSpinResponse(response.data);
+  },
 };
