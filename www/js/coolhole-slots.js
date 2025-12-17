@@ -28,11 +28,15 @@ function handleSlotSpinResponse(response) {
   buildReels(grid);
   const resultGrid = $(".cp-slots-result-grid");
   const resultGridPre = $("<pre>").text(`${JSON.stringify(hits, null, 2)}`);
-  resultGrid.append(resultGridPre);
+  resultGrid.prepend(resultGridPre);
 
   const resultMessage = $(".cp-slots-result-message");
   const resultMessagePre = $("<pre>").text(
     `Won ${totalPayout} from ${hits.map((h) => h.pattern).join(", ")}`
   );
-  resultMessage.append(resultMessagePre);
+  resultMessage.prepend(resultMessagePre);
+
+  // TODO: Update only once the reel animation finishes
+  if (totalPayout > 0)
+    setTimeout(() => applyPointsToSelf(response.totalPayout), 1000);
 }

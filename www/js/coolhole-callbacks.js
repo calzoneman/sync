@@ -1,4 +1,14 @@
 /**
+ * Enum for who to notify about point changes ordered by most permissive to least
+ */
+const WhoToNotify = {
+  All: 0,
+  Channel: 1,
+  Mods: 2,
+  None: 3,
+};
+
+/**
  * Checks to see if a user is a mod or higher. Has to be a function since the CLIENT rank is set after this file is loaded.
  * @returns {boolean}
  */
@@ -179,11 +189,17 @@ const CoolholeCallbacks = {
   updateCoolPointsResponse: function (response) {
     updateCoolPoints(response.data);
 
-    if (CLIENT.name === response.data.user) {
-      applyPointsToSelf(response.data.points);
+    const tl = gsap.timeline();
+
+    // TODO: Implement the rest of whoToNotify options
+    if (
+      CLIENT.name === response.data.user &&
+      response.data.whoToNotify === WhoToNotify.All
+    ) {
+      tl.add(applyPointsToSelf(response.data.points));
     }
     if (isModOrHigher()) {
-      applyPointsToTable(response.data);
+      tl.add(applyPointsToTable(response.data), "<"); // sync with self update
     }
   },
   coolpointsFailure: function (response) {

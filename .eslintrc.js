@@ -41,5 +41,6 @@ module.exports = {
         'www/js/videojs-contrib-hls.min.js',
         'www/js/videojs-dash.js',
         'www/js/videojs-resolution-switcher.js',
+        'www/js/gsap.min.js',
     ],
 }

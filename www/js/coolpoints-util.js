@@ -26,24 +26,6 @@ function initPointsForSelf(pts) {
 }
 
 /**
- * Handles overlapping animations by removing the previous animation
- * @param {String} id Id of the element to animate
- * @param {String} animationName Name of the animation to apply
- */
-function updateAnimation(id, animationName) {
-  const el = document.getElementById(id);
-  el.classList.add(animationName);
-  Promise.all(
-    el.getAnimations({ subtree: true }).map((animation) => animation.finished)
-  )
-    .then(() => el.classList.remove(animationName))
-    .catch((error) => console.log(error));
-  // TODO: This is a catch all error handler which picked up when an animation was cancelled.
-  // That's just noise and should be more targeted if needed
-  //.catch((err) => console.error(err));
-}
-
-/**
  * Applies a function after a given delay and restarts if called again before the delay is up
  * @param {Number} delay number of milliseconds to wait before calling the function
  * @param {Function} fn function to call
@@ -64,20 +46,24 @@ const debounce = (delay, fn) => {
 
 /**
  * Applies coolpoints animation to a given element
- * @param {Element} ptEl point element
- * @param {Element} msgEl message element
- * @param {Number} diff difference in new and old points
+ * @param {Element} $ptEl points element to animate
+ * @param {Element} $msgEl message element to animate
+ * @param {Number} diff difference in points
+ * @param {Element} [$btnEl=null] button element to animate
+ * @param {Element} [$animationTarget=null] target element for the animation (defaults to points element)
  */
-function animatePointUpdate(ptEl, msgEl, diff, btnEl = null) {
+function animatePointUpdate(
+  $ptEl,
+  $msgEl,
+  diff,
+  $btnEl = null,
+  $animationTarget = null
+) {
+  if (!diff) return;
   const isPositive = diff > 0;
-  const bounceAnimationName = isPositive ? "cpBounce" : "cpShake";
-  const fadeAnimationName = isPositive ? "cpFadeGreen" : "cpFadeRed";
-  const glowAnimationName = isPositive ? "cpGlowGreen" : "cpGlowRed";
-  const msgText = isPositive ? `+${diff}` : `${diff}`;
-  msgEl.text(msgText);
-  if (btnEl) updateAnimation(btnEl.attr("id"), glowAnimationName);
-  updateAnimation(ptEl.attr("id"), bounceAnimationName);
-  updateAnimation(msgEl.attr("id"), fadeAnimationName);
+
+  if (isPositive) return coolpointsButtonGainAnime($ptEl, $msgEl, diff, $btnEl);
+  else return coolpointsButtonLossAnime($ptEl, $msgEl, diff, $btnEl);
 }
 
 /**
@@ -91,7 +77,7 @@ function applyPointsToSelf(incCoolPoints) {
   // TODO: Counter animation UI
   pointsEl.text(CLIENT.coolpoints);
 
-  animatePointUpdate(pointsEl, messageEl, incCoolPoints, buttonEl);
+  return animatePointUpdate(pointsEl, messageEl, incCoolPoints, buttonEl);
 }
 
 /**
@@ -329,9 +315,10 @@ function applyPointsToTable(pointData) {
 
   userPoints.text(userCoolPointListItem.points);
   const userPointsMsg = $(`#${pointData.user}-userlist-points-msg`);
-  animatePointUpdate(userPoints, userPointsMsg, pointData.points);
+
   $(`#${pointData.user}-userlist-points`).text(userCoolPointListItem.points);
 
+  return animatePointUpdate(userPoints, userPointsMsg, pointData.points);
   // Update table
   // window.USERCOOLPOINTSLIST.handleChange();
 }

@@ -215,6 +215,32 @@ const patterns = [
   { name: "jackpot", fn: (grid) => jackpot(grid), multiplier: 10 },
 ];
 
+/* Patterns are only scored if any larger Pattern (except Jackpot) does not contain them. 
+    All examples:
+    - A HorizontalXLarge match negates any Horizontal or HorizontalLarge matches in the same rows.
+    - A HorizontalLarge match negates any Horizontal matches in the same rows.
+    - An Above match negates any Zig matches, the HorizontalXLarge in that row, and anything it negates.
+    - A Below match negates any Zag matches, the HorizontalXLarge in that row, and anything it negates.
+    - A Zig match negates the diagonalAsc and disgonalDesc matches that compose it
+    - A Zag match negates the diagonalDesc and diagonalAsc matches that compose it.
+    - An Eye match negates any Horizontal matches in the center of the row and the vertical matches in the 2nd and 4th columns
+    - Jackpot does not negate any patterns.
+  */
+const removeAlreadyMatched = (hits, pattern, matchedPositions) => {
+  const negatedPatterns = {
+    horizontalXLarge: ["horizontalLarge", "horizontal"],
+    horizontalLarge: ["horizontal"],
+    above: ["zig", "horizontalXLarge", "horizontalLarge", "horizontal"],
+    below: ["zag", "horizontalXLarge", "horizontalLarge", "horizontal"],
+    zig: ["diagonalAsc", "diagonalDsc"],
+    zag: ["diagonalDsc", "diagonalAsc"],
+    eye: ["horizontal", "vertical"],
+    jackpot: [],
+  };
+  const patternsToNegate = negatedPatterns[pattern.name] || [];
+  // todo
+};
+
 // dictionary of odds for each symbol; adds up to 100 (based on 2x+1)
 const defaultSymbolOdds = {
   0: 1,
@@ -312,32 +338,6 @@ class CoolholeSlots extends ChannelModule {
     return symbol.payout * pattern.multiplier * bet;
   }
 
-  /* Patterns are only scored if any larger Pattern (except Jackpot) does not contain them. 
-    All examples:
-    - A HorizontalXLarge match negates any Horizontal or HorizontalLarge matches in the same rows.
-    - A HorizontalLarge match negates any Horizontal matches in the same rows.
-    - An Above match negates any Zig matches, the HorizontalXLarge in that row, and anything it negates.
-    - A Below match negates any Zag matches, the HorizontalXLarge in that row, and anything it negates.
-    - A Zig match negates the diagonalAsc and disgonalDesc matches that compose it
-    - A Zag match negates the diagonalDesc and diagonalAsc matches that compose it.
-    - An Eye match negates any Horizontal matches in the center of the row and the vertical matches in the 2nd and 4th columns
-    - Jackpot does not negate any patterns.
-  */
-  removeAlreadyMatched(hits, pattern, matchedPositions) {
-    const negatedPatterns = {
-      horizontalXLarge: ["horizontalLarge", "horizontal"],
-      horizontalLarge: ["horizontal"],
-      above: ["zig", "horizontalXLarge", "horizontalLarge", "horizontal"],
-      below: ["zag", "horizontalXLarge", "horizontalLarge", "horizontal"],
-      zig: ["diagonalAsc", "diagonalDsc"],
-      zag: ["diagonalDsc", "diagonalAsc"],
-      eye: ["horizontal", "vertical"],
-      jackpot: [],
-    };
-    const patternsToNegate = negatedPatterns[pattern.name] || [];
-    // todo
-  }
-
   generateGrid() {
     const grid = Array.from({ length: 3 }, () => Array(5).fill(0));
 
@@ -384,17 +384,17 @@ class CoolholeSlots extends ChannelModule {
     }
 
     // TODO:
-    // this.channel.modules.coolholepoints.handleSlotBet(user.getName(), bet);
+    this.channel.modules.coolholepoints.handleSlotBet(user.getName(), bet);
 
     const grid = this.generateGrid();
     const { totalPayout, hits } = this.determineHits(grid, bet);
 
-    // if (totalPayout > 0) {
-    //   this.channel.modules.coolholepoints.handleSlotPayout(user.getName(), {
-    //     totalPayout,
-    //     hits,
-    //   });
-    // }
+    if (totalPayout > 0) {
+      this.channel.modules.coolholepoints.handleSlotPayout(user.getName(), {
+        totalPayout,
+        hits,
+      });
+    }
 
     user.socket.emit("coolholeSpinSlotResponse", {
       grid,

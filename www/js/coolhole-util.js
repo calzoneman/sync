@@ -1075,6 +1075,7 @@ function setupAutoResizing() {
 function saveAutoResizing() {
   try {
     const videoWidth = getVideoWrapSize();
+    if (isVideoHiddenOrMissing()) return;
     if (videoWidth < AUTO_RESIZE_MIN || videoWidth > AUTO_RESIZE_MAX) {
       return;
     }
@@ -1092,7 +1093,7 @@ function applyAutoResizing() {
   try {
     // Video cannot be resized when its in HD layout (based on cytube code as of 2024-07-12)
     if (isHdLayout()) return;
-
+    if (isVideoHiddenOrMissing()) return;
     let videoWidth = getVideoWrapSize();
     const storageVideoWidth = parseInt(
       window.localStorage.getItem(AUTO_RESIZE_STORAGE_NAME),
@@ -1185,6 +1186,10 @@ function isUserlistHidden() {
   return $("#userlist")[0].style.display === "none";
 }
 
+function isVideoHiddenOrMissing() {
+  return !($("#videowrap").length > 0 && $("#videowrap").is(":visible"));
+}
+
 setupAutoResizing();
 applyAutoResizing();
 setupAutoHideUserlist();
@@ -1199,7 +1204,6 @@ function toggleHideMotd() {
   applyHideMotd();
 }
 
-
 function applyHideMotd() {
   const isHidden = localStorage.getItem(HIDE_MOTD_STORAGE_NAME) === "true";
   $("#motd").toggle(!isHidden);
@@ -1212,7 +1216,6 @@ applyHideMotd();
 // [END] CLIENT PREFERENCES
 //-----------------------------------------------------------
 
-
 //-----------------------------------------------------------
 // Other
 //-----------------------------------------------------------
@@ -1221,14 +1224,16 @@ applyHideMotd();
  * It is to avoid extraneous downloads that could flag videos to be taken down.
  */
 function coolholeAppendQueueTitle(item, video, li) {
-  if(item.media.type === "gd") {
+  if (item.media.type === "gd") {
     return $("<span/>")
       .addClass("qe_title")
       .addClass("qe_title_disabled")
       .appendTo(li)
       .text(video.title);
   } else {
-    return $("<a/>").addClass("qe_title").appendTo(li)
+    return $("<a/>")
+      .addClass("qe_title")
+      .appendTo(li)
       .text(video.title)
       .attr("href", formatURL(video))
       .attr("target", "_blank");
