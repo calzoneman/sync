@@ -10,7 +10,7 @@
   "dependencies": {
     "@calzoneman/jsli": "^2.0.1",
     "@cytube/mediaquery": "github:CyTube/mediaquery#52a635d45f38785bdb26e842c9f2bb505bc37a1c",
-    "bcrypt": "^5.0.1",
+    "bcrypt": "^6.0.0",
     "bluebird": "^3.7.2",
     "body-parser": "^1.20.1",
     "cheerio": "^1.0.0-rc.10",
