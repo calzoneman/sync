@@ -704,3 +704,179 @@ body.hd #resize-video-larger, body.hd #resize-video-smaller {
 .userlist-ignored {
     text-decoration: line-through;
 }
+
+/* === TV / Big Picture Mode === */
+
+body.tv #mainpage > .container-fluid {
+    padding: 0;
+}
+
+body.tv #motdrow,
+body.tv #announcements,
+body.tv #drinkbarwrap {
+    display: none;
+}
+
+body.tv #main.row {
+    position: relative;
+    height: calc(100vh - 60px);
+    margin: 0;
+    overflow: hidden;
+}
+
+body.tv #videowrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+}
+
+body.tv #videowrap-header {
+    display: none;
+}
+
+body.tv #videowrap .embed-responsive {
+    padding-bottom: 0 !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100% !important;
+}
+
+body.tv #videowrap .embed-responsive-item,
+body.tv #videowrap iframe,
+body.tv #videowrap video,
+body.tv #videowrap object,
+body.tv #videowrap .video-js {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Chat overlay — left side, fully transparent background */
+body.tv #chatwrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 460px;
+    bottom: 50px;
+    background: transparent !important;
+    z-index: 10;
+    margin: 0;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+body.tv #chatheader {
+    display: none;
+}
+
+body.tv #userlist {
+    display: none;
+}
+
+body.tv #messagebuffer {
+    background: transparent !important;
+    border: none !important;
+    overflow: hidden !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    margin: 0;
+    flex: 1 1 auto;
+}
+
+body.tv #messagebuffer > * {
+    background: rgba(0, 0, 0, 0.18) !important;
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin-bottom: 6px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+body.tv #messagebuffer > *.tv-msg {
+    color: #fff;
+    opacity: 1;
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+    transition: opacity 8s linear;
+}
+
+body.tv #messagebuffer > *.tv-msg .timestamp {
+    display: none !important;
+}
+
+body.tv #messagebuffer > *.tv-msg *,
+body.tv #messagebuffer > *.tv-msg .username,
+body.tv #messagebuffer > *.tv-msg a {
+    color: inherit !important;
+}
+
+body.tv #messagebuffer > *.tv-msg .username {
+    font-weight: 700;
+}
+
+body.tv #messagebuffer > *.tv-msg.tv-msg-fadeout {
+    opacity: 0;
+}
+
+/* Controls bar — hidden until mouse moves */
+#tv-controls-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+body.tv-controls-visible #tv-controls-bar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#tv-controls-bar form {
+    flex: 1;
+    margin: 0;
+}
+
+#tv-controls-bar #chatline {
+    border-radius: 4px;
+    margin: 0;
+    width: 100%;
+}
+
+#tv-controls-bar #guestlogin {
+    margin: 0;
+}
+
+/* Hide cursor when controls are not visible */
+body.tv:not(.tv-controls-visible) {
+    cursor: none;
+}
+
+body.tv #controlsrow,
+body.tv #playlistrow {
+    display: none;
+}

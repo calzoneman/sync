@@ -29,7 +29,9 @@ function checkAdmin(cb) {
  */
 function handleAcp(req, res, _user) {
     const ioServers = ioConfig.getSocketEndpoints();
-    const chosenServer = ioServers[0];
+    const preferredSecure = req.realProtocol === 'https';
+    const chosenServer = ioServers.find((server) => server.secure === preferredSecure) ||
+        ioServers[0];
 
     if (!chosenServer) {
         res.status(500).text("No suitable socket.io address for ACP");

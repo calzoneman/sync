@@ -20,8 +20,10 @@ html(lang="en")
               a.dropdown-toggle(href="#", data-toggle="dropdown") Layout
                 b.caret
               ul.dropdown-menu
+                li: a(href="#" onclick="javascript:backToNormalLayout(event); return false;") Back to Normal
                 li: a(href="#" onclick="javascript:chatOnly()") Chat Only
                 li: a(href="#" onclick="javascript:removeVideo(event)") Remove Video
+                li: a(href="#" onclick="javascript:tvLayout(event); return false;") TV / Big Picture
             +navsuperadmin(true)
           +navloginlogout()
       section#mainpage
