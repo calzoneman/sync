@@ -746,6 +746,9 @@ function applyOpts() {
         case "hd":
             hdLayout();
             break;
+        case "tv":
+            tvLayout();
+            break;
         default:
             compactLayout();
             break;
@@ -1584,6 +1587,9 @@ function addChatMessage(data) {
 
     var msgBuf = $("#messagebuffer");
     var div = formatChatMessage(data, LASTCHAT);
+    if ($("body").hasClass("tv")) {
+        decorateTVMessage(div[0], data.username);
+    }
     // Incoming: a bunch of crap for the feature where if you hover over
     // a message, it highlights messages from that user
     var safeUsername = data.username.replace(/[^\w-]/g, '\\$');
@@ -1597,6 +1603,10 @@ function addChatMessage(data) {
     });
     var oldHeight = msgBuf.prop("scrollHeight");
     var numRemoved = trimChatBuffer();
+    if ($("body").hasClass("tv")) {
+        SCROLLCHAT = true;
+        $("#newmessages-indicator").remove();
+    }
     if (SCROLLCHAT) {
         scrollChat();
     } else {
@@ -1727,6 +1737,255 @@ function undoHDLayout() {
     $("#messagebuffer, #userlist").css("max-height", "");
 }
 
+function tvUserMessageColor(username) {
+    var name = (username || "").toLowerCase();
+    var hash = 2166136261;
+    for (var i = 0; i < name.length; i++) {
+        hash ^= name.charCodeAt(i);
+        hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    hash >>>= 0;
+
+    var hue = hash % 360;
+    var sat = 72 + ((hash >>> 9) % 24);    // 72-95
+    var light = 58 + ((hash >>> 17) % 18); // 58-75
+    return "hsl(" + hue + ", " + sat + "%, " + light + "%)";
+}
+
+function clearTVMessageFadeTimer($msg) {
+    var timer = $msg.data("tvFadeTimer");
+    if (timer) {
+        clearTimeout(timer);
+        $msg.removeData("tvFadeTimer");
+    }
+}
+
+function detectCurrentLayoutName() {
+    var body = $("body");
+    if (body.hasClass("hd")) {
+        return "hd";
+    }
+    if (body.hasClass("synchtube") && body.hasClass("fluid")) {
+        return "synchtube-fluid";
+    }
+    if (body.hasClass("synchtube")) {
+        return "synchtube";
+    }
+    if (body.hasClass("fluid")) {
+        return "fluid";
+    }
+    return "default";
+}
+
+function backToNormalLayout(event) {
+    if (event) {
+        event.preventDefault();
+    }
+
+    var nextLayout = window._layoutBeforeTV;
+    if (!nextLayout || nextLayout === "tv") {
+        nextLayout = USEROPTS.layout;
+    }
+    if (!nextLayout || nextLayout === "tv") {
+        nextLayout = "fluid";
+    }
+
+    if ($("body").hasClass("tv")) {
+        undoTVLayout();
+    }
+
+    switch (nextLayout) {
+        case "synchtube-fluid":
+            fluidLayout();
+            synchtubeLayout();
+            break;
+        case "synchtube":
+            compactLayout();
+            synchtubeLayout();
+            break;
+        case "fluid":
+            fluidLayout();
+            break;
+        case "hd":
+            hdLayout();
+            break;
+        default:
+            compactLayout();
+            break;
+    }
+
+    window._layoutBeforeTV = null;
+}
+
+function scheduleTVMessageFade($msg) {
+    clearTVMessageFadeTimer($msg);
+    $msg.removeClass("tv-msg-fadeout");
+    var timer = setTimeout(function() {
+        if (!$("body").hasClass("tv")) {
+            return;
+        }
+        $msg.addClass("tv-msg-fadeout");
+        $msg.removeData("tvFadeTimer");
+    }, 8000);
+
+    $msg.data("tvFadeTimer", timer);
+}
+
+function decorateTVMessage(node, username) {
+    if (!node || node.nodeType !== 1) {
+        return;
+    }
+
+    var $msg = $(node);
+    var effectiveUsername = username || $msg.data("tvUsername");
+    if (!effectiveUsername) {
+        var nameText = $msg.find("strong.username").first().text() || "";
+        effectiveUsername = nameText.replace(/:\s*$/, "");
+    }
+
+    if (effectiveUsername) {
+        $msg.data("tvUsername", effectiveUsername);
+    }
+
+    $msg.addClass("tv-msg");
+    if (effectiveUsername) {
+        $msg.css("color", tvUserMessageColor(effectiveUsername));
+    }
+
+    var $name = $msg.find("strong.username").first();
+    if (!$name.length && effectiveUsername) {
+        $name = $("<strong/>").addClass("username tv-injected-username")
+            .prependTo($msg);
+    }
+
+    if ($name.length && effectiveUsername) {
+        $name.text(effectiveUsername + ": ");
+    }
+
+    scheduleTVMessageFade($msg);
+}
+
+function tvLayout(event) {
+    if (event) {
+        event.preventDefault();
+    }
+
+    if (!$("body").hasClass("tv")) {
+        window._layoutBeforeTV = detectCurrentLayoutName();
+    } else {
+        undoTVLayout();
+    }
+
+    if ($("body").hasClass("hd")) undoHDLayout();
+    if ($("body").hasClass("synchtube")) {
+        $("body").removeClass("synchtube");
+        $("#chatwrap").detach().insertBefore($("#videowrap"));
+        $("#leftcontrols").detach().insertBefore($("#rightcontrols"));
+        $("#leftpane").detach().insertBefore($("#rightpane"));
+        $("#userlist").css("float", "left");
+    }
+    if ($("body").hasClass("fluid")) {
+        $("body").removeClass("fluid");
+        $(".container-fluid").removeClass("container-fluid").addClass("container");
+    }
+    $("body").removeClass("compact").addClass("tv");
+
+    $(".container").removeClass("container").addClass("container-fluid");
+    $("footer .container-fluid").removeClass("container-fluid").addClass("container");
+
+    var $bar = $("<div/>").attr("id", "tv-controls-bar").appendTo($("#main"));
+    SCROLLCHAT = true;
+    $("#newmessages-indicator").remove();
+
+    $("#chatwrap form").detach().appendTo($bar);
+    $("#emotelistbtn").detach().appendTo($bar);
+    $("#videocontrols").detach().appendTo($bar);
+
+    $("#messagebuffer").children().each(function() {
+        decorateTVMessage(this);
+    });
+
+    var tvObserver = null;
+    if (typeof MutationObserver === "function") {
+        tvObserver = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                for (var i = 0; i < mutation.addedNodes.length; i++) {
+                    var node = mutation.addedNodes[i];
+                    if (node.nodeType === 1) {
+                        decorateTVMessage(node);
+                    }
+                }
+            });
+        });
+    }
+
+    var buf = document.getElementById("messagebuffer");
+    if (buf && tvObserver) {
+        tvObserver.observe(buf, { childList: true });
+    }
+
+    var tvHideTimer = null;
+    function tvShowControls() {
+        $("body").addClass("tv-controls-visible");
+        clearTimeout(tvHideTimer);
+        tvHideTimer = setTimeout(function() {
+            if ($("body").hasClass("tv-typing")) {
+                return;
+            }
+            $("body").removeClass("tv-controls-visible");
+            window._tvHideTimer = null;
+        }, 3000);
+        window._tvHideTimer = tvHideTimer;
+    }
+
+    $(document).on("mousemove.tv touchstart.tv", tvShowControls);
+    $(document).on("focusin.tv", "#tv-controls-bar input, #tv-controls-bar textarea", function() {
+        $("body").addClass("tv-typing tv-controls-visible");
+        clearTimeout(tvHideTimer);
+        window._tvHideTimer = null;
+    });
+    $(document).on("focusout.tv", "#tv-controls-bar input, #tv-controls-bar textarea", function() {
+        if ($("#tv-controls-bar input:focus, #tv-controls-bar textarea:focus").length > 0) {
+            return;
+        }
+        $("body").removeClass("tv-typing");
+        tvShowControls();
+    });
+    tvShowControls();
+
+    window._tvObserver = tvObserver;
+    window._tvHideTimer = tvHideTimer;
+}
+
+function undoTVLayout() {
+    $("body").removeClass("tv tv-controls-visible tv-typing");
+
+    if (window._tvObserver) {
+        window._tvObserver.disconnect();
+        window._tvObserver = null;
+    }
+
+    clearTimeout(window._tvHideTimer);
+    window._tvHideTimer = null;
+    $(document).off("mousemove.tv touchstart.tv focusin.tv focusout.tv");
+
+    $("#messagebuffer").children(".tv-msg").each(function() {
+        var $msg = $(this);
+        clearTVMessageFadeTimer($msg);
+        $msg.removeClass("tv-msg tv-msg-fadeout");
+        $msg.css("color", "");
+    });
+    $("#messagebuffer .tv-injected-username").remove();
+
+    $("#videocontrols").detach().appendTo("#rightcontrols");
+    $("#emotelistbtn").detach().insertAfter($("#newpollbtn"));
+    $("#tv-controls-bar form").detach().appendTo("#chatwrap");
+    $("#tv-controls-bar").remove();
+
+    $(".container-fluid").removeClass("container-fluid").addClass("container");
+    $("footer .container").removeClass("container").addClass("container-fluid");
+}
+
 function compactLayout() {
     /* Undo synchtube layout */
     if ($("body").hasClass("synchtube")) {
@@ -1752,11 +2011,20 @@ function compactLayout() {
         undoHDLayout();
     }
 
+    /* Undo TV layout */
+    if ($("body").hasClass("tv")) {
+        undoTVLayout();
+    }
+
     $("body").addClass("compact");
     handleVideoResize();
 }
 
 function fluidLayout() {
+    if ($("body").hasClass("tv")) {
+        undoTVLayout();
+    }
+
     if ($("body").hasClass("hd")) {
         undoHDLayout();
     }
@@ -1767,6 +2035,10 @@ function fluidLayout() {
 }
 
 function synchtubeLayout() {
+    if ($("body").hasClass("tv")) {
+        undoTVLayout();
+    }
+
     if ($("body").hasClass("hd")) {
         undoHDLayout();
     }
@@ -1785,6 +2057,10 @@ function synchtubeLayout() {
  * "HD" is kind of a misnomer.  Should be renamed at some point.
  */
 function hdLayout() {
+    if ($("body").hasClass("tv")) {
+        undoTVLayout();
+    }
+
     var videowrap = $("#videowrap"),
         chatwrap = $("#chatwrap"),
         playlist = $("#rightpane")
@@ -1882,6 +2158,8 @@ function handleWindowResize() {
         $("#messagebuffer").outerHeight(h);
         $("#userlist").outerHeight(h);
         return;
+    } else if ($("body").hasClass("tv")) {
+        return;
     } else {
         handleVideoResize();
     }
@@ -1890,6 +2168,7 @@ function handleWindowResize() {
 
 function handleVideoResize() {
     if ($("#ytapiplayer").length === 0) return;
+    if ($("body").hasClass("tv")) return;
 
     var intv, ticks = 0;
     var resize = function () {

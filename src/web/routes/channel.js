@@ -24,7 +24,10 @@ export default function initialize(app, ioConfig, chanPath, getBannedChannel) {
         if (endpoints.length === 0) {
             throw new HTTPError('No socket.io endpoints configured');
         }
-        const socketBaseURL = endpoints[0].url;
+        const preferredSecure = req.realProtocol === 'https';
+        const chosenEndpoint = endpoints.find((endpoint) => endpoint.secure === preferredSecure) ||
+            endpoints[0];
+        const socketBaseURL = chosenEndpoint.url;
 
         sendPug(res, 'channel', {
             channelName: req.params.channel,
