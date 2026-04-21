@@ -947,16 +947,100 @@ applyOpts();
 })();
 
 var EMOTELISTMODAL = $("#emotelist");
-$("#emotelistbtn").on('click', function () {
-    EMOTELISTMODAL.modal();
-});
-
-EMOTELISTMODAL.on('shown.bs.modal', function () { $('.emotelist-search').trigger('focus') });
 EMOTELISTMODAL.find(".emotelist-alphabetical").change(function () {
     USEROPTS.emotelist_sort = this.checked;
     setOpt("emotelist_sort", USEROPTS.emotelist_sort);
 });
 EMOTELISTMODAL.find(".emotelist-alphabetical").prop("checked", USEROPTS.emotelist_sort);
+
+/* emote browser panel */
+var EMOTE_BROWSER_OFFSET = 0;
+var EMOTE_BROWSER_BATCH = 40;
+var EMOTE_BROWSER_FILTER = '';
+
+$('body').append(
+    '<div id="emote-browser">' +
+    '<input id="emote-browser-search" class="form-control input-sm" type="text" placeholder="Search emotes…">' +
+    '<div id="emote-browser-grid"></div>' +
+    '</div>'
+);
+
+function emoteBrowserMatches() {
+    if (!CHANNEL.emotes) return [];
+    var f = EMOTE_BROWSER_FILTER.toLowerCase();
+    return f ? CHANNEL.emotes.filter(function(e) { return e.name.toLowerCase().indexOf(f) !== -1; })
+             : CHANNEL.emotes;
+}
+
+function emoteBrowserRenderMore() {
+    var matches = emoteBrowserMatches();
+    var end = Math.min(EMOTE_BROWSER_OFFSET + EMOTE_BROWSER_BATCH, matches.length);
+    var grid = document.getElementById('emote-browser-grid');
+    for (var i = EMOTE_BROWSER_OFFSET; i < end; i++) {
+        (function(emote) {
+            var item = document.createElement('div');
+            item.className = 'emote-browser-item';
+            item.title = emote.name;
+            var img = document.createElement('img');
+            img.src = emote.image;
+            item.appendChild(img);
+            item.addEventListener('click', function() {
+                var cl = document.getElementById('chatline');
+                var val = cl.value;
+                if (val && !val.charAt(val.length - 1).match(/\s/)) val += ' ';
+                cl.value = val + emote.name;
+                $("#emote-browser").hide();
+                cl.focus();
+            });
+            grid.appendChild(item);
+        })(matches[i]);
+    }
+    EMOTE_BROWSER_OFFSET = end;
+}
+
+function emoteBrowserReset() {
+    EMOTE_BROWSER_OFFSET = 0;
+    document.getElementById('emote-browser-grid').innerHTML = '';
+    emoteBrowserRenderMore();
+}
+
+function emoteBrowserPosition() {
+    var btn = $("#emotelistbtn"), off = btn.offset();
+    var panel = $("#emote-browser");
+    var pw = panel.outerWidth(), ph = panel.outerHeight();
+    var ww = $(window).width(), wh = $(window).height();
+    var left = off.left;
+    if (left + pw > ww - 8) left = Math.max(8, off.left + btn.outerWidth() - pw);
+    var top = off.top - ph - 4;
+    if (top < 8) top = off.top + btn.outerHeight() + 4;
+    panel.css({ top: top, left: left });
+}
+
+$("#emotelistbtn").on('click', function () {
+    var panel = $("#emote-browser");
+    if (panel.is(':visible')) { panel.hide(); return; }
+    EMOTE_BROWSER_FILTER = '';
+    $("#emote-browser-search").val('');
+    emoteBrowserReset();
+    panel.show();
+    emoteBrowserPosition();
+    document.getElementById('emote-browser-search').focus();
+});
+
+$(document).on('click.emotebrowser', function (e) {
+    if (!$(e.target).closest('#emote-browser, #emotelistbtn').length)
+        $("#emote-browser").hide();
+});
+
+$(document).on('input', '#emote-browser-search', function () {
+    EMOTE_BROWSER_FILTER = this.value;
+    emoteBrowserReset();
+});
+
+document.getElementById('emote-browser-grid').addEventListener('scroll', function () {
+    if (this.scrollTop + this.clientHeight >= this.scrollHeight - 60)
+        emoteBrowserRenderMore();
+});
 
 $("#fullscreenbtn").on('click', function () {
     var elem = document.querySelector("#videowrap .embed-responsive");

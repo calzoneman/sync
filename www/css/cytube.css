@@ -604,34 +604,51 @@ table td {
     border-top-width: 0;
 }
 
-.emotelist-table {
-    margin: auto;
-}
+.emotelist-table { margin: auto; }
+.emote-preview-container { width: 60px; height: 60px; float: left; text-align: center; white-space: nowrap; margin: 3px; }
+.emote-preview-hax { display: inline-block; vertical-align: middle; height: 100%; }
+.emote-preview { max-width: 56px; max-height: 56px; cursor: pointer; }
+.emotelist-paginator-container { text-align: center; }
 
-.emote-preview-container {
-    width: 100px;
-    height: 100px;
-    float: left;
-    text-align: center;
-    white-space: nowrap;
-    margin: 5px;
+/* Emote browser panel */
+#emote-browser {
+    display: none;
+    position: fixed;
+    z-index: 1060;
+    width: 340px;
+    background: #272b30;
+    border: 1px solid #555;
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.6);
+    padding: 6px;
 }
-
-.emote-preview-hax {
-    display: inline-block;
-    vertical-align: middle;
-    height: 100%;
+#emote-browser-search {
+    width: 100%;
+    margin-bottom: 6px;
+    background: #1a1d20;
+    color: #c8c8c8;
+    border-color: #555;
 }
-
-.emote-preview {
-    max-width: 100px;
-    max-height: 100px;
+#emote-browser-search:focus { border-color: #888; outline: none; box-shadow: none; }
+#emote-browser-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+.emote-browser-item {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
+    border-radius: 3px;
+    flex-shrink: 0;
 }
-
-.emotelist-paginator-container {
-    text-align: center;
-}
+.emote-browser-item:hover { background: #3a3f44; }
+.emote-browser-item img { max-width: 48px; max-height: 48px; object-fit: contain; }
 
 #leftcontrols .btn {
     margin-right: 5px;
