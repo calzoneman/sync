@@ -880,3 +880,7 @@ body.tv #controlsrow,
 body.tv #playlistrow {
     display: none;
 }
+
+.emote-suggest-item { padding: 3px 8px; cursor: pointer; display: flex; align-items: center; gap: 7px; font-size: 13px; color: #c8c8c8; }
+.emote-suggest-item img { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+.emote-suggest-item:hover, .emote-suggest-item.active { background: #3a3f44; color: #fff; }

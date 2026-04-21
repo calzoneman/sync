@@ -165,9 +165,78 @@ function chatTabComplete(chatline) {
     chatline.setSelectionRange(result.newPosition, result.newPosition);
 }
 
+/* emote autocomplete */
+var EMOTE_SUGGEST_IDX = 0;
+function emoteLastWord() {
+    var words = $("#chatline").val().split(" ");
+    return words[words.length - 1].toLowerCase();
+}
+function emoteAccept() {
+    var item = $("#emote-suggestions .active");
+    if (!item.length) item = $("#emote-suggestions").children().first();
+    if (!item.length) return;
+    var words = $("#chatline").val().split(" ");
+    words[words.length - 1] = item.data("name") + " ";
+    $("#chatline").val(words.join(" "));
+    $("#emote-suggestions").hide();
+}
+function emoteRefresh() {
+    var partial = emoteLastWord();
+    var popup = $("#emote-suggestions");
+    if (partial.length < 2 || !CHANNEL.emotes || !CHANNEL.emotes.length) { popup.hide(); return; }
+    var matches = CHANNEL.emotes.filter(function(e) {
+        return e.name.toLowerCase().indexOf(partial) === 0;
+    }).slice(0, 8);
+    if (!matches.length) { popup.hide(); return; }
+    popup.empty();
+    matches.forEach(function(e) {
+        $("<div>").addClass("emote-suggest-item")
+            .data("name", e.name)
+            .html('<img src="' + e.image + '">' + e.name)
+            .appendTo(popup);
+    });
+    popup.children().first().addClass("active");
+    EMOTE_SUGGEST_IDX = 0;
+    var cl = $("#chatline"), off = cl.offset();
+    popup.css({ left: off.left, width: cl.outerWidth() }).show();
+    popup.css("top", off.top - popup.outerHeight() - 2);
+}
+$("#chatline").on("input", emoteRefresh);
+$(document).on("mousedown", function(e) {
+    if (!$(e.target).closest("#emote-suggestions, #chatline").length)
+        $("#emote-suggestions").hide();
+});
+$(document).on("mousedown", "#emote-suggestions .emote-suggest-item", function() {
+    EMOTE_SUGGEST_IDX = $(this).index();
+    $("#emote-suggestions .active").removeClass("active");
+    $(this).addClass("active");
+    emoteAccept();
+    $("#chatline").focus();
+});
+$("body").append('<div id="emote-suggestions" style="display:none;position:absolute;z-index:9999;background:#272b30;border:1px solid #555;border-radius:4px;overflow-y:auto;max-height:220px;box-shadow:0 2px 8px rgba(0,0,0,.5);color:#c8c8c8"></div>');
+
 $("#chatline").on('keydown', function(ev) {
+    var open = $("#emote-suggestions").is(":visible");
+    if (open) {
+        if (ev.keyCode == 27) { // Escape
+            $("#emote-suggestions").hide();
+            ev.preventDefault(); return false;
+        } else if (ev.keyCode == 9 || (ev.keyCode == 39 && this.selectionStart === this.value.length)) { // Tab or right arrow at end
+            emoteAccept();
+            ev.preventDefault(); return false;
+        } else if (ev.keyCode == 38 || ev.keyCode == 40) { // Up/down navigate
+            var items = $("#emote-suggestions").children();
+            items.eq(EMOTE_SUGGEST_IDX).removeClass("active");
+            EMOTE_SUGGEST_IDX = ev.keyCode == 38
+                ? (EMOTE_SUGGEST_IDX - 1 + items.length) % items.length
+                : (EMOTE_SUGGEST_IDX + 1) % items.length;
+            items.eq(EMOTE_SUGGEST_IDX).addClass("active")[0].scrollIntoView({ block: "nearest" });
+            ev.preventDefault(); return false;
+        }
+    }
     // Enter/return
     if(ev.keyCode == 13) {
+        $("#emote-suggestions").hide();
         if (CHATTHROTTLE) {
             return;
         }
