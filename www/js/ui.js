@@ -165,9 +165,78 @@ function chatTabComplete(chatline) {
     chatline.setSelectionRange(result.newPosition, result.newPosition);
 }
 
+/* emote autocomplete */
+var EMOTE_SUGGEST_IDX = 0;
+function emoteLastWord() {
+    var words = $("#chatline").val().split(" ");
+    return words[words.length - 1].toLowerCase();
+}
+function emoteAccept() {
+    var item = $("#emote-suggestions .active");
+    if (!item.length) item = $("#emote-suggestions").children().first();
+    if (!item.length) return;
+    var words = $("#chatline").val().split(" ");
+    words[words.length - 1] = item.data("name") + " ";
+    $("#chatline").val(words.join(" "));
+    $("#emote-suggestions").hide();
+}
+function emoteRefresh() {
+    var partial = emoteLastWord();
+    var popup = $("#emote-suggestions");
+    if (partial.length < 2 || !CHANNEL.emotes || !CHANNEL.emotes.length) { popup.hide(); return; }
+    var matches = CHANNEL.emotes.filter(function(e) {
+        return e.name.toLowerCase().indexOf(partial) === 0;
+    }).slice(0, 8);
+    if (!matches.length) { popup.hide(); return; }
+    popup.empty();
+    matches.forEach(function(e) {
+        $("<div>").addClass("emote-suggest-item")
+            .data("name", e.name)
+            .html('<img src="' + e.image + '">' + e.name)
+            .appendTo(popup);
+    });
+    popup.children().first().addClass("active");
+    EMOTE_SUGGEST_IDX = 0;
+    var cl = $("#chatline"), off = cl.offset();
+    popup.css({ left: off.left, width: cl.outerWidth() }).show();
+    popup.css("top", off.top - popup.outerHeight() - 2);
+}
+$("#chatline").on("input", emoteRefresh);
+$(document).on("mousedown", function(e) {
+    if (!$(e.target).closest("#emote-suggestions, #chatline").length)
+        $("#emote-suggestions").hide();
+});
+$(document).on("mousedown", "#emote-suggestions .emote-suggest-item", function() {
+    EMOTE_SUGGEST_IDX = $(this).index();
+    $("#emote-suggestions .active").removeClass("active");
+    $(this).addClass("active");
+    emoteAccept();
+    $("#chatline").focus();
+});
+$("body").append('<div id="emote-suggestions" style="display:none;position:absolute;z-index:9999;background:#272b30;border:1px solid #555;border-radius:4px;overflow-y:auto;max-height:220px;box-shadow:0 2px 8px rgba(0,0,0,.5);color:#c8c8c8"></div>');
+
 $("#chatline").on('keydown', function(ev) {
+    var open = $("#emote-suggestions").is(":visible");
+    if (open) {
+        if (ev.keyCode == 27) { // Escape
+            $("#emote-suggestions").hide();
+            ev.preventDefault(); return false;
+        } else if (ev.keyCode == 9 || (ev.keyCode == 39 && this.selectionStart === this.value.length)) { // Tab or right arrow at end
+            emoteAccept();
+            ev.preventDefault(); return false;
+        } else if (ev.keyCode == 38 || ev.keyCode == 40) { // Up/down navigate
+            var items = $("#emote-suggestions").children();
+            items.eq(EMOTE_SUGGEST_IDX).removeClass("active");
+            EMOTE_SUGGEST_IDX = ev.keyCode == 38
+                ? (EMOTE_SUGGEST_IDX - 1 + items.length) % items.length
+                : (EMOTE_SUGGEST_IDX + 1) % items.length;
+            items.eq(EMOTE_SUGGEST_IDX).addClass("active")[0].scrollIntoView({ block: "nearest" });
+            ev.preventDefault(); return false;
+        }
+    }
     // Enter/return
     if(ev.keyCode == 13) {
+        $("#emote-suggestions").hide();
         if (CHATTHROTTLE) {
             return;
         }
@@ -878,16 +947,100 @@ applyOpts();
 })();
 
 var EMOTELISTMODAL = $("#emotelist");
-$("#emotelistbtn").on('click', function () {
-    EMOTELISTMODAL.modal();
-});
-
-EMOTELISTMODAL.on('shown.bs.modal', function () { $('.emotelist-search').trigger('focus') });
 EMOTELISTMODAL.find(".emotelist-alphabetical").change(function () {
     USEROPTS.emotelist_sort = this.checked;
     setOpt("emotelist_sort", USEROPTS.emotelist_sort);
 });
 EMOTELISTMODAL.find(".emotelist-alphabetical").prop("checked", USEROPTS.emotelist_sort);
+
+/* emote browser panel */
+var EMOTE_BROWSER_OFFSET = 0;
+var EMOTE_BROWSER_BATCH = 40;
+var EMOTE_BROWSER_FILTER = '';
+
+$('body').append(
+    '<div id="emote-browser">' +
+    '<input id="emote-browser-search" class="form-control input-sm" type="text" placeholder="Search emotes…">' +
+    '<div id="emote-browser-grid"></div>' +
+    '</div>'
+);
+
+function emoteBrowserMatches() {
+    if (!CHANNEL.emotes) return [];
+    var f = EMOTE_BROWSER_FILTER.toLowerCase();
+    return f ? CHANNEL.emotes.filter(function(e) { return e.name.toLowerCase().indexOf(f) !== -1; })
+             : CHANNEL.emotes;
+}
+
+function emoteBrowserRenderMore() {
+    var matches = emoteBrowserMatches();
+    var end = Math.min(EMOTE_BROWSER_OFFSET + EMOTE_BROWSER_BATCH, matches.length);
+    var grid = document.getElementById('emote-browser-grid');
+    for (var i = EMOTE_BROWSER_OFFSET; i < end; i++) {
+        (function(emote) {
+            var item = document.createElement('div');
+            item.className = 'emote-browser-item';
+            item.title = emote.name;
+            var img = document.createElement('img');
+            img.src = emote.image;
+            item.appendChild(img);
+            item.addEventListener('click', function() {
+                var cl = document.getElementById('chatline');
+                var val = cl.value;
+                if (val && !val.charAt(val.length - 1).match(/\s/)) val += ' ';
+                cl.value = val + emote.name;
+                $("#emote-browser").hide();
+                cl.focus();
+            });
+            grid.appendChild(item);
+        })(matches[i]);
+    }
+    EMOTE_BROWSER_OFFSET = end;
+}
+
+function emoteBrowserReset() {
+    EMOTE_BROWSER_OFFSET = 0;
+    document.getElementById('emote-browser-grid').innerHTML = '';
+    emoteBrowserRenderMore();
+}
+
+function emoteBrowserPosition() {
+    var btn = $("#emotelistbtn"), off = btn.offset();
+    var panel = $("#emote-browser");
+    var pw = panel.outerWidth(), ph = panel.outerHeight();
+    var ww = $(window).width(), wh = $(window).height();
+    var left = off.left;
+    if (left + pw > ww - 8) left = Math.max(8, off.left + btn.outerWidth() - pw);
+    var top = off.top - ph - 4;
+    if (top < 8) top = off.top + btn.outerHeight() + 4;
+    panel.css({ top: top, left: left });
+}
+
+$("#emotelistbtn").on('click', function () {
+    var panel = $("#emote-browser");
+    if (panel.is(':visible')) { panel.hide(); return; }
+    EMOTE_BROWSER_FILTER = '';
+    $("#emote-browser-search").val('');
+    emoteBrowserReset();
+    panel.show();
+    emoteBrowserPosition();
+    document.getElementById('emote-browser-search').focus();
+});
+
+$(document).on('click.emotebrowser', function (e) {
+    if (!$(e.target).closest('#emote-browser, #emotelistbtn').length)
+        $("#emote-browser").hide();
+});
+
+$(document).on('input', '#emote-browser-search', function () {
+    EMOTE_BROWSER_FILTER = this.value;
+    emoteBrowserReset();
+});
+
+document.getElementById('emote-browser-grid').addEventListener('scroll', function () {
+    if (this.scrollTop + this.clientHeight >= this.scrollHeight - 60)
+        emoteBrowserRenderMore();
+});
 
 $("#fullscreenbtn").on('click', function () {
     var elem = document.querySelector("#videowrap .embed-responsive");
