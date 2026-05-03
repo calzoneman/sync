@@ -184,9 +184,15 @@ function emoteRefresh() {
     var partial = emoteLastWord();
     var popup = $("#emote-suggestions");
     if (partial.length < 2 || !CHANNEL.emotes || !CHANNEL.emotes.length) { popup.hide(); return; }
-    var matches = CHANNEL.emotes.filter(function(e) {
-        return e.name.toLowerCase().indexOf(partial) === 0;
-    }).slice(0, 8);
+    var matches = CHANNEL.emotes
+        .filter(e => e.name.toLowerCase().includes(partial))
+        .sort((a, b) => {
+            const an = a.name.toLowerCase();
+            const bn = b.name.toLowerCase();
+
+            return (bn.startsWith(partial) - an.startsWith(partial)) || an.localeCompare(bn);
+        })
+        .slice(0, 8);
     if (!matches.length) { popup.hide(); return; }
     popup.empty();
     matches.forEach(function(e) {
