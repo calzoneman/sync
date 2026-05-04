@@ -20,3 +20,5 @@ www/js/player.js
 tor-exit-list.json
 *.patch
 examples/demo-bot/.env
+mysql/
+peertube-hosts.json

@@ -4,11 +4,11 @@
 # user: username to authenticate as
 # password: password for user
 mysql:
-  server: 'localhost'
+  server: 'mysql'
   port: 3306
   database: 'cytube3'
   user: 'cytube3'
-  password: ''
+  password: 'strong-password-here'
   pool-size: 10
 
 # Define IPs/ports to listen on

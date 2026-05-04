@@ -1,0 +1,35 @@
+version: "3.7"
+services:
+   sync:
+     build: .
+     depends_on:
+       mysql:
+        condition: service_healthy
+     ports:
+       - "8080:8080"
+       - "1337:1337"
+       - "8443:8443"
+     volumes:
+       - "./templates/head.pug:/app/templates/head.pug"
+       - "./favicon.ico:/app/www/favicon.ico"
+       - "./config.yaml:/app/config.yaml"
+   mysql:
+     image: docker.io/library/mariadb:latest
+     healthcheck:
+      test: ["CMD", "mariadb-admin","ping","-h","localhost", "-u", "root", "--password=sync"]
+      interval: 5s
+      timeout: 3s
+      retries: 100
+     environment:
+       - MARIADB_AUTO_UPGRADE=1
+       - MARIADB_ROOT_PASSWORD=sync 
+       - MARIADB_DATABASE=cytube3 
+       - MARIADB_USER=cytube3
+       - MARIADB_PASSWORD=strong-password-here
+     volumes:
+# This will create and mount the mysql files in the same folder as the docker-compose.yml file.
+# You can change this to be anywhere.
+# This will provide data persistence to your MariaDB database.
+       - "./mysql:/var/lib/mysql"      
+# If you are using a reverse proxy please do not forget to add the network here as well.
+# Refer to the Readme for more information regarding using a Reverse Proxy.
