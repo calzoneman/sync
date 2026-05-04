@@ -75,6 +75,13 @@ User.prototype.handleJoinChannel = function handleJoinChannel(data) {
         return;
     }
 
+    if (this.socket.context.user && this.socket.context.user.isBot) {
+        if (this.socket.context.user.botChannelName !== data.name.toLowerCase()) {
+            this.kick("Bot token is not valid for this channel");
+            return;
+        }
+    }
+
     data.name = data.name.toLowerCase();
 
     this.waitFlag(Flags.U_READY, () => {

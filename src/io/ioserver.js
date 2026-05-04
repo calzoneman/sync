@@ -11,6 +11,9 @@ import { verifyIPSessionCookie } from '../web/middleware/ipsessioncookie';
 import Promise from 'bluebird';
 const verifySession = Promise.promisify(session.verifySession);
 const getAliases = Promise.promisify(db.getAliases);
+import crypto from 'crypto';
+const botDB = require('../database/bots');
+const botSocketRegistry = require('../bot-socket-registry');
 import { CachingGlobalBanlist } from './globalban';
 import proxyaddr from 'proxy-addr';
 import { Counter, Gauge } from 'prom-client';
@@ -169,19 +172,51 @@ class IOServer {
     }
 
     // Match login cookie against the DB, look up aliases
+    // Also handles bot token auth via socket.handshake.auth.token
     authUserMiddleware(socket, next) {
         socket.context.aliases = [];
 
         const promises = [];
-        const auth = socket.handshake.signedCookies.auth;
-        if (auth) {
-            promises.push(verifySession(auth).then(user => {
-                socket.context.user = Object.assign({}, user);
-            }).catch(_error => {
-                authFailureCount.inc(1);
-                LOGGER.warn('Unable to verify session for %s - ignoring auth',
-                        socket.context.ipAddress);
-            }));
+        const botToken = socket.handshake.auth && socket.handshake.auth.token;
+
+        if (botToken && typeof botToken === 'string' && botToken.startsWith('cbt_')) {
+            const tokenHash = crypto.createHash('sha256').update(botToken).digest('hex');
+            promises.push(
+                botDB.getBotByTokenHash(tokenHash).then(bot => {
+                    if (bot) {
+                        socket.context.user = {
+                            name: bot.name,
+                            global_rank: bot.rank,
+                            time: Date.now(),
+                            profile: { image: '', text: '' },
+                            isBot: true,
+                            botId: bot.id,
+                            botChannelName: bot.channel_name
+                        };
+                        botSocketRegistry.register(bot.id, socket);
+                        botDB.updateLastConnected(bot.id).catch(err => {
+                            LOGGER.warn('Failed to update bot last_connected: %s', err);
+                        });
+                    } else {
+                        LOGGER.warn('Bot token auth failed for %s - invalid or revoked',
+                                socket.context.ipAddress);
+                    }
+                }).catch(err => {
+                    LOGGER.warn('Bot token lookup error for %s: %s',
+                            socket.context.ipAddress, err);
+                })
+            );
+        } else {
+            const auth = socket.handshake.signedCookies.auth;
+            if (auth) {
+                promises.push(verifySession(auth).then(user => {
+                    socket.context.user = Object.assign({}, user);
+                }).catch(_error => {
+                    authFailureCount.inc(1);
+                    LOGGER.warn('Unable to verify session for %s - ignoring auth',
+                            socket.context.ipAddress);
+                }));
+            }
         }
 
         promises.push(getAliases(socket.context.ipAddress).then(aliases => {
@@ -217,7 +252,7 @@ class IOServer {
         });
 
         const user = new User(socket, socket.context.ipAddress, socket.context.user);
-        if (socket.context.user) {
+        if (socket.context.user && !socket.context.user.isBot) {
             db.recordVisit(socket.context.ipAddress, user.getName());
         }
 

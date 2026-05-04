@@ -303,6 +303,9 @@ ChatModule.prototype.processChatMsg = function (user, data) {
     }
 
     var msgobj = this.formatMessage(user.getName(), data);
+    if (user.socket.context.user && user.socket.context.user.isBot) {
+        msgobj.meta.is_bot = true;
+    }
     var antiflood = MIN_ANTIFLOOD;
     if (this.channel.modules.options &&
         this.channel.modules.options.get("chat_antiflood") &&

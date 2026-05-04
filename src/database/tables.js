@@ -157,6 +157,24 @@ export async function initTables() {
         t.index('updated_at');
     });
 
+    await ensureTable('channel_bots', t => {
+        t.charset('utf8');
+        t.increments('id').notNullable().primary();
+        t.integer('channel_id')
+                .unsigned()
+                .notNullable()
+                .references('id').inTable('channels')
+                .onDelete('cascade');
+        t.string('name', 20).notNullable();
+        t.string('token_hash', 64).notNullable().unique();
+        t.integer('rank').notNullable();
+        t.string('created_by', 20).notNullable();
+        t.bigInteger('created_at').notNullable();
+        t.boolean('active').notNullable().defaultTo(true);
+        t.bigInteger('last_connected').nullable();
+        t.index('channel_id');
+    });
+
     await ensureTable('banned_channels', t => {
         t.charset('utf8mb4');
         t.string('channel_name', 30)

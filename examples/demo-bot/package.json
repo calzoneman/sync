@@ -1,0 +1,15 @@
+{
+  "name": "cytube-demo-bot",
+  "version": "1.0.0",
+  "description": "Demo bot for the CyTube Sync bot API — TUI chat client + REST queries",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "dotenv": "^16.0.0",
+    "node-fetch": "^2.7.0",
+    "socket.io-client": "^4.7.0"
+  }
+}

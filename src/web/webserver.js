@@ -216,6 +216,7 @@ module.exports = {
         );
 
         require('./acp').init(app, ioConfig);
+        app.use('/api/v1', require('./routes/api/index'));
         require('../google2vtt').attach(app);
         require('./routes/google_drive_userscript')(app);
         require('./routes/iframe')(app);

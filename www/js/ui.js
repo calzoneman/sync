@@ -1095,3 +1095,81 @@ $("#resize-video-smaller").on('click', function () {
         console.error(error);
     }
 });
+
+var CSTBots = (function () {
+    function apiBase() {
+        return '/api/v1/channels/' + CHANNEL.name;
+    }
+
+    function load() {
+        $.getJSON(apiBase() + '/bots', function (bots) {
+            var tbody = $('#cs-bots-list').empty();
+            bots.forEach(function (bot) {
+                var lastConn = bot.last_connected
+                    ? new Date(bot.last_connected).toLocaleString()
+                    : 'Never';
+                var rankLabel = bot.rank >= 5 ? 'Creator' : bot.rank >= 4 ? 'Owner' : bot.rank >= 3 ? 'Admin' : 'Mod';
+                var row = $('<tr>');
+                if (bot.active) {
+                    row.append($('<td>').append(
+                        $('<button class="btn btn-xs btn-danger">').text('Revoke')
+                            .on('click', function () { revoke(bot.id); })
+                    ));
+                } else {
+                    row.append($('<td>').append($('<span class="text-muted">').text('Revoked')));
+                }
+                row.append($('<td>').text(bot.name));
+                row.append($('<td>').text(rankLabel + ' (' + bot.rank + ')'));
+                row.append($('<td>').text(bot.created_by));
+                row.append($('<td>').text(lastConn));
+                tbody.append(row);
+            });
+        }).fail(function () {
+            $('#cs-bots-list').html('<tr><td colspan="5" class="text-danger">Failed to load bots</td></tr>');
+        });
+    }
+
+    function revoke(id) {
+        if (!confirm('Revoke this bot token? Any connected bot will be disconnected immediately.')) return;
+        $.ajax({
+            url: apiBase() + '/bots/' + id,
+            method: 'DELETE'
+        }).done(function () {
+            load();
+        }).fail(function (xhr) {
+            alert('Failed to revoke: ' + (xhr.responseJSON && xhr.responseJSON.error || xhr.statusText));
+        });
+    }
+
+    $('#cs-bots-issue').on('click', function () {
+        var name = $('#cs-bots-name').val().trim();
+        var rank = parseInt($('#cs-bots-rank').val(), 10);
+        if (!name) { alert('Bot name is required'); return; }
+        $.ajax({
+            url: apiBase() + '/bots',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ name: name, rank: rank })
+        }).done(function (data) {
+            $('#cs-bots-token-value').text(data.token);
+            $('.cs-bots-token-result').show();
+            $('#cs-bots-name').val('');
+            load();
+        }).fail(function (xhr) {
+            alert('Failed to create bot: ' + (xhr.responseJSON && xhr.responseJSON.error || xhr.statusText));
+        });
+    });
+
+    $('.cs-bots-copy').on('click', function () {
+        var text = $('#cs-bots-token-value').text();
+        navigator.clipboard.writeText(text).catch(function () {
+            var el = document.getElementById('cs-bots-token-value');
+            var range = document.createRange();
+            range.selectNodeContents(el);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        });
+    });
+
+    return { load: load };
+})();

@@ -224,5 +224,34 @@ mixin chanlog
     pre#cs-chanlog-text
     button.btn.btn-default#cs-chanlog-refresh Refresh
 
+mixin bots
+  #cs-bots.tab-pane
+    h4 Bot Tokens
+    p Issue API tokens for bots that can control this channel via the REST API and WebSocket.  Tokens are shown only once — store them securely.
+    form.form-inline.cs-bots-form(action="javascript:void(0)", role="form")
+      .form-group
+        input#cs-bots-name.form-control(type="text", placeholder="Bot name", maxlength="20")
+      .form-group
+        select#cs-bots-rank.form-control
+          option(value="2") Moderator (rank 2)
+          option(value="3") Admin (rank 3)
+          option(value="4") Owner (rank 4)
+      .form-group
+        button#cs-bots-issue.btn.btn-primary Issue Token
+    .cs-bots-token-result.alert.alert-success(style="display:none; margin-top:10px")
+      strong Token (copy now — will not be shown again):
+      br
+      code#cs-bots-token-value
+      button.btn.btn-xs.btn-default.cs-bots-copy(type="button", style="margin-left:8px") Copy
+    table.table.table-striped.table-condensed(style="margin-top:12px")
+      thead
+        tr
+          th Revoke
+          th Name
+          th Rank
+          th Created by
+          th Last connected
+      tbody#cs-bots-list
+
 mixin permeditor
   #cs-permedit.tab-pane
