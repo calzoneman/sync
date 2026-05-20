@@ -1178,6 +1178,7 @@ var CSTShows = (function () {
     var selectedId = null;
     var draftPlaylist = [];
     var timezoneOptionsLoaded = false;
+    var resolvingTitles = false;
 
     function apiBase() {
         return '/api/v1/channels/' + CHANNEL.name + '/shows';
@@ -1234,7 +1235,7 @@ var CSTShows = (function () {
 
         draftPlaylist.forEach(function (item, idx) {
             var li = $('<li class="queue_entry">').attr('data-idx', idx);
-            var title = item.title || (item.type + ':' + item.id);
+            var title = item.title || item.id || (item.type + ':' + item.id);
             $('<span>').text('[' + item.type + '] ' + title).appendTo(li);
             var controls = $('<div class="btn-group pull-right">').appendTo(li);
             $('<button class="btn btn-xs btn-default" type="button" title="Move up">')
@@ -1265,6 +1266,45 @@ var CSTShows = (function () {
                 })
                 .appendTo(controls);
             ul.append(li);
+        });
+    }
+
+    function resolveDraftTitles() {
+        if (resolvingTitles || draftPlaylist.length === 0) {
+            return;
+        }
+
+        var unresolved = draftPlaylist.filter(function (item) {
+            return !item.title || item.title === item.id;
+        }).map(function (item) {
+            return { id: item.id, type: item.type };
+        });
+
+        if (unresolved.length === 0) {
+            return;
+        }
+
+        resolvingTitles = true;
+        $.ajax({
+            url: apiBase() + '/resolve-media',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ items: unresolved })
+        }).done(function (data) {
+            var map = {};
+            (data.items || []).forEach(function (item) {
+                map[item.type + ':' + item.id] = item.title || item.id;
+            });
+
+            draftPlaylist.forEach(function (item) {
+                var key = item.type + ':' + item.id;
+                if (map[key]) {
+                    item.title = map[key];
+                }
+            });
+            renderDraftPlaylist();
+        }).always(function () {
+            resolvingTitles = false;
         });
     }
 
@@ -1313,6 +1353,7 @@ var CSTShows = (function () {
 
         $('#cs-shows-mediaurl').val('');
         renderDraftPlaylist();
+        resolveDraftTitles();
 
         if (parseFail > 0 || duplicates > 0) {
             var parts = [];
@@ -1389,6 +1430,7 @@ var CSTShows = (function () {
             };
         });
         renderDraftPlaylist();
+        resolveDraftTitles();
     }
 
     function action(id, actionName) {

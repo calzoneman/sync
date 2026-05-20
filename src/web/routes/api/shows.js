@@ -3,6 +3,7 @@ const webserver = require('../../webserver');
 const showDB = require('../../../database/shows');
 const shows = require('../../../shows');
 const botDB = require('../../../database/bots');
+const infoGetter = require('../../../get-info');
 const { getChannelRow, getUserEffectiveRank, hashToken } = require('./middleware');
 
 const router = express.Router({ mergeParams: true });
@@ -184,6 +185,46 @@ router.get('/:id', async (req, res) => {
     const show = await showDB.getShowById(id, auth.channelRow.id);
     if (!show) return res.status(404).json({ error: 'Show not found' });
     res.json(show);
+});
+
+router.post('/resolve-media', async (req, res) => {
+    const auth = await authorizeChannel(req, res);
+    if (!auth) return;
+
+    const items = Array.isArray(req.body && req.body.items) ? req.body.items : [];
+    if (items.length === 0) {
+        return res.json({ items: [] });
+    }
+
+    const capped = items.slice(0, 50).map(item => ({
+        id: item && item.id ? String(item.id).trim() : '',
+        type: item && item.type ? String(item.type).trim() : ''
+    })).filter(item => item.id && item.type);
+
+    const resolved = await Promise.all(capped.map(item => {
+        return new Promise(resolve => {
+            infoGetter.getMedia(item.id, item.type, (err, media) => {
+                if (err || !media) {
+                    resolve({
+                        id: item.id,
+                        type: item.type,
+                        title: item.id,
+                        ok: false
+                    });
+                    return;
+                }
+
+                resolve({
+                    id: item.id,
+                    type: item.type,
+                    title: media.title || item.id,
+                    ok: true
+                });
+            });
+        });
+    }));
+
+    res.json({ items: resolved });
 });
 
 router.post('/', async (req, res) => {
