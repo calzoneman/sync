@@ -2,7 +2,8 @@ const express = require('express');
 const webserver = require('../../webserver');
 const showDB = require('../../../database/shows');
 const shows = require('../../../shows');
-const { getChannelRow, getUserEffectiveRank } = require('./middleware');
+const botDB = require('../../../database/bots');
+const { getChannelRow, getUserEffectiveRank, hashToken } = require('./middleware');
 
 const router = express.Router({ mergeParams: true });
 
@@ -10,6 +11,13 @@ const SHOW_STATUSES = new Set(['draft', 'scheduled', 'paused', 'running', 'compl
 const RECURRENCES = new Set(['none', 'daily', 'weekly']);
 const FILL_MODES = new Set(['append', 'replace']);
 const CONFLICT_MODES = new Set(['force', 'skip']);
+const ACTION_MIN_RANK = {
+    pause: 2,
+    resume: 2,
+    schedule: 2,
+    run: 3,
+    cancel: 3
+};
 
 function sanitizePlaylist(list) {
     if (!Array.isArray(list)) return [];
@@ -28,6 +36,16 @@ function parseSchedule(input) {
     return ms;
 }
 
+function isValidTimeZone(tz) {
+    if (!tz || typeof tz !== 'string') return false;
+    try {
+        Intl.DateTimeFormat('en-US', { timeZone: tz }).format(new Date());
+        return true;
+    } catch (_err) {
+        return false;
+    }
+}
+
 function validateShowPayload(body, old = null) {
     const name = (body.name || (old && old.name) || '').trim();
     if (!name || name.length > 100) {
@@ -40,6 +58,9 @@ function validateShowPayload(body, old = null) {
     }
 
     const timezone = String(body.timezone || (old && old.timezone) || 'UTC').trim();
+    if (!isValidTimeZone(timezone)) {
+        return { error: 'timezone must be a valid IANA time zone string' };
+    }
     const scheduledInput = body.scheduled_for !== undefined ? body.scheduled_for : (old ? old.scheduled_for : null);
     const scheduledFor = typeof scheduledInput === 'number' ? scheduledInput : parseSchedule(scheduledInput);
     if (!scheduledFor) {
@@ -96,6 +117,33 @@ function validateShowPayload(body, old = null) {
 }
 
 async function authorizeChannel(req, res) {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.slice(7).trim();
+        if (!token.startsWith('cbt_')) {
+            res.status(401).json({ error: 'Invalid token format' });
+            return null;
+        }
+
+        const tokenHash = hashToken(token);
+        const bot = await botDB.getBotByTokenHash(tokenHash);
+        if (!bot) {
+            res.status(401).json({ error: 'Invalid or revoked token' });
+            return null;
+        }
+
+        if (bot.channel_name.toLowerCase() !== req.params.channel.toLowerCase()) {
+            res.status(403).json({ error: 'Token not authorized for this channel' });
+            return null;
+        }
+
+        return {
+            actorName: bot.name,
+            rank: bot.rank,
+            channelRow: { id: bot.channel_id, name: bot.channel_name }
+        };
+    }
+
     const user = await webserver.authorize(req);
     if (!user) {
         res.status(401).json({ error: 'Unauthorized' });
@@ -116,7 +164,7 @@ async function authorizeChannel(req, res) {
         return null;
     }
 
-    return { user, channelRow, rank };
+    return { user, actorName: user.name, channelRow, rank };
 }
 
 router.get('/', async (req, res) => {
@@ -125,6 +173,17 @@ router.get('/', async (req, res) => {
 
     const showsList = await showDB.listShows(auth.channelRow.id);
     res.json(showsList);
+});
+
+router.get('/:id', async (req, res) => {
+    const auth = await authorizeChannel(req, res);
+    if (!auth) return;
+
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid show id' });
+    const show = await showDB.getShowById(id, auth.channelRow.id);
+    if (!show) return res.status(404).json({ error: 'Show not found' });
+    res.json(show);
 });
 
 router.post('/', async (req, res) => {
@@ -136,7 +195,7 @@ router.post('/', async (req, res) => {
 
     const id = await showDB.createShow({
         channelId: auth.channelRow.id,
-        createdBy: auth.user.name,
+        createdBy: auth.actorName,
         input: validated.value
     });
 
@@ -162,7 +221,7 @@ router.put('/:id', async (req, res) => {
         channelId: auth.channelRow.id,
         input: {
             ...validated.value,
-            updated_by: auth.user.name
+            updated_by: auth.actorName
         }
     });
 
@@ -173,6 +232,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     const auth = await authorizeChannel(req, res);
     if (!auth) return;
+    if (auth.rank < 3) return res.status(403).json({ error: 'Insufficient rank' });
 
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) return res.status(400).json({ error: 'Invalid show id' });
@@ -196,13 +256,15 @@ router.post('/:id/action', async (req, res) => {
 
     const action = String((req.body && req.body.action) || '').toLowerCase();
     if (!action) return res.status(400).json({ error: 'action is required' });
+    if (!ACTION_MIN_RANK[action]) return res.status(400).json({ error: 'Unknown action' });
+    if (auth.rank < ACTION_MIN_RANK[action]) return res.status(403).json({ error: 'Insufficient rank' });
 
     if (action === 'pause') {
         await showDB.updateShowStatus({
             id,
             channelId: auth.channelRow.id,
             status: 'paused',
-            updatedBy: auth.user.name
+            updatedBy: auth.actorName
         });
     } else if (action === 'resume') {
         await showDB.updateShow({
@@ -212,7 +274,7 @@ router.post('/:id/action', async (req, res) => {
                 ...show,
                 status: 'scheduled',
                 next_run_at: Date.now(),
-                updated_by: auth.user.name
+                updated_by: auth.actorName
             }
         });
     } else if (action === 'cancel') {
@@ -220,7 +282,7 @@ router.post('/:id/action', async (req, res) => {
             id,
             channelId: auth.channelRow.id,
             status: 'canceled',
-            updatedBy: auth.user.name
+            updatedBy: auth.actorName
         });
     } else if (action === 'run') {
         try {
@@ -235,7 +297,7 @@ router.post('/:id/action', async (req, res) => {
                 id,
                 recurrence: show.recurrence,
                 nextRunAt: nextRun,
-                updatedBy: auth.user.name
+                updatedBy: auth.actorName
             });
         } catch (error) {
             return res.status(400).json({ error: error.message || 'Failed to execute show' });
@@ -248,11 +310,9 @@ router.post('/:id/action', async (req, res) => {
                 ...show,
                 status: 'scheduled',
                 next_run_at: show.scheduled_for,
-                updated_by: auth.user.name
+                updated_by: auth.actorName
             }
         });
-    } else {
-        return res.status(400).json({ error: 'Unknown action' });
     }
 
     const row = await showDB.getShowById(id, auth.channelRow.id);

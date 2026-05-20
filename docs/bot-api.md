@@ -362,6 +362,77 @@ Update one or more settings. Unknown keys are silently ignored.
 
 ---
 
+### Shows
+
+Show endpoints manage scheduled playlist runs. These endpoints support bot Bearer auth and session auth.
+
+#### `GET /channels/:channel/shows`
+
+List shows for the channel. Minimum rank: **2 (Mod)**.
+
+#### `GET /channels/:channel/shows/:id`
+
+Get a single show. Minimum rank: **2 (Mod)**.
+
+#### `POST /channels/:channel/shows`
+
+Create a show. Minimum rank: **2 (Mod)**.
+
+#### `PUT /channels/:channel/shows/:id`
+
+Update a show. Minimum rank: **2 (Mod)**.
+
+#### `DELETE /channels/:channel/shows/:id`
+
+Delete a show. Minimum rank: **3 (Admin)**.
+
+#### `POST /channels/:channel/shows/:id/action`
+
+Run control action.
+
+| Action     | Minimum rank |
+|------------|--------------|
+| `pause`    | 2            |
+| `resume`   | 2            |
+| `schedule` | 2            |
+| `run`      | 3            |
+| `cancel`   | 3            |
+
+**Create/Update body schema:**
+
+```json
+{
+  "name": "Friday Prime",
+  "scheduled_for": "2026-05-22T19:00:00.000Z",
+  "timezone": "America/New_York",
+  "recurrence": "weekly",
+  "fill_mode": "replace",
+  "conflict_mode": "force",
+  "start_playback": true,
+  "playlist": [
+    { "type": "yt", "id": "dQw4w9WgXcQ", "pos": "end" }
+  ],
+  "status": "scheduled"
+}
+```
+
+**Field constraints:**
+
+- `timezone`: required IANA timezone string (example: `Europe/Berlin`, `America/New_York`)
+- `recurrence`: `none | daily | weekly`
+- `fill_mode`: `append | replace`
+- `conflict_mode`: `force | skip`
+- `playlist`: non-empty array of media entries (`type`, `id`, optional `pos: next|end`)
+- `status`: one of `draft | scheduled | paused | completed | failed | canceled` (`running` is internal)
+
+**Action body schema:**
+
+```json
+{ "action": "run" }
+```
+
+---
+
 ### Bot management
 
 These endpoints use **session cookie auth** (the normal logged-in web session), not a bot token. They are intended for the channel settings UI.

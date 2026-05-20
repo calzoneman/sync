@@ -1177,9 +1177,41 @@ var CSTBots = (function () {
 var CSTShows = (function () {
     var selectedId = null;
     var draftPlaylist = [];
+    var timezoneOptionsLoaded = false;
 
     function apiBase() {
         return '/api/v1/channels/' + CHANNEL.name + '/shows';
+    }
+
+    function loadTimezoneOptions() {
+        if (timezoneOptionsLoaded) return;
+        timezoneOptionsLoaded = true;
+        var select = $('#cs-shows-timezone').empty();
+        var tzs = [];
+        if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
+            try {
+                tzs = Intl.supportedValuesOf('timeZone') || [];
+            } catch (_err) {
+                tzs = [];
+            }
+        }
+        if (!tzs.length) {
+            tzs = [
+                'UTC',
+                'Europe/Berlin',
+                'Europe/London',
+                'America/New_York',
+                'America/Chicago',
+                'America/Denver',
+                'America/Los_Angeles',
+                'Asia/Tokyo',
+                'Asia/Kolkata',
+                'Australia/Sydney'
+            ];
+        }
+        tzs.forEach(function (tz) {
+            $('<option>').attr('value', tz).text(tz).appendTo(select);
+        });
     }
 
     function toLocalDateInput(ms) {
@@ -1313,12 +1345,16 @@ var CSTShows = (function () {
     }
 
     function clearForm() {
+        loadTimezoneOptions();
         selectedId = null;
         $('#cs-shows-name').val('');
         $('#cs-shows-scheduled-for').val('');
         var detectedTz = 'UTC';
         if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
             detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        }
+        if ($('#cs-shows-timezone option[value="' + detectedTz + '"]').length === 0) {
+            $('<option>').attr('value', detectedTz).text(detectedTz).appendTo('#cs-shows-timezone');
         }
         $('#cs-shows-timezone').val(detectedTz);
         $('#cs-shows-recurrence').val('none');
@@ -1331,10 +1367,15 @@ var CSTShows = (function () {
     }
 
     function selectShow(show) {
+        loadTimezoneOptions();
         selectedId = show.id;
         $('#cs-shows-name').val(show.name);
         $('#cs-shows-scheduled-for').val(toLocalDateInput(show.scheduled_for));
-        $('#cs-shows-timezone').val(show.timezone || 'UTC');
+        var showTz = show.timezone || 'UTC';
+        if ($('#cs-shows-timezone option[value="' + showTz + '"]').length === 0) {
+            $('<option>').attr('value', showTz).text(showTz).appendTo('#cs-shows-timezone');
+        }
+        $('#cs-shows-timezone').val(showTz);
         $('#cs-shows-recurrence').val(show.recurrence || 'none');
         $('#cs-shows-fill-mode').val(show.fill_mode || 'append');
         $('#cs-shows-conflict-mode').val(show.conflict_mode || 'force');
