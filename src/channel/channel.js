@@ -510,13 +510,16 @@ Channel.prototype.maybeResendUserlist = function maybeResendUserlist(user, newRa
 };
 
 Channel.prototype.packUserData = function (user) {
+    var isBot = Boolean(user.socket.context.user && user.socket.context.user.isBot);
+
     var base = {
         name: user.getName(),
         rank: user.account.effectiveRank,
         profile: user.account.profile,
         meta: {
             afk: user.is(Flags.U_AFK),
-            muted: user.is(Flags.U_MUTED) && !user.is(Flags.U_SMUTED)
+            muted: user.is(Flags.U_MUTED) && !user.is(Flags.U_SMUTED),
+            is_bot: isBot
         }
     };
 
@@ -529,7 +532,8 @@ Channel.prototype.packUserData = function (user) {
             muted: user.is(Flags.U_MUTED),
             smuted: user.is(Flags.U_SMUTED),
             aliases: user.account.aliases,
-            ip: user.displayip
+            ip: user.displayip,
+            is_bot: isBot
         }
     };
 
@@ -542,7 +546,8 @@ Channel.prototype.packUserData = function (user) {
             muted: user.is(Flags.U_MUTED),
             smuted: user.is(Flags.U_SMUTED),
             aliases: user.account.aliases,
-            ip: user.realip
+            ip: user.realip,
+            is_bot: isBot
         }
     };
 

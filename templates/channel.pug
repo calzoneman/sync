@@ -222,6 +222,7 @@ html(lang="en")
                   li: a(href="#cs-permedit", data-toggle="tab", tabindex="-1") Permissions
                   li: a(href="#cs-chanranks", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestChannelRanks')") Moderators
               li: a(href="#cs-banlist", data-toggle="tab", tabindex="-1", onclick="javascript:socket.emit('requestBanlist')") Ban list
+              li: a(href="#cs-bots", data-toggle="tab", tabindex="-1", onclick="javascript:CSTBots.load()") Bots
               li: a(href="#cs-chanlog", data-toggle="tab", onclick="javascript:socket.emit('readChanLog')") Log
           .modal-body
             .tab-content
@@ -236,6 +237,7 @@ html(lang="en")
               +chanranks()
               +chatfilters()
               +emotes()
+              +bots()
               +chanlog()
               +permeditor()
           .modal-footer

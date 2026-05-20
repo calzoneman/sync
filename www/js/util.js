@@ -86,9 +86,9 @@ function findUserlistItem(name) {
         if(isNaN(parseInt(i))) {
             continue;
         }
-        var child = children[i];
-        if($(child.children[1]).text().toLowerCase() == name)
-            return $(child);
+        var child = $(children[i]);
+        if((child.data("name") || "").toLowerCase() == name)
+            return child;
     }
     return null;
 }
@@ -124,6 +124,11 @@ function formatUserlistItem(div) {
         div.addClass("userlist_smuted");
     } else {
         div.removeClass("userlist_smuted");
+    }
+
+    name.find(".bot-tag").remove();
+    if (meta.is_bot) {
+        $("<span/>").addClass("bot-tag").text(" [bot]").appendTo(name);
     }
 
     var profile = null;
@@ -1536,7 +1541,13 @@ function formatChatMessage(data, last) {
     if (!skip) {
         name.appendTo(div);
     }
-    $("<strong/>").addClass("username").text(data.username + ": ").appendTo(name);
+    var usernameEl = $("<strong/>").addClass("username").appendTo(name);
+    usernameEl.append(document.createTextNode(data.username));
+    if (data.meta && data.meta.is_bot) {
+        usernameEl.append(document.createTextNode(" "));
+        $("<span/>").addClass("bot-tag").text("[bot]").appendTo(usernameEl);
+    }
+    usernameEl.append(document.createTextNode(": "));
     if (data.meta.modflair) {
         name.addClass(getNameColor(data.meta.modflair));
     }

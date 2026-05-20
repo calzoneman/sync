@@ -301,6 +301,15 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     color: #888888!important;
 }
 
+.bot-tag {
+    font-size: 0.75em;
+    color: #5bc0de;
+    font-weight: normal;
+    font-style: normal;
+    vertical-align: middle;
+    margin-left: 1px;
+}
+
 .action {
     font-style: italic;
     color: #888888;
