@@ -167,26 +167,84 @@ function chatTabComplete(chatline) {
 
 /* emote autocomplete */
 var EMOTE_SUGGEST_IDX = 0;
-function emoteLastWord() {
-    var words = $("#chatline").val().split(" ");
-    return words[words.length - 1].toLowerCase();
+var EMOTE_SUGGEST_CONTEXT = null;
+
+function getEmoteTriggerSymbols() {
+    var raw = (CHANNEL && CHANNEL.opts && CHANNEL.opts.emote_triggers) || ":!#/";
+    if (typeof raw !== "string" || raw.length === 0) {
+        return ":!#/";
+    }
+    return raw;
 }
+
+function escapeForRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function emoteTokenAtCaret() {
+    var cl = document.getElementById("chatline");
+    if (!cl) return null;
+    var caret = cl.selectionStart;
+    if (typeof caret !== "number") return null;
+
+    var value = cl.value;
+    var left = value.slice(0, caret);
+    var tokenStart = left.lastIndexOf(" ") + 1;
+    var token = left.slice(tokenStart);
+    if (!token) return null;
+
+    var triggers = getEmoteTriggerSymbols();
+    var triggerClass = escapeForRegex(triggers);
+    var re = new RegExp("^([" + triggerClass + "])([^\\s]{2,})$");
+    var m = token.match(re);
+    if (!m) return null;
+
+    return {
+        tokenStart: tokenStart,
+        trigger: m[1],
+        query: m[2].toLowerCase()
+    };
+}
+
 function emoteAccept() {
     var item = $("#emote-suggestions .active");
     if (!item.length) item = $("#emote-suggestions").children().first();
-    if (!item.length) return;
-    var words = $("#chatline").val().split(" ");
-    words[words.length - 1] = item.data("name") + " ";
-    $("#chatline").val(words.join(" "));
+    if (!item.length || !EMOTE_SUGGEST_CONTEXT) return false;
+    var cl = document.getElementById("chatline");
+    if (!cl) return false;
+
+    var value = cl.value;
+    var start = EMOTE_SUGGEST_CONTEXT.tokenStart;
+    var end = cl.selectionStart;
+    var replacement = item.data("name") + " ";
+    cl.value = value.slice(0, start) + replacement + value.slice(end);
+    var newPos = start + replacement.length;
+    cl.setSelectionRange(newPos, newPos);
     $("#emote-suggestions").hide();
+    EMOTE_SUGGEST_CONTEXT = null;
+    return true;
 }
 function emoteRefresh() {
-    var partial = emoteLastWord();
+    var token = emoteTokenAtCaret();
     var popup = $("#emote-suggestions");
-    if (partial.length < 2 || !CHANNEL.emotes || !CHANNEL.emotes.length) { popup.hide(); return; }
-    var matches = CHANNEL.emotes.filter(function(e) {
-        return e.name.toLowerCase().indexOf(partial) === 0;
-    }).slice(0, 8);
+    if (!token || !CHANNEL.emotes || !CHANNEL.emotes.length) {
+        EMOTE_SUGGEST_CONTEXT = null;
+        popup.hide();
+        return;
+    }
+
+    var partial = token.query;
+    EMOTE_SUGGEST_CONTEXT = token;
+
+    var matches = CHANNEL.emotes
+        .filter(e => e.name.toLowerCase().includes(partial))
+        .sort((a, b) => {
+            const an = a.name.toLowerCase();
+            const bn = b.name.toLowerCase();
+
+            return (bn.startsWith(partial) - an.startsWith(partial)) || an.localeCompare(bn);
+        })
+        .slice(0, 8);
     if (!matches.length) { popup.hide(); return; }
     popup.empty();
     matches.forEach(function(e) {
@@ -220,10 +278,16 @@ $("#chatline").on('keydown', function(ev) {
     if (open) {
         if (ev.keyCode == 27) { // Escape
             $("#emote-suggestions").hide();
+            EMOTE_SUGGEST_CONTEXT = null;
             ev.preventDefault(); return false;
+        } else if (ev.keyCode == 13) { // Enter accept
+            if (emoteAccept()) {
+                ev.preventDefault(); return false;
+            }
         } else if (ev.keyCode == 9 || (ev.keyCode == 39 && this.selectionStart === this.value.length)) { // Tab or right arrow at end
-            emoteAccept();
-            ev.preventDefault(); return false;
+            if (emoteAccept()) {
+                ev.preventDefault(); return false;
+            }
         } else if (ev.keyCode == 38 || ev.keyCode == 40) { // Up/down navigate
             var items = $("#emote-suggestions").children();
             items.eq(EMOTE_SUGGEST_IDX).removeClass("active");
@@ -237,6 +301,7 @@ $("#chatline").on('keydown', function(ev) {
     // Enter/return
     if(ev.keyCode == 13) {
         $("#emote-suggestions").hide();
+        EMOTE_SUGGEST_CONTEXT = null;
         if (CHATTHROTTLE) {
             return;
         }

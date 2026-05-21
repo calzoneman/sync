@@ -995,6 +995,7 @@ function handleModPermissions() {
     $("#cs-torbanned").prop("checked", CHANNEL.opts.torbanned);
     $("#cs-block_anonymous_users").prop("checked", CHANNEL.opts.block_anonymous_users);
     $("#cs-allow_ascii_control").prop("checked", CHANNEL.opts.allow_ascii_control);
+    $("#cs-emote_triggers").val(CHANNEL.opts.emote_triggers || ":!#/");
     $("#cs-playlist_max_per_user").val(CHANNEL.opts.playlist_max_per_user || 0);
     $("#cs-playlist_max_duration_per_user").val(formatTime(CHANNEL.opts.playlist_max_duration_per_user));
     $("#cs-new_user_chat_delay").val(formatTime(CHANNEL.opts.new_user_chat_delay || 0));
