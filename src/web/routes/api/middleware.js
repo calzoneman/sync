@@ -63,6 +63,7 @@ async function getChannelRow(channelName) {
     return new Promise((resolve, reject) => {
         db.channels.lookup(channelName, (err, row) => {
             if (err) reject(new Error(err));
+            else if (!row) reject(new Error('Channel not found'));
             else resolve(row);
         });
     });
