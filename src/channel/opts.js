@@ -30,6 +30,7 @@ function OptionsModule(_channel) {
         torbanned: false,          // Block connections from Tor exit nodes
         block_anonymous_users: false, //Only allow connections from registered users.
         allow_ascii_control: false,// Allow ASCII control characters (\x00-\x1f)
+        emote_triggers: ":!#/",    // Trigger symbols for emote autocomplete
         playlist_max_per_user: 0,  // Maximum number of playlist items per user
         new_user_chat_delay: 0,      // Minimum account/IP age to chat
         new_user_chat_link_delay: 0, // Minimum account/IP age to post links
@@ -351,6 +352,39 @@ OptionsModule.prototype.handleSetOptions = function (user, data) {
     if ("allow_ascii_control" in data && user.account.effectiveRank >= 3) {
         this.opts.allow_ascii_control = Boolean(data.allow_ascii_control);
         sendUpdate = true;
+    }
+
+    if ("emote_triggers" in data) {
+        if (typeof data.emote_triggers !== "string") {
+            user.socket.emit("validationError", {
+                target: "#cs-emote_triggers",
+                message: "Emote triggers must be a string of symbols"
+            });
+        } else {
+            var rawTriggers = data.emote_triggers.trim();
+            var normalized = "";
+            for (var i = 0; i < rawTriggers.length; i++) {
+                var ch = rawTriggers.charAt(i);
+                if (/\s/.test(ch)) {
+                    continue;
+                }
+                if (normalized.indexOf(ch) === -1) {
+                    normalized += ch;
+                }
+            }
+
+            if (normalized.length === 0) {
+                normalized = ":!#/";
+            } else if (normalized.length > 16) {
+                normalized = normalized.substring(0, 16);
+            }
+
+            this.opts.emote_triggers = normalized;
+            sendUpdate = true;
+            user.socket.emit("validationPassed", {
+                target: "#cs-emote_triggers"
+            });
+        }
     }
 
     if ("playlist_max_per_user" in data && user.account.effectiveRank >= 3) {
