@@ -1257,6 +1257,27 @@ $("#resize-video-smaller").on('click', function () {
     }
 });
 
+$.ajaxPrefilter(function (options, _originalOptions, _jqXHR) {
+    var url = String(options.url || '');
+    if (!/\/api\/v1\//.test(url)) {
+        return;
+    }
+
+    var method = String(options.type || options.method || 'GET').toUpperCase();
+    if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
+        return;
+    }
+
+    options.headers = options.headers || {};
+    if (options.headers.Authorization || options.headers.authorization) {
+        return;
+    }
+
+    if (typeof CSRF_TOKEN === 'string' && CSRF_TOKEN.length > 0) {
+        options.headers['X-CSRF-Token'] = CSRF_TOKEN;
+    }
+});
+
 var CSTBots = (function () {
     function apiBase() {
         return '/api/v1/channels/' + CHANNEL.name;
