@@ -1773,6 +1773,9 @@ function clearTVMessageFadeTimer($msg) {
 
 function detectCurrentLayoutName() {
     var body = $("body");
+    if (body.hasClass("compact")) {
+        return "compact";
+    }
     if (body.hasClass("hd")) {
         return "hd";
     }
@@ -1797,6 +1800,9 @@ function backToNormalLayout(event) {
     if (!nextLayout || nextLayout === "tv") {
         nextLayout = USEROPTS.layout;
     }
+    if (nextLayout === "default" && USEROPTS.layout === "tv") {
+        nextLayout = "fluid";
+    }
     if (!nextLayout || nextLayout === "tv") {
         nextLayout = "fluid";
     }
@@ -1819,6 +1825,9 @@ function backToNormalLayout(event) {
             break;
         case "hd":
             hdLayout();
+            break;
+        case "compact":
+            compactLayout();
             break;
         default:
             compactLayout();
