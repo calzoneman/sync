@@ -625,11 +625,18 @@ table td {
     position: fixed;
     z-index: 1060;
     width: 340px;
+    height: 360px;
+    min-width: 260px;
+    min-height: 220px;
+    max-width: 90vw;
+    max-height: 85vh;
     background: #272b30;
     border: 1px solid #555;
     border-radius: 4px;
     box-shadow: 0 4px 14px rgba(0,0,0,.6);
     padding: 6px;
+    --emote-browser-item-size: 52px;
+    --emote-browser-image-size: 48px;
 }
 #emote-browser-search {
     width: 100%;
@@ -643,12 +650,12 @@ table td {
     display: flex;
     flex-wrap: wrap;
     gap: 3px;
-    max-height: 320px;
+    height: calc(100% - 38px);
     overflow-y: auto;
 }
 .emote-browser-item {
-    width: 52px;
-    height: 52px;
+    width: var(--emote-browser-item-size);
+    height: var(--emote-browser-item-size);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -657,7 +664,29 @@ table td {
     flex-shrink: 0;
 }
 .emote-browser-item:hover { background: #3a3f44; }
-.emote-browser-item img { max-width: 48px; max-height: 48px; object-fit: contain; }
+.emote-browser-item img { max-width: var(--emote-browser-image-size); max-height: var(--emote-browser-image-size); object-fit: contain; }
+
+.emote-browser-resize-handle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(215, 215, 215, 0.65), rgba(150, 150, 150, 0.55));
+    border: 1px solid rgba(18, 20, 22, 0.55);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    z-index: 2;
+    opacity: 0.85;
+    transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+}
+.emote-browser-resize-handle:hover {
+    opacity: 1;
+    transform: scale(1.08);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+.emote-browser-resize-handle.ne { top: -7px; right: -7px; cursor: nesw-resize; }
+.emote-browser-resize-handle.nw { top: -7px; left: -7px; cursor: nwse-resize; }
+.emote-browser-resize-handle.se { bottom: -7px; right: -7px; cursor: nwse-resize; }
+.emote-browser-resize-handle.sw { bottom: -7px; left: -7px; cursor: nesw-resize; }
 
 #leftcontrols .btn {
     margin-right: 5px;

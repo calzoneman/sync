@@ -962,8 +962,27 @@ $('body').append(
     '<div id="emote-browser">' +
     '<input id="emote-browser-search" class="form-control input-sm" type="text" placeholder="Search emotes…">' +
     '<div id="emote-browser-grid"></div>' +
+    '<div class="emote-browser-resize-handle ne" data-dir="ne"></div>' +
+    '<div class="emote-browser-resize-handle nw" data-dir="nw"></div>' +
+    '<div class="emote-browser-resize-handle se" data-dir="se"></div>' +
+    '<div class="emote-browser-resize-handle sw" data-dir="sw"></div>' +
     '</div>'
 );
+
+function updateEmoteBrowserScale() {
+    var panel = document.getElementById('emote-browser');
+    if (!panel) return;
+
+    var panelWidth = panel.clientWidth;
+    var panelHeight = panel.clientHeight;
+    var itemByWidth = Math.floor((panelWidth - 48) / 6);
+    var itemByHeight = Math.floor((panelHeight - 90) / 4);
+    var itemSize = Math.max(40, Math.min(88, itemByWidth, itemByHeight));
+    var imageSize = Math.max(36, itemSize - 4);
+
+    panel.style.setProperty('--emote-browser-item-size', itemSize + 'px');
+    panel.style.setProperty('--emote-browser-image-size', imageSize + 'px');
+}
 
 function emoteBrowserMatches() {
     if (!CHANNEL.emotes) return [];
@@ -1016,6 +1035,74 @@ function emoteBrowserPosition() {
     panel.css({ top: top, left: left });
 }
 
+function clampEmoteBrowserToViewport() {
+    var panel = document.getElementById('emote-browser');
+    if (!panel) return;
+
+    var rect = panel.getBoundingClientRect();
+    var maxLeft = window.innerWidth - rect.width - 8;
+    var maxTop = window.innerHeight - rect.height - 8;
+    var left = Math.min(Math.max(rect.left, 8), Math.max(8, maxLeft));
+    var top = Math.min(Math.max(rect.top, 8), Math.max(8, maxTop));
+    panel.style.left = left + 'px';
+    panel.style.top = top + 'px';
+}
+
+$(document).on('mousedown', '#emote-browser .emote-browser-resize-handle', function (ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    var panel = document.getElementById('emote-browser');
+    var dir = ev.target.getAttribute('data-dir');
+    if (!panel || !dir) return;
+
+    var startX = ev.clientX;
+    var startY = ev.clientY;
+    var startRect = panel.getBoundingClientRect();
+    var minW = 260, minH = 220;
+    var maxW = Math.floor(window.innerWidth * 0.9);
+    var maxH = Math.floor(window.innerHeight * 0.85);
+
+    function onMove(moveEv) {
+        var dx = moveEv.clientX - startX;
+        var dy = moveEv.clientY - startY;
+        var left = startRect.left;
+        var top = startRect.top;
+        var width = startRect.width;
+        var height = startRect.height;
+
+        if (dir.indexOf('e') !== -1) {
+            width = Math.max(minW, Math.min(maxW, startRect.width + dx));
+        }
+        if (dir.indexOf('s') !== -1) {
+            height = Math.max(minH, Math.min(maxH, startRect.height + dy));
+        }
+        if (dir.indexOf('w') !== -1) {
+            width = Math.max(minW, Math.min(maxW, startRect.width - dx));
+            left = startRect.right - width;
+        }
+        if (dir.indexOf('n') !== -1) {
+            height = Math.max(minH, Math.min(maxH, startRect.height - dy));
+            top = startRect.bottom - height;
+        }
+
+        panel.style.left = Math.max(8, left) + 'px';
+        panel.style.top = Math.max(8, top) + 'px';
+        panel.style.width = width + 'px';
+        panel.style.height = height + 'px';
+        updateEmoteBrowserScale();
+        clampEmoteBrowserToViewport();
+    }
+
+    function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+});
+
 $("#emotelistbtn").on('click', function () {
     var panel = $("#emote-browser");
     if (panel.is(':visible')) { panel.hide(); return; }
@@ -1023,7 +1110,9 @@ $("#emotelistbtn").on('click', function () {
     $("#emote-browser-search").val('');
     emoteBrowserReset();
     panel.show();
+    updateEmoteBrowserScale();
     emoteBrowserPosition();
+    clampEmoteBrowserToViewport();
     document.getElementById('emote-browser-search').focus();
 });
 
@@ -1040,6 +1129,13 @@ $(document).on('input', '#emote-browser-search', function () {
 document.getElementById('emote-browser-grid').addEventListener('scroll', function () {
     if (this.scrollTop + this.clientHeight >= this.scrollHeight - 60)
         emoteBrowserRenderMore();
+});
+
+$(window).on('resize', function () {
+    updateEmoteBrowserScale();
+    if ($("#emote-browser").is(':visible')) {
+        clampEmoteBrowserToViewport();
+    }
 });
 
 $("#fullscreenbtn").on('click', function () {
