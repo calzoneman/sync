@@ -1269,3 +1269,391 @@ var CSTBots = (function () {
 
     return { load: load };
 })();
+
+var CSTShows = (function () {
+    var selectedId = null;
+    var draftPlaylist = [];
+    var timezoneOptionsLoaded = false;
+    var resolvingTitles = false;
+
+    function apiBase() {
+        return '/api/v1/channels/' + CHANNEL.name + '/shows';
+    }
+
+    function loadTimezoneOptions() {
+        if (timezoneOptionsLoaded) return;
+        timezoneOptionsLoaded = true;
+        var select = $('#cs-shows-timezone').empty();
+        var tzs = [];
+        if (typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function') {
+            try {
+                tzs = Intl.supportedValuesOf('timeZone') || [];
+            } catch (_err) {
+                tzs = [];
+            }
+        }
+        if (!tzs.length) {
+            tzs = [
+                'UTC',
+                'Europe/Berlin',
+                'Europe/London',
+                'America/New_York',
+                'America/Chicago',
+                'America/Denver',
+                'America/Los_Angeles',
+                'Asia/Tokyo',
+                'Asia/Kolkata',
+                'Australia/Sydney'
+            ];
+        }
+        tzs.forEach(function (tz) {
+            $('<option>').attr('value', tz).text(tz).appendTo(select);
+        });
+    }
+
+    function toLocalDateInput(ms) {
+        if (!ms) return '';
+        var d = new Date(ms);
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + '-' +
+            pad(d.getMonth() + 1) + '-' +
+            pad(d.getDate()) + 'T' +
+            pad(d.getHours()) + ':' +
+            pad(d.getMinutes());
+    }
+
+    function renderDraftPlaylist() {
+        var ul = $('#cs-shows-playlist-list').empty();
+        if (!draftPlaylist.length) {
+            ul.append('<li class="queue_entry text-muted">No items in show playlist</li>');
+            return;
+        }
+
+        draftPlaylist.forEach(function (item, idx) {
+            var li = $('<li class="queue_entry">').attr('data-idx', idx);
+            var title = item.title || item.id || (item.type + ':' + item.id);
+            $('<span>').text('[' + item.type + '] ' + title).appendTo(li);
+            var controls = $('<div class="btn-group pull-right">').appendTo(li);
+            $('<button class="btn btn-xs btn-default" type="button" title="Move up">')
+                .html('<span class="glyphicon glyphicon-arrow-up"></span>')
+                .on('click', function () {
+                    if (idx <= 0) return;
+                    var tmp = draftPlaylist[idx - 1];
+                    draftPlaylist[idx - 1] = draftPlaylist[idx];
+                    draftPlaylist[idx] = tmp;
+                    renderDraftPlaylist();
+                })
+                .appendTo(controls);
+            $('<button class="btn btn-xs btn-default" type="button" title="Move down">')
+                .html('<span class="glyphicon glyphicon-arrow-down"></span>')
+                .on('click', function () {
+                    if (idx >= draftPlaylist.length - 1) return;
+                    var tmp = draftPlaylist[idx + 1];
+                    draftPlaylist[idx + 1] = draftPlaylist[idx];
+                    draftPlaylist[idx] = tmp;
+                    renderDraftPlaylist();
+                })
+                .appendTo(controls);
+            $('<button class="btn btn-xs btn-danger" type="button" title="Remove">')
+                .html('<span class="glyphicon glyphicon-remove"></span>')
+                .on('click', function () {
+                    draftPlaylist.splice(idx, 1);
+                    renderDraftPlaylist();
+                })
+                .appendTo(controls);
+            ul.append(li);
+        });
+    }
+
+    function resolveDraftTitles() {
+        if (resolvingTitles || draftPlaylist.length === 0) {
+            return;
+        }
+
+        var unresolved = draftPlaylist.filter(function (item) {
+            return !item.title || item.title === item.id;
+        }).map(function (item) {
+            return { id: item.id, type: item.type };
+        });
+
+        if (unresolved.length === 0) {
+            return;
+        }
+
+        resolvingTitles = true;
+        $.ajax({
+            url: apiBase() + '/resolve-media',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ items: unresolved })
+        }).done(function (data) {
+            var map = {};
+            (data.items || []).forEach(function (item) {
+                map[item.type + ':' + item.id] = item.title || item.id;
+            });
+
+            draftPlaylist.forEach(function (item) {
+                var key = item.type + ':' + item.id;
+                if (map[key]) {
+                    item.title = map[key];
+                }
+            });
+            renderDraftPlaylist();
+        }).always(function () {
+            resolvingTitles = false;
+        });
+    }
+
+    function addUrlToDraft(pos) {
+        var raw = $('#cs-shows-mediaurl').val();
+        if (!raw) {
+            return;
+        }
+
+        var links = raw.trim().split(/\s+/).filter(function (x) { return x.trim() !== ''; });
+        if (links.length === 0) return;
+
+        var added = 0;
+        var duplicates = 0;
+        var parseFail = 0;
+
+        links.forEach(function (link) {
+            var media = parseMediaLink(link);
+            if (!media || !media.id || !media.type) {
+                parseFail++;
+                return;
+            }
+
+            var isDupe = draftPlaylist.some(function (item) {
+                return item.id === media.id && item.type === media.type;
+            });
+            if (isDupe) {
+                duplicates++;
+                return;
+            }
+
+            var entry = {
+                id: media.id,
+                type: media.type,
+                title: media.id,
+                pos: pos === 'next' ? 'next' : 'end'
+            };
+
+            if (pos === 'next') {
+                draftPlaylist.unshift(entry);
+            } else {
+                draftPlaylist.push(entry);
+            }
+            added++;
+        });
+
+        $('#cs-shows-mediaurl').val('');
+        renderDraftPlaylist();
+        resolveDraftTitles();
+
+        if (parseFail > 0 || duplicates > 0) {
+            var parts = [];
+            if (added > 0) parts.push('added ' + added);
+            if (duplicates > 0) parts.push('skipped duplicates ' + duplicates);
+            if (parseFail > 0) parts.push('failed to parse ' + parseFail);
+            alert(parts.join(', '));
+        }
+    }
+
+    function readFormPayload() {
+        var scheduledRaw = $('#cs-shows-scheduled-for').val();
+        var timezone = $('#cs-shows-timezone').val().trim();
+        if (!timezone) {
+            timezone = 'UTC';
+        }
+        return {
+            name: $('#cs-shows-name').val().trim(),
+            scheduled_for: scheduledRaw ? new Date(scheduledRaw).toISOString() : null,
+            timezone: timezone,
+            recurrence: $('#cs-shows-recurrence').val(),
+            fill_mode: $('#cs-shows-fill-mode').val(),
+            conflict_mode: $('#cs-shows-conflict-mode').val(),
+            start_playback: $('#cs-shows-start-playback').prop('checked'),
+            playlist: draftPlaylist.map(function (item) {
+                return { id: item.id, type: item.type, pos: item.pos || 'end' };
+            }),
+            status: 'scheduled'
+        };
+    }
+
+    function clearForm() {
+        loadTimezoneOptions();
+        selectedId = null;
+        $('#cs-shows-name').val('');
+        $('#cs-shows-scheduled-for').val('');
+        var detectedTz = 'UTC';
+        if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
+            detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        }
+        if ($('#cs-shows-timezone option[value="' + detectedTz + '"]').length === 0) {
+            $('<option>').attr('value', detectedTz).text(detectedTz).appendTo('#cs-shows-timezone');
+        }
+        $('#cs-shows-timezone').val(detectedTz);
+        $('#cs-shows-recurrence').val('none');
+        $('#cs-shows-fill-mode').val('append');
+        $('#cs-shows-conflict-mode').val('force');
+        $('#cs-shows-start-playback').prop('checked', false);
+        $('#cs-shows-mediaurl').val('');
+        draftPlaylist = [];
+        renderDraftPlaylist();
+    }
+
+    function selectShow(show) {
+        loadTimezoneOptions();
+        selectedId = show.id;
+        $('#cs-shows-name').val(show.name);
+        $('#cs-shows-scheduled-for').val(toLocalDateInput(show.scheduled_for));
+        var showTz = show.timezone || 'UTC';
+        if ($('#cs-shows-timezone option[value="' + showTz + '"]').length === 0) {
+            $('<option>').attr('value', showTz).text(showTz).appendTo('#cs-shows-timezone');
+        }
+        $('#cs-shows-timezone').val(showTz);
+        $('#cs-shows-recurrence').val(show.recurrence || 'none');
+        $('#cs-shows-fill-mode').val(show.fill_mode || 'append');
+        $('#cs-shows-conflict-mode').val(show.conflict_mode || 'force');
+        $('#cs-shows-start-playback').prop('checked', !!show.start_playback);
+        draftPlaylist = (show.playlist || []).map(function (item) {
+            return {
+                id: item.id,
+                type: item.type,
+                title: item.id,
+                pos: item.pos || 'end'
+            };
+        });
+        renderDraftPlaylist();
+        resolveDraftTitles();
+    }
+
+    function action(id, actionName) {
+        $.ajax({
+            url: apiBase() + '/' + id + '/action',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ action: actionName })
+        }).done(function () {
+            load();
+        }).fail(function (xhr) {
+            alert('Failed action: ' + ((xhr.responseJSON && xhr.responseJSON.error) || xhr.statusText));
+        });
+    }
+
+    function render(shows) {
+        var tbody = $('#cs-shows-list').empty();
+        if (!shows.length) {
+            tbody.append('<tr><td colspan="6" class="text-muted">No shows configured</td></tr>');
+            return;
+        }
+
+        shows.forEach(function (show) {
+            var row = $('<tr>');
+            row.append($('<td>').append(
+                $('<a href=\"javascript:void(0)\">').text(show.name).on('click', function () { selectShow(show); })
+            ));
+            row.append($('<td>').text(show.status));
+            row.append($('<td>').text(show.next_run_at ? new Date(show.next_run_at).toLocaleString(undefined, { timeZone: show.timezone || 'UTC' }) : 'N/A'));
+            row.append($('<td>').text(show.timezone || 'UTC'));
+            row.append($('<td>').text(show.recurrence || 'none'));
+
+            var actions = $('<td>');
+            $('<button class=\"btn btn-xs btn-primary\" style=\"margin-right:4px\">Run</button>')
+                .on('click', function () { action(show.id, 'run'); })
+                .appendTo(actions);
+            $('<button class=\"btn btn-xs btn-default\" style=\"margin-right:4px\">Pause</button>')
+                .on('click', function () { action(show.id, 'pause'); })
+                .appendTo(actions);
+            $('<button class=\"btn btn-xs btn-success\" style=\"margin-right:4px\">Resume</button>')
+                .on('click', function () { action(show.id, 'resume'); })
+                .appendTo(actions);
+            $('<button class=\"btn btn-xs btn-warning\" style=\"margin-right:4px\">Cancel</button>')
+                .on('click', function () { action(show.id, 'cancel'); })
+                .appendTo(actions);
+            $('<button class=\"btn btn-xs btn-danger\">Delete</button>')
+                .on('click', function () {
+                    if (!confirm('Delete this show?')) return;
+                    $.ajax({ url: apiBase() + '/' + show.id, method: 'DELETE' })
+                        .done(load)
+                        .fail(function (xhr) {
+                            alert('Delete failed: ' + ((xhr.responseJSON && xhr.responseJSON.error) || xhr.statusText));
+                        });
+                })
+                .appendTo(actions);
+            row.append(actions);
+            tbody.append(row);
+        });
+    }
+
+    function load() {
+        $.getJSON(apiBase(), render).fail(function () {
+            $('#cs-shows-list').html('<tr><td colspan=\"6\" class=\"text-danger\">Failed to load shows</td></tr>');
+        });
+    }
+
+    $('#cs-shows-create').on('click', function () {
+        var payload = readFormPayload();
+
+        $.ajax({
+            url: apiBase(),
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(payload)
+        }).done(function () {
+            clearForm();
+            load();
+        }).fail(function (xhr) {
+            alert('Create failed: ' + ((xhr.responseJSON && xhr.responseJSON.error) || xhr.statusText));
+        });
+    });
+
+    $('#cs-shows-update').on('click', function () {
+        if (!selectedId) {
+            alert('Select a show first');
+            return;
+        }
+
+        var payload = readFormPayload();
+
+        $.ajax({
+            url: apiBase() + '/' + selectedId,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(payload)
+        }).done(function () {
+            load();
+        }).fail(function (xhr) {
+            alert('Update failed: ' + ((xhr.responseJSON && xhr.responseJSON.error) || xhr.statusText));
+        });
+    });
+
+    $('#cs-shows-add-next').on('click', function () { addUrlToDraft('next'); });
+    $('#cs-shows-add-end').on('click', function () { addUrlToDraft('end'); });
+    $('#cs-shows-mediaurl').on('keyup', function (ev) {
+        if (ev.keyCode === 13) {
+            addUrlToDraft('end');
+        }
+    });
+    $('#cs-shows-clear').on('click', clearForm);
+    $('#cs-shows-playlist-list').sortable({
+        update: function () {
+            var nextDraft = [];
+            $('#cs-shows-playlist-list > li').each(function () {
+                var idx = parseInt($(this).attr('data-idx'), 10);
+                if (!isNaN(idx) && draftPlaylist[idx]) {
+                    nextDraft.push(draftPlaylist[idx]);
+                }
+            });
+            if (nextDraft.length === draftPlaylist.length) {
+                draftPlaylist = nextDraft;
+                renderDraftPlaylist();
+            }
+        }
+    }).disableSelection();
+    renderDraftPlaylist();
+    clearForm();
+
+    return { load: load };
+})();

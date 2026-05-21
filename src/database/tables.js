@@ -175,6 +175,36 @@ export async function initTables() {
         t.index('channel_id');
     });
 
+    await ensureTable('channel_shows', t => {
+        t.charset('utf8');
+        t.increments('id').notNullable().primary();
+        t.integer('channel_id')
+                .unsigned()
+                .notNullable()
+                .references('id').inTable('channels')
+                .onDelete('cascade');
+        t.string('name', 100).notNullable();
+        t.specificType('playlist', 'mediumtext character set utf8mb4 not null');
+        t.string('timezone', 64).notNullable().defaultTo('UTC');
+        t.bigInteger('scheduled_for').notNullable();
+        t.bigInteger('next_run_at').notNullable();
+        t.string('status', 20).notNullable().defaultTo('draft');
+        t.string('recurrence', 20).notNullable().defaultTo('none');
+        t.specificType('recurrence_meta', 'text character set utf8mb4');
+        t.string('fill_mode', 20).notNullable().defaultTo('append');
+        t.string('conflict_mode', 20).notNullable().defaultTo('force');
+        t.boolean('start_playback').notNullable().defaultTo(false);
+        t.integer('run_count').notNullable().defaultTo(0);
+        t.bigInteger('last_run_at').nullable();
+        t.bigInteger('created_at').notNullable();
+        t.bigInteger('updated_at').notNullable();
+        t.string('created_by', 20).notNullable();
+        t.string('updated_by', 20).notNullable();
+        t.specificType('last_error', 'text character set utf8mb4');
+        t.index(['channel_id', 'status', 'next_run_at'], 'channel_shows_due_idx');
+        t.index(['channel_id', 'created_at'], 'channel_shows_channel_created_idx');
+    });
+
     await ensureTable('banned_channels', t => {
         t.charset('utf8mb4');
         t.string('channel_name', 30)

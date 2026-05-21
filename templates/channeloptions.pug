@@ -253,5 +253,74 @@ mixin bots
           th Last connected
       tbody#cs-bots-list
 
+mixin shows
+  #cs-shows.tab-pane
+    h4 Shows
+    p Create scheduled playlist runs. Each show stores playlist items and executes at the scheduled time.
+    form.form-horizontal(action="javascript:void(0)", role="form")
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-name") Name
+        .col-sm-9
+          input#cs-shows-name.form-control(type="text", placeholder="Show name", maxlength="100")
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-scheduled-for") Scheduled For
+        .col-sm-9
+          input#cs-shows-scheduled-for.form-control(type="datetime-local")
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-timezone") Timezone
+        .col-sm-9
+          select#cs-shows-timezone.form-control
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-recurrence") Recurrence
+        .col-sm-9
+          select#cs-shows-recurrence.form-control
+            option(value="none") One-time
+            option(value="daily") Daily
+            option(value="weekly") Weekly
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-fill-mode") Fill Mode
+        .col-sm-9
+          select#cs-shows-fill-mode.form-control
+            option(value="append") Append to queue
+            option(value="replace") Replace queue
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-conflict-mode") Conflict Mode
+        .col-sm-9
+          select#cs-shows-conflict-mode.form-control
+            option(value="force") Force run
+            option(value="skip") Skip if queue not empty
+      .form-group
+        .col-sm-9.col-sm-offset-3
+          .checkbox
+            label(for="cs-shows-start-playback")
+              input#cs-shows-start-playback(type="checkbox")
+              | Start playback immediately
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-mediaurl") Show Playlist
+        .col-sm-9
+          .input-group(style="margin-bottom:8px")
+            input#cs-shows-mediaurl.form-control(type="text", placeholder="Media URL")
+            span.input-group-btn
+              button#cs-shows-add-next.btn.btn-default(type="button") Add Next
+            span.input-group-btn
+              button#cs-shows-add-end.btn.btn-default(type="button") Add End
+          ul#cs-shows-playlist-list.videolist(style="max-height:220px; overflow:auto")
+          p.text-muted.small(style="margin-top:6px") Build the show playlist like the main channel queue. Drag to reorder, use controls to remove/move.
+      .form-group
+        .col-sm-9.col-sm-offset-3
+          button#cs-shows-create.btn.btn-primary Create Show
+          button#cs-shows-update.btn.btn-default(type="button") Update Selected
+          button#cs-shows-clear.btn.btn-default(type="button") Clear Form
+    table.table.table-striped.table-condensed(style="margin-top:12px")
+      thead
+        tr
+          th Name
+          th Status
+          th Next Run
+          th Timezone
+          th Recurrence
+          th Actions
+      tbody#cs-shows-list
+
 mixin permeditor
   #cs-permedit.tab-pane

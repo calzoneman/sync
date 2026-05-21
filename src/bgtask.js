@@ -8,6 +8,7 @@
 var Config = require("./config");
 var db = require("./database");
 var Promise = require("bluebird");
+const shows = require('./shows');
 
 const LOGGER = require('@calzoneman/jsli')('bgtask');
 
@@ -92,6 +93,26 @@ function initAccountCleanup() {
     }, 3600 * 1000);
 }
 
+function initShowScheduler() {
+    var SCHEDULE_INTERVAL = 15 * 1000;
+    var running = false;
+
+    setInterval(async () => {
+        if (running) {
+            return;
+        }
+
+        running = true;
+        try {
+            await shows.pollAndRunDueShows();
+        } catch (error) {
+            LOGGER.error('Show scheduler failure: %s', error.stack || error);
+        } finally {
+            running = false;
+        }
+    }, SCHEDULE_INTERVAL);
+}
+
 module.exports = function (Server) {
     if (init === Server) {
         LOGGER.warn("Attempted to re-init background tasks");
@@ -103,4 +124,5 @@ module.exports = function (Server) {
     initChannelDumper(Server);
     initPasswordResetCleanup();
     initAccountCleanup();
+    initShowScheduler();
 };
