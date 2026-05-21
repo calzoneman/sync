@@ -241,21 +241,23 @@ module.exports = {
     },
 
     setAuthCookie: function setAuthCookie(req, res, expiration, auth) {
+        const secure = req.realProtocol === 'https' || req.secure === true;
+        const baseCookieOptions = {
+            expires: expiration,
+            httpOnly: true,
+            signed: true,
+            sameSite: 'lax',
+            secure
+        };
+
         if (req.hostname.indexOf(Config.get("http.root-domain")) >= 0) {
             // Prevent non-root cookie from screwing things up
             res.clearCookie("auth");
-            res.cookie("auth", auth, {
+            res.cookie("auth", auth, Object.assign({}, baseCookieOptions, {
                 domain: Config.get("http.root-domain-dotted"),
-                expires: expiration,
-                httpOnly: true,
-                signed: true
-            });
+            }));
         } else {
-            res.cookie("auth", auth, {
-                expires: expiration,
-                httpOnly: true,
-                signed: true
-            });
+            res.cookie("auth", auth, baseCookieOptions);
         }
     }
 };

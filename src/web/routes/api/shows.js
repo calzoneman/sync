@@ -138,6 +138,11 @@ async function authorizeChannel(req, res) {
             return null;
         }
 
+        if (bot.rank < 2) {
+            res.status(403).json({ error: 'Insufficient rank' });
+            return null;
+        }
+
         return {
             actorName: bot.name,
             rank: bot.rank,

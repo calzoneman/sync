@@ -15,10 +15,12 @@ mixin head()
       var DEFAULT_THEME = '#{DEFAULT_THEME}';
       var CHANNELPATH = '#{channelPath}';
       var CHANNELNAME = '#{channelName}';
+      var CSRF_TOKEN = '#{csrfToken}';
   else
     script(type="text/javascript").
       var DEFAULT_THEME = '#{DEFAULT_THEME}';
       var CHANNELPATH = '#{channelPath}';
+      var CSRF_TOKEN = '#{csrfToken}';
 
   script(src="/js/theme.js")
   //[if lt IE 9]

@@ -26,8 +26,11 @@ async function getChannelEmotes(channelId) {
             (err, rows) => {
                 if (err) return reject(new Error(err));
                 if (!rows || rows.length === 0) return resolve([]);
-                try { resolve(JSON.parse(rows[0].value)); }
-                catch (e) { resolve([]); }
+                try {
+                    resolve(JSON.parse(rows[0].value));
+                } catch (e) {
+                    resolve([]);
+                }
             }
         );
     });
@@ -92,7 +95,6 @@ router.put('/:name', botAuth, requireRank(4), async (req, res) => {
         return res.status(409).json({ error: 'An emote with that name already exists' });
     }
 
-    const old = emotes[idx];
     emotes[idx] = validated;
     await saveChannelEmotes(req.bot.channel_id, emotes);
 

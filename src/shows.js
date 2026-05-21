@@ -22,15 +22,93 @@ function makeSystemProxy(name) {
 
 function computeNextRunAt(show) {
     const base = Number(show.next_run_at || show.scheduled_for || Date.now());
-    if (show.recurrence === 'daily') {
-        return base + 24 * 60 * 60 * 1000;
+    const recurrence = show.recurrence;
+    const timezone = show.timezone || 'UTC';
+
+    if (recurrence !== 'daily' && recurrence !== 'weekly') {
+        return base;
     }
 
-    if (show.recurrence === 'weekly') {
-        return base + 7 * 24 * 60 * 60 * 1000;
+    const daysToAdd = recurrence === 'weekly' ? 7 : 1;
+    const source = new Date(base);
+    const local = toZonedParts(source, timezone);
+    if (!local) {
+        return base + (daysToAdd * 24 * 60 * 60 * 1000);
     }
 
-    return base;
+    const targetDate = addDaysUTC(local.year, local.month, local.day, daysToAdd);
+    const zonedTarget = {
+        year: targetDate.year,
+        month: targetDate.month,
+        day: targetDate.day,
+        hour: local.hour,
+        minute: local.minute,
+        second: local.second
+    };
+
+    const next = zonedDateTimeToUtc(zonedTarget, timezone);
+    return next || (base + (daysToAdd * 24 * 60 * 60 * 1000));
+}
+
+function toZonedParts(date, timezone) {
+    try {
+        const dtf = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone,
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        });
+        const parts = dtf.formatToParts(date);
+        const out = {};
+        for (const part of parts) {
+            if (part.type === 'literal') continue;
+            out[part.type] = parseInt(part.value, 10);
+        }
+
+        return {
+            year: out.year,
+            month: out.month,
+            day: out.day,
+            hour: out.hour,
+            minute: out.minute,
+            second: out.second
+        };
+    } catch (_err) {
+        return null;
+    }
+}
+
+function addDaysUTC(year, month, day, days) {
+    const d = new Date(Date.UTC(year, month - 1, day + days));
+    return {
+        year: d.getUTCFullYear(),
+        month: d.getUTCMonth() + 1,
+        day: d.getUTCDate()
+    };
+}
+
+function zonedDateTimeToUtc(local, timezone) {
+    let guess = Date.UTC(local.year, local.month - 1, local.day, local.hour, local.minute, local.second);
+
+    // Iterate to resolve timezone offset for the target wall-clock time (handles DST shifts).
+    for (let i = 0; i < 4; i++) {
+        const zoned = toZonedParts(new Date(guess), timezone);
+        if (!zoned) return null;
+
+        const desired = Date.UTC(local.year, local.month - 1, local.day, local.hour, local.minute, local.second);
+        const current = Date.UTC(zoned.year, zoned.month - 1, zoned.day, zoned.hour, zoned.minute, zoned.second);
+        const delta = desired - current;
+        if (delta === 0) {
+            return guess;
+        }
+        guess += delta;
+    }
+
+    return guess;
 }
 
 function normalizePlaylist(rawPlaylist) {

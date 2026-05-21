@@ -13,10 +13,13 @@ exports.init = function csrfInit (domain) {
         var secret = req.signedCookies._csrf;
         if (!secret) {
             secret = tokens.secretSync();
+            const secure = req.realProtocol === 'https' || req.secure === true;
             res.cookie("_csrf", secret,  {
                 domain: domain,
                 signed: true,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: 'lax',
+                secure
             });
         }
 
@@ -37,7 +40,9 @@ exports.init = function csrfInit (domain) {
 
 exports.verify = function csrfVerify(req) {
     var secret = req.signedCookies._csrf;
-    var token = req.body._csrf || req.query._csrf;
+    var token = (req.body && req.body._csrf) ||
+                (req.query && req.query._csrf) ||
+                req.header('x-csrf-token');
 
     if (!tokens.verify(secret, token)) {
         throw new CSRFError('Invalid CSRF token');

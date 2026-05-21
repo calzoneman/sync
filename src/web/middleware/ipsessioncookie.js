@@ -38,10 +38,13 @@ export function ipSessionCookieMiddleware(req, res, next) {
     }
 
     if (!hasSession) {
+        const secure = req.realProtocol === 'https' || req.secure === true;
         res.cookie('ip-session', createIPSessionCookie(req.realIP, firstSeen), {
             signed: true,
             httpOnly: true,
-            expires: NO_EXPIRATION
+            expires: NO_EXPIRATION,
+            sameSite: 'lax',
+            secure
         });
     }
 
