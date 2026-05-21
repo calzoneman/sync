@@ -13,10 +13,13 @@ exports.init = function csrfInit (domain) {
         var secret = req.signedCookies._csrf;
         if (!secret) {
             secret = tokens.secretSync();
+            const secure = req.realProtocol === 'https' || req.secure === true;
             res.cookie("_csrf", secret,  {
                 domain: domain,
                 signed: true,
-                httpOnly: true
+                httpOnly: true,
+                sameSite: 'lax',
+                secure
             });
         }
 
