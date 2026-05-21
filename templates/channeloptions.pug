@@ -284,17 +284,17 @@ mixin shows
             option(value="append") Append to queue
             option(value="replace") Replace queue
       .form-group
-        label.control-label.col-sm-3(for="cs-shows-conflict-mode") Conflict Mode
-        .col-sm-9
-          select#cs-shows-conflict-mode.form-control
-            option(value="force") Force run
-            option(value="skip") Skip if queue not empty
+        .col-sm-9.col-sm-offset-3
+          .checkbox
+            label(for="cs-shows-conflict-skip")
+              input#cs-shows-conflict-skip(type="checkbox")
+              | Skip show if queue is not empty
       .form-group
         .col-sm-9.col-sm-offset-3
           .checkbox
             label(for="cs-shows-start-playback")
               input#cs-shows-start-playback(type="checkbox")
-              | Start playback immediately
+              | Skip current playback and start this show's first item immediately
       .form-group
         label.control-label.col-sm-3(for="cs-shows-mediaurl") Show Playlist
         .col-sm-9
