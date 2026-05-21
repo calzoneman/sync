@@ -2,6 +2,7 @@ const LOGGER = require('@calzoneman/jsli')('shows');
 const util = require('./utilities');
 const showDB = require('./database/shows');
 const Server = require('./server');
+const InfoGetter = require('./get-info');
 
 function makeSystemProxy(name) {
     const rank = 5;
@@ -43,7 +44,90 @@ function normalizePlaylist(rawPlaylist) {
         .filter(item => item.id && item.type);
 }
 
-function applyShowToChannel(chan, show) {
+function queueShowEntry(plmod, proxy, entry, idx) {
+    return new Promise((resolve, reject) => {
+        let data = {
+            id: entry.id,
+            type: entry.type,
+            pos: idx === 0 && entry.pos === 'next' ? 'next' : 'end',
+            title: false,
+            link: util.formatLink(entry.id, entry.type, null),
+            temp: false,
+            shouldAddToLibrary: true,
+            queueby: proxy.getName(),
+            duration: undefined,
+            maxlength: 0
+        };
+
+        InfoGetter.getMedia(entry.id, entry.type, (err, media) => {
+            if (err) {
+                reject(new Error(String(err)));
+                return;
+            }
+
+            if (Array.isArray(media)) {
+                let list = media.slice();
+                if (data.pos === 'next') {
+                    list = list.reverse();
+                    if (plmod.items.length === 0 && list.length > 0) {
+                        list.unshift(list.pop());
+                    }
+                }
+
+                if (list.length === 0) {
+                    reject(new Error(`Show item resolved to an empty playlist: ${entry.type}:${entry.id}`));
+                    return;
+                }
+
+                let firstUid = null;
+                let pending = list.length;
+                let failed = false;
+                list.forEach((video) => {
+                    const beforeUid = plmod._nextuid;
+                    const itemData = Object.assign({}, data, {
+                        id: video.id,
+                        type: video.type,
+                        link: util.formatLink(video.id, video.type, video.meta || null)
+                    });
+
+                    plmod._addItem(video, itemData, proxy, () => {
+                        if (failed) {
+                            return;
+                        }
+
+                        if (plmod._nextuid === beforeUid) {
+                            failed = true;
+                            reject(new Error(`Failed to add show list item: ${entry.type}:${entry.id}`));
+                            return;
+                        }
+
+                        if (firstUid === null) {
+                            firstUid = beforeUid;
+                        }
+
+                        pending -= 1;
+                        if (pending === 0) {
+                            resolve(firstUid);
+                        }
+                    });
+                });
+                return;
+            }
+
+            const beforeUid = plmod._nextuid;
+            plmod._addItem(media, data, proxy, () => {
+                if (plmod._nextuid === beforeUid) {
+                    reject(new Error(`Failed to add show item: ${entry.type}:${entry.id}`));
+                    return;
+                }
+
+                resolve(beforeUid);
+            });
+        });
+    });
+}
+
+async function applyShowToChannel(chan, show) {
     const playlist = normalizePlaylist(show.playlist);
     if (playlist.length === 0) {
         throw new Error('Show playlist is empty');
@@ -62,18 +146,16 @@ function applyShowToChannel(chan, show) {
         plmod.handleClear(proxy);
     }
 
-    playlist.forEach((entry, idx) => {
-        plmod.handleQueue(proxy, {
-            id: entry.id,
-            type: entry.type,
-            pos: idx === 0 && entry.pos === 'next' ? 'next' : 'end'
-        });
-    });
+    const addedUids = [];
+    for (let i = 0; i < playlist.length; i++) {
+        const uid = await queueShowEntry(plmod, proxy, playlist[i], i);
+        addedUids.push(uid);
+    }
 
     if (show.start_playback) {
-        const first = plmod.items.first;
-        if (first) {
-            plmod.handleJumpTo(proxy, first.uid);
+        const firstShowUid = addedUids[0];
+        if (typeof firstShowUid === 'number') {
+            plmod.handleJumpTo(proxy, firstShowUid);
         }
     }
 }
@@ -85,7 +167,7 @@ async function runShow(show) {
     }
 
     const chan = server.getChannel(show.channel_name);
-    applyShowToChannel(chan, show);
+    await applyShowToChannel(chan, show);
 }
 
 async function pollAndRunDueShows() {

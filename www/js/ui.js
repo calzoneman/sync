@@ -1472,7 +1472,7 @@ var CSTShows = (function () {
             timezone: timezone,
             recurrence: $('#cs-shows-recurrence').val(),
             fill_mode: $('#cs-shows-fill-mode').val(),
-            conflict_mode: $('#cs-shows-conflict-mode').val(),
+            conflict_mode: $('#cs-shows-conflict-skip').prop('checked') ? 'skip' : 'force',
             start_playback: $('#cs-shows-start-playback').prop('checked'),
             playlist: draftPlaylist.map(function (item) {
                 return { id: item.id, type: item.type, pos: item.pos || 'end' };
@@ -1496,7 +1496,7 @@ var CSTShows = (function () {
         $('#cs-shows-timezone').val(detectedTz);
         $('#cs-shows-recurrence').val('none');
         $('#cs-shows-fill-mode').val('append');
-        $('#cs-shows-conflict-mode').val('force');
+        $('#cs-shows-conflict-skip').prop('checked', false);
         $('#cs-shows-start-playback').prop('checked', false);
         $('#cs-shows-mediaurl').val('');
         draftPlaylist = [];
@@ -1515,7 +1515,7 @@ var CSTShows = (function () {
         $('#cs-shows-timezone').val(showTz);
         $('#cs-shows-recurrence').val(show.recurrence || 'none');
         $('#cs-shows-fill-mode').val(show.fill_mode || 'append');
-        $('#cs-shows-conflict-mode').val(show.conflict_mode || 'force');
+        $('#cs-shows-conflict-skip').prop('checked', (show.conflict_mode || 'force') === 'skip');
         $('#cs-shows-start-playback').prop('checked', !!show.start_playback);
         draftPlaylist = (show.playlist || []).map(function (item) {
             return {
