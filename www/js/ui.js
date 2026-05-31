@@ -37,7 +37,11 @@ function updateScheduleToggleLabel() {
 $("#toggleschedule").on('click', function () {
     var row = $("#showschedule-row");
     if (!row.length) return;
+    var willShow = !row.is(":visible");
     row.toggle();
+    if (willShow && window.CSTShows && typeof window.CSTShows.load === "function") {
+        window.CSTShows.load();
+    }
     updateScheduleToggleLabel();
 });
 updateScheduleToggleLabel();
@@ -1624,11 +1628,21 @@ var CSTShows = (function () {
     function readFormPayload() {
         var scheduledRaw = $('#cs-shows-scheduled-for').val();
         var timezone = $('#cs-shows-timezone').val().trim();
+        var notes = $('#cs-shows-notes').val();
+        var colorHex = ($('#cs-shows-color-hex').val() || '').trim();
+        if (!colorHex) {
+            colorHex = ($('#cs-shows-color').val() || '').trim();
+        }
+        if (!/^#[0-9a-fA-F]{6}$/.test(colorHex || '')) {
+            colorHex = '';
+        }
         if (!timezone) {
             timezone = 'UTC';
         }
         return {
             name: $('#cs-shows-name').val().trim(),
+            notes: notes && notes.trim() ? notes : null,
+            color: colorHex ? colorHex.toUpperCase() : null,
             scheduled_for: scheduledRaw ? new Date(scheduledRaw).toISOString() : null,
             timezone: timezone,
             recurrence: $('#cs-shows-recurrence').val(),
@@ -1646,6 +1660,7 @@ var CSTShows = (function () {
         loadTimezoneOptions();
         selectedId = null;
         $('#cs-shows-name').val('');
+        $('#cs-shows-notes').val('');
         $('#cs-shows-scheduled-for').val('');
         var detectedTz = 'UTC';
         if (typeof Intl !== 'undefined' && Intl.DateTimeFormat) {
@@ -1659,6 +1674,8 @@ var CSTShows = (function () {
         $('#cs-shows-fill-mode').val('append');
         $('#cs-shows-conflict-skip').prop('checked', false);
         $('#cs-shows-start-playback').prop('checked', false);
+        $('#cs-shows-color').val('#337AB7');
+        $('#cs-shows-color-hex').val('');
         $('#cs-shows-mediaurl').val('');
         draftPlaylist = [];
         renderDraftPlaylist();
@@ -1668,6 +1685,7 @@ var CSTShows = (function () {
         loadTimezoneOptions();
         selectedId = show.id;
         $('#cs-shows-name').val(show.name);
+        $('#cs-shows-notes').val(show.notes || '');
         $('#cs-shows-scheduled-for').val(toLocalDateInput(show.scheduled_for));
         var showTz = show.timezone || 'UTC';
         if ($('#cs-shows-timezone option[value="' + showTz + '"]').length === 0) {
@@ -1678,6 +1696,8 @@ var CSTShows = (function () {
         $('#cs-shows-fill-mode').val(show.fill_mode || 'append');
         $('#cs-shows-conflict-skip').prop('checked', (show.conflict_mode || 'force') === 'skip');
         $('#cs-shows-start-playback').prop('checked', !!show.start_playback);
+        $('#cs-shows-color').val(show.color || '#337AB7');
+        $('#cs-shows-color-hex').val(show.color || '');
         draftPlaylist = (show.playlist || []).map(function (item) {
             return {
                 id: item.id,
@@ -1729,6 +1749,19 @@ var CSTShows = (function () {
             weekStart.toLocaleDateString() + ' - ' + weekEnd.toLocaleDateString()
         );
 
+        function openShowDetailsModal(show, when) {
+            $('#showdetails-title').text(show.name || 'Show Details');
+            $('#showdetails-time').text(when.toLocaleString());
+            $('#showdetails-status').text(show.status || 'scheduled');
+            var notes = (show.notes || '').trim();
+            if (!notes) {
+                $('#showdetails-notes').html('<p class="text-muted">No notes for this show.</p>');
+            } else {
+                $('#showdetails-notes').html(notes);
+            }
+            $('#showdetails').modal();
+        }
+
         var byCell = {};
         shows.forEach(function (show) {
             var at = show.next_run_at || show.scheduled_for;
@@ -1778,12 +1811,13 @@ var CSTShows = (function () {
                     $('<a href="javascript:void(0)" class="showschedule-show">')
                         .addClass('status-' + (item.show.status || 'scheduled'))
                         .text(label)
+                        .css('background', item.show.color || '')
                         .on('click', function () {
                             if (isAdmin) {
                                 openShowsEditor();
                                 selectShow(item.show);
                             } else {
-                                alert(item.show.name + '\n' + item.date.toLocaleString() + '\nStatus: ' + item.show.status);
+                                openShowDetailsModal(item.show, item.date);
                             }
                         })
                         .appendTo(cell);
@@ -1917,6 +1951,15 @@ var CSTShows = (function () {
         }
     });
     $('#cs-shows-clear').on('click', clearForm);
+    $('#cs-shows-color').on('change', function () {
+        $('#cs-shows-color-hex').val(($(this).val() || '').toUpperCase());
+    });
+    $('#cs-shows-color-hex').on('input', function () {
+        var v = ($(this).val() || '').trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+            $('#cs-shows-color').val(v);
+        }
+    });
     $('#cs-shows-playlist-list').sortable({
         update: function () {
             var nextDraft = [];

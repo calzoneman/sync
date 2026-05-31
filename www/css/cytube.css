@@ -254,6 +254,7 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
     padding: 2px 4px;
     border-radius: 3px;
     color: #fff;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
     text-decoration: none;
 }
 
@@ -261,6 +262,11 @@ li.ui-sortable-helper, li.ui-sortable-placeholder + li.queue_entry {
 .showschedule-show.status-running { background: #5cb85c; }
 .showschedule-show.status-paused { background: #f0ad4e; color: #222; }
 .showschedule-show.status-completed { background: #777; }
+
+#showdetails-notes img {
+    max-width: 100%;
+    height: auto;
+}
 
 .clear {
     clear: both;

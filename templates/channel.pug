@@ -259,6 +259,25 @@ html(lang="en")
               +permeditor()
           .modal-footer
             button.btn.btn-default(type="button", data-dismiss="modal") Close
+    #showdetails.modal.fade(tabindex="-1", role="dialog", aria-hidden="true")
+      .modal-dialog
+        .modal-content
+          .modal-header
+            button.close(data-dismiss="modal", aria-hidden="true") &times;
+            h4#showdetails-title Show Details
+          .modal-body
+            p
+              strong Time:
+              |  
+              span#showdetails-time
+            p
+              strong Status:
+              |  
+              span#showdetails-status
+            hr
+            #showdetails-notes
+          .modal-footer
+            button.btn.btn-default(type="button", data-dismiss="modal") Close
     #pmbar
     include footer
     +footer()

@@ -26,6 +26,8 @@ function parseShowRow(row) {
         channel_name: row.channel_name,
         channel_id: row.channel_id,
         name: row.name,
+        notes: row.notes || null,
+        color: row.color || null,
         playlist,
         timezone: row.timezone,
         scheduled_for: row.scheduled_for,
@@ -49,6 +51,8 @@ function parseShowRow(row) {
 function serializeShowInput(input) {
     return {
         name: input.name,
+        notes: input.notes || null,
+        color: input.color || null,
         playlist: JSON.stringify(input.playlist || []),
         timezone: input.timezone,
         scheduled_for: input.scheduled_for,

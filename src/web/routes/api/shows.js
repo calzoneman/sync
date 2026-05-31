@@ -4,6 +4,7 @@ const showDB = require('../../../database/shows');
 const shows = require('../../../shows');
 const botDB = require('../../../database/bots');
 const infoGetter = require('../../../get-info');
+const XSS = require('../../../xss');
 const { getChannelRow, getUserEffectiveRank, hashToken } = require('./middleware');
 
 const router = express.Router({ mergeParams: true });
@@ -101,9 +102,27 @@ function validateShowPayload(body, old = null) {
 
     const nextRunAt = status === 'scheduled' ? scheduledFor : (old ? old.next_run_at : scheduledFor);
 
+    const notesRaw = body.notes !== undefined ? body.notes : (old ? old.notes : null);
+    let notes = null;
+    if (typeof notesRaw === 'string' && notesRaw.trim() !== '') {
+        notes = XSS.sanitizeHTML(notesRaw.substring(0, 20000));
+    }
+
+    const colorRaw = body.color !== undefined ? body.color : (old ? old.color : null);
+    let color = null;
+    if (colorRaw !== null && colorRaw !== undefined && String(colorRaw).trim() !== '') {
+        const normalized = String(colorRaw).trim();
+        if (!/^#[0-9a-fA-F]{6}$/.test(normalized)) {
+            return { error: 'color must be a hex string like #1A2B3C' };
+        }
+        color = normalized.toUpperCase();
+    }
+
     return {
         value: {
             name,
+            notes,
+            color,
             playlist,
             timezone,
             scheduled_for: scheduledFor,

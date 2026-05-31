@@ -268,6 +268,12 @@ mixin shows
         .col-sm-9
           input#cs-shows-scheduled-for.form-control(type="datetime-local")
       .form-group
+        label.control-label.col-sm-3(for="cs-shows-color") Color
+        .col-sm-3
+          input#cs-shows-color.form-control(type="color", value="#337AB7")
+        .col-sm-6
+          input#cs-shows-color-hex.form-control(type="text", placeholder="#337AB7", maxlength="7")
+      .form-group
         label.control-label.col-sm-3(for="cs-shows-timezone") Timezone
         .col-sm-9
           select#cs-shows-timezone.form-control
@@ -296,6 +302,11 @@ mixin shows
             label(for="cs-shows-start-playback")
               input#cs-shows-start-playback(type="checkbox")
               | Skip current playback and start this show's first item immediately
+      .form-group
+        label.control-label.col-sm-3(for="cs-shows-notes") Notes
+        .col-sm-9
+          textarea#cs-shows-notes.form-control(rows="6", placeholder="Optional rich notes (same HTML support as MOTD)")
+          p.text-muted.small(style="margin-top:6px") Supports MOTD-style HTML. Optional.
       .form-group
         label.control-label.col-sm-3(for="cs-shows-mediaurl") Show Playlist
         .col-sm-9

@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 
 const LOGGER = require('@calzoneman/jsli')('database/update');
 
-const DB_VERSION = 12;
+const DB_VERSION = 13;
 var hasUpdates = [];
 
 module.exports.checkVersion = function () {
@@ -53,6 +53,8 @@ function update(version, cb) {
         addChannelOwnerLastSeenColumn(cb);
     } else if (version < 12) {
         addUserInactiveColumn(cb);
+    } else if (version < 13) {
+        addShowsNotesAndColorColumns(cb);
     }
 }
 
@@ -140,4 +142,30 @@ function addUserInactiveColumn(cb) {
             cb();
         }
     });
+}
+
+function addShowsNotesAndColorColumns(cb) {
+    db.query(
+        "ALTER TABLE channel_shows ADD COLUMN notes MEDIUMTEXT CHARACTER SET utf8mb4 NULL",
+        error => {
+            if (error) {
+                LOGGER.error(`Failed to add shows notes column: ${error}`);
+                cb(error);
+                return;
+            }
+
+            db.query(
+                "ALTER TABLE channel_shows ADD COLUMN color VARCHAR(7) NULL",
+                error => {
+                    if (error) {
+                        LOGGER.error(`Failed to add shows color column: ${error}`);
+                        cb(error);
+                        return;
+                    }
+
+                    cb();
+                }
+            );
+        }
+    );
 }
