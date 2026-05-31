@@ -19,6 +19,7 @@ const ACTION_MIN_RANK = {
     run: 3,
     cancel: 3
 };
+const PUBLIC_SHOW_STATUSES = new Set(['scheduled', 'running', 'paused', 'completed']);
 
 function sanitizePlaylist(list) {
     if (!Array.isArray(list)) return [];
@@ -179,6 +180,18 @@ router.get('/', async (req, res) => {
 
     const showsList = await showDB.listShows(auth.channelRow.id);
     res.json(showsList);
+});
+
+router.get('/public', async (req, res) => {
+    let channelRow;
+    try {
+        channelRow = await getChannelRow(req.params.channel);
+    } catch (_err) {
+        return res.status(404).json({ error: 'Channel not found' });
+    }
+
+    const showsList = await showDB.listShows(channelRow.id);
+    res.json(showsList.filter(show => PUBLIC_SHOW_STATUSES.has(show.status)));
 });
 
 router.get('/:id', async (req, res) => {

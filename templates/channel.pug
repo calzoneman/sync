@@ -15,6 +15,7 @@ html(lang="en")
           ul.nav.navbar-nav
             +navdefaultlinks()
             li: a(href="javascript:void(0)", onclick="javascript:showUserOptions()") Options
+            li: a#toggleschedule(href="javascript:void(0)") Show Schedule
             li: a#showchansettings(href="javascript:void(0)", onclick="javascript:showChannelSettings()") Channel Settings
             li.dropdown
               a.dropdown-toggle(href="#", data-toggle="dropdown") Layout
@@ -28,6 +29,21 @@ html(lang="en")
           +navloginlogout()
       section#mainpage
         .container
+          #showschedule-row.row(style="display:none;")
+            .col-lg-12.col-md-12
+              #showschedule.panel.panel-default
+                .panel-heading
+                  .pull-right
+                    .btn-group.btn-group-xs
+                      button#showschedule-prev.btn.btn-default(type="button") Prev Week
+                      button#showschedule-today.btn.btn-default(type="button") This Week
+                      button#showschedule-next.btn.btn-default(type="button") Next Week
+                  strong Channel Schedule
+                  span#showschedule-week-label.text-muted(style="margin-left:8px")
+                  .clear
+                .panel-body
+                  p#showschedule-empty.text-muted(style="display:none; margin-bottom:8px;") No scheduled shows this week.
+                  #showschedule-grid
           #motdrow.row
             .col-lg-12.col-md-12
               #motdwrap.well
@@ -88,7 +104,6 @@ html(lang="en")
                   span.glyphicon.glyphicon-link
                 button#voteskip.btn.btn-sm.btn-default(title="Voteskip")
                   span.glyphicon.glyphicon-step-forward
-
           #playlistrow.row
             #leftpane.col-lg-5.col-md-5
               #leftpane-inner.row

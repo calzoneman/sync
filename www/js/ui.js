@@ -28,6 +28,20 @@ $("#togglemotd").on('click', function () {
     }
 });
 
+function updateScheduleToggleLabel() {
+    var row = $("#showschedule-row");
+    if (!row.length) return;
+    $("#toggleschedule").text(row.is(":visible") ? "Hide Schedule" : "Show Schedule");
+}
+
+$("#toggleschedule").on('click', function () {
+    var row = $("#showschedule-row");
+    if (!row.length) return;
+    row.toggle();
+    updateScheduleToggleLabel();
+});
+updateScheduleToggleLabel();
+
 /* chatbox */
 
 $("#modflair").on('click', function () {
@@ -1416,9 +1430,15 @@ var CSTShows = (function () {
     var draftPlaylist = [];
     var timezoneOptionsLoaded = false;
     var resolvingTitles = false;
+    var weekOffset = 0;
+    var cachedShows = [];
 
     function apiBase() {
         return '/api/v1/channels/' + CHANNEL.name + '/shows';
+    }
+
+    function publicApiBase() {
+        return apiBase() + '/public';
     }
 
     function loadTimezoneOptions() {
@@ -1670,6 +1690,111 @@ var CSTShows = (function () {
         resolveDraftTitles();
     }
 
+    function openShowsEditor() {
+        showChannelSettings();
+        $("#channeloptions a[href='#cs-shows']").tab('show');
+    }
+
+    function prefillScheduledDate(date) {
+        clearForm();
+        selectedId = null;
+        $('#cs-shows-scheduled-for').val(toLocalDateInput(date.getTime()));
+    }
+
+    function weekStartFromOffset(offset) {
+        var d = new Date();
+        d.setHours(0, 0, 0, 0);
+        var day = d.getDay();
+        var mondayShift = (day + 6) % 7;
+        d.setDate(d.getDate() - mondayShift + (offset * 7));
+        return d;
+    }
+
+    function dayKey(date) {
+        return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
+    }
+
+    function toCellKey(date) {
+        return dayKey(date) + '-' + date.getHours();
+    }
+
+    function renderScheduleCalendar(shows) {
+        var grid = $('#showschedule-grid');
+        if (!grid.length) return;
+
+        var weekStart = weekStartFromOffset(weekOffset);
+        var weekEnd = new Date(weekStart.getTime());
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        $('#showschedule-week-label').text(
+            weekStart.toLocaleDateString() + ' - ' + weekEnd.toLocaleDateString()
+        );
+
+        var byCell = {};
+        shows.forEach(function (show) {
+            var at = show.next_run_at || show.scheduled_for;
+            if (!at) return;
+            var d = new Date(at);
+            if (d < weekStart || d > new Date(weekEnd.getTime() + 86399999)) return;
+            var key = toCellKey(d);
+            if (!byCell[key]) byCell[key] = [];
+            byCell[key].push({ show: show, date: d });
+        });
+
+        var isAdmin = CLIENT.rank >= 2;
+        var table = $('<table class="table table-bordered table-condensed">');
+        var thead = $('<thead><tr><th class="showschedule-time-col">Time</th></tr></thead>').appendTo(table);
+        var hrow = thead.find('tr');
+        for (var i = 0; i < 7; i++) {
+            var day = new Date(weekStart.getTime());
+            day.setDate(weekStart.getDate() + i);
+            hrow.append($('<th>').text(day.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })));
+        }
+
+        var tbody = $('<tbody>').appendTo(table);
+        for (var hour = 0; hour < 24; hour++) {
+            var tr = $('<tr>').appendTo(tbody);
+            tr.append($('<td class="showschedule-time-col text-muted">').text(String(hour).padStart(2, '0') + ':00'));
+            for (var col = 0; col < 7; col++) {
+                var cellDate = new Date(weekStart.getTime());
+                cellDate.setDate(weekStart.getDate() + col);
+                cellDate.setHours(hour, 0, 0, 0);
+                var key = toCellKey(cellDate);
+                var cell = $('<td class="showschedule-cell">').appendTo(tr);
+                if (isAdmin) {
+                    cell.addClass('showschedule-admin').attr('title', 'Click to create show at this time');
+                    (function (prefill) {
+                        cell.on('click', function (ev) {
+                            if ($(ev.target).closest('.showschedule-show').length) return;
+                            openShowsEditor();
+                            prefillScheduledDate(prefill);
+                        });
+                    })(new Date(cellDate.getTime()));
+                }
+
+                var items = byCell[key] || [];
+                items.sort(function (a, b) { return a.date - b.date; });
+                items.forEach(function (item) {
+                    var label = item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + item.show.name;
+                    $('<a href="javascript:void(0)" class="showschedule-show">')
+                        .addClass('status-' + (item.show.status || 'scheduled'))
+                        .text(label)
+                        .on('click', function () {
+                            if (isAdmin) {
+                                openShowsEditor();
+                                selectShow(item.show);
+                            } else {
+                                alert(item.show.name + '\n' + item.date.toLocaleString() + '\nStatus: ' + item.show.status);
+                            }
+                        })
+                        .appendTo(cell);
+                });
+            }
+        }
+
+        grid.empty().append(table);
+        $('#showschedule-empty').toggle(shows.length === 0);
+    }
+
     function action(id, actionName) {
         $.ajax({
             url: apiBase() + '/' + id + '/action',
@@ -1733,8 +1858,18 @@ var CSTShows = (function () {
     }
 
     function load() {
-        $.getJSON(apiBase(), render).fail(function () {
-            $('#cs-shows-list').html('<tr><td colspan=\"6\" class=\"text-danger\">Failed to load shows</td></tr>');
+        var endpoint = CLIENT.rank >= 2 ? apiBase() : publicApiBase();
+        $.getJSON(endpoint, function (shows) {
+            cachedShows = Array.isArray(shows) ? shows : [];
+            if (CLIENT.rank >= 2) {
+                render(cachedShows);
+            }
+            renderScheduleCalendar(cachedShows);
+        }).fail(function () {
+            if (CLIENT.rank >= 2) {
+                $('#cs-shows-list').html('<tr><td colspan=\"6\" class=\"text-danger\">Failed to load shows</td></tr>');
+            }
+            $('#showschedule-grid').html('<div class=\"text-danger\">Failed to load schedule</div>');
         });
     }
 
@@ -1797,8 +1932,21 @@ var CSTShows = (function () {
             }
         }
     }).disableSelection();
+    $('#showschedule-prev').on('click', function () {
+        weekOffset--;
+        renderScheduleCalendar(cachedShows);
+    });
+    $('#showschedule-next').on('click', function () {
+        weekOffset++;
+        renderScheduleCalendar(cachedShows);
+    });
+    $('#showschedule-today').on('click', function () {
+        weekOffset = 0;
+        renderScheduleCalendar(cachedShows);
+    });
     renderDraftPlaylist();
     clearForm();
+    load();
 
-    return { load: load };
+    return { load: load, selectShow: selectShow, prefillScheduledDate: prefillScheduledDate };
 })();
