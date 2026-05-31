@@ -1257,13 +1257,14 @@ $("#resize-video-smaller").on('click', function () {
     }
 });
 
-$.ajaxPrefilter(function (options, _originalOptions, _jqXHR) {
+$.ajaxPrefilter(function (options, originalOptions, _jqXHR) {
     var url = String(options.url || '');
     if (!/\/api\/v1\//.test(url)) {
         return;
     }
 
-    var method = String(options.type || options.method || 'GET').toUpperCase();
+    var requestedMethod = originalOptions && (originalOptions.method || originalOptions.type);
+    var method = String(requestedMethod || options.method || options.type || 'GET').toUpperCase();
     if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') {
         return;
     }
@@ -1275,10 +1276,59 @@ $.ajaxPrefilter(function (options, _originalOptions, _jqXHR) {
 
     if (typeof CSRF_TOKEN === 'string' && CSRF_TOKEN.length > 0) {
         options.headers['X-CSRF-Token'] = CSRF_TOKEN;
+
+        var hasCSRFInURL = /(?:\?|&)_csrf=/.test(url);
+        var contentType = String(options.contentType || '').toLowerCase();
+        var data = options.data;
+
+        if (method === 'DELETE' && (data === undefined || data === null || data === '') && !hasCSRFInURL) {
+            options.url = url + (url.indexOf('?') === -1 ? '?' : '&') +
+                '_csrf=' + encodeURIComponent(CSRF_TOKEN);
+            return;
+        }
+
+        if (contentType.indexOf('application/json') === 0) {
+            var obj = null;
+            if (typeof data === 'string' && data.length > 0) {
+                try {
+                    obj = JSON.parse(data);
+                } catch (_err) {
+                    obj = null;
+                }
+            } else if (typeof data === 'object' && data !== null) {
+                obj = data;
+            }
+            if (obj && typeof obj === 'object' && !Object.prototype.hasOwnProperty.call(obj, '_csrf')) {
+                obj._csrf = CSRF_TOKEN;
+                options.data = JSON.stringify(obj);
+            }
+            return;
+        }
+
+        if (typeof data === 'string') {
+            if (!/(?:^|&)_csrf=/.test(data)) {
+                options.data = data + (data.length > 0 ? '&' : '') +
+                    '_csrf=' + encodeURIComponent(CSRF_TOKEN);
+            }
+            return;
+        }
+
+        if (typeof data === 'object' && data !== null && !Object.prototype.hasOwnProperty.call(data, '_csrf')) {
+            data._csrf = CSRF_TOKEN;
+            return;
+        }
+
+        if (data === undefined || data === null) {
+            options.data = { _csrf: CSRF_TOKEN };
+        }
     }
 });
 
 var CSTBots = (function () {
+    function csrfField() {
+        return (typeof CSRF_TOKEN === 'string' && CSRF_TOKEN.length > 0) ? CSRF_TOKEN : '';
+    }
+
     function apiBase() {
         return '/api/v1/channels/' + CHANNEL.name;
     }
@@ -1315,7 +1365,8 @@ var CSTBots = (function () {
         if (!confirm('Revoke this bot token? Any connected bot will be disconnected immediately.')) return;
         $.ajax({
             url: apiBase() + '/bots/' + id,
-            method: 'DELETE'
+            method: 'DELETE',
+            data: { _csrf: csrfField() }
         }).done(function () {
             load();
         }).fail(function (xhr) {
@@ -1331,7 +1382,7 @@ var CSTBots = (function () {
             url: apiBase() + '/bots',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ name: name, rank: rank })
+            data: JSON.stringify({ name: name, rank: rank, _csrf: csrfField() })
         }).done(function (data) {
             $('#cs-bots-token-value').text(data.token);
             $('.cs-bots-token-result').show();
@@ -1357,6 +1408,10 @@ var CSTBots = (function () {
 })();
 
 var CSTShows = (function () {
+    function csrfField() {
+        return (typeof CSRF_TOKEN === 'string' && CSRF_TOKEN.length > 0) ? CSRF_TOKEN : '';
+    }
+
     var selectedId = null;
     var draftPlaylist = [];
     var timezoneOptionsLoaded = false;
@@ -1471,7 +1526,7 @@ var CSTShows = (function () {
             url: apiBase() + '/resolve-media',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ items: unresolved })
+            data: JSON.stringify({ items: unresolved, _csrf: csrfField() })
         }).done(function (data) {
             var map = {};
             (data.items || []).forEach(function (item) {
@@ -1620,7 +1675,7 @@ var CSTShows = (function () {
             url: apiBase() + '/' + id + '/action',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ action: actionName })
+            data: JSON.stringify({ action: actionName, _csrf: csrfField() })
         }).done(function () {
             load();
         }).fail(function (xhr) {
@@ -1661,7 +1716,11 @@ var CSTShows = (function () {
             $('<button class=\"btn btn-xs btn-danger\">Delete</button>')
                 .on('click', function () {
                     if (!confirm('Delete this show?')) return;
-                    $.ajax({ url: apiBase() + '/' + show.id, method: 'DELETE' })
+                    $.ajax({
+                        url: apiBase() + '/' + show.id,
+                        method: 'DELETE',
+                        data: { _csrf: csrfField() }
+                    })
                         .done(load)
                         .fail(function (xhr) {
                             alert('Delete failed: ' + ((xhr.responseJSON && xhr.responseJSON.error) || xhr.statusText));
@@ -1686,7 +1745,7 @@ var CSTShows = (function () {
             url: apiBase(),
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(payload)
+            data: JSON.stringify(Object.assign({}, payload, { _csrf: csrfField() }))
         }).done(function () {
             clearForm();
             load();
@@ -1707,7 +1766,7 @@ var CSTShows = (function () {
             url: apiBase() + '/' + selectedId,
             method: 'PUT',
             contentType: 'application/json',
-            data: JSON.stringify(payload)
+            data: JSON.stringify(Object.assign({}, payload, { _csrf: csrfField() }))
         }).done(function () {
             load();
         }).fail(function (xhr) {
