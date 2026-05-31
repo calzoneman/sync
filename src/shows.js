@@ -130,7 +130,7 @@ function queueShowEntry(plmod, proxy, entry, idx) {
             pos: idx === 0 && entry.pos === 'next' ? 'next' : 'end',
             title: false,
             link: util.formatLink(entry.id, entry.type, null),
-            temp: false,
+            temp: true,
             shouldAddToLibrary: true,
             queueby: proxy.getName(),
             duration: undefined,
