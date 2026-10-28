@@ -36,7 +36,7 @@
     "serve-static": "^1.15.0",
     "socket.io": "^4.5.4",
     "source-map-support": "^0.5.19",
-    "toml": "^3.0.0",
+    "toml": "^5.0.1",
     "uuid": "^8.3.2",
     "yamljs": "^0.2.8"
   },
