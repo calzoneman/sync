@@ -39,7 +39,7 @@ class Database {
                     database: Config.get('mysql.database'),
                     multipleStatements: true, // Legacy thing
                     charset: 'utf8mb4'
-                }
+                };
             } else {
                 connection = {
                     host: Config.get('mysql.server'),
@@ -49,9 +49,9 @@ class Database {
                     database: Config.get('mysql.database'),
                     multipleStatements: true, // Legacy thing
                     charset: 'utf8mb4'
-                }
+                };
             }
-        
+
             knexConfig = {
                 client: 'mysql',
                 connection,
