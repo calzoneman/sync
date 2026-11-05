@@ -285,6 +285,11 @@ describe('custom-media', () => {
         });
 
         afterEach(done => {
+            // Abort any still-open request sockets so server.close() cannot hang
+            // after the short-timeout lookup test.
+            if (typeof server.closeAllConnections === 'function') {
+                server.closeAllConnections();
+            }
             server.close(() => done());
         });
 
