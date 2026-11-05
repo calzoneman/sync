@@ -19,7 +19,7 @@
     "cookie-parser": "^1.4.5",
     "create-error": "^0.3.1",
     "csrf": "^3.1.0",
-    "cytubefilters": "github:calzoneman/cytubefilters#c67b2dab2dc5cc5ed11018819f71273d0f8a1bf5",
+    "cytubefilters": "github:RadiantFeather/cytubefilters#3e77d23c403adcf3e2554b183d6369369f2449d1",
     "express": "^4.22.1",
     "express-minify": "^1.0.0",
     "json-typecheck": "^0.1.3",
@@ -78,5 +78,10 @@
     "plugins": [
       "add-module-exports"
     ]
+  },
+  "allowScripts": {
+    "bcrypt@5.1.1": true,
+    "github:CyTube/mediaquery#52a635d45f38785bdb26e842c9f2bb505bc37a1c": true,
+    "github:RadiantFeather/cytubefilters#3e77d23c403adcf3e2554b183d6369369f2449d1": true
   }
 }
