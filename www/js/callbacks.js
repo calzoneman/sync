@@ -1335,7 +1335,7 @@ function checkLetsEncrypt(socketConfig, nonLetsEncryptError) {
             });
             setupCallbacks();
         };
-    }).error(function () {
+    }).fail(function () {
         nonLetsEncryptError();
     });
 }

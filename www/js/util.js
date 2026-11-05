@@ -132,9 +132,9 @@ function formatUserlistItem(div) {
      * Prevent rendering unnecessary duplicates of the profile box when
      * a user's status changes.
      */
-    name.unbind("mouseenter");
-    name.unbind("mousemove");
-    name.unbind("mouseleave");
+    name.off("mouseenter");
+    name.off("mousemove");
+    name.off("mouseleave");
 
     name.on('mouseenter', function(ev) {
         if (profile)
@@ -371,11 +371,11 @@ function addUserDropdown(entry) {
         ev.preventDefault();
         if(menu.css("display") == "none") {
             $(".user-dropdown").hide();
-            $(document).bind("mouseup.userlist-ddown", function (e) {
+            $(document).on("mouseup.userlist-ddown", function (e) {
                 if (menu.has(e.target).length === 0 &&
                     entry.parent().has(e.target).length === 0) {
                     menu.hide();
-                    $(document).unbind("mouseup.userlist-ddown");
+                    $(document).off("mouseup.userlist-ddown");
                 }
             });
             menu.show();
@@ -385,8 +385,8 @@ function addUserDropdown(entry) {
         }
         return false;
     };
-    entry.contextmenu(showdd);
-    entry.click(showdd);
+    entry.on("contextmenu", showdd);
+    entry.on("click", showdd);
 }
 
 function calcUserBreakdown() {
@@ -592,8 +592,8 @@ function addQueueButtons(li) {
         menu.find(".qbtn-delete").addClass("btn-danger");
     }
     else if(menu.find(".btn").length != 0) {
-        li.unbind("contextmenu");
-        li.contextmenu(function(ev) {
+        li.off("contextmenu");
+        li.on("contextmenu", function(ev) {
             // Allow shift+click to open context menu
             // (Chrome workaround, works by default on Firefox)
             if (ev.shiftKey) return true;
@@ -1623,7 +1623,7 @@ function addChatMessage(data) {
         }
     }
 
-    div.find("img").load(function () {
+    div.find("img").on("load", function () {
         if (SCROLLCHAT) {
             scrollChat();
         } else if ($(this).position().top < 0) {
