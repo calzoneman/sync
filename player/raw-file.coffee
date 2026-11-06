@@ -1,6 +1,6 @@
 codecToMimeType = (codec) ->
     switch codec
-        when 'mov/h264', 'mov/av1' then 'video/mp4'
+        when 'mov/h264', 'mov/vp8', 'mov/vp9', 'mov/av1' then 'video/mp4'
         when 'flv/h264' then 'video/flv'
         when 'matroska/vp8', 'matroska/vp9', 'matroska/av1' then 'video/webm'
         when 'ogg/theora' then 'video/ogg'

@@ -77,6 +77,8 @@ var TIMEOUT = 30000;
 
 var acceptedCodecs = {
     "mov/h264": true,
+    "mov/vp8": true,
+    "mov/vp9": true,
     "flv/h264": true,
     "matroska/vp8": true,
     "matroska/vp9": true,

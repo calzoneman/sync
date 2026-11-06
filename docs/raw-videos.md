@@ -31,6 +31,8 @@ natively.  Accordingly, CyTube only supports a few codecs:
 
   * MP4 (AV1)
   * MP4 (H.264)
+  * MP4 (VP8)
+  * MP4 (VP9)
   * WebM (AV1)
   * WebM (VP8)
   * WebM (VP9)
