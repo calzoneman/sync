@@ -136,9 +136,15 @@ function formatUserlistItem(div) {
     name.off("mousemove");
     name.off("mouseleave");
 
-    name.on('mouseenter', function(ev) {
-        if (profile)
+    function closeProfileBox() {
+        if (profile) {
             profile.remove();
+            profile = null;
+        }
+    }
+
+    function openProfileBox(ev) {
+        closeProfileBox();
 
         var top = ev.clientY + 5;
         var horiz = ev.clientX;
@@ -167,9 +173,14 @@ function formatUserlistItem(div) {
         $("<p/>").text(data.profile.text).appendTo(profile);
 
         if ($("body").hasClass("synchtube")) horiz -= profile.outerWidth();
-        profile.css("left", horiz + "px")
-    });
+        profile.css("left", horiz + "px");
+    }
+
+    name.on('mouseenter', openProfileBox);
     name.on('mousemove', function(ev) {
+        if (!profile) {
+            return;
+        }
         var top = ev.clientY + 5;
         var horiz = ev.clientX;
 
@@ -177,9 +188,17 @@ function formatUserlistItem(div) {
         profile.css("left", horiz + "px")
             .css("top", top + "px");
     });
-    name.on('mouseleave', function() {
-        profile.remove();
-    });
+    name.on('mouseleave', closeProfileBox);
+
+    // formatUserlistItem is often called while the pointer is still over the
+    // name (AFK/meta/rank updates). mouseenter does not re-fire in that case.
+    if (name.is(":hover")) {
+        var rect = name[0].getBoundingClientRect();
+        openProfileBox({
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2
+        });
+    }
     var icon = div.children()[0];
     icon.innerHTML = "";
     // denote current leader with a star
@@ -428,6 +447,10 @@ function calcUserBreakdown() {
 }
 
 function sortUserlist() {
+    // Detaching/reappending rows does not reliably fire mouseleave, which can
+    // leave position:fixed profile tips stranded on screen.
+    $("#userlist .profile-box").remove();
+
     var slice = Array.prototype.slice;
     var list = slice.call($("#userlist .userlist_item"));
     list.sort(function (a, b) {
