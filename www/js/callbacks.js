@@ -546,22 +546,9 @@ const Callbacks = {
             user.data("icon", false);
         }
 
-        /*
-         * 2017-06-15
-         * TODO: Remove this and the empty function below
-         *         after script authors have had ample time to update
-         */
-        socket.listeners('setAFK').forEach(function(listener){
-            listener({ name: data.name, afk: data.meta.afk });
-        });
-
         formatUserlistItem(user, data);
         addUserDropdown(user, data);
         sortUserlist();
-    },
-
-    setAFK: function() {
-        return true;
     },
 
     setUserProfile: function (data) {

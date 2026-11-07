@@ -459,10 +459,8 @@ Channel.prototype.acceptUser = function (user) {
         user.socket.emit("channelNotRegistered");
     }
 
-    user.on('afk', function(afk){
+    user.on('afk', function(){
         self.sendUserMeta(self.users, user);
-        // TODO: Drop legacy setAFK frame after a few months
-        self.broadcastAll("setAFK", { name: user.getName(), afk: afk });
     });
     user.on("effectiveRankChange", (newRank, oldRank) => {
         this.maybeResendUserlist(user, newRank, oldRank);

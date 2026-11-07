@@ -207,7 +207,6 @@ function handleChangeEmail(req, res) {
  */
 async function handleAccountChannelPage(req, res) {
     const user = await webserver.authorize(req);
-    // TODO: error message
     if (!user) {
         return sendPug(res, "account-channels", {
             channels: []
@@ -258,7 +257,6 @@ async function handleNewChannel(req, res) {
     }
 
     const user = await webserver.authorize(req);
-    // TODO: error message
     if (!user) {
         return sendPug(res, "account-channels", {
             channels: []
@@ -336,7 +334,6 @@ async function handleDeleteChannel(req, res) {
     }
 
     const user = await webserver.authorize(req);
-    // TODO: error
     if (!user) {
         return sendPug(res, "account-channels", {
             channels: [],
@@ -389,7 +386,6 @@ async function handleDeleteChannel(req, res) {
  */
 async function handleAccountProfilePage(req, res) {
     const user = await webserver.authorize(req);
-    // TODO: error message
     if (!user) {
         return sendPug(res, "account-profile", {
             profileImage: "",
@@ -446,7 +442,6 @@ async function handleAccountProfile(req, res) {
     }
 
     const user = await webserver.authorize(req);
-    // TODO: error message
     if (!user) {
         return sendPug(res, "account-profile", {
             profileImage: "",
