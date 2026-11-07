@@ -105,6 +105,8 @@ function PlaylistModule(_channel) {
     if (this.channel.modules.chat) {
         this.channel.modules.chat.registerCommand("/clean", this.handleClean.bind(this));
         this.channel.modules.chat.registerCommand("/cleantitle", this.handleClean.bind(this));
+        this.channel.modules.chat.registerCommand("/lead", this.handleCmdLeader.bind(this));
+        this.channel.modules.chat.registerCommand("/leader", this.handleCmdLeader.bind(this));
     }
 
     this.supportsDirtyCheck = true;
@@ -786,6 +788,41 @@ PlaylistModule.prototype.handleShuffle = function (user) {
 /**
  * == Leader stuff ==
  */
+
+/* /lead [name] / /leader [name] — assign leader; omit name to clear (issue #739) */
+PlaylistModule.prototype.handleCmdLeader = function (user, msg, _meta) {
+    if (!this.channel.modules.permissions.canAssignLeader(user)) {
+        return;
+    }
+
+    var args = msg.trim().split(/\s+/);
+    args.shift(); /* shift off /lead or /leader */
+
+    if (args.length === 0 || args[0].trim() === "") {
+        this.handleAssignLeader(user, { name: "" });
+        return;
+    }
+
+    var name = args.shift().toLowerCase();
+    var targetName = null;
+
+    for (var i = 0; i < this.channel.users.length; i++) {
+        if (this.channel.users[i].getLowerName() === name) {
+            targetName = this.channel.users[i].getName();
+            break;
+        }
+    }
+
+    if (targetName === null) {
+        user.socket.emit("errorMsg", {
+            msg: "Unable to assign leader: could not find user " + name + " present in channel."
+        });
+        return;
+    }
+
+    this.handleAssignLeader(user, { name: targetName });
+};
+
 PlaylistModule.prototype.handleAssignLeader = function (user, data) {
     if (!this.channel.modules.permissions.canAssignLeader(user)) {
         return user.kick("Attempted assignLeader without sufficient permission");
