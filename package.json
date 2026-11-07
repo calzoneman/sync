@@ -10,7 +10,7 @@
   "dependencies": {
     "@calzoneman/jsli": "^2.0.1",
     "@cytube/mediaquery": "github:CyTube/mediaquery#fe886c84fa573b6b4b6f005b74bdd9de1b89fe10",
-    "bcrypt": "^5.0.1",
+    "bcrypt": "^6.0.0",
     "bluebird": "^3.7.2",
     "body-parser": "^1.20.4",
     "cheerio": "^1.0.0-rc.10",
@@ -36,9 +36,9 @@
     "serve-static": "^1.15.0",
     "socket.io": "^4.5.4",
     "source-map-support": "^0.5.19",
-    "toml": "^3.0.0",
+    "toml": "^5.0.1",
     "uuid": "^8.3.2",
-    "yamljs": "^0.2.8"
+    "yamljs": "^0.3.0"
   },
   "scripts": {
     "build-player": "./bin/build-player.js",
@@ -80,8 +80,8 @@
     ]
   },
   "allowScripts": {
-    "bcrypt@5.1.1": true,
-    "github:CyTube/mediaquery#52a635d45f38785bdb26e842c9f2bb505bc37a1c": true,
+    "bcrypt@6.0.0": true,
+    "github:CyTube/mediaquery#fe886c84fa573b6b4b6f005b74bdd9de1b89fe10": true,
     "github:RadiantFeather/cytubefilters#3e77d23c403adcf3e2554b183d6369369f2449d1": true
   }
 }
