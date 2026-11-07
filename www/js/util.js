@@ -1311,7 +1311,8 @@ function playlistMove(from, after, cb) {
 }
 
 function checkYP(id) {
-    if (!/^(PL[a-zA-Z0-9_-]{32}|PL[A-F0-9]{16}|OLA[a-zA-Z0-9_-]{38})$/.test(id)) {
+    // User playlists: 13, 18, 26, or 34 chars. Albums: OLAK5uy_ + 33.
+    if (!/^(PL[a-zA-Z0-9_-]{11}|PL[a-zA-Z0-9_-]{16}|PL[a-zA-Z0-9_-]{24}|PL[a-zA-Z0-9_-]{32}|OLAK5uy_[a-zA-Z0-9_-]{33})$/.test(id)) {
         throw new Error('Invalid YouTube Playlist ID.  Note that only regular user-created playlists are supported.');
     }
 }
