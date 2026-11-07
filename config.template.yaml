@@ -219,5 +219,13 @@ twitch-client-id: null
 # (monetization / domain allowlisting on cytu.be).
 dailymotion-player-id: 'x8lr5'
 
+# Extra PeerTube instance hostnames to allow after the joinpeertube.org list is loaded.
+# Applied at runtime (not written into peertube-hosts.json), so upstream refreshes keep them.
+# Include both apex and www if users paste either form.
+# peertube-domain-extras:
+#   - pony.tube
+#   - www.pony.tube
+peertube-domain-extras: []
+
 poll:
   max-options: 50

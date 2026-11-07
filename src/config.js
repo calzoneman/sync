@@ -111,6 +111,9 @@ var defaults = {
     // Required by Dailymotion (URLs without a Player ID return HTTP 403).
     // Default is their public docs example; replace with your own in production.
     "dailymotion-player-id": "x8lr5",
+    // Extra PeerTube hosts merged into the joinpeertube.org list after load.
+    // Use this for instances delisted upstream (e.g. pony.tube).
+    "peertube-domain-extras": [],
     poll: {
         "max-options": 50
     }

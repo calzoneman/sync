@@ -3341,13 +3341,16 @@ function startQueueSpinner(data) {
 
 function stopQueueSpinner(data) {
     const qid = $("#queueprogress").data("queue-id");
-    switch (true){
-        case data === null:
-        case qid === "$any":
-        case qid === data?.id:
-            return $("#queueprogress").remove();
+    if (data === null || qid === "$any" || qid === data?.id) {
+        $("#queueprogress").remove();
+        return;
     }
-    if (data?.type === "pt" && new RegExp(qid).test(data?.id)) {
+
+    // PeerTube spinners store only the hostname (see startQueueSpinner), while
+    // queueFail/queueSuccess send the full "host;uuid" id — and queueFail often
+    // omits type. Match either form so the spinner always clears.
+    if (typeof qid === "string" && typeof data?.id === "string" &&
+            (data.id === qid || data.id.startsWith(qid + ";"))) {
         $("#queueprogress").remove();
     }
 }
