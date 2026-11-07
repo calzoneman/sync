@@ -512,7 +512,7 @@ $("#qlockbtn").on('click', function() {
 
 $("#voteskip").on('click', function() {
     socket.emit("voteskip");
-    $("#voteskip").attr("disabled", true);
+    $("#voteskip").prop("disabled", true);
 });
 
 $("#getplaylist").on('click', function() {

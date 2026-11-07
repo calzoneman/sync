@@ -984,24 +984,24 @@ function setParentVisible(selector, bool) {
 }
 
 function handleModPermissions() {
-    $("#cs-chanranks-adm").attr("disabled", CLIENT.rank < 4);
-    $("#cs-chanranks-owner").attr("disabled", CLIENT.rank < 4);
+    $("#cs-chanranks-adm").prop("disabled", CLIENT.rank < 4);
+    $("#cs-chanranks-owner").prop("disabled", CLIENT.rank < 4);
     /* update channel controls */
     $("#cs-pagetitle").val(CHANNEL.opts.pagetitle);
-    $("#cs-pagetitle").attr("disabled", CLIENT.rank < 3);
+    $("#cs-pagetitle").prop("disabled", CLIENT.rank < 3);
     $("#cs-externalcss").val(CHANNEL.opts.externalcss);
-    $("#cs-externalcss").attr("disabled", CLIENT.rank < 3);
+    $("#cs-externalcss").prop("disabled", CLIENT.rank < 3);
     $("#cs-externaljs").val(CHANNEL.opts.externaljs);
-    $("#cs-externaljs").attr("disabled", CLIENT.rank < 3);
+    $("#cs-externaljs").prop("disabled", CLIENT.rank < 3);
     $("#cs-chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
     if ("chat_antiflood_params" in CHANNEL.opts) {
         $("#cs-chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
         $("#cs-chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
     }
     $("#cs-show_public").prop("checked", CHANNEL.opts.show_public);
-    $("#cs-show_public").attr("disabled", CLIENT.rank < 3);
+    $("#cs-show_public").prop("disabled", CLIENT.rank < 3);
     $("#cs-password").val(CHANNEL.opts.password || "");
-    $("#cs-password").attr("disabled", CLIENT.rank < 3);
+    $("#cs-password").prop("disabled", CLIENT.rank < 3);
     $("#cs-enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
     $("#cs-afk_timeout").val(CHANNEL.opts.afk_timeout);
     $("#cs-allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
@@ -1027,8 +1027,8 @@ function handleModPermissions() {
     setParentVisible("a[href='#cs-emotes']", hasPermission("emoteedit"));
     setParentVisible("a[href='#cs-chanranks']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-chanlog']", CLIENT.rank >= 3);
-    $("#cs-chatfilters-import").attr("disabled", !hasPermission("filterimport"));
-    $("#cs-emotes-import").attr("disabled", !hasPermission("filterimport"));
+    $("#cs-chatfilters-import").prop("disabled", !hasPermission("filterimport"));
+    $("#cs-emotes-import").prop("disabled", !hasPermission("filterimport"));
 }
 
 function handlePermissionChange() {
@@ -1036,7 +1036,7 @@ function handlePermissionChange() {
         handleModPermissions();
     }
 
-    $("#qlockbtn").attr("disabled", !hasPermission("playlistlock"));
+    $("#qlockbtn").prop("disabled", !hasPermission("playlistlock"));
     setVisible("#showchansettings", CLIENT.rank >= 2);
     setVisible("#playlistmanagerwrap", CLIENT.rank >= 1);
     setVisible("#modflair", CLIENT.rank >= 2);
@@ -1044,12 +1044,12 @@ function handlePermissionChange() {
     setVisible("#chatline", CLIENT.rank >= 0);
     setVisible("#queue", hasPermission("seeplaylist"));
     setVisible("#plmeta", hasPermission("seeplaylist"));
-    $("#getplaylist").attr("disabled", !hasPermission("seeplaylist"));
+    $("#getplaylist").prop("disabled", !hasPermission("seeplaylist"));
 
     setVisible("#showplaylistmanager", hasPermission("seeplaylist"));
     setVisible("#showmediaurl", hasPermission("playlistadd"));
     setVisible("#showcustomembed", hasPermission("playlistaddcustom"));
-    $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
+    $("#queue_next").prop("disabled", !hasPermission("playlistnext"));
 
     if(hasPermission("playlistadd") ||
         hasPermission("playlistmove") ||
@@ -1094,15 +1094,15 @@ function handlePermissionChange() {
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
     if (!hasPermission("addnontemp")) {
         $(".add-temp").prop("checked", true);
-        $(".add-temp").attr("disabled", true);
+        $(".add-temp").prop("disabled", true);
     } else {
-        $(".add-temp").attr("disabled", false);
+        $(".add-temp").prop("disabled", false);
     }
 
     fixWeirdButtonAlignmentIssue();
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
-    $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
+    $("#voteskip").prop("disabled", !hasPermission("voteskip") ||
                                     !CHANNEL.opts.allow_voteskip);
 
     $("#pollwrap .active").find(".btn-danger").remove();
@@ -1119,14 +1119,14 @@ function handlePermissionChange() {
     }
     var poll = $("#pollwrap .active");
     if(poll.length > 0) {
-        poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
+        poll.find(".btn").prop("disabled", !hasPermission("pollvote"));
     }
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
         addUserDropdown($(users[i]));
     }
 
-    $("#chatline").attr("disabled", !hasPermission("chat"));
+    $("#chatline").prop("disabled", !hasPermission("chat"));
     if (!hasPermission("chat")) {
         $("#chatline").attr("placeholder", "Chat permissions are restricted on this channel");
     } else {
@@ -1968,7 +1968,7 @@ function genPermissionsEditor() {
         for (var i = 0; i < permset.length; i++) {
             $("<option/>").attr("value", permset[i][1])
                 .text(permset[i][0])
-                .attr("selected", defval === permset[i][1])
+                .prop("selected", defval === permset[i][1])
                 .appendTo(select);
         }
     }
