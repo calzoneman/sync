@@ -107,6 +107,9 @@ var defaults = {
         socket: "service.sock"
     },
     "twitch-client-id": null,
+    // Optional Dailymotion Studio Player ID for the webclient Player Library embed.
+    // Empty string loads https://geo.dailymotion.com/libs/player.js (default config).
+    "dailymotion-player-id": "",
     poll: {
         "max-options": 50
     }

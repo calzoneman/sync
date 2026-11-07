@@ -213,5 +213,11 @@ service-socket:
 # https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup
 twitch-client-id: null
 
+# Optional Dailymotion Studio Player ID for webclient embeds.
+# Create a Player under https://www.dailymotion.com/partner → Players, then paste the ID here.
+# Leave empty to use Dailymotion's default player library (https://geo.dailymotion.com/libs/player.js).
+# A custom Player ID is recommended for production (monetization / domain allowlisting).
+dailymotion-player-id: ''
+
 poll:
   max-options: 50

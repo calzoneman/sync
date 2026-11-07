@@ -6,81 +6,91 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
         @setMediaProperties(data)
         @initialVolumeSet = false
         @playbackReadyCb = null
+        @dm = null
+        @dmReady = false
 
-        waitUntilDefined(window, 'DM', =>
-            removeOld()
+        waitUntilDefined(window, 'dailymotion', =>
+            # createPlayer is attached asynchronously after the library finishes
+            # bootstrapping; onScriptLoaded is a user callback hook, not a Promise API.
+            waitUntilDefined(dailymotion, 'createPlayer', =>
+                removeOld()
 
-            params =
-                autoplay: 1
-                logo: 0
+                dailymotion.createPlayer('ytapiplayer', {
+                    video: data.id
+                    params:
+                        autoplay: true
+                }).then((player) =>
+                    @dm = player
+                    @dmReady = true
+                    @bindDmEvents()
 
-            quality = @mapQuality(USEROPTS.default_quality)
-            if quality != 'auto'
-                params.quality = quality
-
-            @element = DM.$('ytapiplayer')
-            if not @element or @element.nodeType != Node.ELEMENT_NODE
-                throw new Error("Invalid player element in DailymotionPlayer(), requires an existing HTML element: " + @element)
-            if DM.Player._INSTANCES[@element.id] != undefined
-                @element = DM.Player.destroy(@element.id)
-            @dm = DM.Player.create(@element,
-                video: data.id
-                width: parseInt(VWIDTH, 10)
-                height: parseInt(VHEIGHT, 10)
-                params: params
-            )
-
-            @dm.addEventListener('apiready', =>
-                @dmReady = true
-                @dm.addEventListener('ended', ->
-                    if CLIENT.leader
-                        socket.emit('playNext')
-                )
-
-                @dm.addEventListener('pause', =>
-                    @paused = true
-                    if CLIENT.leader
-                        sendVideoUpdate()
-                )
-
-                @dm.addEventListener('playing', =>
-                    @paused = false
-                    if CLIENT.leader
-                        sendVideoUpdate()
+                    quality = @mapQuality(USEROPTS.default_quality)
+                    if quality isnt 'default' and typeof @dm.setQuality is 'function'
+                        @dm.setQuality(quality)
 
                     if not @initialVolumeSet
                         @setVolume(VOLUME)
                         @initialVolumeSet = true
-                )
 
-                # Once the video stops, the internal state of the player
-                # becomes unusable and attempting to load() will corrupt it and
-                # crash the player with an error.  As a short–medium term
-                # workaround, mark the player as "not ready" until the next
-                # playback_ready event
-                @dm.addEventListener('video_end', =>
-                    @dmReady = false
-                )
-                @dm.addEventListener('playback_ready', =>
-                    @dmReady = true
                     if @playbackReadyCb
-                        @playbackReadyCb()
+                        cb = @playbackReadyCb
                         @playbackReadyCb = null
+                        cb()
+                ).catch((err) ->
+                    console.error('Dailymotion createPlayer failed:', err)
                 )
             )
+        )
+
+    bindDmEvents: ->
+        if not @dm
+            return
+
+        @dm.on(dailymotion.events.VIDEO_END, =>
+            # After a video ends the player can briefly reject load/seek until
+            # the next critical-path-ready signal.  Mirror the previous workaround.
+            @dmReady = false
+            if CLIENT.leader
+                socket.emit('playNext')
+        )
+
+        @dm.on(dailymotion.events.VIDEO_PAUSE, =>
+            @paused = true
+            if CLIENT.leader
+                sendVideoUpdate()
+        )
+
+        @dm.on(dailymotion.events.VIDEO_PLAYING, =>
+            @paused = false
+            if CLIENT.leader
+                sendVideoUpdate()
+
+            if not @initialVolumeSet
+                @setVolume(VOLUME)
+                @initialVolumeSet = true
+        )
+
+        @dm.on(dailymotion.events.PLAYER_CRITICALPATHREADY, =>
+            @dmReady = true
+            if @playbackReadyCb
+                cb = @playbackReadyCb
+                @playbackReadyCb = null
+                cb()
         )
 
     load: (data) ->
         @setMediaProperties(data)
         if @dm and @dmReady
-            @dm.load(data.id)
-            @dm.seek(data.currentTime)
+            seekTo = data.currentTime
+            @dm.loadContent({ video: data.id })
+            if seekTo > 0
+                @dm.on(dailymotion.events.PLAYER_CRITICALPATHREADY, =>
+                    @dm.seek(seekTo)
+                , { once: true })
         else if @dm
-            # TODO: Player::load() needs to be made asynchronous in the future
-            console.log('Warning: load() called before DM is ready, queueing callback')
-            @playbackReadyCb = () =>
-                @dm.load(data.id)
-                @dm.seek(data.currentTime)
+            console.log('Warning: load() called before Dailymotion is ready, queueing callback')
+            @playbackReadyCb = =>
+                @load(data)
         else
             console.error('WTF?  DailymotionPlayer::load() called but @dm is undefined')
 
@@ -104,22 +114,28 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
 
     getTime: (cb) ->
         if @dm and @dmReady
-            cb(@dm.currentTime)
+            @dm.getState().then((state) ->
+                cb(state.videoTime or 0)
+            ).catch(->
+                cb(0)
+            )
         else
             cb(0)
 
     getVolume: (cb) ->
         if @dm and @dmReady
-            if @dm.muted
-                cb(0)
-            else
-                volume = @dm.volume
-                # There was once a bug in Dailymotion where it sometimes gave back
-                # volumes in the wrong range.  Not sure if this is still a necessary
-                # check.
-                if volume > 1
-                    volume /= 100
-                cb(volume)
+            @dm.getState().then((state) ->
+                if state.playerIsMuted
+                    cb(0)
+                else
+                    volume = state.playerVolume
+                    # Guard against historically wrong volume ranges
+                    if volume > 1
+                        volume /= 100
+                    cb(volume ? VOLUME)
+            ).catch(->
+                cb(VOLUME)
+            )
         else
             cb(VOLUME)
 
@@ -128,8 +144,16 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
             when '240', '480', '720', '1080' then String(quality)
             when '360' then '380'
             when 'best' then '1080'
-            else 'auto'
+            else 'default'
 
     destroy: ->
         if @dm
-            @dm.destroy('ytapiplayer')
+            try
+                if typeof @dm.destroy is 'function'
+                    @dm.destroy()
+                else if typeof dailymotion isnt 'undefined' and typeof dailymotion.destroy is 'function'
+                    dailymotion.destroy('ytapiplayer')
+            catch e
+                console.error e
+            @dm = null
+            @dmReady = false

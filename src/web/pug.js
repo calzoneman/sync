@@ -11,12 +11,18 @@ const LOGGER = require('@calzoneman/jsli')('web/pug');
  * Merges locals with globals for pug rendering
  */
 function merge(locals, res) {
+    var dmPlayerId = Config.get("dailymotion-player-id");
     var _locals = {
         siteTitle: Config.get("html-template.title"),
         siteDescription: Config.get("html-template.description"),
         csrfToken: typeof res.req.csrfToken === 'function' ? res.req.csrfToken() : '',
         baseUrl: getBaseUrl(res),
         channelPath: Config.get("channel-path"),
+        // Empty player ID uses Dailymotion's default library config.
+        // Set dailymotion-player-id to a Studio Player ID for custom branding/monetization.
+        dailymotionLibraryUrl: dmPlayerId
+            ? "https://geo.dailymotion.com/libs/player/" + encodeURIComponent(dmPlayerId) + ".js"
+            : "https://geo.dailymotion.com/libs/player.js",
     };
     if (typeof locals !== "object") {
         return _locals;
