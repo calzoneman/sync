@@ -107,9 +107,10 @@ var defaults = {
         socket: "service.sock"
     },
     "twitch-client-id": null,
-    // Optional Dailymotion Studio Player ID for the webclient Player Library embed.
-    // Empty string loads https://geo.dailymotion.com/libs/player.js (default config).
-    "dailymotion-player-id": "",
+    // Dailymotion Studio Player ID for the webclient Player Library embed.
+    // Required by Dailymotion (URLs without a Player ID return HTTP 403).
+    // Default is their public docs example; replace with your own in production.
+    "dailymotion-player-id": "x8lr5",
     poll: {
         "max-options": 50
     }

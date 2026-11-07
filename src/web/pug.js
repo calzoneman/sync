@@ -18,11 +18,10 @@ function merge(locals, res) {
         csrfToken: typeof res.req.csrfToken === 'function' ? res.req.csrfToken() : '',
         baseUrl: getBaseUrl(res),
         channelPath: Config.get("channel-path"),
-        // Empty player ID uses Dailymotion's default library config.
-        // Set dailymotion-player-id to a Studio Player ID for custom branding/monetization.
-        dailymotionLibraryUrl: dmPlayerId
-            ? "https://geo.dailymotion.com/libs/player/" + encodeURIComponent(dmPlayerId) + ".js"
-            : "https://geo.dailymotion.com/libs/player.js",
+        // Player ID is required by Dailymotion (bare libs/player.js returns 403).
+        // Default x8lr5 is their public docs example; set your own Studio Player ID in production.
+        dailymotionLibraryUrl: "https://geo.dailymotion.com/libs/player/" +
+            encodeURIComponent(dmPlayerId || "x8lr5") + ".js",
     };
     if (typeof locals !== "object") {
         return _locals;
