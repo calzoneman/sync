@@ -145,13 +145,13 @@ const Callbacks = {
             socket.emit("channelPassword", pwbox.val());
             parent.remove();
         };
-        submit.click(sendpw);
-        pwbox.keydown(function (ev) {
+        submit.on("click", sendpw);
+        pwbox.on("keydown", function (ev) {
             if (ev.keyCode == 13) {
                 sendpw();
             }
         });
-        pwbox.focus();
+        pwbox.trigger("focus");
     },
 
     cancelNeedPassword: function () {

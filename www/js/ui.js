@@ -883,7 +883,7 @@ $("#emotelistbtn").on('click', function () {
 });
 
 EMOTELISTMODAL.on('shown.bs.modal', function () { $('.emotelist-search').trigger('focus') });
-EMOTELISTMODAL.find(".emotelist-alphabetical").change(function () {
+EMOTELISTMODAL.find(".emotelist-alphabetical").on("change", function () {
     USEROPTS.emotelist_sort = this.checked;
     setOpt("emotelist_sort", USEROPTS.emotelist_sort);
 });

@@ -274,7 +274,7 @@ function addUserDropdown(entry) {
             .text("Private Message")
             .appendTo(btngroup)
             .on('click', function () {
-                initPm(name).find(".panel-heading").click();
+                initPm(name).find(".panel-heading").trigger("click");
                 menu.hide();
             });
     }
@@ -891,7 +891,7 @@ function showPollMenu() {
             .insertBefore(addbtn);
     }
 
-    addbtn.click(addOption);
+    addbtn.on("click", addOption);
     addOption();
     addOption();
 
@@ -910,7 +910,7 @@ function showPollMenu() {
 
                     timeoutError = $("<p/>").addClass("text-danger").text(e.message);
                     timeoutError.insertAfter(timeout);
-                    timeout.focus();
+                    timeout.trigger("focus");
                     return;
                 }
             } else {
@@ -2796,7 +2796,7 @@ function initPm(user) {
         .attr("maxlength", 320)
         .appendTo(body);
 
-    input.keydown(function (ev) {
+    input.on("keydown", function (ev) {
         if (ev.keyCode === 13) {
             if (CHATTHROTTLE) {
                 return;
@@ -2939,7 +2939,7 @@ function formatScriptAccessPrefs() {
         var allow = $("<input/>").attr("type", "radio")
             .prop("checked", pref === "ALLOW").
             prependTo(allow_label);
-        allow.change(function () {
+        allow.on("change", function () {
             if (allow.is(":checked")) {
                 JSPREF[channel] = "ALLOW";
                 setOpt("channel_js_pref", JSPREF);
@@ -2952,7 +2952,7 @@ function formatScriptAccessPrefs() {
         var deny = $("<input/>").attr("type", "radio")
             .prop("checked", pref === "DENY").
             prependTo(deny_label);
-        deny.change(function () {
+        deny.on("change", function () {
             if (deny.is(":checked")) {
                 JSPREF[channel] = "DENY";
                 setOpt("channel_js_pref", JSPREF);
@@ -3007,7 +3007,7 @@ EmoteList.prototype.initSearch = function () {
     this.searchbar = this.elem.find(".emotelist-search");
     var self = this;
 
-    this.searchbar.keyup(function () {
+    this.searchbar.on("keyup", function () {
         var value = this.value.toLowerCase();
         if (value) {
             self.filter = function (emote) {
@@ -3026,7 +3026,7 @@ EmoteList.prototype.initSortOption = function () {
     this.sortAlphabetical = false;
     var self = this;
 
-    this.sortOption.change(function () {
+    this.sortOption.on("change", function () {
         self.sortAlphabetical = this.checked;
         self.handleChange();
         self.loadPage(0);
