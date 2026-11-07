@@ -433,7 +433,8 @@ var Getters = {
 module.exports = {
     Getters: Getters,
     getMedia: function (id, type, callback) {
-        if(type in this.Getters) {
+        // prevent prototype pollution attacks
+        if (Object.hasOwn(this.Getters, type) && typeof this.Getters[type] === "function") {
             LOGGER.info("Looking up %s:%s", type, id);
             lookupCounter.labels(type).inc(1, new Date());
             this.Getters[type](id, callback);
