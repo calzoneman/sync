@@ -17,6 +17,7 @@ integration-test-config.json
 peertube-hosts.json
 tor-exit-list.json
 conf/*.toml
+conf/*.hjson
 www/js/cytube-google-drive.user.js
 www/js/cytube-google-drive.meta.js
 www/js/player.js

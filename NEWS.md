@@ -1,3 +1,13 @@
+2026-11-08
+==========
+
+Auxiliary configs under `conf/` (email, camo, captcha, prometheus, partitions,
+and partition maps) now use [HJSON](https://hjson.github.io/) by default.
+Copy the examples from `conf/example/*.hjson` as before.
+
+Existing `*.toml` files still load, but emit a deprecation warning. Convert them
+to `.hjson` when convenient; TOML support will be removed in a future release.
+
 2022-09-21
 ==========
 

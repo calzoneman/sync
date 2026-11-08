@@ -2,7 +2,7 @@ var path = require("path");
 var net = require("net");
 var YAML = require("yamljs");
 
-import { loadFromToml } from './configuration/configloader';
+import { loadConfig, resolveConfigFile } from './configuration/configloader';
 import { CamoConfig } from './configuration/camoconfig';
 import { PrometheusConfig } from './configuration/prometheusconfig';
 import { EmailConfig } from './configuration/emailconfig';
@@ -164,8 +164,8 @@ exports.load = function (file) {
     if (cfg.mail) {
         LOGGER.error(
             'Old style mail configuration found in config.yaml.  ' +
-            'Email will not be delivered unless you copy conf/example/email.toml ' +
-            'to conf/email.toml and edit it to your liking.  ' +
+            'Email will not be delivered unless you copy conf/example/email.hjson ' +
+            'to conf/email.hjson and edit it to your liking.  ' +
             'To remove this warning, delete the "mail:" block in config.yaml.'
         );
     }
@@ -181,27 +181,35 @@ exports.load = function (file) {
     loadCaptchaConfig();
 };
 
-function checkLoadConfig(configClass, filename) {
+const CONF_DIR = path.resolve(__dirname, '..', 'conf');
+
+function confDisplayPath(basename) {
+    const resolved = resolveConfigFile(CONF_DIR, basename);
+    if (resolved) {
+        return path.relative(path.resolve(__dirname, '..'), resolved.path);
+    }
+    return path.join('conf', `${basename}.hjson`);
+}
+
+function checkLoadConfig(configClass, basename) {
     try {
-        return loadFromToml(
-            configClass,
-            path.resolve(__dirname, '..', 'conf', filename)
-        );
+        return loadConfig(configClass, CONF_DIR, basename);
     } catch (error) {
         if (error.code === 'ENOENT') {
             return null;
         }
 
+        const displayPath = confDisplayPath(basename);
         if (typeof error.line !== 'undefined') {
-            LOGGER.error(`Error in conf/${filename}: ${error} (line ${error.line})`);
+            LOGGER.error(`Error in ${displayPath}: ${error} (line ${error.line})`);
         } else {
-            LOGGER.error(`Error loading conf/${filename}: ${error.stack}`);
+            LOGGER.error(`Error loading ${displayPath}: ${error.stack}`);
         }
     }
 }
 
 function loadCamoConfig() {
-    const conf = checkLoadConfig(CamoConfig, 'camo.toml');
+    const conf = checkLoadConfig(CamoConfig, 'camo');
 
     if (conf === null) {
         LOGGER.info('No camo configuration found, chat images will not be proxied.');
@@ -209,12 +217,15 @@ function loadCamoConfig() {
     } else {
         camoConfig = conf;
         const enabled = camoConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
-        LOGGER.info(`Loaded camo configuration from conf/camo.toml.  Camo is ${enabled}`);
+        LOGGER.info(
+            `Loaded camo configuration from ${confDisplayPath('camo')}.  ` +
+            `Camo is ${enabled}`
+        );
     }
 }
 
 function loadPrometheusConfig() {
-    const conf = checkLoadConfig(PrometheusConfig, 'prometheus.toml');
+    const conf = checkLoadConfig(PrometheusConfig, 'prometheus');
 
     if (conf === null) {
         LOGGER.info('No prometheus configuration found, defaulting to disabled');
@@ -223,33 +234,37 @@ function loadPrometheusConfig() {
         prometheusConfig = conf;
         const enabled = prometheusConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
         LOGGER.info(
-            'Loaded prometheus configuration from conf/prometheus.toml.  ' +
+            `Loaded prometheus configuration from ${confDisplayPath('prometheus')}.  ` +
             `Prometheus listener is ${enabled}`
         );
     }
 }
 
 function loadEmailConfig() {
-    const conf = checkLoadConfig(EmailConfig, 'email.toml');
+    const conf = checkLoadConfig(EmailConfig, 'email');
 
     if (conf === null) {
         LOGGER.info('No email configuration found, defaulting to disabled');
         emailConfig = new EmailConfig();
     } else {
         emailConfig = conf;
-        LOGGER.info('Loaded email configuration from conf/email.toml.');
+        LOGGER.info(
+            `Loaded email configuration from ${confDisplayPath('email')}.`
+        );
     }
 }
 
 function loadCaptchaConfig() {
-    const conf = checkLoadConfig(Object, 'captcha.toml');
+    const conf = checkLoadConfig(Object, 'captcha');
 
     if (conf === null) {
         LOGGER.info('No captcha configuration found, defaulting to disabled');
         captchaConfig.load();
     } else {
         captchaConfig.load(conf);
-        LOGGER.info('Loaded captcha configuration from conf/captcha.toml.');
+        LOGGER.info(
+            `Loaded captcha configuration from ${confDisplayPath('captcha')}.`
+        );
     }
 }
 

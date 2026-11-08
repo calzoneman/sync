@@ -1,4 +1,4 @@
-const loadFromToml = require('../../lib/configuration/configloader').loadFromToml;
+const { loadConfig } = require('../../lib/configuration/configloader');
 const path = require('path');
 
 class IntegrationTestConfig {
@@ -11,4 +11,8 @@ class IntegrationTestConfig {
     }
 }
 
-exports.testConfig = loadFromToml(IntegrationTestConfig, path.resolve(__dirname, '..', '..', 'conf', 'integration-test.toml'));
+exports.testConfig = loadConfig(
+    IntegrationTestConfig,
+    path.resolve(__dirname, '..', '..', 'conf'),
+    'integration-test'
+);
