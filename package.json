@@ -9,7 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "@calzoneman/jsli": "^2.0.1",
-    "@cytube/mediaquery": "github:CyTube/mediaquery#fe886c84fa573b6b4b6f005b74bdd9de1b89fe10",
+    "@cytube/mediaquery": "github:CyTube/mediaquery#1a69789a6e080bfc1eda65df39364fef2d22240b",
     "bcrypt": "^6.0.0",
     "bluebird": "^3.7.2",
     "body-parser": "^1.20.4",
@@ -81,7 +81,7 @@
   },
   "allowScripts": {
     "bcrypt@6.0.0": true,
-    "github:CyTube/mediaquery#fe886c84fa573b6b4b6f005b74bdd9de1b89fe10": true,
+    "github:CyTube/mediaquery#1a69789a6e080bfc1eda65df39364fef2d22240b": true,
     "github:RadiantFeather/cytubefilters#3e77d23c403adcf3e2554b183d6369369f2449d1": true
   }
 }

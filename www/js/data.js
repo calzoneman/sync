@@ -51,7 +51,7 @@
 })();
 
 var CL_VERSION = 3.0;
-var GS_VERSION = 1.7; // Google Drive Userscript
+var GS_VERSION = 1.8; // Google Drive Userscript
 
 var CLIENT = {
     rank: -1,

@@ -7,8 +7,10 @@
 // @grant GM_xmlhttpRequest
 // @grant GM.xmlHttpRequest
 // @connect docs.google.com
+// @connect drive.google.com
+// @connect content-workspacevideo-pa.googleapis.com
 // @run-at document-end
-// @version 1.7.0
+// @version 1.8.0
 // ==/UserScript==
 
 try {
@@ -57,67 +59,77 @@ try {
         34: 'video/flv'
     };
 
+    // Public web-client key used by Google Drive's own video player / yt-dlp.
+    var PLAYBACK_API_KEY = 'AIzaSyDVQw45DwoYh632gvsP5vPDqEKvb-Ywnb8';
+    var PLAYBACK_API =
+        'https://content-workspacevideo-pa.googleapis.com/v1/drive/media';
+
     function getVideoInfo(id, cb) {
-        var url = 'https://docs.google.com/get_video_info?authuser='
-                + '&docid=' + id
-                + '&sle=true'
-                + '&hl=en';
+        var url = PLAYBACK_API + '/' + encodeURIComponent(id)
+                + '/playback?key=' + PLAYBACK_API_KEY;
         debug('Fetching ' + url);
 
         httpRequest({
             method: 'GET',
             url: url,
+            headers: {
+                Referer: 'https://drive.google.com/'
+            },
             onload: function (res) {
                 try {
-                    debug('Got response ' + res.responseText);
+                    debug('Got response status ' + res.status);
 
                     if (res.status !== 200) {
                         debug('Response status not 200: ' + res.status);
-                        return cb(
-                            'Google Drive request failed: HTTP ' + res.status
-                        );
+                        var failMsg = 'Google Drive request failed: HTTP ' + res.status;
+                        try {
+                            var failDoc = JSON.parse(res.responseText);
+                            if (failDoc && failDoc.error && failDoc.error.message) {
+                                failMsg = 'Google Drive request failed: ' +
+                                          failDoc.error.message;
+                            }
+                        } catch (_e) {}
+                        if (res.status === 401 || res.status === 403 || res.status === 404) {
+                            failMsg = 'Google Drive video not found, or it is not shared publicly';
+                        }
+                        return cb(failMsg);
                     }
 
-                    var data = {};
+                    var doc = JSON.parse(res.responseText);
                     var error;
-                    // Google Santa sometimes eats login cookies and gets mad if there aren't any.
-                    if(/accounts\.google\.com\/ServiceLogin/.test(res.responseText)){
-                        error = 'Google Docs request failed: ' +
-                                'This video requires you be logged into a Google account. ' +
-                                'Open your Gmail in another tab and then refresh video.';
-                        return cb(error);
-                    }
 
-                    res.responseText.split('&').forEach(function (kv) {
-                        var pair = kv.split('=');
-                        data[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-                    });
-
-                    if (data.status === 'fail') {
+                    if (doc.error) {
                         error = 'Google Drive request failed: ' +
-                                unescape(data.reason).replace(/\+/g, ' ');
+                                (doc.error.message || 'unplayable');
                         return cb(error);
                     }
 
-                    if (!data.fmt_stream_map) {
+                    var formatData = doc.mediaStreamingData
+                        && doc.mediaStreamingData.formatStreamingData;
+                    var progressive = (formatData && formatData.progressiveTranscodes) || [];
+                    if (!progressive.length) {
                         error = (
                             'Google has removed the video streams associated' +
                             ' with this item.  It can no longer be played.'
                         );
-
                         return cb(error);
                     }
 
-                    data.links = {};
-                    data.fmt_stream_map.split(',').forEach(function (item) {
-                        var pair = item.split('|');
-                        data.links[pair[0]] = pair[1];
+                    var data = {
+                        title: (doc.mediaMetadata && doc.mediaMetadata.title) || id,
+                        links: {}
+                    };
+                    progressive.forEach(function (fmt) {
+                        if (fmt && fmt.itag && fmt.url) {
+                            data.links[String(fmt.itag)] = fmt.url;
+                        }
                     });
                     data.videoMap = mapLinks(data.links);
 
                     cb(null, data);
                 } catch (error) {
                     unsafeWindow.console.error(error);
+                    cb('Google Drive request failed: ' + (error.message || error));
                 }
             },
 
@@ -237,7 +249,7 @@ try {
     unsafeWindow.console.log('Initialized userscript Google Drive player');
     unsafeWindow.hasDriveUserscript = true;
     // Checked against GS_VERSION from data.js
-    unsafeWindow.driveUserscriptVersion = '1.7';
+    unsafeWindow.driveUserscriptVersion = '1.8';
 } catch (error) {
     unsafeWindow.console.error(error);
 }
