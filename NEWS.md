@@ -13,6 +13,12 @@ loads with a deprecation warning for now.
 `dailymotion-player-id`, `peertube-domain-extras`, and `vimeo-workaround` out of
 `config.yaml`. Legacy top-level keys still load with a deprecation warning.
 
+**Database schema v13:** `media_metadata_cache` is converted to utf8mb4 on
+startup so cached media titles/metadata can store emoji and other non-BMP
+Unicode (calzoneman/sync#947). New installs create the table as utf8mb4.
+Requires MySQL 5.7+ / MariaDB with InnoDB large-prefix (normal for current
+CyTube installs).
+
 Auxiliary configs under `conf/` (email, camo, captcha, prometheus, partitions,
 and partition maps) now use [HJSON](https://hjson.github.io/) by default.
 Copy the examples from `conf/example/*.hjson` as before.
