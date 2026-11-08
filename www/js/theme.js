@@ -23,7 +23,7 @@
     var css = document.createElement("link");
     css.setAttribute("rel", "stylesheet");
     css.setAttribute("type", "text/css");
-    css.setAttribute("href", theme);
+    css.setAttribute("href", typeof resolveAsset === "function" ? resolveAsset(theme) : theme);
     css.setAttribute("id", "usertheme");
     document.head.appendChild(css);
   }

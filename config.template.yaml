@@ -55,7 +55,8 @@ http:
   # Leave out the http://
   alt-domains:
     - '127.0.0.1'
-  # Use express-minify to minify CSS and Javascript
+  # Prefer prebuilt minified first-party assets under www/build/ (npm run build-minify).
+  # Also controls pug pretty-print. Does not minify vendor JS on the request path.
   minify: false
   # Max-Age for caching.  Value should be an integer in milliseconds or a string accepted by
   # the `ms` module.  Set to 0 to disable caching.

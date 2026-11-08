@@ -21,7 +21,6 @@
     "csrf": "^3.1.0",
     "cytubefilters": "github:RadiantFeather/cytubefilters#3e77d23c403adcf3e2554b183d6369369f2449d1",
     "express": "^4.22.1",
-    "express-minify": "^1.0.0",
     "json-typecheck": "^0.1.3",
     "knex": "^2.4.0",
     "lodash": "^4.17.23",
@@ -42,7 +41,9 @@
   },
   "scripts": {
     "build-player": "./bin/build-player.js",
+    "build-minify": "node ./bin/build-minify.js",
     "build-server": "babel -D --source-maps --out-dir lib/ src/",
+    "build-assets": "npm run build-player && npm run build-minify",
     "flow": "flow",
     "lint": "eslint src",
     "pretest": "npm run lint",
@@ -59,6 +60,7 @@
     "@babel/preset-env": "^7.15.8",
     "babel-plugin-add-module-exports": "^1.0.4",
     "coffeescript": "^1.9.2",
+    "esbuild": "^0.25.12",
     "eslint": "^7.32.0",
     "eslint-plugin-no-jquery": "^2.7.0",
     "mocha": "^9.2.2",
@@ -81,6 +83,7 @@
   },
   "allowScripts": {
     "bcrypt@6.0.0": true,
+    "esbuild@0.25.12": true,
     "github:CyTube/mediaquery#1a69789a6e080bfc1eda65df39364fef2d22240b": true,
     "github:RadiantFeather/cytubefilters#3e77d23c403adcf3e2554b183d6369369f2449d1": true
   }

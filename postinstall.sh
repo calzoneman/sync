@@ -11,4 +11,6 @@ echo "Building from src/ to lib/"
 npm run build-server
 echo "Building from player/ to www/js/player.js"
 npm run build-player
+echo "Building minified first-party assets to www/build/"
+npm run build-minify
 echo "Done"

@@ -742,16 +742,19 @@ function storeOpts() {
 }
 
 function applyOpts() {
-    if ($("#usertheme").attr("href") !== USEROPTS.theme) {
+    var themeHref = USEROPTS.theme;
+    if (themeHref === "default") {
+        themeHref = DEFAULT_THEME;
+    }
+    if (typeof resolveAsset === "function") {
+        themeHref = resolveAsset(themeHref);
+    }
+    if ($("#usertheme").attr("href") !== themeHref) {
         var old = $("#usertheme").attr("id", "usertheme_old");
-        var theme = USEROPTS.theme;
-        if (theme === "default") {
-            theme = DEFAULT_THEME;
-        }
         $("<link/>").attr("rel", "stylesheet")
             .attr("type", "text/css")
             .attr("id", "usertheme")
-            .attr("href", theme)
+            .attr("href", themeHref)
             .attr("onload", "$('#usertheme_old').remove()")
             .appendTo($("head"));
         fixWeirdButtonAlignmentIssue();

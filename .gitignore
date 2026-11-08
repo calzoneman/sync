@@ -10,6 +10,7 @@ node_modules
 *.key
 torlist
 www/cache
+www/build
 google-drive-subtitles
 lib/
 integration-test-config.json
