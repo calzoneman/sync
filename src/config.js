@@ -8,8 +8,17 @@ import { PrometheusConfig } from './configuration/prometheusconfig';
 import { EmailConfig } from './configuration/emailconfig';
 import { CaptchaConfig } from './configuration/captchaconfig';
 import { DatabaseConfig } from './configuration/databaseconfig';
+import { ProvidersConfig } from './configuration/providersconfig';
 
 const LOGGER = require('@calzoneman/jsli')('config');
+
+const PROVIDER_YAML_KEYS = [
+    'youtube-v3-key',
+    'twitch-client-id',
+    'dailymotion-player-id',
+    'peertube-domain-extras',
+    'vimeo-workaround'
+];
 
 var defaults = {
     listen: [
@@ -58,7 +67,6 @@ var defaults = {
             "allowed-origins": []
         }
     },
-    "youtube-v3-key": "",
     "channel-path": "r",
     "channel-save-interval": 5,
     "max-channels-per-user": 5,
@@ -69,7 +77,6 @@ var defaults = {
         "purge-interval": 3600000,
         "max-age": 2592000000
     },
-    "vimeo-workaround": false,
     "html-template": {
         title: "CyTube Beta", description: "Free, open source synchtube"
     },
@@ -99,14 +106,6 @@ var defaults = {
         enabled: false,
         socket: "service.sock"
     },
-    "twitch-client-id": null,
-    // Dailymotion Studio Player ID for the webclient Player Library embed.
-    // Required by Dailymotion (URLs without a Player ID return HTTP 403).
-    // Default is their public docs example; replace with your own in production.
-    "dailymotion-player-id": "x8lr5",
-    // Extra PeerTube hosts merged into the joinpeertube.org list after load.
-    // Use this for instances delisted upstream (e.g. pony.tube).
-    "peertube-domain-extras": [],
     poll: {
         "max-options": 50
     }
@@ -135,6 +134,7 @@ let prometheusConfig = new PrometheusConfig();
 let emailConfig = new EmailConfig();
 let captchaConfig = new CaptchaConfig();
 let databaseConfig = new DatabaseConfig();
+let providersConfig = new ProvidersConfig();
 
 /**
  * Initializes the configuration from the given YAML file
@@ -165,9 +165,10 @@ exports.load = function (file) {
     }
 
     const legacyMysql = cfg.mysql;
-    // Strip before merge so missing-key warnings are not raised for mysql
-    // after it has been moved to conf/database.hjson.
+    // Strip before merge so missing-key warnings are not raised for keys
+    // that have moved into dedicated conf/*.hjson files.
     delete cfg.mysql;
+    const legacyProviders = extractLegacyProviders(cfg);
 
     merge(cfg, defaults, "config");
 
@@ -175,11 +176,25 @@ exports.load = function (file) {
     LOGGER.info("Loaded configuration from " + file);
 
     loadDatabaseConfig(legacyMysql);
+    loadProvidersConfig(legacyProviders);
     loadCamoConfig();
     loadPrometheusConfig();
     loadEmailConfig();
     loadCaptchaConfig();
 };
+
+function extractLegacyProviders(config) {
+    const legacy = {};
+    let found = false;
+    for (const key of PROVIDER_YAML_KEYS) {
+        if (Object.prototype.hasOwnProperty.call(config, key)) {
+            legacy[key] = config[key];
+            delete config[key];
+            found = true;
+        }
+    }
+    return found ? legacy : null;
+}
 
 const CONF_DIR = path.resolve(__dirname, '..', 'conf');
 
@@ -249,6 +264,80 @@ function loadDatabaseConfig(legacyMysql) {
         'Using built-in defaults for now.'
     );
     databaseConfig = new DatabaseConfig();
+}
+
+function loadProvidersConfig(legacyProviders) {
+    const conf = checkLoadConfig(ProvidersConfig, 'providers');
+
+    if (conf !== null) {
+        providersConfig = conf;
+        LOGGER.info(
+            `Loaded providers configuration from ${confDisplayPath('providers')}.`
+        );
+        if (legacyProviders) {
+            LOGGER.warn(
+                'Ignoring deprecated provider keys in config.yaml because ' +
+                `${confDisplayPath('providers')} is present.  ` +
+                'Remove youtube-v3-key / twitch-client-id / dailymotion-player-id / ' +
+                'peertube-domain-extras / vimeo-workaround from config.yaml.'
+            );
+        }
+        applyProvidersSideEffects();
+        return;
+    }
+
+    if (legacyProviders) {
+        LOGGER.error(
+            'Old style provider configuration found in config.yaml.  ' +
+            'Copy conf/example/providers.hjson to conf/providers.hjson and ' +
+            'move your provider settings there.  ' +
+            'To remove this warning, delete those keys from config.yaml.  ' +
+            'YAML provider keys will be removed in a future release.'
+        );
+        try {
+            providersConfig = new ProvidersConfig(legacyProviders);
+        } catch (error) {
+            LOGGER.error(
+                `Invalid provider configuration in config.yaml: ${error.message}`
+            );
+            providersConfig = new ProvidersConfig();
+        }
+        applyProvidersSideEffects();
+        return;
+    }
+
+    LOGGER.info(
+        'No providers configuration found; using built-in defaults.  ' +
+        'Copy conf/example/providers.hjson to conf/providers.hjson to set ' +
+        'YouTube / Twitch / Dailymotion / PeerTube / Vimeo options.'
+    );
+    providersConfig = new ProvidersConfig();
+    applyProvidersSideEffects();
+}
+
+function applyProvidersSideEffects() {
+    const youtubeKey = providersConfig.getYoutubeV3Key();
+    if (youtubeKey) {
+        require('@cytube/mediaquery/lib/provider/youtube').setApiKey(youtubeKey);
+    } else {
+        LOGGER.warn(
+            'No YouTube v3 API key set.  YouTube links will not work.  ' +
+            'See youtube-v3-key in conf/example/providers.hjson and ' +
+            'https://developers.google.com/youtube/registering_an_application'
+        );
+    }
+
+    const twitchClientId = providersConfig.getTwitchClientId();
+    if (twitchClientId) {
+        require('@cytube/mediaquery/lib/provider/twitch-vod').setClientID(twitchClientId);
+        require('@cytube/mediaquery/lib/provider/twitch-clip').setClientID(twitchClientId);
+    } else {
+        LOGGER.warn(
+            'No Twitch Client ID set.  Twitch VOD links will not work.  ' +
+            'See twitch-client-id in conf/example/providers.hjson and ' +
+            'https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup'
+        );
+    }
 }
 
 function loadCamoConfig() {
@@ -451,28 +540,6 @@ function preprocessConfig(cfg) {
         cfg["link-domain-blacklist-regex"] = new RegExp("$x^", "gi");
     }
 
-    if (cfg["youtube-v3-key"]) {
-        require("@cytube/mediaquery/lib/provider/youtube").setApiKey(
-                cfg["youtube-v3-key"]);
-    } else {
-        LOGGER.warn("No YouTube v3 API key set.  YouTube links will " +
-            "not work.  See youtube-v3-key in config.template.yaml and " +
-            "https://developers.google.com/youtube/registering_an_application for " +
-            "information on registering an API key.");
-    }
-
-    if (cfg["twitch-client-id"]) {
-        require("@cytube/mediaquery/lib/provider/twitch-vod").setClientID(
-                cfg["twitch-client-id"]);
-        require("@cytube/mediaquery/lib/provider/twitch-clip").setClientID(
-                cfg["twitch-client-id"]);
-    } else {
-        LOGGER.warn("No Twitch Client ID set.  Twitch VOD links will " +
-            "not work.  See twitch-client-id in config.template.yaml and " +
-            "https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup" +
-            "for more information on registering a client ID");
-    }
-
     // Remove calzoneman from contact config (old default)
     cfg.contacts = cfg.contacts.filter(contact => {
         return contact.name !== 'calzoneman';
@@ -565,4 +632,8 @@ exports.getCaptchaConfig = function getCaptchaConfig() {
 
 exports.getDatabaseConfig = function getDatabaseConfig() {
     return databaseConfig;
+};
+
+exports.getProvidersConfig = function getProvidersConfig() {
+    return providersConfig;
 };

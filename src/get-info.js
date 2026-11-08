@@ -65,9 +65,9 @@ function convertMedia(media) {
 var Getters = {
     /* youtube.com */
     yt: function (id, callback) {
-        if (!Config.get("youtube-v3-key")) {
+        if (!Config.getProvidersConfig().getYoutubeV3Key()) {
             return callback("The YouTube API now requires an API key.  Please see the " +
-                            "documentation for youtube-v3-key in config.template.yaml");
+                            "documentation for youtube-v3-key in conf/example/providers.hjson");
         }
 
 
@@ -89,9 +89,9 @@ var Getters = {
 
     /* youtube.com playlists */
     yp: function (id, callback) {
-        if (!Config.get("youtube-v3-key")) {
+        if (!Config.getProvidersConfig().getYoutubeV3Key()) {
             return callback("The YouTube API now requires an API key.  Please see the " +
-                            "documentation for youtube-v3-key in config.template.yaml");
+                            "documentation for youtube-v3-key in conf/example/providers.hjson");
         }
 
         YouTube.lookupPlaylist(id).then(function (videos) {
@@ -112,9 +112,9 @@ var Getters = {
 
     /* youtube.com search */
     ytSearch: function (query, callback) {
-        if (!Config.get("youtube-v3-key")) {
+        if (!Config.getProvidersConfig().getYoutubeV3Key()) {
             return callback("The YouTube API now requires an API key.  Please see the " +
-                            "documentation for youtube-v3-key in config.template.yaml");
+                            "documentation for youtube-v3-key in conf/example/providers.hjson");
         }
 
         YouTube.search(query).then(function (res) {

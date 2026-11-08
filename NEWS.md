@@ -1,14 +1,21 @@
 2026-11-08
 ==========
 
-Auxiliary configs under `conf/` (email, camo, captcha, prometheus, partitions,
-database, and partition maps) now use [HJSON](https://hjson.github.io/) by
-default. Copy the examples from `conf/example/*.hjson` as before.
+This release deprecates TOML.
 
 **Database config moved:** copy `conf/example/database.hjson` to
 `conf/database.hjson`, move your `mysql:` settings from `config.yaml` into it,
 then delete the `mysql:` block from `config.yaml`. A legacy `mysql:` block still
 loads with a deprecation warning for now.
+
+**Provider config moved:** copy `conf/example/providers.hjson` to
+`conf/providers.hjson` and move `youtube-v3-key`, `twitch-client-id`,
+`dailymotion-player-id`, `peertube-domain-extras`, and `vimeo-workaround` out of
+`config.yaml`. Legacy top-level keys still load with a deprecation warning.
+
+Auxiliary configs under `conf/` (email, camo, captcha, prometheus, partitions,
+and partition maps) now use [HJSON](https://hjson.github.io/) by default.
+Copy the examples from `conf/example/*.hjson` as before.
 
 Existing `*.toml` files still load, but emit a deprecation warning. Convert them
 to `.hjson` when convenient; TOML support will be removed in a future release.

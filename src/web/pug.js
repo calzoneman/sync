@@ -20,7 +20,7 @@ const asset = createAsset({
  * Merges locals with globals for pug rendering
  */
 function merge(locals, res) {
-    var dmPlayerId = Config.get("dailymotion-player-id");
+    var dmPlayerId = Config.getProvidersConfig().getDailymotionPlayerId();
     var _locals = {
         siteTitle: Config.get("html-template.title"),
         siteDescription: Config.get("html-template.description"),

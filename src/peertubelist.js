@@ -26,7 +26,7 @@ function normalizeHost(host) {
  * refresh of the upstream list cannot drop them.
  */
 function applyExtraHosts(hosts) {
-    const extras = Config.get('peertube-domain-extras') || [];
+    const extras = Config.getProvidersConfig().getPeertubeDomainExtras();
     if (!Array.isArray(extras) || extras.length === 0) {
         return hosts;
     }
