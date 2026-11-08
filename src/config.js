@@ -7,18 +7,11 @@ import { CamoConfig } from './configuration/camoconfig';
 import { PrometheusConfig } from './configuration/prometheusconfig';
 import { EmailConfig } from './configuration/emailconfig';
 import { CaptchaConfig } from './configuration/captchaconfig';
+import { DatabaseConfig } from './configuration/databaseconfig';
 
 const LOGGER = require('@calzoneman/jsli')('config');
 
 var defaults = {
-    mysql: {
-        server: "localhost",
-        port: 3306,
-        database: "cytube3",
-        user: "cytube3",
-        password: "",
-        "pool-size": 10
-    },
     listen: [
         {
             ip: "0.0.0.0",
@@ -141,6 +134,7 @@ let camoConfig = new CamoConfig();
 let prometheusConfig = new PrometheusConfig();
 let emailConfig = new EmailConfig();
 let captchaConfig = new CaptchaConfig();
+let databaseConfig = new DatabaseConfig();
 
 /**
  * Initializes the configuration from the given YAML file
@@ -170,11 +164,17 @@ exports.load = function (file) {
         );
     }
 
+    const legacyMysql = cfg.mysql;
+    // Strip before merge so missing-key warnings are not raised for mysql
+    // after it has been moved to conf/database.hjson.
+    delete cfg.mysql;
+
     merge(cfg, defaults, "config");
 
     preprocessConfig(cfg);
     LOGGER.info("Loaded configuration from " + file);
 
+    loadDatabaseConfig(legacyMysql);
     loadCamoConfig();
     loadPrometheusConfig();
     loadEmailConfig();
@@ -206,6 +206,49 @@ function checkLoadConfig(configClass, basename) {
             LOGGER.error(`Error loading ${displayPath}: ${error.stack}`);
         }
     }
+}
+
+function loadDatabaseConfig(legacyMysql) {
+    const conf = checkLoadConfig(DatabaseConfig, 'database');
+
+    if (conf !== null) {
+        databaseConfig = conf;
+        LOGGER.info(
+            `Loaded database configuration from ${confDisplayPath('database')}.`
+        );
+        if (legacyMysql) {
+            LOGGER.warn(
+                'Ignoring deprecated mysql: block in config.yaml because ' +
+                `${confDisplayPath('database')} is present.  ` +
+                'Remove the mysql: block from config.yaml.'
+            );
+        }
+        return;
+    }
+
+    if (legacyMysql) {
+        LOGGER.error(
+            'Old style mysql configuration found in config.yaml.  ' +
+            'Copy conf/example/database.hjson to conf/database.hjson and ' +
+            'move your mysql settings there.  ' +
+            'To remove this warning, delete the "mysql:" block in config.yaml.  ' +
+            'YAML mysql support will be removed in a future release.'
+        );
+        try {
+            databaseConfig = new DatabaseConfig(legacyMysql);
+        } catch (error) {
+            LOGGER.error(`Invalid mysql configuration in config.yaml: ${error.message}`);
+            databaseConfig = new DatabaseConfig();
+        }
+        return;
+    }
+
+    LOGGER.error(
+        'No database configuration found.  ' +
+        'Copy conf/example/database.hjson to conf/database.hjson and edit it.  ' +
+        'Using built-in defaults for now.'
+    );
+    databaseConfig = new DatabaseConfig();
 }
 
 function loadCamoConfig() {
@@ -518,4 +561,8 @@ exports.getEmailConfig = function getEmailConfig() {
 
 exports.getCaptchaConfig = function getCaptchaConfig() {
     return captchaConfig;
+};
+
+exports.getDatabaseConfig = function getDatabaseConfig() {
+    return databaseConfig;
 };

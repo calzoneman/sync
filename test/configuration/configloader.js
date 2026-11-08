@@ -73,7 +73,7 @@ describe('configloader', () => {
 
     it('loads the shipped example hjson configs', () => {
         const exampleDir = path.resolve(__dirname, '..', '..', 'conf', 'example');
-        for (const name of ['camo', 'captcha', 'email', 'prometheus']) {
+        for (const name of ['camo', 'captcha', 'database', 'email', 'prometheus']) {
             const conf = loadConfig(DummyConfig, exampleDir, name);
             assert.ok(conf.config && typeof conf.config === 'object');
         }

@@ -2,8 +2,13 @@
 ==========
 
 Auxiliary configs under `conf/` (email, camo, captcha, prometheus, partitions,
-and partition maps) now use [HJSON](https://hjson.github.io/) by default.
-Copy the examples from `conf/example/*.hjson` as before.
+database, and partition maps) now use [HJSON](https://hjson.github.io/) by
+default. Copy the examples from `conf/example/*.hjson` as before.
+
+**Database config moved:** copy `conf/example/database.hjson` to
+`conf/database.hjson`, move your `mysql:` settings from `config.yaml` into it,
+then delete the `mysql:` block from `config.yaml`. A legacy `mysql:` block still
+loads with a deprecation warning for now.
 
 Existing `*.toml` files still load, but emit a deprecation warning. Convert them
 to `.hjson` when convenient; TOML support will be removed in a future release.

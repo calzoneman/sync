@@ -1,0 +1,17 @@
+# MySQL server details
+# Copy to conf/database.hjson and edit.
+#
+# server: domain, IP, or unix socket path of MySQL server.
+#   For a unix socket use: unix:/path/to/sock.sock
+# database: a MySQL database that the user has read/write access to
+# user: username to authenticate as
+# password: password for user
+# pool-size: knex connection pool size
+{
+  server: localhost
+  port: 3306
+  database: cytube3
+  user: cytube3
+  password: ""
+  pool-size: 10
+}

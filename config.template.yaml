@@ -1,15 +1,7 @@
-# MySQL server details
-# server: domain, IP or unix socket path of MySQL server. If a unix socket, it be like so `unix:/path/to/sock.sock`
-# database: a MySQL database that the user specified has read/write access to
-# user: username to authenticate as
-# password: password for user
-mysql:
-  server: 'localhost'
-  port: 3306
-  database: 'cytube3'
-  user: 'cytube3'
-  password: ''
-  pool-size: 10
+# MySQL / database settings live in conf/database.hjson
+# (copy conf/example/database.hjson and edit).
+# A legacy mysql: block in this file is still accepted temporarily with a
+# deprecation warning; remove it once you have migrated.
 
 # Define IPs/ports to listen on
 # Each entry MUST define ip and port (ip can be '' to bind all available addresses)
