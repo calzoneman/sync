@@ -22,6 +22,7 @@ const SOURCE_CONTENT_TYPES = new Set([
     'application/dash+xml',
     'application/x-mpegURL',
     'audio/aac',
+    'audio/flac',
     'audio/mp4',
     'audio/mpeg',
     'audio/ogg',
@@ -33,6 +34,7 @@ const SOURCE_CONTENT_TYPES = new Set([
 
 const AUDIO_ONLY_CONTENT_TYPES = new Set([
     'audio/aac',
+    'audio/flac',
     'audio/mp4',
     'audio/mpeg',
     'audio/ogg',

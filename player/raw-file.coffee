@@ -8,6 +8,7 @@ codecToMimeType = (codec) ->
         when 'vorbis' then 'audio/ogg'
         when 'aac' then 'audio/aac'
         when 'opus' then 'audio/opus'
+        when 'flac' then 'audio/flac'
         else 'video/flv'
 
 window.FilePlayer = class FilePlayer extends VideoJSPlayer

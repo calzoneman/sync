@@ -101,12 +101,14 @@ The following MIME types are accepted for the `contentType` field:
       RTMP streams are only supported through the existing `rt:` media
       type.
   * `audio/aac`
+  * `audio/flac`
   * `audio/mp4`
   * `audio/mpeg`
   * `audio/ogg`
+  * `audio/opus`
 
-Other audio or video formats, such as AVI, MKV, and FLAC, are not supported due
-to lack of common support across browsers for playing these formats.  For more
+Other audio or video formats, such as AVI and MKV, are not supported due to
+lack of common support across browsers for playing these formats.  For more
 information, refer to
 [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Supported_media_formats#Browser_compatibility).
 

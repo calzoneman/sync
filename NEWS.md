@@ -34,6 +34,12 @@ narrower band still clamp locally. Rate-change events from provider UIs are
 debounced so dragging a speed control cannot trip the socket in-rate-limit,
 while still syncing the settled rate.
 
+**Raw FLAC:** ffprobe raw-file lookups accept FLAC (`.flac` and FLAC-in-MP4).
+Host with `Content-Type: audio/flac` (or `audio/*` / `video/*` as appropriate).
+Raw-file titles prefer embedded tags (`Artist - Title` when both exist),
+including uppercase FLAC/Vorbis comment keys. Custom media manifests may also
+use `audio/flac` sources and audio tracks.
+
 2022-09-21
 ==========
 

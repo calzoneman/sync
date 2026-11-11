@@ -91,11 +91,14 @@ var acceptedAudioCodecs = {
     "mp3": true,
     "vorbis": true,
     "aac": true,
-    "opus": true
+    "opus": true,
+    "flac": true
 };
 
 var audioOnlyContainers = {
-    "mp3": true
+    "mp3": true,
+    // Bare FLAC often embeds album art as an mjpeg "video" stream; keep audio-only.
+    "flac": true
 };
 
 function fflog() { }
@@ -292,13 +295,56 @@ function isAlternateDisposition(stream) {
         return false;
     }
 
-    for (var key in stream) {
+    for (var key in stream.disposition) {
         if (key !== "default" && stream.disposition[key]) {
             return true;
         }
     }
 
     return false;
+}
+
+/**
+ * ffprobe tag keys are not consistently cased (MP4 often lowercase; FLAC/Vorbis
+ * comments are commonly TITLE/ARTIST).
+ * @param {Object|null|undefined} tags
+ * @param {string} name
+ * @returns {string|null}
+ */
+function getTag(tags, name) {
+    if (!tags || typeof tags !== "object") {
+        return null;
+    }
+
+    if (typeof tags[name] === "string" && tags[name].trim()) {
+        return tags[name].trim();
+    }
+
+    const want = name.toLowerCase();
+    for (const key of Object.keys(tags)) {
+        if (key.toLowerCase() === want && typeof tags[key] === "string" &&
+                tags[key].trim()) {
+            return tags[key].trim();
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Prefer "Artist - Title" when both exist; otherwise title; otherwise null.
+ * @param {Object|null|undefined} tags
+ * @returns {string|null}
+ */
+function titleFromTags(tags) {
+    const title = getTag(tags, "title");
+    const artist = getTag(tags, "artist");
+
+    if (artist && title) {
+        return artist + " - " + title;
+    }
+
+    return title || artist || null;
 }
 
 function reformatData(data) {
@@ -312,7 +358,7 @@ function reformatData(data) {
     if (isNaN(bitrate)) bitrate = 0;
     reformatted.bitrate = bitrate;
 
-    reformatted.title = data.format.tags ? data.format.tags.title : null;
+    reformatted.title = titleFromTags(data.format.tags);
     var container = data.format.format_name.split(",")[0];
 
     var isVideo = false;
@@ -334,8 +380,9 @@ function reformatData(data) {
                 reformatted.medium = "video";
                 reformatted.type = [container, reformatted.vcodec].join("/");
 
-                if (stream.tags && stream.tags.title) {
-                    reformatted.title = stream.tags.title;
+                const streamTitle = titleFromTags(stream.tags);
+                if (streamTitle) {
+                    reformatted.title = streamTitle;
                 }
 
                 return reformatted;
@@ -347,8 +394,9 @@ function reformatData(data) {
                 medium: "audio"
             };
 
-            if (stream.tags && stream.tags.title) {
-                audio.title = stream.tags.title;
+            const streamTitle = titleFromTags(stream.tags);
+            if (streamTitle) {
+                audio.title = streamTitle;
             }
         }
     }

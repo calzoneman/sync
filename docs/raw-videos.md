@@ -42,6 +42,9 @@ natively.  Accordingly, CyTube only supports a few codecs:
 
   * MP3
   * Ogg/Vorbis
+  * AAC
+  * Opus
+  * FLAC (native `.flac`, or FLAC in MP4)
 
 If your video is in some other format (such as MKV or AVI), then it will need to
 be re-encoded.  There are plenty of free programs available to re-encode video
