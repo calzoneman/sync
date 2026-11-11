@@ -10,12 +10,15 @@ node_modules
 *.key
 torlist
 www/cache
+www/build
 google-drive-subtitles
 lib/
 integration-test-config.json
+peertube-hosts.json
+tor-exit-list.json
 conf/*.toml
+conf/*.hjson
 www/js/cytube-google-drive.user.js
 www/js/cytube-google-drive.meta.js
 www/js/player.js
-tor-exit-list.json
 *.patch

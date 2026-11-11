@@ -132,13 +132,19 @@ function formatUserlistItem(div) {
      * Prevent rendering unnecessary duplicates of the profile box when
      * a user's status changes.
      */
-    name.unbind("mouseenter");
-    name.unbind("mousemove");
-    name.unbind("mouseleave");
+    name.off("mouseenter");
+    name.off("mousemove");
+    name.off("mouseleave");
 
-    name.on('mouseenter', function(ev) {
-        if (profile)
+    function closeProfileBox() {
+        if (profile) {
             profile.remove();
+            profile = null;
+        }
+    }
+
+    function openProfileBox(ev) {
+        closeProfileBox();
 
         var top = ev.clientY + 5;
         var horiz = ev.clientX;
@@ -167,9 +173,14 @@ function formatUserlistItem(div) {
         $("<p/>").text(data.profile.text).appendTo(profile);
 
         if ($("body").hasClass("synchtube")) horiz -= profile.outerWidth();
-        profile.css("left", horiz + "px")
-    });
+        profile.css("left", horiz + "px");
+    }
+
+    name.on('mouseenter', openProfileBox);
     name.on('mousemove', function(ev) {
+        if (!profile) {
+            return;
+        }
         var top = ev.clientY + 5;
         var horiz = ev.clientX;
 
@@ -177,9 +188,17 @@ function formatUserlistItem(div) {
         profile.css("left", horiz + "px")
             .css("top", top + "px");
     });
-    name.on('mouseleave', function() {
-        profile.remove();
-    });
+    name.on('mouseleave', closeProfileBox);
+
+    // formatUserlistItem is often called while the pointer is still over the
+    // name (AFK/meta/rank updates). mouseenter does not re-fire in that case.
+    if (name.is(":hover")) {
+        var rect = name[0].getBoundingClientRect();
+        openProfileBox({
+            clientX: rect.left + rect.width / 2,
+            clientY: rect.top + rect.height / 2
+        });
+    }
     var icon = div.children()[0];
     icon.innerHTML = "";
     // denote current leader with a star
@@ -255,7 +274,7 @@ function addUserDropdown(entry) {
             .text("Private Message")
             .appendTo(btngroup)
             .on('click', function () {
-                initPm(name).find(".panel-heading").click();
+                initPm(name).find(".panel-heading").trigger("click");
                 menu.hide();
             });
     }
@@ -371,11 +390,11 @@ function addUserDropdown(entry) {
         ev.preventDefault();
         if(menu.css("display") == "none") {
             $(".user-dropdown").hide();
-            $(document).bind("mouseup.userlist-ddown", function (e) {
+            $(document).on("mouseup.userlist-ddown", function (e) {
                 if (menu.has(e.target).length === 0 &&
                     entry.parent().has(e.target).length === 0) {
                     menu.hide();
-                    $(document).unbind("mouseup.userlist-ddown");
+                    $(document).off("mouseup.userlist-ddown");
                 }
             });
             menu.show();
@@ -385,8 +404,8 @@ function addUserDropdown(entry) {
         }
         return false;
     };
-    entry.contextmenu(showdd);
-    entry.click(showdd);
+    entry.on("contextmenu", showdd);
+    entry.on("click", showdd);
 }
 
 function calcUserBreakdown() {
@@ -428,6 +447,10 @@ function calcUserBreakdown() {
 }
 
 function sortUserlist() {
+    // Detaching/reappending rows does not reliably fire mouseleave, which can
+    // leave position:fixed profile tips stranded on screen.
+    $("#userlist .profile-box").remove();
+
     var slice = Array.prototype.slice;
     var list = slice.call($("#userlist .userlist_item"));
     list.sort(function (a, b) {
@@ -592,8 +615,8 @@ function addQueueButtons(li) {
         menu.find(".qbtn-delete").addClass("btn-danger");
     }
     else if(menu.find(".btn").length != 0) {
-        li.unbind("contextmenu");
-        li.contextmenu(function(ev) {
+        li.off("contextmenu");
+        li.on("contextmenu", function(ev) {
             // Allow shift+click to open context menu
             // (Chrome workaround, works by default on Firefox)
             if (ev.shiftKey) return true;
@@ -719,16 +742,19 @@ function storeOpts() {
 }
 
 function applyOpts() {
-    if ($("#usertheme").attr("href") !== USEROPTS.theme) {
+    var themeHref = USEROPTS.theme;
+    if (themeHref === "default") {
+        themeHref = DEFAULT_THEME;
+    }
+    if (typeof resolveAsset === "function") {
+        themeHref = resolveAsset(themeHref);
+    }
+    if ($("#usertheme").attr("href") !== themeHref) {
         var old = $("#usertheme").attr("id", "usertheme_old");
-        var theme = USEROPTS.theme;
-        if (theme === "default") {
-            theme = DEFAULT_THEME;
-        }
         $("<link/>").attr("rel", "stylesheet")
             .attr("type", "text/css")
             .attr("id", "usertheme")
-            .attr("href", theme)
+            .attr("href", themeHref)
             .attr("onload", "$('#usertheme_old').remove()")
             .appendTo($("head"));
         fixWeirdButtonAlignmentIssue();
@@ -868,7 +894,7 @@ function showPollMenu() {
             .insertBefore(addbtn);
     }
 
-    addbtn.click(addOption);
+    addbtn.on("click", addOption);
     addOption();
     addOption();
 
@@ -887,7 +913,7 @@ function showPollMenu() {
 
                     timeoutError = $("<p/>").addClass("text-danger").text(e.message);
                     timeoutError.insertAfter(timeout);
-                    timeout.focus();
+                    timeout.trigger("focus");
                     return;
                 }
             } else {
@@ -961,24 +987,24 @@ function setParentVisible(selector, bool) {
 }
 
 function handleModPermissions() {
-    $("#cs-chanranks-adm").attr("disabled", CLIENT.rank < 4);
-    $("#cs-chanranks-owner").attr("disabled", CLIENT.rank < 4);
+    $("#cs-chanranks-adm").prop("disabled", CLIENT.rank < 4);
+    $("#cs-chanranks-owner").prop("disabled", CLIENT.rank < 4);
     /* update channel controls */
     $("#cs-pagetitle").val(CHANNEL.opts.pagetitle);
-    $("#cs-pagetitle").attr("disabled", CLIENT.rank < 3);
+    $("#cs-pagetitle").prop("disabled", CLIENT.rank < 3);
     $("#cs-externalcss").val(CHANNEL.opts.externalcss);
-    $("#cs-externalcss").attr("disabled", CLIENT.rank < 3);
+    $("#cs-externalcss").prop("disabled", CLIENT.rank < 3);
     $("#cs-externaljs").val(CHANNEL.opts.externaljs);
-    $("#cs-externaljs").attr("disabled", CLIENT.rank < 3);
+    $("#cs-externaljs").prop("disabled", CLIENT.rank < 3);
     $("#cs-chat_antiflood").prop("checked", CHANNEL.opts.chat_antiflood);
     if ("chat_antiflood_params" in CHANNEL.opts) {
         $("#cs-chat_antiflood_burst").val(CHANNEL.opts.chat_antiflood_params.burst);
         $("#cs-chat_antiflood_sustained").val(CHANNEL.opts.chat_antiflood_params.sustained);
     }
     $("#cs-show_public").prop("checked", CHANNEL.opts.show_public);
-    $("#cs-show_public").attr("disabled", CLIENT.rank < 3);
+    $("#cs-show_public").prop("disabled", CLIENT.rank < 3);
     $("#cs-password").val(CHANNEL.opts.password || "");
-    $("#cs-password").attr("disabled", CLIENT.rank < 3);
+    $("#cs-password").prop("disabled", CLIENT.rank < 3);
     $("#cs-enable_link_regex").prop("checked", CHANNEL.opts.enable_link_regex);
     $("#cs-afk_timeout").val(CHANNEL.opts.afk_timeout);
     $("#cs-allow_voteskip").prop("checked", CHANNEL.opts.allow_voteskip);
@@ -1004,8 +1030,8 @@ function handleModPermissions() {
     setParentVisible("a[href='#cs-emotes']", hasPermission("emoteedit"));
     setParentVisible("a[href='#cs-chanranks']", CLIENT.rank >= 3);
     setParentVisible("a[href='#cs-chanlog']", CLIENT.rank >= 3);
-    $("#cs-chatfilters-import").attr("disabled", !hasPermission("filterimport"));
-    $("#cs-emotes-import").attr("disabled", !hasPermission("filterimport"));
+    $("#cs-chatfilters-import").prop("disabled", !hasPermission("filterimport"));
+    $("#cs-emotes-import").prop("disabled", !hasPermission("filterimport"));
 }
 
 function handlePermissionChange() {
@@ -1013,7 +1039,7 @@ function handlePermissionChange() {
         handleModPermissions();
     }
 
-    $("#qlockbtn").attr("disabled", !hasPermission("playlistlock"));
+    $("#qlockbtn").prop("disabled", !hasPermission("playlistlock"));
     setVisible("#showchansettings", CLIENT.rank >= 2);
     setVisible("#playlistmanagerwrap", CLIENT.rank >= 1);
     setVisible("#modflair", CLIENT.rank >= 2);
@@ -1021,12 +1047,12 @@ function handlePermissionChange() {
     setVisible("#chatline", CLIENT.rank >= 0);
     setVisible("#queue", hasPermission("seeplaylist"));
     setVisible("#plmeta", hasPermission("seeplaylist"));
-    $("#getplaylist").attr("disabled", !hasPermission("seeplaylist"));
+    $("#getplaylist").prop("disabled", !hasPermission("seeplaylist"));
 
     setVisible("#showplaylistmanager", hasPermission("seeplaylist"));
     setVisible("#showmediaurl", hasPermission("playlistadd"));
     setVisible("#showcustomembed", hasPermission("playlistaddcustom"));
-    $("#queue_next").attr("disabled", !hasPermission("playlistnext"));
+    $("#queue_next").prop("disabled", !hasPermission("playlistnext"));
 
     if(hasPermission("playlistadd") ||
         hasPermission("playlistmove") ||
@@ -1071,15 +1097,15 @@ function handlePermissionChange() {
     setVisible("#shuffleplaylist", hasPermission("playlistshuffle"));
     if (!hasPermission("addnontemp")) {
         $(".add-temp").prop("checked", true);
-        $(".add-temp").attr("disabled", true);
+        $(".add-temp").prop("disabled", true);
     } else {
-        $(".add-temp").attr("disabled", false);
+        $(".add-temp").prop("disabled", false);
     }
 
     fixWeirdButtonAlignmentIssue();
 
     setVisible("#newpollbtn", hasPermission("pollctl"));
-    $("#voteskip").attr("disabled", !hasPermission("voteskip") ||
+    $("#voteskip").prop("disabled", !hasPermission("voteskip") ||
                                     !CHANNEL.opts.allow_voteskip);
 
     $("#pollwrap .active").find(".btn-danger").remove();
@@ -1096,14 +1122,14 @@ function handlePermissionChange() {
     }
     var poll = $("#pollwrap .active");
     if(poll.length > 0) {
-        poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
+        poll.find(".btn").prop("disabled", !hasPermission("pollvote"));
     }
     var users = $("#userlist").children();
     for(var i = 0; i < users.length; i++) {
         addUserDropdown($(users[i]));
     }
 
-    $("#chatline").attr("disabled", !hasPermission("chat"));
+    $("#chatline").prop("disabled", !hasPermission("chat"));
     if (!hasPermission("chat")) {
         $("#chatline").attr("placeholder", "Chat permissions are restricted on this channel");
     } else {
@@ -1288,7 +1314,8 @@ function playlistMove(from, after, cb) {
 }
 
 function checkYP(id) {
-    if (!/^(PL[a-zA-Z0-9_-]{32}|PL[A-F0-9]{16}|OLA[a-zA-Z0-9_-]{38})$/.test(id)) {
+    // User playlists: 13, 18, 26, or 34 chars. Albums: OLAK5uy_ + 33.
+    if (!/^(PL[a-zA-Z0-9_-]{11}|PL[a-zA-Z0-9_-]{16}|PL[a-zA-Z0-9_-]{24}|PL[a-zA-Z0-9_-]{32}|OLAK5uy_[a-zA-Z0-9_-]{33})$/.test(id)) {
         throw new Error('Invalid YouTube Playlist ID.  Note that only regular user-created playlists are supported.');
     }
 }
@@ -1459,18 +1486,80 @@ function parseMediaLink(url) {
 }
 
 
+var _videoUpdateSeq = 0;
+
 function sendVideoUpdate() {
     if (!CLIENT.leader) {
         return;
     }
+    // Drop stale async getTime/getPlaybackRate replies if a newer update started.
+    var seq = ++_videoUpdateSeq;
     PLAYER.getTime(function (seconds) {
-        socket.emit("mediaUpdate", {
-            id: PLAYER.mediaId,
-            currentTime: seconds,
-            paused: PLAYER.paused,
-            type: PLAYER.mediaType
-        });
+        if (seq !== _videoUpdateSeq) {
+            return;
+        }
+        function emitUpdate(playbackRate) {
+            if (seq !== _videoUpdateSeq) {
+                return;
+            }
+            var payload = {
+                id: PLAYER.mediaId,
+                currentTime: seconds,
+                paused: PLAYER.paused,
+                type: PLAYER.mediaType
+            };
+            if (typeof playbackRate === "number") {
+                payload.playbackRate = playbackRate;
+            }
+            socket.emit("mediaUpdate", payload);
+        }
+
+        if (PLAYER.supportsPlaybackRate && PLAYER.supportsPlaybackRate()) {
+            PLAYER.getPlaybackRate(function (rate) {
+                emitUpdate(rate);
+            });
+        } else {
+            emitUpdate(1);
+        }
     });
+}
+
+/*
+ * Provider rate UIs (esp. YouTube) spam ratechange while the speed control
+ * moves.  A leading+trailing throttle dropped the settled value: later events
+ * in a window were ignored, and overlapping async mediaUpdates could emit a
+ * stale rate after the final one.  Debounce instead — reset on every event so
+ * the post-settle rate always wins — with maxWait so a long drag still syncs.
+ * Play/pause keep using sendVideoUpdate() immediately.
+ */
+var _videoUpdateDebounceTimer = null;
+var _videoUpdateDebounceFirst = 0;
+var VIDEO_UPDATE_DEBOUNCE_MS = 200;
+var VIDEO_UPDATE_DEBOUNCE_MAX_MS = 500;
+
+function sendVideoUpdateThrottled() {
+    if (!CLIENT.leader) {
+        return;
+    }
+
+    var now = Date.now();
+    if (_videoUpdateDebounceTimer === null) {
+        _videoUpdateDebounceFirst = now;
+    } else {
+        clearTimeout(_videoUpdateDebounceTimer);
+    }
+
+    var wait = VIDEO_UPDATE_DEBOUNCE_MS;
+    var sinceFirst = now - _videoUpdateDebounceFirst;
+    if (sinceFirst + wait > VIDEO_UPDATE_DEBOUNCE_MAX_MS) {
+        wait = Math.max(0, VIDEO_UPDATE_DEBOUNCE_MAX_MS - sinceFirst);
+    }
+
+    _videoUpdateDebounceTimer = setTimeout(function () {
+        _videoUpdateDebounceTimer = null;
+        _videoUpdateDebounceFirst = 0;
+        sendVideoUpdate();
+    }, wait);
 }
 
 /* chat */
@@ -1623,7 +1712,7 @@ function addChatMessage(data) {
         }
     }
 
-    div.find("img").load(function () {
+    div.find("img").on("load", function () {
         if (SCROLLCHAT) {
             scrollChat();
         } else if ($(this).position().top < 0) {
@@ -1945,7 +2034,7 @@ function genPermissionsEditor() {
         for (var i = 0; i < permset.length; i++) {
             $("<option/>").attr("value", permset[i][1])
                 .text(permset[i][0])
-                .attr("selected", defval === permset[i][1])
+                .prop("selected", defval === permset[i][1])
                 .appendTo(select);
         }
     }
@@ -2773,7 +2862,7 @@ function initPm(user) {
         .attr("maxlength", 320)
         .appendTo(body);
 
-    input.keydown(function (ev) {
+    input.on("keydown", function (ev) {
         if (ev.keyCode === 13) {
             if (CHATTHROTTLE) {
                 return;
@@ -2916,7 +3005,7 @@ function formatScriptAccessPrefs() {
         var allow = $("<input/>").attr("type", "radio")
             .prop("checked", pref === "ALLOW").
             prependTo(allow_label);
-        allow.change(function () {
+        allow.on("change", function () {
             if (allow.is(":checked")) {
                 JSPREF[channel] = "ALLOW";
                 setOpt("channel_js_pref", JSPREF);
@@ -2929,7 +3018,7 @@ function formatScriptAccessPrefs() {
         var deny = $("<input/>").attr("type", "radio")
             .prop("checked", pref === "DENY").
             prependTo(deny_label);
-        deny.change(function () {
+        deny.on("change", function () {
             if (deny.is(":checked")) {
                 JSPREF[channel] = "DENY";
                 setOpt("channel_js_pref", JSPREF);
@@ -2984,7 +3073,7 @@ EmoteList.prototype.initSearch = function () {
     this.searchbar = this.elem.find(".emotelist-search");
     var self = this;
 
-    this.searchbar.keyup(function () {
+    this.searchbar.on("keyup", function () {
         var value = this.value.toLowerCase();
         if (value) {
             self.filter = function (emote) {
@@ -3003,7 +3092,7 @@ EmoteList.prototype.initSortOption = function () {
     this.sortAlphabetical = false;
     var self = this;
 
-    this.sortOption.change(function () {
+    this.sortOption.on("change", function () {
         self.sortAlphabetical = this.checked;
         self.handleChange();
         self.loadPage(0);
@@ -3318,13 +3407,16 @@ function startQueueSpinner(data) {
 
 function stopQueueSpinner(data) {
     const qid = $("#queueprogress").data("queue-id");
-    switch (true){
-        case data === null:
-        case qid === "$any":
-        case qid === data?.id:
-            return $("#queueprogress").remove();
+    if (data === null || qid === "$any" || qid === data?.id) {
+        $("#queueprogress").remove();
+        return;
     }
-    if (data?.type === "pt" && new RegExp(qid).test(data?.id)) {
+
+    // PeerTube spinners store only the hostname (see startQueueSpinner), while
+    // queueFail/queueSuccess send the full "host;uuid" id — and queueFail often
+    // omits type. Match either form so the spinner always clears.
+    if (typeof qid === "string" && typeof data?.id === "string" &&
+            (data.id === qid || data.id.startsWith(qid + ";"))) {
         $("#queueprogress").remove();
     }
 }

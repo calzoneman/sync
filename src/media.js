@@ -1,4 +1,9 @@
 var util = require("./utilities");
+const {
+    DEFAULT_PLAYBACK_RATE,
+    normalizePlaybackRate,
+    supportsPlaybackRate
+} = require('./media-playback-rate');
 
 function Media(id, title, seconds, type, meta) {
     if (!meta) {
@@ -14,6 +19,7 @@ function Media(id, title, seconds, type, meta) {
     this.meta = meta;
     this.currentTime = 0;
     this.paused = false;
+    this.playbackRate = DEFAULT_PLAYBACK_RATE;
 }
 
 Media.prototype = {
@@ -65,7 +71,8 @@ Media.prototype = {
     getTimeUpdate: function () {
         return {
             currentTime: this.currentTime,
-            paused: this.paused
+            paused: this.paused,
+            playbackRate: this.playbackRate
         };
     },
 
@@ -73,12 +80,24 @@ Media.prototype = {
         var packed = this.pack();
         packed.currentTime = this.currentTime;
         packed.paused = this.paused;
+        packed.playbackRate = this.playbackRate;
         return packed;
+    },
+
+    setPlaybackRate: function (rate) {
+        if (!supportsPlaybackRate(this.type)) {
+            this.playbackRate = DEFAULT_PLAYBACK_RATE;
+            return this.playbackRate;
+        }
+
+        this.playbackRate = normalizePlaybackRate(rate);
+        return this.playbackRate;
     },
 
     reset: function () {
         this.currentTime = 0;
         this.paused = false;
+        this.playbackRate = DEFAULT_PLAYBACK_RATE;
     }
 };
 

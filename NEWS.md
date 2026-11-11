@@ -1,3 +1,45 @@
+2026-11-11
+==========
+
+**This release deprecates TOML.**
+
+**Database config moved:** copy `conf/example/database.hjson` to
+`conf/database.hjson`, move your `mysql:` settings from `config.yaml` into it,
+then delete the `mysql:` block from `config.yaml`. A legacy `mysql:` block still
+loads with a deprecation warning for now.
+
+**Provider config moved:** copy `conf/example/providers.hjson` to
+`conf/providers.hjson` and move `youtube-v3-key`, `twitch-client-id`,
+`dailymotion-player-id`, `peertube-domain-extras`, and `vimeo-workaround` out of
+`config.yaml`. Legacy top-level keys still load with a deprecation warning.
+
+**Database schema v13:** `media_metadata_cache` is converted to utf8mb4 on
+startup so cached media titles/metadata can store emoji and other non-BMP
+Unicode. New installs create the table as utf8mb4. Requires MySQL 5.7+ or
+MariaDB with InnoDB large-prefix (normal for current CyTube installs).
+
+Auxiliary configs under `conf/` (email, camo, captcha, prometheus, partitions,
+and partition maps) now use [HJSON](https://hjson.github.io/) by default.
+Copy the examples from `conf/example/*.hjson` as before.
+
+Existing `*.toml` files still load, but emit a deprecation warning. Convert them
+to `.hjson` when convenient; TOML support will be removed in a future release.
+
+**Playback rate sync:** when a leader changes speed on a supporting
+provider (YouTube, Dailymotion, custom media / raw file via Video.js, Vimeo),
+that rate is broadcast in `mediaUpdate` / `changeMedia` so followers match.
+Switching to a provider without a rate API resets everyone to 1x. Synced rates
+are clamped to 0.25–4× (YouTube’s UI range); embeds that only support a
+narrower band still clamp locally. Rate-change events from provider UIs are
+debounced so dragging a speed control cannot trip the socket in-rate-limit,
+while still syncing the settled rate.
+
+**Raw FLAC:** ffprobe raw-file lookups accept FLAC (`.flac` and FLAC-in-MP4).
+Host with `Content-Type: audio/flac` (or `audio/*` / `video/*` as appropriate).
+Raw-file titles prefer embedded tags (`Artist - Title` when both exist),
+including uppercase FLAC/Vorbis comment keys. Custom media manifests may also
+use `audio/flac` sources and audio tracks.
+
 2022-09-21
 ==========
 

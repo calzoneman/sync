@@ -25,7 +25,7 @@ function addMenuItem(target, text) {
     var a = $("<a/>").attr("href", "javascript:void(0)")
         .text(text)
         .appendTo(li)
-        .click(function () {
+        .on("click", function () {
             $(".acp-panel").hide();
             $(target).show();
         });
@@ -74,17 +74,17 @@ function readChanlog(name) {
     });
 }
 
-$("#acp-syslog-btn").click(readSyslog);
-$("#acp-errlog-btn").click(readErrlog);
-$("#acp-httplog-btn").click(readHttplog);
-$("#acp-chanlog-name").keyup(function (ev) {
+$("#acp-syslog-btn").on("click", readSyslog);
+$("#acp-errlog-btn").on("click", readErrlog);
+$("#acp-httplog-btn").on("click", readHttplog);
+$("#acp-chanlog-name").on("keyup", function (ev) {
     if (ev.keyCode === 13) {
         readChanlog($("#acp-chanlog-name").val());
     }
 });
 
 /* Announcements */
-$("#acp-announce-submit").click(function () {
+$("#acp-announce-submit").on("click", function () {
     socket.emit("acp-announce", {
         title: $("#acp-announce-title").val(),
         content: $("#acp-announce-content").val()
@@ -100,7 +100,7 @@ socket.on("announcement", function (data) {
         .addClass("announcement")
         .insertAfter($("#acp-announcements h3")[0]);
 
-    al.find(".close").click(function () {
+    al.find(".close").on("click", function () {
         socket.emit("acp-announce-clear");
     });
 
@@ -109,7 +109,7 @@ socket.on("announcement", function (data) {
 });
 
 /* Global bans */
-$("#acp-gban-submit").click(function () {
+$("#acp-gban-submit").on("click", function () {
     socket.emit("acp-gban", {
         ip: $("#acp-gban-ip").val(),
         note: $("#acp-gban-note").val()
@@ -125,7 +125,7 @@ socket.on("acp-gbanlist", function (bans) {
         var td = $("<td/>").appendTo(tr);
         var del = $("<button/>").addClass("btn btn-xs btn-danger")
             .html("<span class='glyphicon glyphicon-trash'></span>")
-            .click(function () {
+            .on("click", function () {
                 socket.emit("acp-gban-delete", b);
             })
             .appendTo(td);
@@ -151,11 +151,11 @@ socket.on("acp-gbanlist", function (bans) {
         });
     };
 
-    $("#acp-ulookup-btn-name").click(doSearch);
-    $("#acp-ulookup-btn-email").click(doSearch);
-    $("#acp-ulookup-query").keyup(function (ev) {
+    $("#acp-ulookup-btn-name").on("click", doSearch);
+    $("#acp-ulookup-btn-email").on("click", doSearch);
+    $("#acp-ulookup-query").on("keyup", function (ev) {
         if (ev.keyCode === 13) {
-            $("#acp-ulookup-btn-name").click();
+            $("#acp-ulookup-btn-name").trigger("click");
         }
     });
 })();
@@ -183,7 +183,7 @@ socket.on("acp-list-users", function (users) {
             var reset = $("<td/>").appendTo(tr);
 
             // Rank editor
-            rank.click(function () {
+            rank.on("click", function () {
                 if (rank.find(".rank-edit").length > 0) {
                     return;
                 }
@@ -195,7 +195,7 @@ socket.on("acp-list-users", function (users) {
                     .attr("type", "text")
                     .attr("placeholder", old)
                     .appendTo(rank)
-                    .focus();
+                    .trigger("focus");
 
                 var save = function () {
                     var newrank = editor.val();
@@ -215,8 +215,8 @@ socket.on("acp-list-users", function (users) {
 
                 };
 
-                editor.blur(save);
-                editor.keydown(function (ev) {
+                editor.on("blur", save);
+                editor.on("keydown", function (ev) {
                     if (ev.keyCode === 13) {
                         save();
                     }
@@ -226,7 +226,7 @@ socket.on("acp-list-users", function (users) {
             // Password reset
             $("<button/>").addClass("btn btn-xs btn-danger")
                 .text("Reset password")
-                .click(function () {
+                .on("click", function () {
                     if (!confirm("Really reset password for " + u.name + "?")) {
                         return;
                     }
@@ -297,8 +297,8 @@ socket.on("acp-set-rank", function (data) {
         });
     };
 
-    $("#acp-clookup-submit").click(doSearch);
-    $("#acp-clookup-value").keyup(function (ev) {
+    $("#acp-clookup-submit").on("click", doSearch);
+    $("#acp-clookup-value").on("keyup", function (ev) {
         if (ev.keyCode === 13) {
             doSearch();
         }
@@ -331,7 +331,7 @@ socket.on("acp-list-channels", function (channels) {
             // Drop channel
             $("<button/>").addClass("btn btn-xs btn-danger")
                 .text("Delete channel")
-                .click(function () {
+                .on("click", function () {
                     if (!confirm("Really delete " + c.owner + "/" + c.name + "?")) {
                         return;
                     }
@@ -486,14 +486,14 @@ console.log(channels[0]);
             .html("<span class='glyphicon glyphicon-list-alt'></span>")//.text("Details")
             .attr("title", "Details")
             .appendTo(controlInner)
-            .click(function () {
+            .on("click", function () {
                 showChannelDetailModal(c);
             });
         $("<button/>").addClass("btn btn-danger btn-xs")
             .html("<span class='glyphicon glyphicon-remove'></span>")//.text("Force Unload")
             .attr("title", "Unload")
             .appendTo(controlInner)
-            .click(function () {
+            .on("click", function () {
                 if (confirm(`Are you sure you want to unload /${CHANNELPATH}/${c.name}?`)) {
                     socket.emit("acp-force-unload", {
                         name: c.name
@@ -511,7 +511,7 @@ console.log(channels[0]);
     $("<td/>").appendTo(total);
 });
 
-$("#acp-lchannels-refresh").click(function () {
+$("#acp-lchannels-refresh").on("click", function () {
     socket.emit("acp-list-activechannels");
 });
 
@@ -557,8 +557,8 @@ function filterEventLog() {
     $("#acp-eventlog-text").scrollTop($("#acp-eventlog-text").prop("scrollHeight"));
 }
 
-$("#acp-eventlog-filter").change(filterEventLog);
-$("#acp-eventlog-refresh").click(readEventlog);
+$("#acp-eventlog-filter").on("change", filterEventLog);
+$("#acp-eventlog-refresh").on("click", readEventlog);
 
 /* Initialize keyed table sorts */
 $("table").each(function () {
@@ -566,7 +566,7 @@ $("table").each(function () {
     var sortable = table.find("th.sort");
     sortable.each(function () {
         var th = $(this);
-        th.click(function () {
+        th.on("click", function () {
             var p = table.data("paginator");
             if (!p) {
                 return;

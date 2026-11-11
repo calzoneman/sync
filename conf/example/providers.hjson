@@ -1,0 +1,36 @@
+# Media provider credentials and knobs.
+# Copy to conf/providers.hjson and edit.
+{
+  # YouTube Data API v3 key
+  # 1. Go to https://console.developers.google.com/, create/choose a project
+  # 2. Enable YouTube Data v3 API:
+  #    https://console.developers.google.com/apis/library/youtube.googleapis.com
+  # 3. Credentials → Create credentials → API key
+  # 4. Optionally restrict the key; then test (may take a few minutes to activate):
+  #
+  #    $ export YOUTUBE_API_KEY="your key here"
+  #    $ curl "https://www.googleapis.com/youtube/v3/search?key=$YOUTUBE_API_KEY&part=id&maxResults=1&q=test+video&type=video"
+  youtube-v3-key: ""
+
+  # Twitch Client ID for the data API (used for VOD / clip lookups)
+  # https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup
+  twitch-client-id: null
+
+  # Dailymotion Studio Player ID for webclient embeds (required; bare libs/player.js
+  # returns 403). Create a Player under https://www.dailymotion.com/partner → Players.
+  # Default x8lr5 is Dailymotion's public docs example — replace with your own for
+  # production (monetization / domain allowlisting).
+  dailymotion-player-id: x8lr5
+
+  # Extra PeerTube instance hostnames to allow after the joinpeertube.org list loads.
+  # Applied at runtime (not written into peertube-hosts.json), so upstream refreshes
+  # keep them. Include both apex and www if users paste either form.
+  # peertube-domain-extras: [
+  #   pony.tube
+  #   www.pony.tube
+  # ]
+  peertube-domain-extras: []
+
+  # Workaround for Vimeo blocking some domains (extracts a direct URL server-side)
+  vimeo-workaround: false
+}

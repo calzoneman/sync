@@ -3,7 +3,7 @@ import Promise from 'bluebird';
 
 const LOGGER = require('@calzoneman/jsli')('database/update');
 
-const DB_VERSION = 12;
+const DB_VERSION = 13;
 var hasUpdates = [];
 
 module.exports.checkVersion = function () {
@@ -53,6 +53,8 @@ function update(version, cb) {
         addChannelOwnerLastSeenColumn(cb);
     } else if (version < 12) {
         addUserInactiveColumn(cb);
+    } else if (version < 13) {
+        convertMediaMetadataCacheToUtf8mb4(cb);
     }
 }
 
@@ -140,4 +142,23 @@ function addUserInactiveColumn(cb) {
             cb();
         }
     });
+}
+
+function convertMediaMetadataCacheToUtf8mb4(cb) {
+    // Cache of mediaquery results; must accept non-BMP Unicode in titles/metadata.
+    // CONVERT updates table default charset and all string columns (incl. metadata).
+    // Requires InnoDB large-prefix / MySQL 5.7+ (composite PK type+id under utf8mb4).
+    LOGGER.info('Converting media_metadata_cache to utf8mb4 (calzoneman/sync#947)');
+    db.query(
+        'ALTER TABLE media_metadata_cache CONVERT TO CHARACTER SET utf8mb4',
+        error => {
+            if (error) {
+                LOGGER.error(
+                    `Failed to convert media_metadata_cache to utf8mb4: ${error}`
+                );
+                return;
+            }
+            cb();
+        }
+    );
 }

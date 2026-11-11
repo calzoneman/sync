@@ -1,4 +1,5 @@
 - var DEFAULT_THEME = "/css/themes/slate.css";
+- var assetPrefix = asset("/css/cytube.css").indexOf("/build/") === 0 ? "/build" : "";
 
 mixin head()
   meta(charset="utf-8")
@@ -6,21 +7,33 @@ mixin head()
   meta(name="description", content=siteDescription)
 
   title= siteTitle
-  link(href="/css/sticky-footer-navbar.css", rel="stylesheet")
-  link(href="/css/cytube.css", rel="stylesheet")
-  link(id="usertheme", href=DEFAULT_THEME, rel="stylesheet")
+  link(href=asset("/css/sticky-footer-navbar.css"), rel="stylesheet")
+  link(href=asset("/css/cytube.css"), rel="stylesheet")
+  link(id="usertheme", href=asset(DEFAULT_THEME), rel="stylesheet")
 
   if channelName
     script(type="text/javascript").
       var DEFAULT_THEME = '#{DEFAULT_THEME}';
+      var ASSET_PREFIX = '!{assetPrefix}';
       var CHANNELPATH = '#{channelPath}';
       var CHANNELNAME = '#{channelName}';
+      function resolveAsset(url) {
+        if (!ASSET_PREFIX || typeof url !== 'string' || url.charAt(0) !== '/') return url;
+        if (url.indexOf(ASSET_PREFIX + '/') === 0) return url;
+        return ASSET_PREFIX + url;
+      }
   else
     script(type="text/javascript").
       var DEFAULT_THEME = '#{DEFAULT_THEME}';
+      var ASSET_PREFIX = '!{assetPrefix}';
       var CHANNELPATH = '#{channelPath}';
+      function resolveAsset(url) {
+        if (!ASSET_PREFIX || typeof url !== 'string' || url.charAt(0) !== '/') return url;
+        if (url.indexOf(ASSET_PREFIX + '/') === 0) return url;
+        return ASSET_PREFIX + url;
+      }
 
-  script(src="/js/theme.js")
+  script(src=asset("/js/theme.js"))
   //[if lt IE 9]
     <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
     <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>

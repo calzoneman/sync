@@ -114,20 +114,16 @@
     },
 
     root.parseTime = function (time) {
-        var parts = time.split(":").reverse();
+        var parts = time.split(":");
         var seconds = 0;
-        // TODO: consider refactoring to remove this suppression
-        /* eslint no-fallthrough: off */
-        switch (parts.length) {
-            case 3:
-                seconds += parseInt(parts[2]) * 3600;
-            case 2:
-                seconds += parseInt(parts[1]) * 60;
-            case 1:
-                seconds += parseInt(parts[0]);
-                break;
-            default:
-                break;
+        if (parts.length > 0) {
+            seconds += parseInt(parts[parts.length - 1], 10) || 0;
+        }
+        if (parts.length > 1) {
+            seconds += (parseInt(parts[parts.length - 2], 10) || 0) * 60;
+        }
+        if (parts.length > 2) {
+            seconds += (parseInt(parts[parts.length - 3], 10) || 0) * 3600;
         }
         return seconds;
     },

@@ -4,8 +4,8 @@ html(lang="en")
     meta(charset="utf-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     meta(name="referrer", content="same-origin")
-    link(rel="stylesheet", href="/css/video-js.css")
-    link(rel="stylesheet", href="/css/videojs-resolution-switcher.css")
+    link(rel="stylesheet", href=asset("/css/video-js.css"))
+    link(rel="stylesheet", href=asset("/css/videojs-resolution-switcher.css"))
     style.
       body { overflow-y: hidden }
   body
@@ -29,8 +29,8 @@ html(lang="en")
           }
           fn();
       }
-    script(src="/js/jquery-1.12.4.min.js")
-    script(src="/js/vjs/video.js")
-    script(src="/js/vjs/videojs-resolution-switcher.js")
-    script(src="/js/playerjs-0.0.12.js")
-    script(src="/js/player.js")
+    script(src=asset("/js/jquery-3.7.1.js"))
+    script(src=asset("/js/vjs/video.js"))
+    script(src=asset("/js/vjs/videojs-resolution-switcher.js"))
+    script(src=asset("/js/playerjs-0.0.12.js"))
+    script(src=asset("/js/player.js"))

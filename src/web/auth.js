@@ -34,6 +34,11 @@ function getSafeReferrer(req) {
     }
 }
 
+// One-shot / auth pages are bad post-login destinations (see calzoneman/sync#871).
+function isUnsuitableLoginRedirect(dest) {
+    return /\/(login|logout|register|account\/passwordrecover|account\/passwordreset)(\/|$|\?)/.test(dest);
+}
+
 /**
  * Processes a login request.  Sets a cookie upon successful authentication
  */
@@ -44,7 +49,9 @@ function handleLogin(req, res) {
     var password = req.body.password;
     var rememberMe = req.body.remember;
     var dest = req.body.dest || getSafeReferrer(req) || null;
-    dest = dest && dest.match(/login|logout/) ? null : dest;
+    if (dest && isUnsuitableLoginRedirect(dest)) {
+        dest = null;
+    }
 
     if (typeof name !== "string" || typeof password !== "string") {
         res.sendStatus(400);
@@ -119,7 +126,7 @@ function handleLoginPage(req, res) {
 
     var redirect = getSafeReferrer(req);
     var locals = {};
-    if (!/\/register/.test(redirect)) {
+    if (redirect && !isUnsuitableLoginRedirect(redirect)) {
         locals.redirect = redirect;
     }
 

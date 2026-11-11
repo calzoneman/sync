@@ -1,6 +1,5 @@
 import crypto from 'crypto';
-import fs from 'fs';
-import toml from 'toml';
+import { parseConfigFile } from '../configuration/configloader';
 
 function sha256(input) {
     var hash = crypto.createHash('sha256');
@@ -69,9 +68,7 @@ class PartitionMap {
     }
 
     static fromFile(filename) {
-        const rawData = fs.readFileSync(filename).toString('utf8');
-        const parsed = toml.parse(rawData);
-
+        const parsed = parseConfigFile(filename);
         return PartitionMap.fromJSON(parsed);
     }
 

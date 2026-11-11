@@ -41,7 +41,7 @@ MediaRefresherModule.prototype.unload = function () {
 };
 
 MediaRefresherModule.prototype.initVimeo = function (data, cb) {
-    if (!Config.get("vimeo-workaround")) {
+    if (!Config.getProvidersConfig().getVimeoWorkaround()) {
         if (cb) cb();
         return;
     }

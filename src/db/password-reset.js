@@ -8,12 +8,26 @@ class PasswordResetDB {
     }
 
     insert(params) {
-        // TODO: validate params?
+        if (!params || typeof params !== 'object') {
+            return Promise.reject(new Error('password reset params must be an object'));
+        }
+
+        const { ip = '', name, email = '', hash, expire } = params;
+        if (!name || typeof name !== 'string') {
+            return Promise.reject(new Error('password reset requires a name'));
+        }
+        if (!hash || typeof hash !== 'string') {
+            return Promise.reject(new Error('password reset requires a hash'));
+        }
+        if (typeof expire !== 'number' || !Number.isFinite(expire)) {
+            return Promise.reject(new Error('password reset requires a numeric expire'));
+        }
+
+        const row = { ip, name, email, hash, expire };
+
         return this.db.runTransaction(tx => {
-            const insert = tx.table('password_reset').insert(params);
-            // TODO: Support other DBMS besides MySQL
-            // Annoyingly, upsert/on duplicate key update are non-standard
-            // Alternatively, maybe this table shouldn't be an upsert table?
+            const insert = tx.table('password_reset').insert(row);
+            // MySQL-specific upsert; other DBMS would need a different strategy.
             const update = tx.raw(createMySQLDuplicateKeyUpdate(
                 ['ip', 'hash', 'email', 'expire']
             ));

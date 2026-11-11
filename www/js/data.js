@@ -51,7 +51,7 @@
 })();
 
 var CL_VERSION = 3.0;
-var GS_VERSION = 1.7; // Google Drive Userscript
+var GS_VERSION = 1.8; // Google Drive Userscript
 
 var CLIENT = {
     rank: -1,
@@ -106,7 +106,7 @@ var LASTCHAT = {
 var FOCUSED = true;
 var PAGETITLE = "CyTube";
 var TITLE_BLINK;
-var CHATSOUND = new Audio("/boop.wav");
+var CHATSOUND = new Audio("/boop.ogg");
 var KICKED = false;
 var NAME = readCookie("cytube_uname");
 var SESSION = readCookie("cytube_session");

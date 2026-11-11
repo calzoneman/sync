@@ -308,7 +308,7 @@ KickBanModule.prototype.banName = async function banName(actor, name, reason) {
     this.checkChannelAlive();
 
     if (isBanned) {
-        throw new Error(name + " is already banned");
+        throw new Error(name + " is already banned on this channel");
     }
 
     await dbAddBan(chan.name, "*", name, reason, actor.getName());
@@ -343,16 +343,17 @@ KickBanModule.prototype.banIP = async function banIP(actor, ip, name, reason) {
     this.checkChannelAlive();
 
     if (rank >= actor.account.effectiveRank) {
-        // TODO: this message should be made friendlier
-        throw new Error("You don't have permission to ban IP " + masked);
+        throw new Error(
+            "You can't ban " + masked +
+            " because that address belongs to a user with equal or higher rank"
+        );
     }
 
     const isBanned = await dbIsIPBanned(chan.name, ip);
     this.checkChannelAlive();
 
     if (isBanned) {
-        // TODO: this message should be made friendlier
-        throw new Error(masked + " is already banned");
+        throw new Error(masked + " is already banned on this channel");
     }
 
     await dbAddBan(chan.name, ip, name, reason, actor.getName());
@@ -410,9 +411,10 @@ KickBanModule.prototype.banAll = async function banAll(
         this.banIP(actor, ip, name, reason)
     );
 
+    // Name may already be banned (or race with a concurrent ban).  Treat that
+    // as success so IP bans from this request still apply.
     if (!await dbIsNameBanned(chan.name, name)) {
         promises.push(this.banName(actor, name, reason).catch(error => {
-            // TODO: banning should be made idempotent, not throw an error
             if (!/already banned/.test(error.message)) {
                 throw error;
             }
@@ -439,8 +441,9 @@ KickBanModule.prototype.handleUnban = function (user, data) {
     }
 
     var self = this;
+    var chanName = this.channel.name;
     this.channel.refCounter.ref("KickBanModule::handleUnban");
-    db.channels.unbanId(this.channel.name, data.id, function (err) {
+    db.channels.listBans(chanName, function (err, banlist) {
         if (err) {
             self.channel.refCounter.unref("KickBanModule::handleUnban");
             return user.socket.emit("errorMsg", {
@@ -448,17 +451,42 @@ KickBanModule.prototype.handleUnban = function (user, data) {
             });
         }
 
-        self.sendUnban(self.channel.users, data);
-        self.channel.logger.log("[mod] " + user.getName() + " unbanned " + data.name);
-        if (self.channel.modules.chat) {
-            var banperm = self.channel.modules.permissions.permissions.ban;
-            // TODO: quick fix, shouldn't trust name from unban frame.
-            self.channel.modules.chat.sendModMessage(
-                user.getName() + " unbanned " + XSS.sanitizeText(data.name),
-                banperm
-            );
+        var ban = null;
+        for (var i = 0; i < banlist.length; i++) {
+            if (banlist[i].id === data.id) {
+                ban = banlist[i];
+                break;
+            }
         }
-        self.channel.refCounter.unref("KickBanModule::handleUnban");
+
+        if (!ban) {
+            self.channel.refCounter.unref("KickBanModule::handleUnban");
+            return user.socket.emit("errorMsg", {
+                msg: "Ban not found"
+            });
+        }
+
+        var banName = ban.name;
+        db.channels.unbanId(chanName, data.id, function (err) {
+            if (err) {
+                self.channel.refCounter.unref("KickBanModule::handleUnban");
+                return user.socket.emit("errorMsg", {
+                    msg: err
+                });
+            }
+
+            var payload = { id: data.id, name: banName };
+            self.sendUnban(self.channel.users, payload);
+            self.channel.logger.log("[mod] " + user.getName() + " unbanned " + banName);
+            if (self.channel.modules.chat) {
+                var banperm = self.channel.modules.permissions.permissions.ban;
+                self.channel.modules.chat.sendModMessage(
+                    user.getName() + " unbanned " + XSS.sanitizeText(banName),
+                    banperm
+                );
+            }
+            self.channel.refCounter.unref("KickBanModule::handleUnban");
+        });
     });
 };
 

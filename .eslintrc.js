@@ -32,7 +32,7 @@ module.exports = {
     ignorePatterns: [
         // These are not ours
         'www/js/dash.all.min.js',
-        'www/js/jquery-1.12.4.min.js',
+        'www/js/jquery-3.7.1.js',
         'www/js/jquery-ui.js',
         'www/js/peertube.js',
         'www/js/playerjs-0.0.12.js',

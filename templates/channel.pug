@@ -4,8 +4,8 @@ html(lang="en")
     include head
     +head()
     link(href="//code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css", rel="stylesheet")
-    link(rel="stylesheet", href="/css/video-js.css")
-    link(rel="stylesheet", href="/css/videojs-resolution-switcher.css")
+    link(rel="stylesheet", href=asset("/css/video-js.css"))
+    link(rel="stylesheet", href=asset("/css/videojs-resolution-switcher.css"))
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
@@ -46,7 +46,17 @@ html(lang="en")
               #userlist
               #messagebuffer.linewrap
               form(action="javascript:void(0)")
-                input#chatline.form-control(type="text", maxlength=maxMsgLen, style="display: none")
+                //- Password managers mis-detect chat as a login field (see calzoneman/sync#994)
+                input#chatline.form-control(
+                  type="text",
+                  maxlength=maxMsgLen,
+                  style="display: none",
+                  autocomplete="off",
+                  data-bwignore="1",
+                  data-1p-ignore="true",
+                  data-lpignore="true",
+                  data-protonpass-ignore="true"
+                )
                 #guestlogin.input-group
                   span.input-group-addon Guest login
                   input#guestname.form-control(type="text", placeholder="Name")
@@ -242,25 +252,25 @@ html(lang="en")
     include footer
     +footer()
     script(id="socketio-js", src=sioSource)
-    script(src="/js/data.js")
-    script(src="/js/util.js")
-    script(src="/js/tabcomplete.js")
-    script(src="/js/player.js")
-    script(src="/js/paginator.js")
-    script(src="/js/ui.js")
-    script(src="/js/callbacks.js")
+    script(src=asset("/js/data.js"))
+    script(src=asset("/js/util.js"))
+    script(src=asset("/js/tabcomplete.js"))
+    script(src=asset("/js/player.js"))
+    script(src=asset("/js/paginator.js"))
+    script(src=asset("/js/ui.js"))
+    script(src=asset("/js/callbacks.js"))
     script(defer, src="/js/vjs/dash.all.min.js")
-    script(defer, src="/js/vjs/video.js")
-    script(defer, src="/js/vjs/videojs-dash.js")
-    script(defer, src="/js/vjs/videojs-hlsjs-plugin.js")
-    script(defer, src="/js/vjs/videojs-resolution-switcher.js")
-    script(defer, src="/js/vjs/videojs-audio-switcher.js")
-    script(defer, src="/js/octopus/subtitles-octopus.js")
-    script(defer, src="/js/playerjs-0.0.12.js")
-    script(defer, src="/js/niconico.js")
-    script(defer, src="/js/peertube.js")
-    script(defer, src="/js/sc.js")
+    script(defer, src=asset("/js/vjs/video.js"))
+    script(defer, src=asset("/js/vjs/videojs-dash.js"))
+    script(defer, src=asset("/js/vjs/videojs-hlsjs-plugin.js"))
+    script(defer, src=asset("/js/vjs/videojs-resolution-switcher.js"))
+    script(defer, src=asset("/js/vjs/videojs-audio-switcher.js"))
+    script(defer, src=asset("/js/octopus/subtitles-octopus.js"))
+    script(defer, src=asset("/js/playerjs-0.0.12.js"))
+    script(defer, src=asset("/js/niconico.js"))
+    script(defer, src=asset("/js/peertube.js"))
+    script(defer, src=asset("/js/sc.js"))
     script(defer, src="https://www.youtube.com/iframe_api")
-    script(defer, src="https://api.dmcdn.net/all.js")
+    script(defer, src=dailymotionLibraryUrl)
     script(defer, src="https://player.vimeo.com/api/player.js")
     script(defer, src="https://player.twitch.tv/js/embed/v1.js")

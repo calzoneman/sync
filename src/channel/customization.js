@@ -115,7 +115,11 @@ CustomizationModule.prototype.handleSetCSS = function (user, data) {
     }
 
     let oldHash = this.cssHash;
-    // TODO: consider sending back an error instead of silently truncating
+    if (data.css.length > 20000) {
+        user.socket.emit("errorMsg", {
+            msg: "Channel CSS truncated to 20000 characters"
+        });
+    }
     this.css = data.css.substring(0, 20000);
 
     if (oldHash !== this.cssHash) {
@@ -132,6 +136,11 @@ CustomizationModule.prototype.handleSetJS = function (user, data) {
     }
 
     let oldHash = this.jsHash;
+    if (data.js.length > 20000) {
+        user.socket.emit("errorMsg", {
+            msg: "Channel JS truncated to 20000 characters"
+        });
+    }
     this.js = data.js.substring(0, 20000);
 
     if (oldHash !== this.jsHash) {

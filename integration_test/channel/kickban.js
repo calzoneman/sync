@@ -225,7 +225,7 @@ describe('KickbanModule', () => {
                     if (frame === 'errorMsg') {
                         assert.strictEqual(
                             obj.msg,
-                            'test_user is already banned'
+                            'test_user is already banned on this channel'
                         );
 
                         done();
@@ -483,8 +483,8 @@ describe('KickbanModule', () => {
                     if (frame === 'errorMsg') {
                         assert.strictEqual(
                             obj.msg,
-                            "You don't have permission to ban IP " +
-                            "09l.TFb.5To.HBB"
+                            "You can't ban 09l.TFb.5To.HBB" +
+                            " because that address belongs to a user with equal or higher rank"
                         );
 
                         done();
@@ -518,8 +518,8 @@ describe('KickbanModule', () => {
                     if (frame === 'errorMsg') {
                         assert.strictEqual(
                             obj.msg,
-                            "You don't have permission to ban IP " +
-                            "09l.TFb.5To.*"
+                            "You can't ban 09l.TFb.5To.*" +
+                            " because that address belongs to a user with equal or higher rank"
                         );
 
                         done();
@@ -549,7 +549,7 @@ describe('KickbanModule', () => {
                     if (frame === 'errorMsg') {
                         assert.strictEqual(
                             obj.msg,
-                            '09l.TFb.5To.HBB is already banned'
+                            '09l.TFb.5To.HBB is already banned on this channel'
                         );
 
                         done();

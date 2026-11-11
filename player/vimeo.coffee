@@ -35,6 +35,12 @@ window.VimeoPlayer = class VimeoPlayer extends Player
                     sendVideoUpdate()
             )
 
+            # Vimeo Player SDK playbackratechange (when the embed exposes rate UI)
+            @vimeo.on('playbackratechange', =>
+                if CLIENT.leader
+                    sendVideoUpdateThrottled()
+            )
+
             @play()
             @setVolume(VOLUME)
         )
@@ -64,6 +70,27 @@ window.VimeoPlayer = class VimeoPlayer extends Player
             @vimeo.setVolume(volume).catch((error) ->
                 console.error('vimeo::setVolume():', error)
             )
+
+    supportsPlaybackRate: ->
+        true
+
+    setPlaybackRate: (rate) ->
+        @playbackRate = rate
+        if @vimeo and typeof @vimeo.setPlaybackRate == 'function'
+            @vimeo.setPlaybackRate(rate).catch((error) ->
+                console.error('vimeo::setPlaybackRate():', error)
+            )
+
+    getPlaybackRate: (cb) ->
+        if @vimeo and typeof @vimeo.getPlaybackRate == 'function'
+            @vimeo.getPlaybackRate().then((rate) ->
+                cb(parseFloat(rate))
+            ).catch((error) ->
+                console.error('vimeo::getPlaybackRate():', error)
+                cb(1)
+            )
+        else
+            cb(@playbackRate or 1)
 
     getTime: (cb) ->
         if @vimeo

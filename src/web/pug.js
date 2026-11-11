@@ -2,21 +2,36 @@ var pug = require("pug");
 var fs = require("fs");
 var path = require("path");
 var Config = require("../config");
+var { createAsset } = require("./static-minify");
 var templates = path.join(__dirname, "..", "..", "templates");
+var wwwRoot = path.join(__dirname, "..", "..", "www");
 
 const cache = new Map();
 const LOGGER = require('@calzoneman/jsli')('web/pug');
+
+const asset = createAsset({
+    isMinifyEnabled: () => Config.get("http.minify"),
+    wwwRoot: wwwRoot,
+    existsSync: fs.existsSync,
+    warn: (msg, ...args) => LOGGER.warn(msg, ...args)
+});
 
 /**
  * Merges locals with globals for pug rendering
  */
 function merge(locals, res) {
+    var dmPlayerId = Config.getProvidersConfig().getDailymotionPlayerId();
     var _locals = {
         siteTitle: Config.get("html-template.title"),
         siteDescription: Config.get("html-template.description"),
         csrfToken: typeof res.req.csrfToken === 'function' ? res.req.csrfToken() : '',
         baseUrl: getBaseUrl(res),
         channelPath: Config.get("channel-path"),
+        asset: asset,
+        // Player ID is required by Dailymotion (bare libs/player.js returns 403).
+        // Default x8lr5 is their public docs example; set your own Studio Player ID in production.
+        dailymotionLibraryUrl: "https://geo.dailymotion.com/libs/player/" +
+            encodeURIComponent(dmPlayerId || "x8lr5") + ".js",
     };
     if (typeof locals !== "object") {
         return _locals;
@@ -78,5 +93,6 @@ function clearCache() {
 
 module.exports = {
     sendPug: sendPug,
-    clearCache: clearCache
+    clearCache: clearCache,
+    asset: asset
 };

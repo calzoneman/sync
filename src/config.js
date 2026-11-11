@@ -2,23 +2,25 @@ var path = require("path");
 var net = require("net");
 var YAML = require("yamljs");
 
-import { loadFromToml } from './configuration/configloader';
+import { loadConfig, resolveConfigFile } from './configuration/configloader';
 import { CamoConfig } from './configuration/camoconfig';
 import { PrometheusConfig } from './configuration/prometheusconfig';
 import { EmailConfig } from './configuration/emailconfig';
 import { CaptchaConfig } from './configuration/captchaconfig';
+import { DatabaseConfig } from './configuration/databaseconfig';
+import { ProvidersConfig } from './configuration/providersconfig';
 
 const LOGGER = require('@calzoneman/jsli')('config');
 
+const PROVIDER_YAML_KEYS = [
+    'youtube-v3-key',
+    'twitch-client-id',
+    'dailymotion-player-id',
+    'peertube-domain-extras',
+    'vimeo-workaround'
+];
+
 var defaults = {
-    mysql: {
-        server: "localhost",
-        port: 3306,
-        database: "cytube3",
-        user: "cytube3",
-        password: "",
-        "pool-size": 10
-    },
     listen: [
         {
             ip: "0.0.0.0",
@@ -65,7 +67,6 @@ var defaults = {
             "allowed-origins": []
         }
     },
-    "youtube-v3-key": "",
     "channel-path": "r",
     "channel-save-interval": 5,
     "max-channels-per-user": 5,
@@ -76,7 +77,6 @@ var defaults = {
         "purge-interval": 3600000,
         "max-age": 2592000000
     },
-    "vimeo-workaround": false,
     "html-template": {
         title: "CyTube Beta", description: "Free, open source synchtube"
     },
@@ -106,7 +106,6 @@ var defaults = {
         enabled: false,
         socket: "service.sock"
     },
-    "twitch-client-id": null,
     poll: {
         "max-options": 50
     }
@@ -134,6 +133,8 @@ let camoConfig = new CamoConfig();
 let prometheusConfig = new PrometheusConfig();
 let emailConfig = new EmailConfig();
 let captchaConfig = new CaptchaConfig();
+let databaseConfig = new DatabaseConfig();
+let providersConfig = new ProvidersConfig();
 
 /**
  * Initializes the configuration from the given YAML file
@@ -157,44 +158,190 @@ exports.load = function (file) {
     if (cfg.mail) {
         LOGGER.error(
             'Old style mail configuration found in config.yaml.  ' +
-            'Email will not be delivered unless you copy conf/example/email.toml ' +
-            'to conf/email.toml and edit it to your liking.  ' +
+            'Email will not be delivered unless you copy conf/example/email.hjson ' +
+            'to conf/email.hjson and edit it to your liking.  ' +
             'To remove this warning, delete the "mail:" block in config.yaml.'
         );
     }
+
+    const legacyMysql = cfg.mysql;
+    // Strip before merge so missing-key warnings are not raised for keys
+    // that have moved into dedicated conf/*.hjson files.
+    delete cfg.mysql;
+    const legacyProviders = extractLegacyProviders(cfg);
 
     merge(cfg, defaults, "config");
 
     preprocessConfig(cfg);
     LOGGER.info("Loaded configuration from " + file);
 
+    loadDatabaseConfig(legacyMysql);
+    loadProvidersConfig(legacyProviders);
     loadCamoConfig();
     loadPrometheusConfig();
     loadEmailConfig();
     loadCaptchaConfig();
 };
 
-function checkLoadConfig(configClass, filename) {
+function extractLegacyProviders(config) {
+    const legacy = {};
+    let found = false;
+    for (const key of PROVIDER_YAML_KEYS) {
+        if (Object.prototype.hasOwnProperty.call(config, key)) {
+            legacy[key] = config[key];
+            delete config[key];
+            found = true;
+        }
+    }
+    return found ? legacy : null;
+}
+
+const CONF_DIR = path.resolve(__dirname, '..', 'conf');
+
+function confDisplayPath(basename) {
+    const resolved = resolveConfigFile(CONF_DIR, basename);
+    if (resolved) {
+        return path.relative(path.resolve(__dirname, '..'), resolved.path);
+    }
+    return path.join('conf', `${basename}.hjson`);
+}
+
+function checkLoadConfig(configClass, basename) {
     try {
-        return loadFromToml(
-            configClass,
-            path.resolve(__dirname, '..', 'conf', filename)
-        );
+        return loadConfig(configClass, CONF_DIR, basename);
     } catch (error) {
         if (error.code === 'ENOENT') {
             return null;
         }
 
+        const displayPath = confDisplayPath(basename);
         if (typeof error.line !== 'undefined') {
-            LOGGER.error(`Error in conf/${filename}: ${error} (line ${error.line})`);
+            LOGGER.error(`Error in ${displayPath}: ${error} (line ${error.line})`);
         } else {
-            LOGGER.error(`Error loading conf/${filename}: ${error.stack}`);
+            LOGGER.error(`Error loading ${displayPath}: ${error.stack}`);
         }
     }
 }
 
+function loadDatabaseConfig(legacyMysql) {
+    const conf = checkLoadConfig(DatabaseConfig, 'database');
+
+    if (conf !== null) {
+        databaseConfig = conf;
+        LOGGER.info(
+            `Loaded database configuration from ${confDisplayPath('database')}.`
+        );
+        if (legacyMysql) {
+            LOGGER.warn(
+                'Ignoring deprecated mysql: block in config.yaml because ' +
+                `${confDisplayPath('database')} is present.  ` +
+                'Remove the mysql: block from config.yaml.'
+            );
+        }
+        return;
+    }
+
+    if (legacyMysql) {
+        LOGGER.error(
+            'Old style mysql configuration found in config.yaml.  ' +
+            'Copy conf/example/database.hjson to conf/database.hjson and ' +
+            'move your mysql settings there.  ' +
+            'To remove this warning, delete the "mysql:" block in config.yaml.  ' +
+            'YAML mysql support will be removed in a future release.'
+        );
+        try {
+            databaseConfig = new DatabaseConfig(legacyMysql);
+        } catch (error) {
+            LOGGER.error(`Invalid mysql configuration in config.yaml: ${error.message}`);
+            databaseConfig = new DatabaseConfig();
+        }
+        return;
+    }
+
+    LOGGER.error(
+        'No database configuration found.  ' +
+        'Copy conf/example/database.hjson to conf/database.hjson and edit it.  ' +
+        'Using built-in defaults for now.'
+    );
+    databaseConfig = new DatabaseConfig();
+}
+
+function loadProvidersConfig(legacyProviders) {
+    const conf = checkLoadConfig(ProvidersConfig, 'providers');
+
+    if (conf !== null) {
+        providersConfig = conf;
+        LOGGER.info(
+            `Loaded providers configuration from ${confDisplayPath('providers')}.`
+        );
+        if (legacyProviders) {
+            LOGGER.warn(
+                'Ignoring deprecated provider keys in config.yaml because ' +
+                `${confDisplayPath('providers')} is present.  ` +
+                'Remove youtube-v3-key / twitch-client-id / dailymotion-player-id / ' +
+                'peertube-domain-extras / vimeo-workaround from config.yaml.'
+            );
+        }
+        applyProvidersSideEffects();
+        return;
+    }
+
+    if (legacyProviders) {
+        LOGGER.error(
+            'Old style provider configuration found in config.yaml.  ' +
+            'Copy conf/example/providers.hjson to conf/providers.hjson and ' +
+            'move your provider settings there.  ' +
+            'To remove this warning, delete those keys from config.yaml.  ' +
+            'YAML provider keys will be removed in a future release.'
+        );
+        try {
+            providersConfig = new ProvidersConfig(legacyProviders);
+        } catch (error) {
+            LOGGER.error(
+                `Invalid provider configuration in config.yaml: ${error.message}`
+            );
+            providersConfig = new ProvidersConfig();
+        }
+        applyProvidersSideEffects();
+        return;
+    }
+
+    LOGGER.info(
+        'No providers configuration found; using built-in defaults.  ' +
+        'Copy conf/example/providers.hjson to conf/providers.hjson to set ' +
+        'YouTube / Twitch / Dailymotion / PeerTube / Vimeo options.'
+    );
+    providersConfig = new ProvidersConfig();
+    applyProvidersSideEffects();
+}
+
+function applyProvidersSideEffects() {
+    const youtubeKey = providersConfig.getYoutubeV3Key();
+    if (youtubeKey) {
+        require('@cytube/mediaquery/lib/provider/youtube').setApiKey(youtubeKey);
+    } else {
+        LOGGER.warn(
+            'No YouTube v3 API key set.  YouTube links will not work.  ' +
+            'See youtube-v3-key in conf/example/providers.hjson and ' +
+            'https://developers.google.com/youtube/registering_an_application'
+        );
+    }
+
+    const twitchClientId = providersConfig.getTwitchClientId();
+    if (twitchClientId) {
+        require('@cytube/mediaquery/lib/provider/twitch-vod').setClientID(twitchClientId);
+        require('@cytube/mediaquery/lib/provider/twitch-clip').setClientID(twitchClientId);
+    } else {
+        LOGGER.warn(
+            'No Twitch Client ID set.  Twitch VOD links will not work.  ' +
+            'See twitch-client-id in conf/example/providers.hjson and ' +
+            'https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup'
+        );
+    }
+}
+
 function loadCamoConfig() {
-    const conf = checkLoadConfig(CamoConfig, 'camo.toml');
+    const conf = checkLoadConfig(CamoConfig, 'camo');
 
     if (conf === null) {
         LOGGER.info('No camo configuration found, chat images will not be proxied.');
@@ -202,12 +349,15 @@ function loadCamoConfig() {
     } else {
         camoConfig = conf;
         const enabled = camoConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
-        LOGGER.info(`Loaded camo configuration from conf/camo.toml.  Camo is ${enabled}`);
+        LOGGER.info(
+            `Loaded camo configuration from ${confDisplayPath('camo')}.  ` +
+            `Camo is ${enabled}`
+        );
     }
 }
 
 function loadPrometheusConfig() {
-    const conf = checkLoadConfig(PrometheusConfig, 'prometheus.toml');
+    const conf = checkLoadConfig(PrometheusConfig, 'prometheus');
 
     if (conf === null) {
         LOGGER.info('No prometheus configuration found, defaulting to disabled');
@@ -216,33 +366,37 @@ function loadPrometheusConfig() {
         prometheusConfig = conf;
         const enabled = prometheusConfig.isEnabled() ? 'ENABLED' : 'DISABLED';
         LOGGER.info(
-            'Loaded prometheus configuration from conf/prometheus.toml.  ' +
+            `Loaded prometheus configuration from ${confDisplayPath('prometheus')}.  ` +
             `Prometheus listener is ${enabled}`
         );
     }
 }
 
 function loadEmailConfig() {
-    const conf = checkLoadConfig(EmailConfig, 'email.toml');
+    const conf = checkLoadConfig(EmailConfig, 'email');
 
     if (conf === null) {
         LOGGER.info('No email configuration found, defaulting to disabled');
         emailConfig = new EmailConfig();
     } else {
         emailConfig = conf;
-        LOGGER.info('Loaded email configuration from conf/email.toml.');
+        LOGGER.info(
+            `Loaded email configuration from ${confDisplayPath('email')}.`
+        );
     }
 }
 
 function loadCaptchaConfig() {
-    const conf = checkLoadConfig(Object, 'captcha.toml');
+    const conf = checkLoadConfig(Object, 'captcha');
 
     if (conf === null) {
         LOGGER.info('No captcha configuration found, defaulting to disabled');
         captchaConfig.load();
     } else {
         captchaConfig.load(conf);
-        LOGGER.info('Loaded captcha configuration from conf/captcha.toml.');
+        LOGGER.info(
+            `Loaded captcha configuration from ${confDisplayPath('captcha')}.`
+        );
     }
 }
 
@@ -386,28 +540,6 @@ function preprocessConfig(cfg) {
         cfg["link-domain-blacklist-regex"] = new RegExp("$x^", "gi");
     }
 
-    if (cfg["youtube-v3-key"]) {
-        require("@cytube/mediaquery/lib/provider/youtube").setApiKey(
-                cfg["youtube-v3-key"]);
-    } else {
-        LOGGER.warn("No YouTube v3 API key set.  YouTube links will " +
-            "not work.  See youtube-v3-key in config.template.yaml and " +
-            "https://developers.google.com/youtube/registering_an_application for " +
-            "information on registering an API key.");
-    }
-
-    if (cfg["twitch-client-id"]) {
-        require("@cytube/mediaquery/lib/provider/twitch-vod").setClientID(
-                cfg["twitch-client-id"]);
-        require("@cytube/mediaquery/lib/provider/twitch-clip").setClientID(
-                cfg["twitch-client-id"]);
-    } else {
-        LOGGER.warn("No Twitch Client ID set.  Twitch VOD links will " +
-            "not work.  See twitch-client-id in config.template.yaml and " +
-            "https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup" +
-            "for more information on registering a client ID");
-    }
-
     // Remove calzoneman from contact config (old default)
     cfg.contacts = cfg.contacts.filter(contact => {
         return contact.name !== 'calzoneman';
@@ -496,4 +628,12 @@ exports.getEmailConfig = function getEmailConfig() {
 
 exports.getCaptchaConfig = function getCaptchaConfig() {
     return captchaConfig;
+};
+
+exports.getDatabaseConfig = function getDatabaseConfig() {
+    return databaseConfig;
+};
+
+exports.getProvidersConfig = function getProvidersConfig() {
+    return providersConfig;
 };

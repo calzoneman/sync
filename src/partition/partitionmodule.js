@@ -1,4 +1,4 @@
-import { loadFromToml } from '../configuration/configloader';
+import { loadConfig, resolveConfigFile } from '../configuration/configloader';
 import { PartitionConfig } from './partitionconfig';
 import { PartitionDecider } from './partitiondecider';
 import { PartitionClusterClient } from '../io/cluster/partitionclusterclient';
@@ -8,8 +8,7 @@ import { AnnouncementRefresher } from './announcementrefresher';
 import { RedisPartitionMapReloader } from './redispartitionmapreloader';
 import { RedisMessageBus } from '../pubsub/redis';
 
-const PARTITION_CONFIG_PATH = path.resolve(__dirname, '..', '..', 'conf',
-                                           'partitions.toml');
+const PARTITION_CONF_DIR = path.resolve(__dirname, '..', '..', 'conf');
 const logger = require('@calzoneman/jsli')('PartitionModule');
 
 class PartitionModule {
@@ -31,14 +30,19 @@ class PartitionModule {
     }
 
     loadPartitionConfig() {
+        const resolved = resolveConfigFile(PARTITION_CONF_DIR, 'partitions');
+        const displayPath = resolved
+            ? resolved.path
+            : path.join(PARTITION_CONF_DIR, 'partitions.hjson');
+
         try {
-            return loadFromToml(PartitionConfig, PARTITION_CONFIG_PATH);
+            return loadConfig(PartitionConfig, PARTITION_CONF_DIR, 'partitions');
         } catch (error) {
             if (typeof error.line !== 'undefined') {
-                logger.error(`Error in ${PARTITION_CONFIG_PATH}: ${error} ` +
+                logger.error(`Error in ${displayPath}: ${error} ` +
                              `(line ${error.line})`);
             } else {
-                logger.error(`Error loading ${PARTITION_CONFIG_PATH}: ` +
+                logger.error(`Error loading ${displayPath}: ` +
                              `${error.stack}`);
             }
             throw error;

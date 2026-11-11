@@ -3,7 +3,7 @@ html(lang="en")
   head
     include head
     +head()
-    link(rel="stylesheet", type="text/css", href="/css/acp.css")
+    link(rel="stylesheet", type="text/css", href=asset("/css/acp.css"))
   body
     #wrap
       nav.navbar.navbar-inverse.navbar-fixed-top(role="navigation")
@@ -126,6 +126,6 @@ html(lang="en")
     script(src=sioSource)
     script(type="text/javascript").
       window.IO_SERVERS = !{ioServers};
-    script(src="/js/util.js")
-    script(src="/js/paginator.js")
-    script(src="/js/acp.js")
+    script(src=asset("/js/util.js"))
+    script(src=asset("/js/paginator.js"))
+    script(src=asset("/js/acp.js"))

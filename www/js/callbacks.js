@@ -145,13 +145,13 @@ const Callbacks = {
             socket.emit("channelPassword", pwbox.val());
             parent.remove();
         };
-        submit.click(sendpw);
-        pwbox.keydown(function (ev) {
+        submit.on("click", sendpw);
+        pwbox.on("keydown", function (ev) {
             if (ev.keyCode == 13) {
                 sendpw();
             }
         });
-        pwbox.focus();
+        pwbox.trigger("focus");
     },
 
     cancelNeedPassword: function () {
@@ -290,9 +290,9 @@ const Callbacks = {
         CHANNEL.opts = opts;
 
         if(opts.allow_voteskip)
-            $("#voteskip").attr("disabled", false);
+            $("#voteskip").prop("disabled", false);
         else
-            $("#voteskip").attr("disabled", true);
+            $("#voteskip").prop("disabled", true);
         handlePermissionChange();
     },
 
@@ -546,22 +546,9 @@ const Callbacks = {
             user.data("icon", false);
         }
 
-        /*
-         * 2017-06-15
-         * TODO: Remove this and the empty function below
-         *         after script authors have had ample time to update
-         */
-        socket.listeners('setAFK').forEach(function(listener){
-            listener({ name: data.name, afk: data.meta.afk });
-        });
-
         formatUserlistItem(user, data);
         addUserDropdown(user, data);
         sortUserlist();
-    },
-
-    setAFK: function() {
-        return true;
     },
 
     setUserProfile: function (data) {
@@ -839,7 +826,7 @@ const Callbacks = {
 
         // Reset voteskip since the video changed
         if (CHANNEL.opts.allow_voteskip) {
-            $("#voteskip").attr("disabled", false);
+            $("#voteskip").prop("disabled", false);
         }
 
         $("#currenttitle").text("Currently Playing: " + data.title);
@@ -958,7 +945,7 @@ const Callbacks = {
             .attr('title', 'Poll opened by ' + data.initiator).data('initiator',data.initiator)
             .text(new Date(data.timestamp).toTimeString().split(" ")[0]);
 
-        poll.find(".btn").attr("disabled", !hasPermission("pollvote"));
+        poll.find(".btn").prop("disabled", !hasPermission("pollvote"));
     },
 
     updatePoll: function(data) {
@@ -975,7 +962,7 @@ const Callbacks = {
             var poll = $("#pollwrap .active");
             poll.removeClass("active").addClass("muted");
             poll.find(".option button").each(function() {
-                $(this).attr("disabled", true);
+                $(this).prop("disabled", true);
             });
             poll.find(".btn-danger").each(function() {
                 $(this).remove();
@@ -1163,7 +1150,7 @@ const Callbacks = {
 
     clearVoteskipVote: function () {
         if (CHANNEL.opts.allow_voteskip && hasPermission("voteskip")) {
-            $("#voteskip").attr("disabled", false);
+            $("#voteskip").prop("disabled", false);
         }
     }
 };
@@ -1335,7 +1322,7 @@ function checkLetsEncrypt(socketConfig, nonLetsEncryptError) {
             });
             setupCallbacks();
         };
-    }).error(function () {
+    }).fail(function () {
         nonLetsEncryptError();
     });
 }

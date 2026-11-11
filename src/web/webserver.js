@@ -175,25 +175,9 @@ module.exports = {
             LOGGER.info('Enabled gzip compression');
         }
 
-        if (webConfig.getEnableMinification()) {
-            const cacheDir = path.join(__dirname, '..', '..', 'www', 'cache');
-            if (!fs.existsSync(cacheDir)) {
-                fs.mkdirSync(cacheDir);
-            }
-            app.use((req, res, next) => {
-                res.minifyOptions = res.minifyOptions || {};
-
-                if (/\.user\.js/.test(req.url)) {
-                    res.minifyOptions.minify = false;
-                }
-
-                next();
-            });
-            app.use(require('express-minify')({
-                cache: cacheDir
-            }));
-            LOGGER.info('Enabled express-minify for CSS and JS');
-        }
+        // http.minify no longer runs uglify on the request path (that pegged the
+        // event loop on large vendor JS).  Prefer prebuilt www/build/ assets via
+        // the pug `asset()` helper; run `npm run build-minify` after asset changes.
 
         require('./routes/channel')(
             app,

@@ -1,15 +1,7 @@
-# MySQL server details
-# server: domain, IP or unix socket path of MySQL server. If a unix socket, it be like so `unix:/path/to/sock.sock`
-# database: a MySQL database that the user specified has read/write access to
-# user: username to authenticate as
-# password: password for user
-mysql:
-  server: 'localhost'
-  port: 3306
-  database: 'cytube3'
-  user: 'cytube3'
-  password: ''
-  pool-size: 10
+# MySQL / database settings live in conf/database.hjson
+# (copy conf/example/database.hjson and edit).
+# A legacy mysql: block in this file is still accepted temporarily with a
+# deprecation warning; remove it once you have migrated.
 
 # Define IPs/ports to listen on
 # Each entry MUST define ip and port (ip can be '' to bind all available addresses)
@@ -55,7 +47,8 @@ http:
   # Leave out the http://
   alt-domains:
     - '127.0.0.1'
-  # Use express-minify to minify CSS and Javascript
+  # Prefer prebuilt minified first-party assets under www/build/ (npm run build-minify).
+  # Also controls pug pretty-print. Does not minify vendor JS on the request path.
   minify: false
   # Max-Age for caching.  Value should be an integer in milliseconds or a string accepted by
   # the `ms` module.  Set to 0 to disable caching.
@@ -112,16 +105,12 @@ io:
     # https.domain are included implicitly).
     allowed-origins: []
 
-# YouTube v3 API key
-# 1. Go to https://console.developers.google.com/, create a new "project" (or choose an existing one)
-# 2. Make sure the YouTube Data v3 API is "enabled" for your project: https://console.developers.google.com/apis/library/youtube.googleapis.com
-# 3. Go to "Credentials" on the sidebar of https://console.developers.google.com/, click "Create credentials" and choose type "API key"
-# 4. Optionally restrict the key for security, or just copy the key.
-# 5. Test your key (may take a few minutes to become active):
-#
-#    $ export YOUTUBE_API_KEY="your key here"
-#    $ curl "https://www.googleapis.com/youtube/v3/search?key=$YOUTUBE_API_KEY&part=id&maxResults=1&q=test+video&type=video"
-youtube-v3-key: ''
+# Media provider settings (YouTube / Twitch / Dailymotion / PeerTube / Vimeo)
+# live in conf/providers.hjson — copy conf/example/providers.hjson and edit.
+# Legacy top-level keys (youtube-v3-key, twitch-client-id, dailymotion-player-id,
+# peertube-domain-extras, vimeo-workaround) are still accepted temporarily with a
+# deprecation warning.
+
 # Limit for the number of channels a user can register
 max-channels-per-user: 5
 # Limit for the number of accounts an IP address can register
@@ -146,9 +135,6 @@ aliases:
   purge-interval: 3600000
   # Maximum age of an alias (in milliseconds) - default 1 month
   max-age: 2592000000
-
-# Workaround for Vimeo blocking my domain
-vimeo-workaround: false
 
 # Regular expressions for defining reserved user and channel names and page titles
 # The list of regular expressions will be joined with an OR, and compared without
@@ -208,10 +194,6 @@ setuid:
 service-socket:
   enabled: false
   socket: 'service.sock'
-
-# Twitch Client ID for the data API (used for VOD lookups)
-# https://github.com/justintv/Twitch-API/blob/master/authentication.md#developer-setup
-twitch-client-id: null
 
 poll:
   max-options: 50

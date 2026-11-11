@@ -73,6 +73,19 @@ window.handleMediaUpdate = (data) ->
     else if PLAYER instanceof YouTubePlayer
         PLAYER.pauseSeekRaceCondition = false
 
+    # Apply leader-chosen playback rate when the embed supports it (#941).
+    # Unsupported players leave rate at 1; server also resets on media change.
+    if typeof data.playbackRate == 'number' and PLAYER.supportsPlaybackRate()
+        PLAYER.getPlaybackRate((currentRate) ->
+            if Math.abs(currentRate - data.playbackRate) > 0.01
+                PLAYER.setPlaybackRate(data.playbackRate)
+        )
+    else if PLAYER.supportsPlaybackRate()
+        PLAYER.getPlaybackRate((currentRate) ->
+            if Math.abs(currentRate - 1) > 0.01
+                PLAYER.setPlaybackRate(1)
+        )
+
     if CLIENT.leader or not USEROPTS.synch
         return
 

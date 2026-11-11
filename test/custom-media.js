@@ -123,6 +123,19 @@ describe('custom-media', () => {
             assert.throws(() => validate(invalid), /unacceptable source contentType/);
         });
 
+        it('accepts audio/flac sources', () => {
+            valid.sources = [
+                {
+                    url: 'https://example.com/track.flac',
+                    contentType: 'audio/flac',
+                    quality: 480
+                }
+            ];
+            delete valid.textTracks;
+
+            validate(valid);
+        });
+
         it('rejects unacceptable source quality', () => {
             invalid.sources[0].quality = 144;
 
@@ -285,6 +298,11 @@ describe('custom-media', () => {
         });
 
         afterEach(done => {
+            // Abort any still-open request sockets so server.close() cannot hang
+            // after the short-timeout lookup test.
+            if (typeof server.closeAllConnections === 'function') {
+                server.closeAllConnections();
+            }
             server.close(() => done());
         });
 
