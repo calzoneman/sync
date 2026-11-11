@@ -23,6 +23,7 @@ window.YouTubePlayer = class YouTubePlayer extends Player
                     events:
                         onReady: @onReady.bind(this)
                         onStateChange: @onStateChange.bind(this)
+                        onPlaybackRateChange: @onPlaybackRateChange.bind(this)
                 )
             )
         )
@@ -55,6 +56,11 @@ window.YouTubePlayer = class YouTubePlayer extends Player
         if ev.data == YT.PlayerState.ENDED and CLIENT.leader
             socket.emit('playNext')
 
+    onPlaybackRateChange: ->
+        if CLIENT.leader
+            # Discrete clicks are fine; continuous speed UIs spam this event.
+            sendVideoUpdateThrottled()
+
     play: ->
         @paused = false
         if @yt and @yt.ready
@@ -79,6 +85,20 @@ window.YouTubePlayer = class YouTubePlayer extends Player
 
     setQuality: (quality) ->
         # https://github.com/calzoneman/sync/issues/726
+
+    supportsPlaybackRate: ->
+        true
+
+    setPlaybackRate: (rate) ->
+        @playbackRate = rate
+        if @yt and @yt.ready and typeof @yt.setPlaybackRate == 'function'
+            @yt.setPlaybackRate(rate)
+
+    getPlaybackRate: (cb) ->
+        if @yt and @yt.ready and typeof @yt.getPlaybackRate == 'function'
+            cb(@yt.getPlaybackRate())
+        else
+            cb(@playbackRate or 1)
 
     getTime: (cb) ->
         if @yt and @yt.ready

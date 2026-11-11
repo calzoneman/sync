@@ -78,6 +78,13 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
                 cb()
         )
 
+        # Gear-menu speed changes (and API setPlaybackSpeed) — sync for leaders (#941)
+        if dailymotion.events.PLAYER_PLAYBACKSPEEDCHANGE
+            @dm.on(dailymotion.events.PLAYER_PLAYBACKSPEEDCHANGE, =>
+                if CLIENT.leader
+                    sendVideoUpdateThrottled()
+            )
+
     load: (data) ->
         @setMediaProperties(data)
         if @dm and @dmReady
@@ -111,6 +118,26 @@ window.DailymotionPlayer = class DailymotionPlayer extends Player
     setVolume: (volume) ->
         if @dm and @dmReady
             @dm.setVolume(volume)
+
+    supportsPlaybackRate: ->
+        true
+
+    # Dailymotion Web SDK: setPlaybackSpeed([0.25..2]); values above that clamp in-SDK.
+    # Speed persists across loadContent() videos — always re-apply on media change.
+    setPlaybackRate: (rate) ->
+        @playbackRate = rate
+        if @dm and @dmReady and typeof @dm.setPlaybackSpeed == 'function'
+            @dm.setPlaybackSpeed(rate)
+
+    getPlaybackRate: (cb) ->
+        if @dm and @dmReady
+            @dm.getState().then((state) ->
+                cb(state.playerPlaybackSpeed ? 1)
+            ).catch(=>
+                cb(@playbackRate or 1)
+            )
+        else
+            cb(@playbackRate or 1)
 
     getTime: (cb) ->
         if @dm and @dmReady

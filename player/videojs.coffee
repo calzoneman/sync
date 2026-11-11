@@ -167,6 +167,11 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
                         sendVideoUpdate()
                 )
 
+                @player.on('ratechange', =>
+                    if CLIENT.leader
+                        sendVideoUpdateThrottled()
+                )
+
                 # Workaround for IE-- even after seeking completes, the loading
                 # spinner remains.
                 @player.on('seeked', =>
@@ -217,6 +222,20 @@ window.VideoJSPlayer = class VideoJSPlayer extends Player
     setVolume: (volume) ->
         if @player
             @player.volume(volume)
+
+    supportsPlaybackRate: ->
+        true
+
+    setPlaybackRate: (rate) ->
+        @playbackRate = rate
+        if @player
+            @player.playbackRate(rate)
+
+    getPlaybackRate: (cb) ->
+        if @player
+            cb(@player.playbackRate())
+        else
+            cb(@playbackRate or 1)
 
     getTime: (cb) ->
         if @player and @player.readyState() > 0

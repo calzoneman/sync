@@ -5,6 +5,7 @@ window.Player = class Player
 
         @setMediaProperties(data)
         @paused = false
+        @playbackRate = 1
 
     load: (data) ->
         @setMediaProperties(data)
@@ -23,6 +24,16 @@ window.Player = class Player
     seekTo: (time) ->
 
     setVolume: (volume) ->
+
+    # Override in players whose embed API exposes rate control (#941).
+    supportsPlaybackRate: ->
+        false
+
+    setPlaybackRate: (rate) ->
+        @playbackRate = rate
+
+    getPlaybackRate: (cb) ->
+        cb(@playbackRate or 1)
 
     getTime: (cb) ->
         cb(0)

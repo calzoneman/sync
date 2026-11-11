@@ -48,7 +48,8 @@ const TYPE_MEDIA_UPDATE = {
     id: "string",
     currentTime: "number",
     paused: "boolean,optional",
-    type: "string,optional"
+    type: "string,optional",
+    playbackRate: "number,optional"
 };
 
 const TYPE_CLONE_PLAYLIST = {
@@ -907,6 +908,9 @@ PlaylistModule.prototype.handleUpdate = function (user, data) {
 
     media.currentTime = data.currentTime;
     media.paused = Boolean(data.paused);
+    if (typeof data.playbackRate === 'number') {
+        media.setPlaybackRate(data.playbackRate);
+    }
     var update = media.getTimeUpdate();
     this._positionDirty = true;
 
@@ -1111,6 +1115,8 @@ PlaylistModule.prototype.startPlayback = function (time) {
 
     var media = self.current.media;
     media.reset();
+    // New item always starts at 1x; unsupported providers cannot carry a rate.
+    media.setPlaybackRate(1);
     self._positionDirty = true;
 
     if (self.leader != null) {
@@ -1205,7 +1211,8 @@ PlaylistModule.prototype._leadLoop = function() {
         return;
     }
 
-    this.current.media.currentTime += dt;
+    var rate = this.current.media.playbackRate || 1;
+    this.current.media.currentTime += dt * rate;
     this._lastUpdate = Date.now();
     this._counter++;
 

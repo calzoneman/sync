@@ -1486,18 +1486,80 @@ function parseMediaLink(url) {
 }
 
 
+var _videoUpdateSeq = 0;
+
 function sendVideoUpdate() {
     if (!CLIENT.leader) {
         return;
     }
+    // Drop stale async getTime/getPlaybackRate replies if a newer update started.
+    var seq = ++_videoUpdateSeq;
     PLAYER.getTime(function (seconds) {
-        socket.emit("mediaUpdate", {
-            id: PLAYER.mediaId,
-            currentTime: seconds,
-            paused: PLAYER.paused,
-            type: PLAYER.mediaType
-        });
+        if (seq !== _videoUpdateSeq) {
+            return;
+        }
+        function emitUpdate(playbackRate) {
+            if (seq !== _videoUpdateSeq) {
+                return;
+            }
+            var payload = {
+                id: PLAYER.mediaId,
+                currentTime: seconds,
+                paused: PLAYER.paused,
+                type: PLAYER.mediaType
+            };
+            if (typeof playbackRate === "number") {
+                payload.playbackRate = playbackRate;
+            }
+            socket.emit("mediaUpdate", payload);
+        }
+
+        if (PLAYER.supportsPlaybackRate && PLAYER.supportsPlaybackRate()) {
+            PLAYER.getPlaybackRate(function (rate) {
+                emitUpdate(rate);
+            });
+        } else {
+            emitUpdate(1);
+        }
     });
+}
+
+/*
+ * Provider rate UIs (esp. YouTube) spam ratechange while the speed control
+ * moves.  A leading+trailing throttle dropped the settled value: later events
+ * in a window were ignored, and overlapping async mediaUpdates could emit a
+ * stale rate after the final one.  Debounce instead — reset on every event so
+ * the post-settle rate always wins — with maxWait so a long drag still syncs.
+ * Play/pause keep using sendVideoUpdate() immediately.
+ */
+var _videoUpdateDebounceTimer = null;
+var _videoUpdateDebounceFirst = 0;
+var VIDEO_UPDATE_DEBOUNCE_MS = 200;
+var VIDEO_UPDATE_DEBOUNCE_MAX_MS = 500;
+
+function sendVideoUpdateThrottled() {
+    if (!CLIENT.leader) {
+        return;
+    }
+
+    var now = Date.now();
+    if (_videoUpdateDebounceTimer === null) {
+        _videoUpdateDebounceFirst = now;
+    } else {
+        clearTimeout(_videoUpdateDebounceTimer);
+    }
+
+    var wait = VIDEO_UPDATE_DEBOUNCE_MS;
+    var sinceFirst = now - _videoUpdateDebounceFirst;
+    if (sinceFirst + wait > VIDEO_UPDATE_DEBOUNCE_MAX_MS) {
+        wait = Math.max(0, VIDEO_UPDATE_DEBOUNCE_MAX_MS - sinceFirst);
+    }
+
+    _videoUpdateDebounceTimer = setTimeout(function () {
+        _videoUpdateDebounceTimer = null;
+        _videoUpdateDebounceFirst = 0;
+        sendVideoUpdate();
+    }, wait);
 }
 
 /* chat */
